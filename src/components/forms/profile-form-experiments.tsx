@@ -122,9 +122,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                     sampleId: formValues.sampleId,
                     notes: formValues.notes,
                     filepath: formValues.filepath,
-                    type: formValues.type, // Keep the user-selected experiment type
                     ...fileValues,
-                    // Preserve the experiment type (don't let fileValues override it)
                     type: formValues.type,  
                 };
 
