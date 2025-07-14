@@ -1,0 +1,55 @@
+# docker-compose.dev.example.yml
+# 
+# This is an example development Docker Compose file.
+# Copy this file to docker-compose.dev.yml and customize the credentials:
+# 
+#   cp docker-compose.dev.example.yml docker-compose.dev.yml
+#
+# Then edit docker-compose.dev.yml to set your own credentials for the mongo-express admin interface.
+
+services: 
+  node: 
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: evonest_backbone_dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: "mongodb://root:pass@mongo:27017" # Change based on your MongoDB credentials
+      CHOKIDAR_USEPOLLING: true
+      WATCHPACK_POLLING: true
+    volumes:
+      - ./:/usr/evonest:cached
+      - evonestdev_node_modules:/usr/evonest/node_modules
+      - ./file_storage_dev:/usr/evonest/file_storage_dev
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27019:27017"
+    container_name: evonest_mongodb_dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root # Set the root username for MongoDB
+      MONGO_INITDB_ROOT_PASSWORD: pass # Set the root password for MongoDB
+    # No volumes - data will be ephemeral and reset on container restart
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express
+    ports:
+      - "127.0.0.1:8081:8081"  # Bind to localhost only
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:pass@mongo:27017/ # Change based on your MongoDB credentials
+      ME_CONFIG_BASICAUTH_USERNAME: admin # Change these to your desired credentials
+      ME_CONFIG_BASICAUTH_PASSWORD: pass # Change these to your desired credentials
+    external_links:
+      - evonest_mongodb_dev:mongo
+  
+volumes:
+  file_storage_dev:
+  evonestdev_node_modules:

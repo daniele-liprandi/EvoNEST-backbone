@@ -1,0 +1,55 @@
+# docker-compose.yaml
+
+services:   
+  node:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: evonest_backbone:latest 
+    container_name: evonest_backbone_prod
+    restart: unless-stopped
+    env_file:
+      - .env.production
+      - .env.local
+    environment:
+      NODE_ENV: production
+    volumes:
+      - file_storage:/usr/evonest/file_storage
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    container_name: evonest_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    volumes:
+      - mongo_data:/data/db
+
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    container_name: mongo_backup
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    volumes:
+      - mongo_backups:/backups
+    environment:
+      MONGO_URI: "mongodb://root:pass@mongo:27017"
+      DAILY_RETENTION: "7"
+      WEEKLY_RETENTION: "4"
+      MONTHLY_RETENTION: "12"
+
+
+volumes:
+  mongo_data:
+  file_storage:
+  mongo_backups:

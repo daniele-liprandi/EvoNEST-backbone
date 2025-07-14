@@ -1,0 +1,30 @@
+# Dockerfile.dev 
+
+FROM node:22-alpine
+
+WORKDIR /usr/evonest
+
+# Copy package files first to leverage Docker cache
+COPY package*.json ./
+
+RUN apk add --no-cache \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    librsvg-dev \
+    pixman-dev \
+    pkgconfig \
+    python3 \
+    make \
+    g++ \
+    gcompat \
+    libc6-compat
+
+    
+RUN npm install
+
+EXPOSE 3005
+
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,35 @@
+{
+  "includedData": {
+    "AreaMeasurements": [
+      125.6, 128.3, 124.9, 127.1, 126.8, 125.2, 127.4, 126.0
+    ],
+    "PerimeterMeasurements": [
+      45.2, 46.1, 44.8, 45.7, 45.9, 44.9, 46.3, 45.5
+    ],
+    "ColorData": {
+      "RGB": {
+        "R": 178,
+        "G": 142,
+        "B": 98
+      },
+      "HSV": {
+        "H": 33,
+        "S": 45,
+        "V": 70
+      }
+    },
+    "BoundingBox": {
+      "width": 15.2,
+      "height": 12.8,
+      "x": 150,
+      "y": 200
+    }
+  },
+  "metadata": [
+    { "key": "magnification", "value": "100x" },
+    { "key": "pixel_size", "value": "0.065μm" },
+    { "key": "image_format", "value": "TIFF" },
+    { "key": "color_space", "value": "RGB" },
+    { "key": "resolution", "value": "1024x768" }
+  ]
+}

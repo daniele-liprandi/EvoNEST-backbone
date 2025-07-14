@@ -1,0 +1,55 @@
+# docker-compose.dev.yaml
+
+services: 
+  node: 
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: evonest_backbone_dev
+    restart: unless-stopped
+    env_file:
+      - .env.development
+      - .env.local
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: "mongodb://root:pass@mongo_dev:27017"
+      CHOKIDAR_USEPOLLING: true
+      WATCHPACK_POLLING: true
+    volumes:
+      - ./:/usr/evonest:cached
+      - evonestdev_node_modules:/usr/evonest/node_modules
+      - ./file_storage_dev:/usr/evonest/file_storage
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongo_dev
+
+  mongo_dev:
+    image: mongo:5.0
+    ports:
+      - "27019:27017"
+    container_name: evonest_mongodb_dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    # No volumes - data will be ephemeral and reset on container restart
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express
+    env_file:
+      - .env.development
+    ports:
+      - "127.0.0.1:8081:8081"  # Bind to localhost only
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pass
+      ME_CONFIG_MONGODB_URL: mongodb://root:pass@mongo_dev:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+    external_links:
+      - evonest_mongodb_dev:mongo
+  
+volumes:
+  file_storage_dev:
+  evonestdev_node_modules:

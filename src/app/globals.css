@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+
+/* html {
+  font-size: large;
+} */
+
+@layer base {
+  h1 {
+    @apply text-4xl lg:text-5xl;
+  }
+  h2 {
+    @apply text-3xl lg:text-4xl;
+  }
+  h3 {
+    @apply text-2xl lg:text-3xl;
+  }
+  
+  :root {
+    --background: 34 35% 99%;
+    --foreground: 34 63% 2%;
+    --card: 34 35% 99%;
+    --card-foreground: 34 63% 2%;
+    --popover: 34 35% 99%;
+    --popover-foreground: 34 63% 2%;
+    --primary: 34 100% 42%;
+    --primary-foreground: 34 100% 2%;
+    --secondary: 154 100% 42%;
+    --secondary-foreground: 154 100% 2%;
+    --accent: 274 100% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 6 82% 38%;
+    --destructive-foreground: 6 82% 98%;
+    --muted: 154 6% 86%;
+    --muted-foreground: 154 7% 29%;
+    --green: 120 100% 50%;
+    --green-foreground: 0 0% 0%;
+    --red: 0 100% 50%;
+    --red-foreground: 0 0% 0%;
+    --blue: 240 100% 50%;
+    --blue-foreground: 0 0% 100%;
+    --teal: 180 100% 50%;
+    --teal-foreground: 0 0% 0%;
+    --purple: 300 100% 50%;
+    --purple-foreground: 0 0% 0%;
+    --pink: 330 100% 50%;
+    --pink-foreground: 0 0% 0%;
+    --orange: 30 100% 50%;
+    --orange-foreground: 0 0% 0%;
+    --brown: 30 100% 50%;
+    --brown-foreground: 0 0% 0%;
+    --black: 0 0% 0%;
+    --black-foreground: 0 0% 100%;
+    --cyan: 180 100% 50%;
+    --cyan-foreground: 0 0% 0%;
+    --border: 34 9% 93%;
+    --input: 34 9% 93%;
+    --ring: 34 100% 42%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 34 51% 2%;
+    --foreground: 34 13% 99%;
+    --card: 34 51% 2%;
+    --card-foreground: 34 13% 99%;
+    --popover: 34 51% 2%;
+    --popover-foreground: 34 13% 99%;
+    --primary: 34 100% 42%;
+    --primary-foreground: 34 100% 2%;
+    --secondary: 154 100% 42%;
+    --secondary-foreground: 154 100% 2%;
+    --accent: 274 100% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 6 82% 53%;
+    --destructive-foreground: 0 0% 100%;
+    --muted: 154 6% 14%;
+    --muted-foreground: 154 7% 71%;
+    --green: 120 100% 30%;
+    --green-foreground: 0 0% 100%;
+    --red: 0 100% 30%;
+    --red-foreground: 0 0% 100%;
+    --blue: 240 100% 30%;
+    --blue-foreground: 0 0% 100%;
+    --teal: 180 100% 30%;
+    --teal-foreground: 0 0% 100%;
+    --purple: 300 100% 30%;
+    --purple-foreground: 0 0% 100%;
+    --pink: 330 100% 30%;
+    --pink-foreground: 0 0% 100%;
+    --orange: 30 100% 30%;
+    --orange-foreground: 0 0% 100%;
+    --brown: 30 100% 30%;
+    --brown-foreground: 0 0% 100%;
+    --black: 0 0% 100%;
+    --black-foreground: 0 0% 0%;
+    --cyan: 180 100% 30%;
+    --cyan-foreground: 0 0% 100%;
+    --border: 34 9% 14%;
+    --input: 34 9% 14%;
+    --ring: 34 100% 42%;
+  }
+}
+
+
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-fira_sans), sans-serif;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

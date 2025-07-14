@@ -1,0 +1,50 @@
+:root {
+  --info-icon-color: grey;
+  --info-text-bg-color: white;
+  --info-text-color: black;
+  --info-border-color: #ccc;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --info-icon-color: white;
+    --info-text-bg-color: #333;
+    --info-text-color: white;
+    --info-border-color: #grey;
+  }
+}
+
+.info-hover {
+  position: relative;
+  display: inline-block;
+  max-width: 16px;
+  max-height: 16px;
+}
+
+.info-icon {
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--info-icon-color);
+  margin-left: 0px;
+  max-width: 16px;
+  max-height: 16px;
+}
+
+.info-text {
+  position: fixed; /* Change to fixed position */
+  top: 50%; /* Adjust as needed */
+  left: 50%; /* Adjust as needed */
+  transform: translate(-50%, -50%); /* Center the tooltip */
+  background-color: var(--info-text-bg-color);
+  color: var(--info-text-color);
+  border: 1px solid var(--info-border-color);
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 9999; /* Higher z-index to ensure it overlaps everything */
+  width: 200px; /* Adjust width as needed */
+  display: none;
+}
+
+.info-hover:hover .info-text {
+  display: block;
+}

@@ -1,0 +1,22 @@
+FROM alpine:3.19
+
+# Install required packages
+RUN apk add --no-cache mongodb-tools bash findutils
+
+# Create directories for backups
+RUN mkdir -p /backups/daily /backups/weekly /backups/monthly /backups/logs
+
+# Copy backup script
+COPY backup_scripts/backup.sh /scripts/backup.sh
+RUN chmod +x /scripts/backup.sh
+
+# Set up cron
+RUN echo "0 0 * * * /scripts/backup.sh >> /scripts/backup.log 2>&1" > /etc/crontabs/root
+
+# Default environment variables
+ENV MONGO_URI="mongodb://root:pass@mongo:27017" \
+    DAILY_RETENTION="7" \
+    WEEKLY_RETENTION="4" \
+    MONTHLY_RETENTION="12"
+
+CMD ["crond", "-f", "-l", "8"]
