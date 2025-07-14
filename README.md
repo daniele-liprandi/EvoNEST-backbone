@@ -56,12 +56,13 @@ Here you can find *EvoNEST Backbone*, the core of the app. It is a fully functio
   </a>
 </div>
 
-Comprehensive user guides, API documentation, and developer resources are available in our documentation site. The documentation includes:
+Comprehensive user guides, API documentation, and developer resources are available in our documentation site.
 
-- **Getting Started Guide** - Quick setup and first steps
-- **User Guide** - Complete feature documentation
-- **Developer Guide** - Contributing and development setup
-- **API Reference** - Technical API documentation
+### Quick Links
+
+- **[Getting Started Guide](https://daniele-liprandi.github.io/EvoNEST-backbone/getting-started/)** - Quick setup and first steps
+- **[User Guide](https://daniele-liprandi.github.io/EvoNEST-backbone/user-guide/)** - Complete feature documentation
+- **[Developer Guide](https://daniele-liprandi.github.io/EvoNEST-backbone/developer-guide/)** - Contributing and development setup
 
 ### Local Documentation Development
 
