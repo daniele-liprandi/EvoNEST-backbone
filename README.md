@@ -23,11 +23,11 @@
 
 ---
 
-## About *EvoNEST* and Backbone
+## About *EvoNEST* 
 
 *EvoNEST* is a modular data management application designed to minimize data handling and conversions by integrating all aspects of biodiversity research—from specimen sourcing to publication—into a unified platform.
 
-Here we share *EvoNEST Backbone*, the core of the app. It is a fully functional version of the application, ready to be customised further for the specific needs of different labs.
+Here you can find *EvoNEST Backbone*, the core of the app. It is a fully functional version of the application, ready to be customised further for the specific needs of different labs.
 
 ## Features
 
@@ -52,7 +52,7 @@ Here we share *EvoNEST Backbone*, the core of the app. It is a fully functional 
 
 <div align="center">
   <a href="https://daniele-liprandi.github.io/EvoNEST-backbone/">
-    <img src="https://img.shields.io/badge/View_Full_Documentation-4285F4?style=for-the-badge&logoColor=white" alt="Documentation" height="50">
+    <img src="https://img.shields.io/badge/View_Full_Documentation-4285F4?style=for-the-badge&logoColor=white" alt="Documentation" height="100">
   </a>
 </div>
 
