@@ -2,10 +2,10 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [ main, backbone_v1.1 ]
+    branches: [ main ]
     paths: [ 'docs/**' ]
   pull_request:
-    branches: [ main, backbone_v1.1 ]
+    branches: [ main ]
     paths: [ 'docs/**' ]
   workflow_dispatch:
 
