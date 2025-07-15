@@ -162,7 +162,10 @@
  *           oneOf:
  *             - type: string
  *             - type: boolean
- *             - type: array *           description: New value for the field
+ *             - type: array
+ *               items:
+ *                 type: string
+ *           description: New value for the field
  *           example: "admin"
  *     UserChangeDatabasesRequest:
  *       type: object
@@ -242,7 +245,8 @@
  *     requestBody:
  *       required: true
  *       content:
- *         application/json: *           schema:
+ *         application/json:
+ *           schema:
  *             oneOf:
  *               - $ref: '#/components/schemas/UserCreateRequest'
  *               - $ref: '#/components/schemas/UserUpdateRequest'
@@ -264,7 +268,8 @@
  *                 method: "update"
  *                 id: "507f1f77bcf86cd799439011"
  *                 name: "Dr. Jane Smith-Johnson"
- *                 role: "admin" *             setUserField:
+ *                 role: "admin"
+ *             setUserField:
  *               summary: Update a specific field
  *               value:
  *                 method: "setfield"

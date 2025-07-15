@@ -1,0 +1,3616 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EvoNEST API",
+    "version": "1.0.0",
+    "description": "\n# EvoNEST API Documentation\n\nThe EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.\n\n## Features\n\n- **Samples Management**: Create, update, and retrieve biological samples with taxonomic information\n- **Traits Measurement**: Record and analyze trait measurements with statistical calculations\n- **Experiments**: Manage measurements, documents and raw data\n- **File Storage**: Upload and manage research files with metadata\n- **User Management**: Handle user accounts and permissions\n- **Utilities**: Geocoding, species image search, and data processing tools\n\n## Authentication\n\nMost endpoints require proper authentication and database access permissions.\n\n## Data Format\n\nAll endpoints return JSON data unless otherwise specified. Dates are in ISO 8601 format.\n      ",
+    "contact": {
+      "name": "Daniele Liprandi",
+      "email": "daniele.liprandi@uni-greifswald.de",
+      "url": "https://evonest.zoologie.uni-greifswald.de"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "termsOfService": "https://evonest.zoologie.uni-greifswald.de/terms",
+    "generatedAt": "2025-07-15T16:38:30.716Z",
+    "x-generator": "swagger-jsdoc (static build)",
+    "x-source": "JSDoc comments in API route files",
+    "x-build-context": "GitHub Actions"
+  },
+  "servers": [
+    {
+      "url": "https://evonest.zoologie.uni-greifswald.de",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User account management and authentication"
+    },
+    {
+      "name": "Samples",
+      "description": "Biological sample management and taxonomic data"
+    },
+    {
+      "name": "Traits",
+      "description": "Trait measurements and statistical analysis"
+    },
+    {
+      "name": "Experiments",
+      "description": "Experimental procedures and raw data management"
+    },
+    {
+      "name": "Files",
+      "description": "File upload, storage, and metadata management"
+    },
+    {
+      "name": "Utilities",
+      "description": "Helper functions for geocoding, image search, and data processing"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": [
+          "name",
+          "email"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address",
+            "example": "john.doe@example.com"
+          },
+          "institution": {
+            "type": "string",
+            "description": "User's affiliated institution",
+            "example": "University of Science"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "researcher",
+              "student",
+              "viewer"
+            ],
+            "description": "User's role in the system",
+            "example": "researcher"
+          },
+          "databases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of databases the user has access to",
+            "example": [
+              "spiderdb",
+              "evolutiondb"
+            ]
+          },
+          "activeDatabase": {
+            "type": "string",
+            "description": "Currently selected database for the user",
+            "example": "spiderdb",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the user account is active",
+            "example": true
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user was created",
+            "example": "2024-01-15T10:30:00Z"
+          },
+          "recentChangeDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification timestamp",
+            "example": "2024-03-15T10:30:00Z"
+          },
+          "logbook": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Activity log entries",
+            "example": [
+              "2024-01-15T10:30:00Z: User created",
+              "2024-03-15T14:20:00Z: Profile updated"
+            ]
+          },
+          "auth0id": {
+            "type": "string",
+            "description": "Auth0 user identifier",
+            "example": "auth0|507f1f77bcf86cd799439011"
+          }
+        }
+      },
+      "UserCreateRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "name",
+          "email"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "create"
+            ],
+            "description": "Action to perform",
+            "example": "create"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "Dr. Jane Smith"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address",
+            "example": "jane.smith@university.edu"
+          },
+          "institution": {
+            "type": "string",
+            "description": "User's affiliated institution",
+            "example": "University of Science"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "researcher",
+              "student",
+              "viewer"
+            ],
+            "description": "User's role in the system",
+            "example": "researcher"
+          },
+          "databases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of databases the user should have access to",
+            "example": [
+              "spiderdb"
+            ]
+          }
+        }
+      },
+      "UserUpdateRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "field",
+          "value"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "setfield"
+            ],
+            "description": "Update method",
+            "example": "setfield"
+          },
+          "id": {
+            "type": "string",
+            "description": "User ID to update",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "Dr. Jane Smith"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address",
+            "example": "jane.smith@university.edu"
+          },
+          "institution": {
+            "type": "string",
+            "description": "User's affiliated institution",
+            "example": "University of Science"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "researcher",
+              "student",
+              "viewer"
+            ],
+            "description": "User's role in the system",
+            "example": "researcher"
+          },
+          "databases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of databases the user should have access to",
+            "example": [
+              "spiderdb",
+              "evolutiondb"
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether the user account is active",
+            "example": true
+          },
+          "field": {
+            "type": "string",
+            "description": "Field name to update",
+            "example": "name"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "description": "New value for the field",
+            "example": "Jane Doe"
+          }
+        }
+      },
+      "UserFieldUpdateRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "field",
+          "value"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "setfield"
+            ],
+            "description": "Action to perform",
+            "example": "setfield"
+          },
+          "field": {
+            "type": "string",
+            "description": "Field name to update",
+            "example": "role"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "description": "New value for the field",
+            "example": "admin"
+          }
+        }
+      },
+      "UserChangeDatabasesRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "id",
+          "databases"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "change_databases"
+            ],
+            "description": "Action to perform",
+            "example": "change_databases"
+          },
+          "id": {
+            "type": "string",
+            "description": "User ID to update",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "databases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of databases the user should have access to",
+            "example": [
+              "spiderdb",
+              "evolutiondb"
+            ]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message",
+            "example": "Not authenticated"
+          },
+          "details": {
+            "type": "string",
+            "description": "Additional error details",
+            "example": "Connection timeout after 30 seconds"
+          }
+        }
+      },
+      "Trait": {
+        "type": "object",
+        "required": [
+          "type",
+          "sampleId",
+          "responsible",
+          "date"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of trait measurement",
+            "example": "silk_diameter"
+          },
+          "measurement": {
+            "type": "number",
+            "description": "The measured value",
+            "example": 2.5
+          },
+          "std": {
+            "type": "number",
+            "description": "Standard deviation of measurements",
+            "example": 0.3
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement",
+            "example": "μm"
+          },
+          "sampleId": {
+            "type": "string",
+            "description": "Reference to the sample",
+            "example": "507f1f77bcf86cd799439012"
+          },
+          "responsible": {
+            "type": "string",
+            "description": "ID of the user responsible for this measurement",
+            "example": "507f1f77bcf86cd799439013"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date when the measurement was taken",
+            "example": "2024-03-15"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Additional details about the measurement",
+            "example": "major ampullate silk"
+          },
+          "equipment": {
+            "type": "string",
+            "description": "Equipment used for measurement",
+            "example": "SEM"
+          },
+          "nfibres": {
+            "type": "string",
+            "description": "Number of fibers measured",
+            "example": "1"
+          },
+          "listvals": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Individual measurement values",
+            "example": [
+              2.3,
+              2.5,
+              2.7,
+              2.4,
+              2.6
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes about the measurement",
+            "example": "Good quality sample"
+          },
+          "filesId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated file IDs",
+            "example": [
+              "507f1f77bcf86cd799439014"
+            ]
+          },
+          "recentChangeDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification date",
+            "example": "2024-03-15T14:20:00Z"
+          },
+          "logbook": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Activity log entries"
+          }
+        }
+      },
+      "TraitCreateRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "type",
+          "sampleId",
+          "responsible",
+          "date"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "create"
+            ],
+            "description": "Action to perform",
+            "example": "create"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of trait measurement",
+            "example": "silk_diameter"
+          },
+          "sampleId": {
+            "type": "string",
+            "description": "Reference to the sample",
+            "example": "507f1f77bcf86cd799439012"
+          },
+          "responsible": {
+            "type": "string",
+            "description": "ID of the user responsible for this measurement",
+            "example": "507f1f77bcf86cd799439013"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date when the measurement was taken",
+            "example": "2024-03-15"
+          },
+          "measurement": {
+            "type": "number",
+            "description": "The measured value",
+            "example": 2.5
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement",
+            "example": "μm"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Additional details about the measurement",
+            "example": "major ampullate silk"
+          },
+          "equipment": {
+            "type": "string",
+            "description": "Equipment used for measurement",
+            "example": "SEM"
+          },
+          "nfibres": {
+            "type": "string",
+            "description": "Number of fibers measured",
+            "example": "1"
+          },
+          "listvals": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Individual measurement values",
+            "example": [
+              2.3,
+              2.5,
+              2.7,
+              2.4,
+              2.6
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes about the measurement",
+            "example": "Good quality sample"
+          },
+          "filesId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Associated file IDs",
+            "example": [
+              "507f1f77bcf86cd799439014"
+            ]
+          }
+        }
+      },
+      "GBIFImageResponse": {
+        "type": "object",
+        "properties": {
+          "imageUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the first available image",
+            "example": "https://inaturalist-open-data.s3.amazonaws.com/photos/12345/original.jpg"
+          },
+          "rightsHolder": {
+            "type": "string",
+            "description": "Rights holder or photographer",
+            "example": "John Doe"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country where the specimen was observed",
+            "example": "Germany"
+          }
+        }
+      },
+      "Sample": {
+        "type": "object",
+        "required": [
+          "name",
+          "type"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "name": {
+            "type": "string",
+            "description": "Sample name",
+            "example": "Araneus diadematus #42"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "animal",
+              "silk",
+              "other"
+            ],
+            "description": "Type of sample",
+            "example": "animal"
+          },
+          "family": {
+            "type": "string",
+            "description": "Taxonomic family",
+            "example": "Araneidae"
+          },
+          "genus": {
+            "type": "string",
+            "description": "Taxonomic genus",
+            "example": "Araneus"
+          },
+          "species": {
+            "type": "string",
+            "description": "Taxonomic species",
+            "example": "diadematus"
+          },
+          "location": {
+            "type": "string",
+            "description": "Collection location",
+            "example": "Berlin, Germany"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Collection date",
+            "example": "2024-03-15"
+          },
+          "collector": {
+            "type": "string",
+            "description": "Person who collected the sample",
+            "example": "Dr. Smith"
+          }
+        }
+      },
+      "ReverseGeoRequest": {
+        "type": "object",
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "float",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude coordinate",
+            "example": 52.52
+          },
+          "lon": {
+            "type": "number",
+            "format": "float",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude coordinate",
+            "example": 13.405
+          }
+        }
+      },
+      "ReverseGeoResponse": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "description": "Address information from OpenStreetMap",
+            "properties": {
+              "house_number": {
+                "type": "string",
+                "example": "1"
+              },
+              "road": {
+                "type": "string",
+                "example": "Unter den Linden"
+              },
+              "city": {
+                "type": "string",
+                "example": "Berlin"
+              },
+              "state": {
+                "type": "string",
+                "example": "Berlin"
+              },
+              "country": {
+                "type": "string",
+                "example": "Deutschland"
+              },
+              "postcode": {
+                "type": "string",
+                "example": "10117"
+              }
+            }
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique notification identifier",
+            "example": "notif_001"
+          },
+          "title": {
+            "type": "string",
+            "description": "Notification title",
+            "example": "System Maintenance"
+          },
+          "message": {
+            "type": "string",
+            "description": "Notification content",
+            "example": "The system will be down for maintenance on..."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "error",
+              "success"
+            ],
+            "description": "Notification type",
+            "example": "info"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the notification was created",
+            "example": "2024-03-15T10:30:00Z"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "urgent"
+            ],
+            "description": "Notification priority level",
+            "example": "medium"
+          }
+        }
+      },
+      "GeocodingRequest": {
+        "type": "object",
+        "required": [
+          "location"
+        ],
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Location name or address to geocode",
+            "example": "Berlin, Germany"
+          }
+        }
+      },
+      "GeocodingResponse": {
+        "type": "object",
+        "properties": {
+          "coordinates": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "string",
+                "description": "Latitude coordinate",
+                "example": "52.5200066"
+              },
+              "lon": {
+                "type": "string",
+                "description": "Longitude coordinate",
+                "example": "13.4049540"
+              },
+              "display_name": {
+                "type": "string",
+                "description": "Full formatted address",
+                "example": "Berlin, Deutschland"
+              },
+              "importance": {
+                "type": "number",
+                "description": "Importance score of the location",
+                "example": 0.75
+              }
+            }
+          }
+        }
+      },
+      "File": {
+        "type": "object",
+        "required": [
+          "filename",
+          "path",
+          "size",
+          "uploadDate"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "filename": {
+            "type": "string",
+            "description": "Original filename",
+            "example": "spider_silk_image.jpg"
+          },
+          "path": {
+            "type": "string",
+            "description": "File storage path",
+            "example": "/storage/507f1f77bcf86cd799439011_spider_silk_image.jpg"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes",
+            "example": 1024000
+          },
+          "mimeType": {
+            "type": "string",
+            "description": "MIME type of the file",
+            "example": "image/jpeg"
+          },
+          "uploadDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the file was uploaded",
+            "example": "2024-03-15T10:30:00Z"
+          },
+          "entryType": {
+            "type": "string",
+            "description": "Type of entry this file is linked to",
+            "example": "trait"
+          },
+          "entryId": {
+            "type": "string",
+            "description": "ID of the entry this file is linked to",
+            "example": "507f1f77bcf86cd799439012"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the file",
+            "example": "SEM image of silk fiber cross-section"
+          },
+          "uploader": {
+            "type": "string",
+            "description": "ID of the user who uploaded the file",
+            "example": "507f1f77bcf86cd799439013"
+          }
+        }
+      },
+      "FileUploadResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Files uploaded successfully"
+          },
+          "fileIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IDs of the uploaded files",
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439012"
+            ]
+          }
+        }
+      },
+      "FileLinkRequest": {
+        "type": "object",
+        "required": [
+          "fileId",
+          "entryType",
+          "entryId"
+        ],
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "MongoDB ObjectId of the file to link",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "entryType": {
+            "type": "string",
+            "enum": [
+              "sample",
+              "trait",
+              "experiment"
+            ],
+            "description": "Type of entry to link the file to",
+            "example": "sample"
+          },
+          "entryId": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{24}$",
+            "description": "MongoDB ObjectId of the entry to link the file to",
+            "example": "507f1f77bcf86cd799439012"
+          }
+        }
+      },
+      "Experiment": {
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "responsible"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "name": {
+            "type": "string",
+            "description": "Experiment name",
+            "example": "Silk tensile strength study"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of experiment",
+            "example": "mechanical_test"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the experiment",
+            "example": "Testing the tensile strength of spider silk under various conditions"
+          },
+          "responsible": {
+            "type": "string",
+            "description": "ID of the user responsible for this experiment",
+            "example": "507f1f77bcf86cd799439013"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Experiment date",
+            "example": "2024-03-15"
+          },
+          "samples": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of sample IDs used in this experiment",
+            "example": [
+              "507f1f77bcf86cd799439012",
+              "507f1f77bcf86cd799439014"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "running",
+              "completed",
+              "failed"
+            ],
+            "description": "Current status of the experiment",
+            "example": "completed"
+          },
+          "equipment": {
+            "type": "string",
+            "description": "Equipment used for the experiment",
+            "example": "Instron 5544"
+          },
+          "conditions": {
+            "type": "object",
+            "description": "Environmental or experimental conditions",
+            "example": {
+              "temperature": "22°C",
+              "humidity": "55%",
+              "strain_rate": "0.1 mm/min"
+            }
+          },
+          "rawdata": {
+            "type": "object",
+            "description": "Raw experimental data (included when includeRawData=true)",
+            "properties": {
+              "data": {
+                "type": "array",
+                "description": "Experimental data points"
+              },
+              "metadata": {
+                "type": "object",
+                "description": "Metadata about the data collection"
+              }
+            }
+          },
+          "isOriginalData": {
+            "type": "boolean",
+            "description": "Whether the returned data is original (unprocessed)",
+            "example": false
+          },
+          "recentChangeDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last modification date",
+            "example": "2024-03-15T14:20:00Z"
+          }
+        }
+      },
+      "ExperimentCreateRequest": {
+        "type": "object",
+        "required": [
+          "method",
+          "name",
+          "type",
+          "responsible"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "create"
+            ],
+            "description": "Action to perform",
+            "example": "create"
+          },
+          "name": {
+            "type": "string",
+            "description": "Experiment name",
+            "example": "Silk tensile strength study"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of experiment",
+            "example": "mechanical_test"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the experiment",
+            "example": "Testing the tensile strength of spider silk under various conditions"
+          },
+          "responsible": {
+            "type": "string",
+            "description": "ID of the user responsible for this experiment",
+            "example": "507f1f77bcf86cd799439013"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Experiment date",
+            "example": "2024-03-15"
+          },
+          "samples": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of sample IDs used in this experiment",
+            "example": [
+              "507f1f77bcf86cd799439012"
+            ]
+          },
+          "equipment": {
+            "type": "string",
+            "description": "Equipment used for the experiment",
+            "example": "Instron 5544"
+          },
+          "conditions": {
+            "type": "object",
+            "description": "Environmental or experimental conditions"
+          }
+        }
+      },
+      "ConfigItem": {
+        "type": "object",
+        "required": [
+          "value",
+          "label"
+        ],
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Unique identifier for the item",
+            "example": "animal"
+          },
+          "label": {
+            "type": "string",
+            "description": "Display name for the item",
+            "example": "Animal"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description",
+            "example": "Animal individual"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Optional unit (for traits)",
+            "example": "g"
+          },
+          "shortened": {
+            "type": "string",
+            "description": "Optional abbreviated form",
+            "example": "an"
+          }
+        }
+      },
+      "ConfigType": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "sampletypes",
+              "traittypes",
+              "equipmenttypes",
+              "samplesubtypes",
+              "silkcategories",
+              "siprefixes"
+            ],
+            "description": "Configuration type"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigItem"
+            }
+          },
+          "version": {
+            "type": "number",
+            "description": "Configuration version"
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedBy": {
+            "type": "string",
+            "description": "User who last modified"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Whether this is system default"
+          }
+        }
+      },
+      "CheckNameRequest": {
+        "type": "object",
+        "required": [
+          "taxa"
+        ],
+        "properties": {
+          "taxa": {
+            "type": "string",
+            "description": "Scientific name to check or validate",
+            "example": "Araneus diadematus"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "correctName",
+              "fullTaxaInfo"
+            ],
+            "default": "correctName",
+            "description": "Type of operation to perform",
+            "example": "correctName"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "WSC",
+              "GNR"
+            ],
+            "default": "auto",
+            "description": "Data source for name checking (WSC = World Spider Catalog, GNR = Global Names Resolver)",
+            "example": "auto"
+          }
+        }
+      },
+      "TaxonomicInfo": {
+        "type": "object",
+        "properties": {
+          "canonical_form": {
+            "type": "string",
+            "description": "Standardized scientific name",
+            "example": "Araneus diadematus"
+          },
+          "class": {
+            "type": "string",
+            "description": "Taxonomic class",
+            "example": "Arachnida"
+          },
+          "order": {
+            "type": "string",
+            "description": "Taxonomic order",
+            "example": "Araneae"
+          },
+          "family": {
+            "type": "string",
+            "description": "Taxonomic family",
+            "example": "Araneidae"
+          },
+          "genus": {
+            "type": "string",
+            "description": "Taxonomic genus",
+            "example": "Araneus"
+          },
+          "species": {
+            "type": "string",
+            "description": "Species epithet",
+            "example": "diadematus"
+          }
+        }
+      },
+      "CheckNameResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Corrected name (for correctName method)",
+                "example": "Araneus diadematus"
+              },
+              {
+                "$ref": "#/components/schemas/TaxonomicInfo"
+              }
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Data source used for the result",
+            "example": "WSC"
+          }
+        }
+      },
+      "UserControlResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "description": "Session user information from authentication provider",
+            "properties": {
+              "sub": {
+                "type": "string",
+                "description": "User identifier from Auth0",
+                "example": "auth0|507f1f77bcf86cd799439011"
+              },
+              "name": {
+                "type": "string",
+                "description": "User's display name",
+                "example": "John Doe"
+              },
+              "email": {
+                "type": "string",
+                "description": "User's email address",
+                "example": "john.doe@example.com"
+              }
+            }
+          },
+          "dbuser": {
+            "$ref": "#/components/schemas/User"
+          },
+          "needsIdentification": {
+            "type": "boolean",
+            "description": "Whether the user needs to complete profile setup",
+            "example": false
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "sessionAuth": []
+    }
+  ],
+  "paths": {
+    "/api/users": {
+      "get": {
+        "summary": "Retrieve all users",
+        "description": "Get a list of all users in the system. When not in auth mode, filters users by database access based on the current user's permissions.",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "auth",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Set to true to bypass database filtering (for authentication flows)",
+            "example": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create, update, or modify a user",
+        "description": "Handles multiple user operations based on the method field:\n- **create**: Create a new user account\n- **update**: Update an existing user's information\n- **setfield**: Update a specific field of a user\n- **delete**: Remove a user from the system\n",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/UserCreateRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UserUpdateRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UserFieldUpdateRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UserChangeDatabasesRequest"
+                  }
+                ]
+              },
+              "examples": {
+                "createUser": {
+                  "summary": "Create a new user",
+                  "value": {
+                    "method": "create",
+                    "name": "Dr. Jane Smith",
+                    "email": "jane.smith@university.edu",
+                    "institution": "University of Science",
+                    "role": "researcher",
+                    "databases": [
+                      "spiderdb"
+                    ]
+                  }
+                },
+                "updateUser": {
+                  "summary": "Update an existing user",
+                  "value": {
+                    "method": "update",
+                    "id": "507f1f77bcf86cd799439011",
+                    "name": "Dr. Jane Smith-Johnson",
+                    "role": "admin"
+                  }
+                },
+                "setUserField": {
+                  "summary": "Update a specific field",
+                  "value": {
+                    "method": "setfield",
+                    "field": "isActive",
+                    "value": false
+                  }
+                },
+                "changeDatabases": {
+                  "summary": "Change user's database access",
+                  "value": {
+                    "method": "change_databases",
+                    "id": "507f1f77bcf86cd799439011",
+                    "databases": [
+                      "spiderdb",
+                      "evolutiondb"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User operation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User updated successfully"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "User ID (for create operations)",
+                      "example": "507f1f77bcf86cd799439011"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found (for update/delete operations)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already exists (for create operations)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "summary": "Get current user information",
+        "description": "Retrieves the current authenticated user's profile information from the database",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "404": {
+            "description": "User not found in database"
+          },
+          "500": {
+            "description": "Database connection error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Update user information",
+        "description": "Updates specific fields in the current authenticated user's profile",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              },
+              "examples": {
+                "updateName": {
+                  "summary": "Update user name",
+                  "value": {
+                    "method": "setfield",
+                    "field": "name",
+                    "value": "Jane Doe"
+                  }
+                },
+                "updateEmail": {
+                  "summary": "Update user email",
+                  "value": {
+                    "method": "setfield",
+                    "field": "email",
+                    "value": "jane.doe@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid method or request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/role": {
+      "get": {
+        "summary": "Check current user's role",
+        "description": "Returns the current authenticated user's role information",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Role information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isAdmin": {
+                      "type": "boolean",
+                      "description": "Whether the user has admin role",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/traits": {
+      "get": {
+        "summary": "Retrieve trait measurements",
+        "description": "Get a list of trait measurements with optional filtering by type and optional inclusion of sample features for enhanced data analysis.",
+        "tags": [
+          "Traits"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeSampleFeatures",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include associated sample information in the response",
+            "example": true
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter traits by specific type",
+            "example": "silk_diameter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved traits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Trait"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create, update, or delete trait measurements",
+        "description": "Handles multiple trait operations based on the method field:\n- **create**: Add a new trait measurement\n- **update**: Modify an existing trait measurement\n- **delete**: Remove a trait measurement\n- **setfield**: Update a specific field of a trait\n",
+        "tags": [
+          "Traits"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/TraitCreateRequest"
+                  }
+                ]
+              },
+              "examples": {
+                "createTrait": {
+                  "summary": "Create a new trait measurement",
+                  "value": {
+                    "method": "create",
+                    "type": "silk_diameter",
+                    "sampleId": "507f1f77bcf86cd799439012",
+                    "responsible": "507f1f77bcf86cd799439013",
+                    "date": "2024-03-15",
+                    "measurement": 2.5,
+                    "unit": "μm",
+                    "equipment": "SEM",
+                    "nfibres": "1",
+                    "detail": "major ampullate silk",
+                    "notes": "Good quality sample"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Trait operation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Trait created successfully"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "Trait ID (for create operations)",
+                      "example": "507f1f77bcf86cd799439011"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Trait or sample not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "summary": "Get main settings",
+        "description": "Retrieve the main settings configuration including ID generation and lab info",
+        "tags": [
+          "Settings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Settings retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "idGeneration": {
+                          "type": "object",
+                          "properties": {
+                            "combinations": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            "defaultGenusLength": {
+                              "type": "number"
+                            },
+                            "defaultSpeciesLength": {
+                              "type": "number"
+                            },
+                            "startingNumber": {
+                              "type": "number"
+                            },
+                            "useCollisionAvoidance": {
+                              "type": "boolean"
+                            },
+                            "numberPadding": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "labInfo": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "location": {
+                              "type": "string"
+                            },
+                            "latitude": {
+                              "type": "number"
+                            },
+                            "longitude": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Update main settings",
+        "description": "Update the main settings configuration",
+        "tags": [
+          "Settings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idGeneration": {
+                    "type": "object",
+                    "properties": {
+                      "combinations": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "defaultGenusLength": {
+                        "type": "number"
+                      },
+                      "defaultSpeciesLength": {
+                        "type": "number"
+                      },
+                      "maxGenusLength": {
+                        "type": "number"
+                      },
+                      "maxSpeciesLength": {
+                        "type": "number"
+                      },
+                      "startingNumber": {
+                        "type": "number"
+                      },
+                      "useCollisionAvoidance": {
+                        "type": "boolean"
+                      },
+                      "numberPadding": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "labInfo": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Settings updated successfully"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/searchGBIFImage": {
+      "get": {
+        "summary": "Search for species images in GBIF",
+        "description": "Search the Global Biodiversity Information Facility (GBIF) database for images of species based on a query string.",
+        "tags": [
+          "Utilities"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Species name or search query",
+            "example": "Araneus diadematus"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully found image",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GBIFImageResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No images found for the query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No image results found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error accessing GBIF API",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to fetch from GBIF API"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/samples": {
+      "get": {
+        "summary": "Retrieve all samples",
+        "description": "Get a list of all samples in the database. Supports query parameters for filtering and pagination.",
+        "tags": [
+          "Samples"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "method",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "get-schema"
+              ]
+            },
+            "description": "Special method to get sample schema instead of data"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "animal",
+                "silk",
+                "other"
+              ]
+            },
+            "description": "Filter samples by type"
+          },
+          {
+            "in": "query",
+            "name": "family",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter samples by taxonomic family"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved samples",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sample"
+                  }
+                },
+                "examples": {
+                  "sample_list": {
+                    "summary": "Example sample list",
+                    "value": [
+                      {
+                        "_id": "507f1f77bcf86cd799439011",
+                        "name": "Araneus diadematus #42",
+                        "type": "animal",
+                        "family": "Araneidae",
+                        "genus": "Araneus",
+                        "species": "diadematus",
+                        "location": "Berlin, Germany",
+                        "date": "2024-03-15",
+                        "collector": "Dr. Smith"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create or update samples",
+        "description": "Create new samples, update existing ones, or perform bulk operations",
+        "tags": [
+          "Samples"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "update",
+                          "setfield",
+                          "incrementfield"
+                        ],
+                        "description": "Operation type"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Sample ID for update operations"
+                      },
+                      "field": {
+                        "type": "string",
+                        "description": "Field name to update"
+                      },
+                      "value": {
+                        "description": "New value for the field"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/components/schemas/Sample"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Sample"
+                    }
+                  }
+                ]
+              },
+              "examples": {
+                "create_sample": {
+                  "summary": "Create new sample",
+                  "value": {
+                    "name": "Nephila clavipes #15",
+                    "type": "animal",
+                    "family": "Araneidae",
+                    "genus": "Nephila",
+                    "species": "clavipes"
+                  }
+                },
+                "update_sample": {
+                  "summary": "Update existing sample",
+                  "value": {
+                    "method": "update",
+                    "id": "507f1f77bcf86cd799439011",
+                    "name": "Updated sample name"
+                  }
+                },
+                "set_field": {
+                  "summary": "Set specific field",
+                  "value": {
+                    "method": "setfield",
+                    "id": "507f1f77bcf86cd799439011",
+                    "field": "location",
+                    "value": "New location"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operation successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "insertedId": {
+                      "type": "string",
+                      "description": "ID of newly created sample"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sample": {
+      "post": {
+        "summary": "Retrieve a single sample",
+        "description": "Get a single sample by name, ID, or other query parameters using JSON body",
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Filter by sample name (exact match)",
+                    "example": "MACN-Ar 47148"
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Filter by sample ID",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "animal",
+                      "silk",
+                      "subsample",
+                      "other"
+                    ],
+                    "description": "Filter by sample type",
+                    "example": "animal"
+                  }
+                }
+              },
+              "examples": {
+                "by_name_and_type": {
+                  "summary": "Find animal by name",
+                  "value": {
+                    "name": "MACN-Ar 47148",
+                    "type": "animal"
+                  }
+                },
+                "by_id": {
+                  "summary": "Find by ID",
+                  "value": {
+                    "id": "507f1f77bcf86cd799439011"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sample found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sample"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "At least one query parameter (name, id, or type) is required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sample not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Sample not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Database connection failed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reversegeo": {
+      "post": {
+        "summary": "Reverse geocode coordinates to address",
+        "description": "Converts latitude and longitude coordinates to a human-readable address using OpenStreetMap's Nominatim service",
+        "tags": [
+          "Utilities"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseGeoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address found successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReverseGeoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON in request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bad request, JSON parsing error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No address found for the given coordinates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error fetching location data from OpenStreetMap",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Method not allowed",
+        "description": "GET method is not supported for this endpoint",
+        "tags": [
+          "Utilities"
+        ],
+        "responses": {
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Method not allowed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "summary": "Get system notifications",
+        "description": "Retrieves all current system notifications from an external JSON source with intelligent caching and fallback mechanisms.\n\n**Caching Strategy:**\n- Responses are cached for 2.5 minutes to improve performance\n- Fresh data is fetched from external source when cache expires\n- Cache is updated automatically on successful external fetch\n**Fallback Strategy:**\n1. External JSON source (currently hardcoded due to environment variable configuration issues)\n2. Cached data (even if expired) when external source fails\n3. Local notifications.json file as final fallback\n\n**Current Implementation Note:**\n- `NOTIFICATIONS_URL` is temporarily hardcoded to \"https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json\"\n- This is a temporary workaround due to environment variable configuration issues\n- Future versions should properly configure this as an environment variable\n",
+        "tags": [
+          "Utilities"
+        ],
+        "responses": {
+          "200": {
+            "description": "Notifications retrieved successfully from external source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notification"
+                  }
+                },
+                "examples": {
+                  "cached_response": {
+                    "summary": "Cached response (returned within 2.5 minutes)",
+                    "description": "Fast response from in-memory cache"
+                  },
+                  "fresh_response": {
+                    "summary": "Fresh response (after cache expiration)",
+                    "description": "New data fetched from external source"
+                  }
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial content - notifications retrieved from fallback source due to external source failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notification"
+                      }
+                    },
+                    "warning": {
+                      "type": "string",
+                      "description": "Warning message about fallback usage",
+                      "example": "Using cached data due to external source failure"
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Details about the original error",
+                      "example": "Failed to fetch notifications: 503"
+                    }
+                  }
+                },
+                "examples": {
+                  "cached_fallback": {
+                    "summary": "Using expired cached data",
+                    "description": "External source failed, returning stale cached data"
+                  },
+                  "local_fallback": {
+                    "summary": "Using local file fallback",
+                    "description": "External source failed and no cache available, using local file"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to fetch notifications from all sources (external, cache, and local fallback)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to fetch notifications"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modifyImage": {
+      "get": {
+        "summary": "Generate labeled QR code image",
+        "description": "Downloads a QR code image from a URL and adds text labels to the right side of the image",
+        "tags": [
+          "Utilities"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "qrcodeurl",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "URL of the QR code image to modify",
+            "example": "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Sample"
+          },
+          {
+            "in": "query",
+            "name": "labelwidth",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 400,
+              "minimum": 100,
+              "maximum": 1000
+            },
+            "description": "Width of the label area in pixels",
+            "example": 400
+          },
+          {
+            "in": "query",
+            "name": "label1",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "description": "First label text (truncated if longer than 12 characters)",
+            "example": "Sample ID: 001"
+          },
+          {
+            "in": "query",
+            "name": "label2",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "description": "Second label text (truncated if longer than 12 characters)",
+            "example": "Date: 2024-03-15"
+          },
+          {
+            "in": "query",
+            "name": "label3",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "description": "Third label text (truncated if longer than 12 characters)",
+            "example": "Location: Lab A"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Modified image with labels",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "image/png"
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to process image",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to process image"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/geocoding": {
+      "post": {
+        "summary": "Geocode location names to coordinates",
+        "description": "Convert location names or addresses to latitude/longitude coordinates using OpenStreetMap Nominatim service.",
+        "tags": [
+          "Utilities"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeocodingRequest"
+              },
+              "examples": {
+                "city": {
+                  "summary": "Geocode a city",
+                  "value": {
+                    "location": "Berlin, Germany"
+                  }
+                },
+                "address": {
+                  "summary": "Geocode a specific address",
+                  "value": {
+                    "location": "Brandenburg Gate, Berlin"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully geocoded location",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeocodingResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Location not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/files": {
+      "get": {
+        "summary": "Retrieve all files",
+        "description": "Get a list of all files stored in the system with their metadata.",
+        "tags": [
+          "Files"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved files",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/File"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Upload files",
+        "description": "Upload one or more files to the system. Files are stored with metadata and can be linked to specific entries.",
+        "tags": [
+          "Files"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Files to upload"
+                  },
+                  "entryType": {
+                    "type": "string",
+                    "description": "Type of entry to link files to",
+                    "example": "trait"
+                  },
+                  "deferredLink": {
+                    "type": "boolean",
+                    "description": "Whether to defer linking until later",
+                    "example": true
+                  },
+                  "mediaType": {
+                    "type": "string",
+                    "description": "Expected media type",
+                    "example": "image/jpeg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Files uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or file format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Upload or database error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/files/link": {
+      "post": {
+        "summary": "Link a file to an entry",
+        "description": "Links a file to a specific entry (sample, trait, or experiment).\nIf the file was temporary, it will be moved to the appropriate directory structure\nand marked as permanent. The entry's logbook will be updated with the linking action.\n",
+        "tags": [
+          "Files"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileLinkRequest"
+              },
+              "examples": {
+                "linkToSample": {
+                  "summary": "Link file to a sample",
+                  "value": {
+                    "fileId": "507f1f77bcf86cd799439011",
+                    "entryType": "sample",
+                    "entryId": "507f1f77bcf86cd799439012"
+                  }
+                },
+                "linkToExperiment": {
+                  "summary": "Link file to an experiment",
+                  "value": {
+                    "fileId": "507f1f77bcf86cd799439011",
+                    "entryType": "experiment",
+                    "entryId": "507f1f77bcf86cd799439013"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File linked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Missing required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File or entry not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "File not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error or file system error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to connect to database"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experiments": {
+      "get": {
+        "summary": "Retrieve experiments",
+        "description": "Get a list of experiments with optional inclusion of raw experimental data and filtering options.",
+        "tags": [
+          "Experiments"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeRawData",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include raw experimental data in the response",
+            "example": true
+          },
+          {
+            "in": "query",
+            "name": "includeOriginalData",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Include original (unprocessed) data instead of current data",
+            "example": false
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter experiments by type",
+            "example": "mechanical_test"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved experiments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Experiment"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create, update, or delete experiments",
+        "description": "Handles multiple experiment operations based on the method field:\n- **create**: Add a new experiment\n- **update**: Modify an existing experiment\n- **delete**: Remove an experiment\n- **addRawData**: Add raw data to an experiment\n- **processData**: Process raw experimental data\n",
+        "tags": [
+          "Experiments"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ExperimentCreateRequest"
+                  }
+                ]
+              },
+              "examples": {
+                "createExperiment": {
+                  "summary": "Create a new experiment",
+                  "value": {
+                    "method": "create",
+                    "name": "Silk tensile strength study",
+                    "type": "mechanical_test",
+                    "description": "Testing the tensile strength of spider silk",
+                    "responsible": "507f1f77bcf86cd799439013",
+                    "date": "2024-03-15",
+                    "samples": [
+                      "507f1f77bcf86cd799439012"
+                    ],
+                    "equipment": "Instron 5544"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Experiment operation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Experiment created successfully"
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "Experiment ID (for create operations)",
+                      "example": "507f1f77bcf86cd799439011"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Experiment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/experiment-parsers": {
+      "get": {
+        "summary": "Get available experiment parsers",
+        "description": "Returns a list of experiment types that have parsers available for automatic trait generation",
+        "tags": [
+          "Experiment Parsers"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of available parsers"
+          }
+        }
+      }
+    },
+    "/api/download": {
+      "get": {
+        "summary": "Download a file by ID",
+        "description": "Downloads a file from the server using its database ID. The file metadata is retrieved from the database and the actual file is served from the file system.",
+        "tags": [
+          "Files"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{24}$"
+            },
+            "description": "MongoDB ObjectId of the file to download",
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File downloaded successfully",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Attachment with original filename",
+                "example": "attachment; filename=\"data.csv\""
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "MIME type of the file",
+                "example": "text/csv"
+              }
+            }
+          },
+          "400": {
+            "description": "File ID is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "File ID is required."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found in database or on server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "File not found."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to connect to database"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs/dynamic": {
+      "get": {
+        "summary": "Get dynamically generated OpenAPI specification",
+        "description": "This endpoint uses swagger-jsdoc to automatically scan API route files and generate OpenAPI spec from JSDoc comments",
+        "tags": [
+          "Documentation"
+        ],
+        "responses": {
+          "200": {
+            "description": "OpenAPI specification generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Complete OpenAPI 3.0 specification"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/databases": {
+      "get": {
+        "summary": "Get available databases",
+        "description": "Retrieve list of available databases that can be assigned to users",
+        "tags": [
+          "Databases"
+        ],
+        "responses": {
+          "200": {
+            "description": "Database list retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "databases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "admin",
+                        "evonest",
+                        "spiderdb",
+                        "research"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Add a new database",
+        "description": "Add a new database to the available databases list (admin only)",
+        "tags": [
+          "Databases"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "database": {
+                    "type": "string",
+                    "description": "Database name to add",
+                    "example": "newproject"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Database added successfully"
+          },
+          "400": {
+            "description": "Invalid request or database already exists"
+          },
+          "403": {
+            "description": "Access denied (admin only)"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/config/types": {
+      "get": {
+        "summary": "Retrieve configuration",
+        "description": "Get all configuration types or a specific type",
+        "tags": [
+          "Configuration"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "sampletypes",
+                "traittypes",
+                "equipmenttypes",
+                "samplesubtypes",
+                "silkcategories",
+                "siprefixes"
+              ]
+            },
+            "description": "Specific configuration type to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ConfigType"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ConfigType"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database connection error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create or update configuration",
+        "description": "Handle configuration operations:\n- **create**: Create new configuration type\n- **update**: Update entire configuration type\n- **additem**: Add single item to configuration\n- **updateitem**: Update single item in configuration\n- **deleteitem**: Remove single item from configuration\n- **seed**: Initialize with default data\n",
+        "tags": [
+          "Configuration"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "create",
+                          "update",
+                          "additem",
+                          "updateitem",
+                          "deleteitem",
+                          "seed"
+                        ]
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "sampletypes",
+                          "traittypes",
+                          "equipmenttypes",
+                          "samplesubtypes",
+                          "silkcategories",
+                          "siprefixes"
+                        ]
+                      },
+                      "data": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/ConfigItem"
+                        }
+                      },
+                      "item": {
+                        "$ref": "#/components/schemas/ConfigItem"
+                      },
+                      "oldValue": {
+                        "type": "string",
+                        "description": "For updateitem - the current value to update"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operation successful"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/config/types/seed": {
+      "post": {
+        "summary": "Seed database with default configurations",
+        "description": "Initialize the config collection with default type configurations",
+        "tags": [
+          "Configuration"
+        ],
+        "responses": {
+          "200": {
+            "description": "Database seeded successfully"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/checknames": {
+      "get": {
+        "summary": "Check API status",
+        "description": "Simple health check endpoint for the taxonomic name checking service",
+        "tags": [
+          "Utilities"
+        ],
+        "responses": {
+          "200": {
+            "description": "API is working",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "checkname API working"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Validate and correct taxonomic names",
+        "description": "Validates and corrects scientific names using various taxonomic databases.\nSupports two methods:\n- **correctName**: Returns the corrected/standardized name\n- **fullTaxaInfo**: Returns complete taxonomic hierarchy information\n\nData sources:\n- **WSC**: World Spider Catalog (spider-specific)\n- **GNR**: Global Names Resolver (general taxa)\n- **auto**: Tries WSC first, falls back to GNR\n",
+        "tags": [
+          "Utilities"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckNameRequest"
+              },
+              "examples": {
+                "correctName": {
+                  "summary": "Correct a scientific name",
+                  "value": {
+                    "taxa": "Araneus diadematus",
+                    "method": "correctName",
+                    "source": "auto"
+                  }
+                },
+                "fullTaxaInfo": {
+                  "summary": "Get complete taxonomic information",
+                  "value": {
+                    "taxa": "Araneus diadematus",
+                    "method": "fullTaxaInfo",
+                    "source": "GNR"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Name validation successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckNameResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error during name validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "description": "Error details"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/usercontrol": {
+      "get": {
+        "summary": "Get user authentication and profile status",
+        "description": "Retrieves the current user's authentication status and database profile information.\nUsed to determine if a user needs to complete their profile setup after authentication.\n",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User control information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserControlResponse"
+                },
+                "examples": {
+                  "existingUser": {
+                    "summary": "User with complete profile",
+                    "value": {
+                      "user": {
+                        "sub": "auth0|507f1f77bcf86cd799439011",
+                        "name": "John Doe",
+                        "email": "john.doe@example.com"
+                      },
+                      "dbuser": {
+                        "_id": "507f1f77bcf86cd799439012",
+                        "auth0id": "auth0|507f1f77bcf86cd799439011",
+                        "name": "John Doe",
+                        "email": "john.doe@example.com"
+                      },
+                      "needsIdentification": false
+                    }
+                  },
+                  "newUser": {
+                    "summary": "User needing profile setup",
+                    "value": {
+                      "user": {
+                        "sub": "auth0|507f1f77bcf86cd799439011",
+                        "name": "Jane Smith",
+                        "email": "jane.smith@example.com"
+                      },
+                      "needsIdentification": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated"
+          },
+          "500": {
+            "description": "Database connection error"
+          }
+        }
+      }
+    }
+  }
+}
