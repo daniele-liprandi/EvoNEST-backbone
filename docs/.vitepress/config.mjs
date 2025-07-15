@@ -23,7 +23,7 @@ export default defineConfig({
       { text: 'Getting Started', link: '/getting-started/' },
       { text: 'User Guide', link: '/user-guide/' },
       { text: 'Developer Guide', link: '/developer-guide/' },
-      { text: 'API Docs', link: 'https://your-api-docs-url.com' } // Link to your Swagger/Redoc
+      { text: 'API Docs', link: '/api-docs.html' } // Link to static API docs
     ],
 
     sidebar: {

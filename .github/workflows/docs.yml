@@ -2,11 +2,11 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [ main ]
-    paths: [ 'docs/**' ]
+    branches: [ main, test-docs-workflow ]  # Add your test branch here
+    paths: [ 'docs/**', 'src/app/api/**' ]
   pull_request:
     branches: [ main ]
-    paths: [ 'docs/**' ]
+    paths: [ 'docs/**', 'src/app/api/**' ]
   workflow_dispatch:
 
 permissions:
@@ -41,6 +41,21 @@ jobs:
           rm -rf node_modules package-lock.json
           npm install --force
         working-directory: docs
+
+      - name: Install main project dependencies for API spec generation
+        run: |
+          npm install swagger-jsdoc redoc-cli --save-dev
+        working-directory: .
+
+      - name: Generate OpenAPI spec
+        run: |
+          node scripts/generate-openapi-spec.js
+        working-directory: .
+
+      - name: Generate static API docs with Redoc
+        run: |
+          npx redoc-cli build openapi-spec.json --output docs/public/api-docs.html --title "EvoNEST API Documentation"
+        working-directory: .
 
       - name: Build documentation
         run: npm run docs:build
