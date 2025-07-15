@@ -9,8 +9,7 @@
 const swaggerJSDoc = require('swagger-jsdoc');
 const path = require('path');
 
-console.log('🔄 Generating OpenAPI specification...');
-console.log('📂 Current working directory:', process.cwd());
+console.log('Generating OpenAPI specification...');
 
 // Check if API files exist
 const fs = require('fs');
@@ -22,13 +21,14 @@ const apiFiles = [
   './src/app/api/**/route.ts',
 ];
 
-console.log('🔍 Looking for API files...');
+// Get all matching files
+const allFiles = [];
 apiFiles.forEach(pattern => {
   const files = glob.sync(pattern);
-  console.log(`Pattern: ${pattern} - Found ${files.length} files`);
-  files.forEach(file => console.log(`  - ${file}`));
+  allFiles.push(...files);
 });
 
+console.log(`Found ${allFiles.length} API files to process`);
 // swagger-jsdoc configuration (matches your API route)
 const options = {
   definition: {
@@ -129,10 +129,8 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
 };
 
 try {
-  console.log('📁 Final API files to scan:', options.apis);
-  
   if (options.apis.length === 0) {
-    console.log('⚠️  No API files found. Creating minimal spec...');
+    console.log('No API files found. Creating minimal spec...');
     const minimalSpec = {
       ...options.definition,
       paths: {},
@@ -142,31 +140,27 @@ try {
     // Write minimal specification
     const outputPath = path.join(process.cwd(), 'openapi-spec.json');
     fs.writeFileSync(outputPath, JSON.stringify(minimalSpec, null, 2));
-    console.log('✅ Minimal OpenAPI specification generated!');
+    console.log('Minimal OpenAPI specification generated!');
     return;
   }
 
-  // Test each file individually to find the problematic one
-  console.log('🧪 Testing each API file individually...');
+  // Test each file individually to find problematic ones
   const workingFiles = [];
   
   for (const file of options.apis) {
     try {
-      console.log(`  Testing: ${file}`);
       const testOptions = {
         ...options,
         apis: [file]
       };
       swaggerJSDoc(testOptions);
       workingFiles.push(file);
-      console.log(`  ✅ ${file} - OK`);
     } catch (error) {
-      console.log(`  ❌ ${file} - FAILED: ${error.message}`);
-      console.log(`     Skipping this file for now...`);
+      console.log(`Warning: Skipping ${file} due to parsing error: ${error.message}`);
     }
   }
   
-  console.log(`\n📊 Summary: ${workingFiles.length}/${options.apis.length} files parsed successfully`);
+  console.log(`Processing ${workingFiles.length}/${options.apis.length} files successfully`);
   
   // Generate spec with working files only
   const finalOptions = {
@@ -174,10 +168,9 @@ try {
     apis: workingFiles
   };
   
-  console.log('🔨 Generating OpenAPI specification with working files...');
   const swaggerSpec = swaggerJSDoc(finalOptions);
   
-  // Add some generation metadata
+  // Add generation metadata
   swaggerSpec.info.generatedAt = new Date().toISOString();
   swaggerSpec.info['x-generator'] = 'swagger-jsdoc (static build)';
   swaggerSpec.info['x-source'] = 'JSDoc comments in API route files';
@@ -187,22 +180,20 @@ try {
   const outputPath = path.join(process.cwd(), 'openapi-spec.json');
   fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2));
   
-  console.log('✅ OpenAPI specification generated successfully!');
-  console.log(`📁 Output: ${outputPath}`);
-  console.log(`📊 Found ${Object.keys(swaggerSpec.paths || {}).length} API endpoints`);
-  console.log(`🏗️  Found ${Object.keys(swaggerSpec.components?.schemas || {}).length} schema definitions`);
-  console.log(`📝 Processed ${workingFiles.length} API files`);
+  console.log('OpenAPI specification generated successfully!');
+  console.log(`Output: ${outputPath}`);
+  console.log(`Found ${Object.keys(swaggerSpec.paths || {}).length} API endpoints`);
+  console.log(`Found ${Object.keys(swaggerSpec.components?.schemas || {}).length} schema definitions`);
   
   if (workingFiles.length < options.apis.length) {
-    console.log(`⚠️  Warning: ${options.apis.length - workingFiles.length} files were skipped due to parsing errors`);
+    console.log(`Warning: ${options.apis.length - workingFiles.length} files were skipped due to parsing errors`);
   }
 
 } catch (error) {
-  console.error('❌ Error generating OpenAPI specification:', error);
-  console.error('📍 Error details:', error.stack);
+  console.error('Error generating OpenAPI specification:', error.message);
   
   // Try to create a minimal spec as fallback
-  console.log('🔄 Attempting to create minimal fallback spec...');
+  console.log('Attempting to create minimal fallback spec...');
   try {
     const fallbackSpec = {
       ...options.definition,
@@ -216,10 +207,10 @@ try {
     
     const outputPath = path.join(process.cwd(), 'openapi-spec.json');
     fs.writeFileSync(outputPath, JSON.stringify(fallbackSpec, null, 2));
-    console.log('✅ Fallback OpenAPI specification created');
+    console.log('Fallback OpenAPI specification created');
     process.exit(0); // Exit successfully with fallback
   } catch (fallbackError) {
-    console.error('❌ Failed to create fallback spec:', fallbackError);
+    console.error('Failed to create fallback spec:', fallbackError.message);
     process.exit(1);
   }
 }
