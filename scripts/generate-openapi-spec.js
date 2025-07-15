@@ -11,6 +11,24 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('🔄 Generating OpenAPI specification...');
+console.log('📂 Current working directory:', process.cwd());
+
+// Check if API files exist
+const fs = require('fs');
+const glob = require('glob');
+
+// Find API files
+const apiFiles = [
+  './src/app/api/**/route.js',
+  './src/app/api/**/route.ts',
+];
+
+console.log('🔍 Looking for API files...');
+apiFiles.forEach(pattern => {
+  const files = glob.sync(pattern);
+  console.log(`Pattern: ${pattern} - Found ${files.length} files`);
+  files.forEach(file => console.log(`  - ${file}`));
+});
 
 // swagger-jsdoc configuration (matches your API route)
 const options = {
@@ -108,13 +126,27 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
     ]
   },
   // Scan all API routes for JSDoc comments
-  apis: [
-    './src/app/api/**/route.js',
-    './src/app/api/**/route.ts',
-  ],
+  apis: apiFiles.flatMap(pattern => glob.sync(pattern)),
 };
 
 try {
+  console.log('📁 Final API files to scan:', options.apis);
+  
+  if (options.apis.length === 0) {
+    console.log('⚠️  No API files found. Creating minimal spec...');
+    const minimalSpec = {
+      ...options.definition,
+      paths: {},
+      components: { schemas: {} }
+    };
+    
+    // Write minimal specification
+    const outputPath = path.join(process.cwd(), 'openapi-spec.json');
+    fs.writeFileSync(outputPath, JSON.stringify(minimalSpec, null, 2));
+    console.log('✅ Minimal OpenAPI specification generated!');
+    return;
+  }
+
   // Generate OpenAPI specification
   const swaggerSpec = swaggerJSDoc(options);
   

@@ -44,7 +44,7 @@ jobs:
 
       - name: Install main project dependencies for API spec generation
         run: |
-          npm install swagger-jsdoc redoc-cli --save-dev
+          npm install swagger-jsdoc redoc-cli glob --save-dev
         working-directory: .
 
       - name: Generate OpenAPI spec
