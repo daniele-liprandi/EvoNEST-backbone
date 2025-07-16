@@ -35,7 +35,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'EvoNEST API',
-      version: '1.0.0',
+      version: '1.1.0',
       description: `
 # EvoNEST API Documentation
 
@@ -60,19 +60,18 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
       `,
       contact: {
         name: 'Daniele Liprandi',
-        email: 'daniele.liprandi@uni-greifswald.de',
-        url: 'https://evonest.zoologie.uni-greifswald.de'
+        email: 'daniele.liprandi@gmail.com',
+        url: 'https://github.com/daniele-liprandi/EvoNEST-backbone'
       },
       license: {
-        name: 'MIT',
-        url: 'https://opensource.org/licenses/MIT'
+        name: 'GNU Affero General Public License v3.0',
+        url: 'https://opensource.org/licenses/AGPL-3.0'
       },
-      termsOfService: 'https://evonest.zoologie.uni-greifswald.de/terms'
     },
     servers: [
       {
-        url: 'https://evonest.zoologie.uni-greifswald.de',
-        description: 'Production server'
+        url: 'http://localhost:3000/api',
+        description: 'Development server'
       }
     ],
     tags: [
