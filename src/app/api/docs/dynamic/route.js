@@ -29,11 +29,13 @@ export async function GET() {
           title: "EvoNEST API",
           version: "1.1.0",
           description: `
+# EvoNEST General Documentation
+
+**The EvoNEST User Guide and the EvoNEST Developer Guide are found here**: https://daniele-liprandi.github.io/EvoNEST-backbone/
+
 # EvoNEST API Documentation
 
 The EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.
-
-**Documentation**: https://daniele-liprandi.github.io/EvoNEST-backbone/
 
 ## Features
 
