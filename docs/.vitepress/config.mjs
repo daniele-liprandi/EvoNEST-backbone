@@ -23,7 +23,11 @@ export default defineConfig({
       { text: 'Getting Started', link: '/getting-started/' },
       { text: 'User Guide', link: '/user-guide/' },
       { text: 'Developer Guide', link: '/developer-guide/' },
-      { text: 'API Docs', link: '/api-docs.html' } // Files in public/ are served at root
+      { 
+        text: 'API Docs', 
+        link: '/api-docs.html',
+        target: '_self'
+      }
     ],
 
     sidebar: {
