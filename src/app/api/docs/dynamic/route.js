@@ -1,6 +1,6 @@
-import swaggerJSDoc from 'swagger-jsdoc';
-import { NextResponse } from 'next/server';
-import path from 'path';
+import swaggerJSDoc from "swagger-jsdoc";
+import { NextResponse } from "next/server";
+import path from "path";
 
 /**
  * @swagger
@@ -20,17 +20,20 @@ import path from 'path';
  *               description: Complete OpenAPI 3.0 specification
  */
 export async function GET() {
-  try {    // swagger-jsdoc configuration
+  try {
+    // swagger-jsdoc configuration
     const options = {
       definition: {
-        openapi: '3.0.0',
+        openapi: "3.0.0",
         info: {
-          title: 'EvoNEST API',
-          version: '1.0.0',
+          title: "EvoNEST API",
+          version: "1.1.0",
           description: `
 # EvoNEST API Documentation
 
 The EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.
+
+[EvoNEST Full Documentation](https://daniele-liprandi.github.io/EvoNEST-backbone/)
 
 ## Features
 
@@ -50,101 +53,103 @@ Most endpoints require proper authentication and database access permissions.
 All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601 format.
           `,
           contact: {
-            name: 'Daniele Liprandi',
-            email: 'daniele.liprandi@uni-greifswald.de',
-            url: 'https://evonest.zoologie.uni-greifswald.de'
+            name: "Daniele Liprandi",
+            email: "daniele.liprandi@gmail.com",
+            url: "https://github.com/daniele-liprandi/EvoNEST-backbone",
           },
           license: {
-            name: 'MIT',
-            url: 'https://opensource.org/licenses/MIT'
+            name: "GNU Affero General Public License v3.0",
+            url: "https://opensource.org/licenses/AGPL-3.0",
           },
-          termsOfService: 'https://evonest.zoologie.uni-greifswald.de/terms'
         },
         servers: [
           {
-            url: process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 'https://evonest.zoologie.uni-greifswald.de',
-            description: process.env.NODE_ENV === 'development' ? 'Development server' : 'Production server'
-          }
+            url:
+              process.env.NODE_ENV === "development"
+                ? "http://localhost:3005"
+                : "http://localhost:3000",
+            description:
+              process.env.NODE_ENV === "development"
+                ? "Development server"
+                : "Production server",
+          },
         ],
         tags: [
           {
-            name: 'Users',
-            description: 'User account management and authentication'
+            name: "Users",
+            description: "User account management and authentication",
           },
           {
-            name: 'Samples',
-            description: 'Biological sample management and taxonomic data'
+            name: "Samples",
+            description: "Biological sample management and taxonomic data",
           },
           {
-            name: 'Traits',
-            description: 'Trait measurements and statistical analysis'
+            name: "Traits",
+            description: "Trait measurements and statistical analysis",
           },
           {
-            name: 'Experiments',
-            description: 'Experimental procedures and raw data management'
+            name: "Experiments",
+            description: "Experimental procedures and raw data management",
           },
           {
-            name: 'Files',
-            description: 'File upload, storage, and metadata management'
+            name: "Files",
+            description: "File upload, storage, and metadata management",
           },
           {
-            name: 'Utilities',
-            description: 'Helper functions for geocoding, image search, and data processing'
-          }
+            name: "Utilities",
+            description:
+              "Helper functions for geocoding, image search, and data processing",
+          },
         ],
         components: {
           securitySchemes: {
             bearerAuth: {
-              type: 'http',
-              scheme: 'bearer',
-              bearerFormat: 'JWT'
+              type: "http",
+              scheme: "bearer",
+              bearerFormat: "JWT",
             },
             sessionAuth: {
-              type: 'apiKey',
-              in: 'cookie',
-              name: 'session'
-            }
-          }
+              type: "apiKey",
+              in: "cookie",
+              name: "session",
+            },
+          },
         },
         security: [
           {
-            bearerAuth: []
+            bearerAuth: [],
           },
           {
-            sessionAuth: []
-          }
-        ]
+            sessionAuth: [],
+          },
+        ],
       },
       // Automatically scan all API routes
-      apis: [
-        './src/app/api/**/route.js',
-        './src/app/api/**/route.ts',
-      ],
+      apis: ["./src/app/api/**/route.js", "./src/app/api/**/route.ts"],
     };
 
     // Generate OpenAPI specification
     const swaggerSpec = swaggerJSDoc(options);
-    
+
     // Add some runtime information
     swaggerSpec.info.generatedAt = new Date().toISOString();
-    swaggerSpec.info['x-generator'] = 'swagger-jsdoc';
-    swaggerSpec.info['x-source'] = 'JSDoc comments in API route files';
+    swaggerSpec.info["x-generator"] = "swagger-jsdoc";
+    swaggerSpec.info["x-source"] = "JSDoc comments in API route files";
 
     return NextResponse.json(swaggerSpec, {
       headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
-      }
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+      },
     });
-
   } catch (error) {
-    console.error('Error generating OpenAPI spec:', error);
+    console.error("Error generating OpenAPI spec:", error);
     return NextResponse.json(
-      { 
-        error: 'Failed to generate OpenAPI specification', 
+      {
+        error: "Failed to generate OpenAPI specification",
         details: error.message,
-        timestamp: new Date().toISOString()
-      }, 
+        timestamp: new Date().toISOString(),
+      },
       { status: 500 }
     );
   }
