@@ -70,11 +70,11 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/daniele-liprandi/EvoNext' } // Update with your repo
+      { icon: 'github', link: 'https://github.com/daniele-liprandi/EvoNEST-backbone' } // Update with your repo
     ],
 
     footer: {
-      message: 'Released under the MIT License.',
+      message: 'Released under the AGPL License.',
     },
 
     search: {
