@@ -62,8 +62,9 @@ export default defineConfig({
           text: 'Developer Guide',
           items: [
             { text: 'Overview', link: '/developer-guide/' },
-            { text: 'Experiment Parser Development', link: '/developer-guide/experiment-parser-development' },
             { text: 'Custom Card Development', link: '/developer-guide/component-development' },
+            { text: 'Data Format Parser Development', link: '/developer-guide/data-format-parser-development' },
+            { text: 'File Processor Development', link: '/developer-guide/file-processor-development' },
           ]
         }
       ]
