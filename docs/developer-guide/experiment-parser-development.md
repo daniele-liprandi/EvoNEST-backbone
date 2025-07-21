@@ -91,7 +91,7 @@ When users upload experiment data files, they should follow this structure:
 
 ```json
 {
-  "includedData": {
+  "dataFields": {
     "YourRequiredField1": [1, 2, 3, 4, 5],
     "YourRequiredField2": [10, 20, 30, 40, 50],
     "OptionalField": [100, 200, 300, 400, 500]
@@ -104,7 +104,7 @@ When users upload experiment data files, they should follow this structure:
 }
 ```
 
-The `includedData` object contains the raw measurements your parser will process. The `metadata` array can contain additional information about the experiment.
+The `dataFields` object contains the raw measurements your parser will process. The `metadata` array can contain additional information about the experiment.
 
 ## Available Methods from BaseExperimentParser
 
@@ -118,7 +118,7 @@ const avgValue = this.extractValue(dataArray, 'avg');
 const sumValue = this.extractValue(dataArray, 'sum');
 
 // Check for required fields
-const fieldCheck = this.checkRequiredFields(fileData.includedData, ['Wavelength', 'Intensity']);
+const fieldCheck = this.checkRequiredFields(fileData.dataFields, ['Wavelength', 'Intensity']);
 if (!fieldCheck.success) {
     // Handle missing fields
 }
@@ -196,7 +196,7 @@ experimentData = {
 }
 
 fileData = {
-    includedData: {
+    dataFields: {
         // Raw measurement data
         MyDataField1: [1, 2, 3, 4, 5],
         MyDataField2: [10, 20, 30, 40, 50],
@@ -249,11 +249,11 @@ Your parser should return:
 
 ```javascript
 extractTemperature(fileData) {
-    if (!fileData.includedData || !fileData.includedData.Temperature) {
+    if (!fileData.dataFields || !fileData.dataFields.Temperature) {
         return null;
     }
     
-    return this.extractValue(fileData.includedData.Temperature, 'avg');
+    return this.extractValue(fileData.dataFields.Temperature, 'avg');
 }
 ```
 
@@ -261,7 +261,7 @@ extractTemperature(fileData) {
 
 ```javascript
 calculateRatio(fileData) {
-    const { Signal1, Signal2 } = fileData.includedData;
+    const { Signal1, Signal2 } = fileData.dataFields;
     
     if (!Signal1 || !Signal2 || Signal1.length !== Signal2.length) {
         return null;
@@ -318,11 +318,11 @@ validate(experimentData, fileData) {
     const errors = [];
     
     // Check specific requirements
-    if (!fileData.includedData?.MyRequiredField) {
+    if (!fileData.dataFields?.MyRequiredField) {
         errors.push('MyRequiredField is required for this experiment type');
     }
     
-    if (fileData.includedData?.MyField?.length < 10) {
+    if (fileData.dataFields?.MyField?.length < 10) {
         errors.push('MyField must have at least 10 data points');
     }
 

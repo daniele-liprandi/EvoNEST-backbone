@@ -307,15 +307,15 @@ export function NavBar() {
           {/*link to utils*/}
           
           <NavigationMenuItem>
-            <NavigationMenuTrigger>API Docs</NavigationMenuTrigger>
+            <NavigationMenuTrigger>Documentation</NavigationMenuTrigger>
             <NavigationMenuContent className="z-40">
               <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-1">
                 <ListItem
-                  title="API Docs"
-                  href="/api-docs"
+                  title="Documentation"
+                  href="https://daniele-liprandi.github.io/EvoNEST-backbone/"
                   className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
-                  Documentation for the NEST API
+                  EvoNEST Documentation
                 </ListItem>
               </ul>
             </NavigationMenuContent>

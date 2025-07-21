@@ -1,3 +1,14 @@
+/*
+profile-form-experiments.tsx
+
+This form is spawned by smart-vaul.tsx
+
+This form is used to upload new files, and create the required experiment entry and the possible traits entry.
+
+
+
+*/
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
@@ -7,7 +18,6 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getSampleIdbyName } from "@/hooks/sampleHooks"
 import { useEffect, useState } from 'react'
-
 import {
     Form,
     FormControl, FormField,
@@ -17,24 +27,26 @@ import {
 import InfoHover from "@/components/ui/custom/info-hover"
 import { Input } from "@/components/ui/input"
 import { getUserIdByName } from "@/hooks/userHooks"
-import { useExperimentParsers, useParserValidation } from "@/hooks/useExperimentParsers"
+import { 
+    getSupportedTypes, 
+    checkParserSupport, 
+    getParserInfo, 
+    getUniqueParserOptions,
+    validateExperimentType 
+} from "@/utils/file-management/experimentTypeDiscovery"
 import { prepend_path } from "@/lib/utils"
 import { toast } from "sonner"
 import { mutate } from "swr"
-import { ExperimentFormValues, experimentFormSchema, handleFileSubmission } from "@/utils/file-processors"
+import { ExperimentFormValues, experimentFormSchema, handleFileSubmission } from "@/utils/file-management/extension-processors"
 import { Button } from "@/components/ui/button"
 import { linkFileToEntry, uploadFile } from "@/utils/handlers/fileHandlers"
 import { ParserPreview } from "./ParserPreview"
+import { DataFormatPreview } from "./DataFormatPreview"
 
 export function ProfileFormExperiments({ users, samples, user, experiments, defaultFileList }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList }) {
     const [allFileData, setAllFileData] = useState<Array<Partial<ExperimentFormValues>>>([]);
     const [files, setFiles] = useState<FileList | null>(null);
     const [checkSaveFile, setCheckSaveFile] = useState(true);
-    const [largeFile, setLargeFile] = useState(false);
-
-    // Parser system hooks
-    const { getParserSupportedTypes, checkParserSupport, getParserInfo, getUniqueParserOptions } = useExperimentParsers();
-    const { validateExperimentType } = useParserValidation();
 
     console.log(user);
 
@@ -51,6 +63,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
     const form = useForm<z.infer<typeof experimentFormSchema>>({
         resolver: zodResolver(experimentFormSchema),
         defaultValues: defaultValues,
+        mode: "onChange", // This makes validation happen immediately when fields change
     })
     const [formState, setFormState] = useState(form.getValues());
 
@@ -59,12 +72,11 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
         control: form.control,
         name: "type",
     });
-
     useEffect(() => {
         if (defaultFileList) {
             processDefaultFileList(defaultFileList);
         }
-    }, [defaultFileList]);
+    });
 
     let existingNames: string[];
 
@@ -98,15 +110,32 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
             const validationErrors: string[] = [];
             
             allFileData.forEach((fileValues, index) => {
+                const fileName = fileValues.filename || `File ${index + 1}`;
                 const validation = validateExperimentType(formValues.type, fileValues);
                 if (!validation.valid) {
-                    validationErrors.push(`File ${index + 1}: ${validation.message}`);
+                    validationErrors.push(`${fileName}: ${validation.message}`);
                 }
+                
+                // Only validate structured data format if experimentData exists
+                if (fileValues.dataFields && fileValues.dataFields.experimentData) {
+                    // Check for required experimentData structure
+                    if (!fileValues.dataFields.experimentData.name) {
+                        validationErrors.push(`${fileName}: Missing experiment name in parsed data`);
+                    }
+                    if (!fileValues.dataFields.experimentData.type) {
+                        validationErrors.push(`${fileName}: Missing experiment type in parsed data`);
+                    }
+                    if (!fileValues.dataFields.format) {
+                        validationErrors.push(`${fileName}: Missing format information in parsed data`);
+                    }
+                }
+                // Remove the strict requirement for structured data - let parsers handle their own validation
             });
 
             if (validationErrors.length > 0) {
                 toast.error("Data Validation Failed", {
-                    description: validationErrors.join('\n')
+                    description: validationErrors.join('\n'),
+                    duration: 6000
                 });
                 return;
             }
@@ -116,22 +145,52 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
             // Submit experiment data for each file
             const experimentRequests = allFileData.map(async (fileValues) => {
 
-                let experimentData = {
-                    name: formValues.name,
-                    responsible: formValues.responsible,
-                    sampleId: formValues.sampleId,
-                    notes: formValues.notes,
-                    filepath: formValues.filepath,
-                    ...fileValues,
-                    type: formValues.type,  
-                };
+                let experimentData;
 
-                // ensure sampleId is from form
-                experimentData.sampleId = formValues.sampleId;
+                // Extract experimentData from parsed results for structured data types
+                if (fileValues.dataFields && fileValues.dataFields.experimentData) {
+                    // Extract the properly structured experiment data from parsers
+                    experimentData = { ...fileValues.dataFields.experimentData };
+                    
+                    // Override critical fields from the form - these always take precedence
+                    experimentData.responsible = formValues.responsible;
+                    experimentData.sampleId = formValues.sampleId; // Form selection overrides parsed specimen
+                    
+                    // Override other form fields if they have values
+                    if (formValues.notes) experimentData.notes = formValues.notes;
+                    if (formValues.filepath) experimentData.filepath = formValues.filepath;
+                    
+                    // For multiple files, use individual file names but keep form sampleId
+                    if (allFileData.length > 1 && fileValues.name) {
+                        experimentData.name = fileValues.name;
+                        // Note: We don't override sampleId here - form selection takes precedence
+                    } else {
+                        // For single file, use form name
+                        experimentData.name = formValues.name;
+                    }
+                    
+                    // Ensure experiment type matches form selection
+                    experimentData.type = formValues.type;
+                    
+                } else {
+                    // Fallback for non-structured data (images, documents)
+                    experimentData = {
+                        name: formValues.name,
+                        responsible: formValues.responsible,
+                        sampleId: formValues.sampleId,
+                        notes: formValues.notes,
+                        filepath: formValues.filepath,
+                        ...fileValues,
+                        type: formValues.type,  
+                    };
 
-                if (allFileData.length > 1 && fileValues.name) {
-                    experimentData.name = fileValues.name;
-                    experimentData.sampleId = fileValues.sampleId;
+                    // ensure sampleId is from form
+                    experimentData.sampleId = formValues.sampleId;
+
+                    if (allFileData.length > 1 && fileValues.name) {
+                        experimentData.name = fileValues.name;
+                        experimentData.sampleId = fileValues.sampleId;
+                    }
                 }
 
                 if (files && checkSaveFile) {
@@ -151,19 +210,19 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                     }
                 }
 
-                if (formValues.type === "image" && fileValues.type === 'image' && fileValues.includedData instanceof Blob) {
+                if (formValues.type === "image" && fileValues.type === 'image' && fileValues.dataFields instanceof Blob) {
                     console.log("Experiment data bef:", experimentData);
                     experimentData.sampleId = formValues.sampleId;
                     console.log("Experiment data aft:", experimentData);
                     return new Promise<void>((resolve, reject) => {
                         const reader = new FileReader();
-                        reader.readAsDataURL(fileValues.includedData);
+                        reader.readAsDataURL(fileValues.dataFields);
                         reader.onloadend = async function () {
                             const base64data = reader.result as string;
                             // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
                             const base64Image = base64data.split(',')[1];
 
-                            experimentData.includedData = base64Image;
+                            experimentData.dataFields = base64Image;
 
                             try {
                                 const experimentResponse = await fetch(endpointexperiment, {
@@ -231,10 +290,8 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                         console.error("Error uploading file:", error);
                         toast.error("Failed to upload file");
                     }
-                } else if (checkParserSupport(formValues.type) && fileValues.type === 'experiment_data') {
-                    // Handle experiment data with parser support (JSON files with experiment data)
-                    experimentData.sampleId = formValues.sampleId;
-                    
+                } else if (fileValues.dataFields && fileValues.dataFields.experimentData) {
+                    // Handle structured experiment data with embedded traits
                     try {
                         const experimentResponse = await fetch(endpointexperiment, {
                             method: "POST",
@@ -248,8 +305,9 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                         if (!experimentResponse.ok) {
                             const errorData = await experimentResponse.json();
                             toast.error("Error!", {
-                                description: errorData.error || "Error submitting experiment.",
+                                description: errorData.error || "Error submitting structured experiment data.",
                             });
+                            throw new Error(errorData.error || "Error submitting structured experiment data.");
                         } else {
                             const result = await experimentResponse.json();
                             
@@ -258,11 +316,25 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                                 await linkFileToEntry(fileId, 'experiment', result.experimentId || result.id);
                             }
                             
-                            toast.success("Submitted experiment data as " + experimentData.name + " with automatic trait generation!");
+                            // Enhanced success message based on parsed data
+                            let successMessage = `Submitted ${fileValues.dataFields.format} experiment: ${experimentData.name}`;
+                            
+                            // Add trait count if available
+                            if (experimentData.traits && experimentData.traits.length > 0) {
+                                successMessage += ` with ${experimentData.traits.length} traits automatically extracted`;
+                            }
+                            
+                            // Add data record count if available
+                            if (experimentData.data?.summary?.recordCount) {
+                                successMessage += ` (${experimentData.data.summary.recordCount.toLocaleString()} data records)`;
+                            }
+                            
+                            toast.success(successMessage);
                         }
                     } catch (error) {
-                        console.error("Error submitting experiment data:", error);
-                        toast.error("Failed to submit experiment");
+                        console.error("Error submitting structured experiment data:", error);
+                        toast.error("Failed to submit structured experiment data");
+                        throw error;
                     }
                 }
             });
@@ -283,233 +355,358 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
     }
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <Tabs defaultValue={"General"} className="w-auto">
-                    <TabsList>
-                        <TabsTrigger value="General">General</TabsTrigger>
-                        <TabsTrigger value="Details">Details</TabsTrigger>
-                        {selectedType === 'image' && <TabsTrigger value="image">Image</TabsTrigger>}
-                        {selectedType === 'document' && <TabsTrigger value="document">Document</TabsTrigger>}
-                    </TabsList>
-                    <TabsContent value="General" className="space-y-4">
-                        <ComboFormBox
-                            control={form.control}
-                            setValue={form.setValue}
-                            name="responsible"
-                            options={users.map((user: { _id: any; name: any }) => ({ value: user._id, label: user.name }))}
-                            fieldlabel={"Responsible"}
-                            description={""}
-                        />
-                        <Label htmlFor="file">Import file <InfoHover text='When uploading multiple files at once, the "SpecimenName" inside each file needs to be identical to a sample name.' /></Label>
-                        {defaultFileList &&
-                            <Label className="p-1" htmlFor="file">File(s) selected: {defaultFileList.length} files.
-                            </Label>
-                        }
-                        {!defaultFileList &&
-                            <Input id="file" type="file" multiple
-                                onChange={
-                                    async e => {
-                                        try {
-                                            await handleFileSubmission(e.target.files, form, samples, defaultValues, setFormState, setAllFileData, existingNames);
-                                            setFiles(e.target.files);
-                                            setLargeFile(false);
-                                        } catch (error: any) {
-                                            setLargeFile(true);
-                                            console.log("Error processing files:", error);
-                                            toast.error("Error!", {
-                                                description: error.message
-                                            });
-                                        }
-                                    }
-                                }
-                            />
-                        }
-                        <FormField
-                            control={form.control}
-                            name="type"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Experiment Type <InfoHover text='Select the type of experiment. Each type has a specialized parser that will automatically generate traits from your data.' /></FormLabel>
-                                    <FormControl>
-                                        <ComboFormBox
-                                            control={form.control}
-                                            setValue={form.setValue}
-                                            name="type"
-                                            options={[
-                                                // Legacy file types (for backward compatibility)
-                                                { value: "image", label: "Image File" },
-                                                { value: "document", label: "Document" },
-                                                { value: "unknown", label: "Unknown File Type" },
-                                                // Parser-supported types - show unique parsers only
-                                                ...getUniqueParserOptions()
-                                            ]}
-                                            fieldlabel=""
-                                            description=""
-                                        />
-                                    </FormControl>
-                                    {field.value && checkParserSupport(field.value) && (
-                                        <div className="text-sm text-green-600 mt-1">
-                                            ✓ This experiment type has automatic trait generation
-                                        </div>
-                                    )}
-                                    {field.value && !checkParserSupport(field.value) && !['image', 'document', 'unknown'].includes(field.value) && (
-                                        <div className="text-sm text-amber-600 mt-1">
-                                            ⚠ No automatic trait generation available for this type
-                                        </div>
-                                    )}
-                                </FormItem>
-                            )}
-                        />
-                        
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Experiment Name</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} placeholder="Choose file to generate name suggestion" />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="notes"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Optional notes</FormLabel>
-                                    <FormControl>
-                                        <textarea
-                                            {...field}
-                                            placeholder=" "
-                                            rows={3}
-                                            style={{ width: '100%', resize: 'vertical', minHeight: '60px', padding: '8px', boxSizing: 'border-box', border: '1px solid #ccc' }}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                        {largeFile &&
-                            <FormField
-                                control={form.control}
-                                name="filepath"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>The file is too large to be processed in the current implementation of EvoNEST. Instead please insert the file path on the original machine here</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} placeholder="File Path" />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        }
-                    </TabsContent>
-                    <TabsContent value="Details" className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="sampleId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Sample <InfoHover text='Select the sample this experiment is associated with' /></FormLabel>
-                                    <FormControl>
-                                        <ComboFormBox
-                                            control={form.control}
-                                            setValue={form.setValue}
-                                            name="sampleId"
-                                            options={samples.map((sample: { _id: any; name: any }) => ({ value: sample._id, label: sample.name }))}
-                                            fieldlabel=""
-                                            description=""
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                        
-                        {/* Parser Preview in Details tab */}
-                        {selectedType && checkParserSupport(selectedType) && (
-                            <div className="mt-4">
-                                <h4 className="text-sm font-medium mb-2">Automatic Trait Generation</h4>
-                                <ParserPreview 
-                                    experimentType={selectedType} 
-                                    hasParserSupport={checkParserSupport(selectedType)}
-                                    parserInfo={getParserInfo(selectedType)}
-                                />
-                            </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Tabs defaultValue={"General"} className="w-auto">
+            <TabsList>
+              <TabsTrigger value="General">General</TabsTrigger>
+              <TabsTrigger value="Details">Details</TabsTrigger>
+              {selectedType === "image" && (
+                <TabsTrigger value="image">Image</TabsTrigger>
+              )}
+              {selectedType === "document" && (
+                <TabsTrigger value="document">Document</TabsTrigger>
+              )}
+            </TabsList>
+            <TabsContent value="General" className="space-y-4">
+              <ComboFormBox
+                control={form.control}
+                setValue={form.setValue}
+                name="responsible"
+                options={users.map((user: { _id: any; name: any }) => ({
+                  value: user._id,
+                  label: user.name,
+                }))}
+                fieldlabel={"Responsible"}
+                description={""}
+              />
+              <Label htmlFor="file">
+                Import file{" "}
+                <InfoHover text='When uploading multiple files at once, the "SpecimenName" inside each file needs to be identical to a sample name.' />
+              </Label>
+              {defaultFileList && (
+                <Label className="p-1" htmlFor="file">
+                  File(s) selected: {defaultFileList.length} files.
+                </Label>
+              )}
+              {!defaultFileList && (
+                <Input
+                  id="file"
+                  type="file"
+                  multiple
+                  onChange={async (e) => {
+                    try {
+                      if (e.target.files) {
+                        await handleFileSubmission(
+                          e.target.files,
+                          form,
+                          samples,
+                          defaultValues,
+                          setFormState,
+                          setAllFileData,
+                          existingNames
+                        );
+                        setFiles(e.target.files);
+                      }
+                    } catch (error: any) {
+                      console.log("Error processing files:", error);
+                      toast.error("Error!", {
+                        description: error.message,
+                      });
+                    }
+                  }}
+                />
+              )}
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Experiment Type
+                      <InfoHover text="Select the type of experiment. Files are automatically parsed by data format parsers, and compatible experiment types will generate traits automatically." />
+                      {/* Show auto-detection indicator */}
+                      {allFileData.some(
+                        (fileData) =>
+                          fileData.suggestedExperimentType === field.value
+                      ) && (
+                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          Auto-detected
+                        </span>
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      <ComboFormBox
+                        control={form.control}
+                        setValue={form.setValue}
+                        name="type"
+                        options={[
+                          ...getUniqueParserOptions(),
+                        ]}
+                        fieldlabel=""
+                        description=""
+                      />
+                    </FormControl>
+                    {field.value && checkParserSupport(field.value) && (
+                      <div className="text-sm text-green-600 mt-1">
+                        ✓ This experiment type has automatic trait generation
+                      </div>
+                    )}
+                    {field.value &&
+                      !checkParserSupport(field.value) &&
+                      !["image", "document", "unknown"].includes(
+                        field.value
+                      ) && (
+                        <div className="text-sm text-amber-600 mt-1">
+                          ⚠ No automatic trait generation available for this
+                          type
+                        </div>
+                      )}
+                    {/* Show format detection info */}
+                    {allFileData.length > 0 &&
+                      allFileData.some(
+                        (fileData) => fileData.dataFields?.format
+                      ) && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          Detected formats:{" "}
+                          {allFileData
+                            .filter((fileData) => fileData.dataFields?.format)
+                            .map((fileData) => fileData.dataFields.format)
+                            .join(", ")}
+                        </div>
+                      )}
+                  </FormItem>
+                )}
+              />
+
+              {/* Data Format Processing Status */}
+              <DataFormatPreview allFileData={allFileData} />
+
+              {/* Parser Preview */}
+              <ParserPreview
+                hasParserSupport={checkParserSupport(selectedType)}
+                experimentType={selectedType}
+              />
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Experiment Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Choose file to generate name suggestion"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Optional notes</FormLabel>
+                    <FormControl>
+                      <textarea
+                        {...field}
+                        placeholder=" "
+                        rows={3}
+                        style={{
+                          width: "100%",
+                          resize: "vertical",
+                          minHeight: "60px",
+                          padding: "8px",
+                          boxSizing: "border-box",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+            </TabsContent>
+            <TabsContent value="Details" className="space-y-4">
+              <FormField
+                control={form.control}
+                name="sampleId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Sample{" "}
+                      <InfoHover text="Select the sample this experiment is associated with" />
+                    </FormLabel>
+                    <FormControl>
+                      <ComboFormBox
+                        control={form.control}
+                        setValue={form.setValue}
+                        name="sampleId"
+                        options={samples.map(
+                          (sample: { _id: any; name: any }) => ({
+                            value: sample._id,
+                            label: sample.name,
+                          })
                         )}
-                        
-                        <div className="mt-4 p-4 bg-gray-50 rounded border">
-                            <h4 className="font-medium mb-2">Experiment Details</h4>
-                            <div className="text-sm space-y-1">
-                                <p><strong>Specimen name:</strong> {formState.SpecimenName}</p>
-                                <p><strong>File Name:</strong> {formState.filename}</p>
-                                <p><strong>File Path:</strong> {formState.filepath}</p>
-                                <p><strong>Responsible:</strong> {users.find((u: any) => u._id === formState.responsible)?.name}</p>
+                        fieldlabel=""
+                        description=""
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Parser Preview in Details tab */}
+              {selectedType && checkParserSupport(selectedType) && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">
+                    Automatic Trait Generation
+                  </h4>
+                  <ParserPreview
+                    experimentType={selectedType}
+                    hasParserSupport={checkParserSupport(selectedType)}
+                    parserInfo={getParserInfo(selectedType)}
+                  />
+                </div>
+              )}
+
+              {/* File Processing Details */}
+              {allFileData.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">
+                    File Processing Details
+                  </h4>
+                  <div className="space-y-2">
+                    {allFileData.map((fileInfo, index) => (
+                      <div
+                        key={index}
+                        className="p-3 bg-gray-50 rounded border text-sm"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-medium">
+                            {fileInfo.filename || `File ${index + 1}`}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              fileInfo.type === "experiment_data"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {fileInfo.type}
+                          </span>
+                        </div>
+
+                        {fileInfo.type === "experiment_data" &&
+                          fileInfo.dataFields && (
+                            <div className="text-xs text-gray-600">
+                              <div>Format: {fileInfo.dataFields.format}</div>
+                              {fileInfo.dataFields.summary?.recordCount && (
+                                <div>
+                                  Records:{" "}
+                                  {fileInfo.dataFields.summary.recordCount.toLocaleString()}
+                                </div>
+                              )}
+                              {fileInfo.dataFields.columns && (
+                                <div>
+                                  Columns:{" "}
+                                  {fileInfo.dataFields.columns.join(", ")}
+                                </div>
+                              )}
                             </div>
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="image" className="space-y-4">
-                        <div>
-                            <p> Specimen name: {formState.SpecimenName} </p>
-                            <p> Specimen ID: {formState.sampleId} </p>
-                            <p> File Name: {formState.filename} </p>
-                            <p> File Path: {formState.filepath} </p>
-                            <p> Responsible ID: {formState.responsible} </p>
-                        </div>
-                        <FormField
-                            control={form.control}
-                            name="SpecimenName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel> Update specimen name if the specimen ID is not found</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} placeholder="Specimen name"
-                                            onChange={async (e) => {
-                                                const specimenName = e.target.value;
-                                                form.setValue("SpecimenName", specimenName);
-                                                const sampleId = await getSampleIdbyName(specimenName, samples);
-                                                console.log("Sample ID:", sampleId);
-                                                form.setValue("sampleId", sampleId);
-                                                setFormState({ ...formState, SpecimenName: specimenName, sampleId: sampleId });
-                                            }} />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    </TabsContent>
-                    <TabsContent value="document" className="space-y-4">
-                        <div>
-                            <p> Specimen name: {formState.SpecimenName} </p>
-                            <p> Specimen ID: {formState.sampleId} </p>
-                            <p> File Name: {formState.filename} </p>
-                            <p> File Path: {formState.filepath} </p>
-                        </div>
-                        <FormField
-                            control={form.control}
-                            name="SpecimenName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel> Update specimen name if the specimen ID is not found</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} placeholder="Specimen name"
-                                            onChange={async (e) => {
-                                                const specimenName = e.target.value;
-                                                form.setValue("SpecimenName", specimenName);
-                                                const sampleId = await getSampleIdbyName(specimenName, samples);
-                                                form.setValue("sampleId", sampleId);
-                                                setFormState({ ...formState, SpecimenName: specimenName, sampleId: sampleId });
-                                            }} />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    </TabsContent>
-                </Tabs>
-                <Button type="submit" disabled={!form.formState.isValid || allFileData.length === 0}>
-                    Submit
-                </Button>
-            </form>
-        </Form>
+                          )}
+
+                        {fileInfo.sampleName && (
+                          <div className="text-xs text-gray-600 mt-1">
+                            Specimen: {fileInfo.sampleName}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="image" className="space-y-4">
+              <FormField
+                control={form.control}
+                name="sampleName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {" "}
+                      Update sample name if the sample ID is not found
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Sample name"
+                        onChange={async (e) => {
+                          const sampleName = e.target.value;
+                          form.setValue("sampleName", sampleName);
+                          const sampleId = await getSampleIdbyName(
+                            sampleName,
+                            samples
+                          );
+                          console.log("Sample ID:", sampleId);
+                          form.setValue("sampleId", sampleId);
+                          setFormState({
+                            ...formState,
+                            sampleName: sampleName,
+                            sampleId: sampleId,
+                          });
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </TabsContent>
+            <TabsContent value="document" className="space-y-4">
+              <FormField
+                control={form.control}
+                name="sampleName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {" "}
+                      Update sample name if the sample ID is not found
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Sample name"
+                        onChange={async (e) => {
+                          const sampleName = e.target.value;
+                          form.setValue("sampleName", sampleName);
+                          const sampleId = await getSampleIdbyName(
+                            sampleName,
+                            samples
+                          );
+                          console.log("Sample ID:", sampleId);
+                          form.setValue("sampleId", sampleId);
+                          setFormState({
+                            ...formState,
+                            sampleName: sampleName,
+                            sampleId: sampleId,
+                          });
+                        }}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </TabsContent>
+          </Tabs>
+          <Button
+            type="submit"
+            disabled={!form.formState.isValid || allFileData.length === 0}
+          >
+            Submit
+          </Button>
+        </form>
+      </Form>
     );
 }

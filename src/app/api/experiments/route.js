@@ -2,7 +2,6 @@ import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user } from "../utils/get_database_user";
-import { processExperiment } from "@/utils/experiment-parsers/registry";
 import fs from 'fs/promises';
 
 /**
@@ -246,18 +245,29 @@ async function getExperiments(client, includeRawData = false, type = "", include
     const db = client.db(dbname);
 
     const query = type ? { type: type } : {};
-    const experiments = await db.collection("experiments").find(query).toArray();
+    
+    // Performance optimization: exclude heavy data fields by default
+    // Usage: GET /api/experiments (fast, no rawdata)
+    //        GET /api/experiments?includeRawData=true (includes processed data)
+    //        GET /api/experiments?includeRawData=true&includeOriginalData=true (includes original unprocessed data)
+    const projection = includeRawData ? {} : { data: 0, originalData: 0, metadata: 0 };
+    const experiments = await db.collection("experiments").find(query, { projection }).toArray();
 
-    if (includeRawData) {
-        const rawdata = db.collection("rawdata");
-        for (let experiment of experiments) {
-            const rawdata_experiment = await rawdata.findOne({ experimentId: experiment._id });
-            // Return either current or original data based on parameter
-            experiment.rawdata = includeOriginalData ?
-                (rawdata_experiment.originalData || rawdata_experiment.data) :
-                rawdata_experiment.data;
-            experiment.isOriginalData = includeOriginalData;
-        }
+    if (includeRawData && includeOriginalData) {
+        // Add flag to indicate which data is being returned
+        experiments.forEach(experiment => {
+            experiment.isOriginalData = true;
+            if (experiment.originalData) {
+                experiment.rawdata = experiment.originalData;
+            }
+        });
+    } else if (includeRawData) {
+        experiments.forEach(experiment => {
+            experiment.isOriginalData = false;
+            if (experiment.data) {
+                experiment.rawdata = experiment.data;
+            }
+        });
     }
 
     return experiments;
@@ -302,7 +312,6 @@ export async function POST(req) {
     const dbname = await get_database_user();
     const db = client.db(dbname);
     const experiments = db.collection("experiments");
-    const rawdata = db.collection("rawdata");
     const samples = db.collection("samples");
     const files = db.collection("files");
 
@@ -320,96 +329,138 @@ export async function POST(req) {
             return new NextResponse(JSON.stringify({ error: "Responsible not found" }), { status: 400 });
         }
 
-        const experimentData = {
-            name: data.name,
-            sampleId: data.sampleId,
-            responsible: data.responsible,
-            type: data.type,
-            date: data.date,
-            notes: data.notes,
-            filename: data.filename,
-            filepath: data.filepath,
-            fileId: data.fileId,
-            version: 1,
-            conversionHistory: [],
-            recentChangeDate: new Date().toISOString(),
-            logbook: [[`${new Date().toISOString()}`, `Uploaded experiment ${data.name}`]],
-            window: data.window,
-        };
+        // Handle structured experiment data (from updated parsers)
+        let experimentData;
+        let embeddedTraits = [];
 
-        {
-            const experimentResult = await experiments.insertOne(experimentData);
-            if (experimentResult.insertedId) {
-                // Create the rawdata document
-                const rawDataDocument = {
-                    experimentId: experimentResult.insertedId,
-                    data: data.includedData,
-                    originalData: data.includedData, // Store original data on creation
-                    metadata: data.metadata,
-                    version: 1
-                };
+        if (data.data && typeof data.data === 'object' && data.name && data.type) {
+            // New structured format: data comes pre-structured from parsers
+            experimentData = {
+                ...data, // This includes all the ExperimentAPIData fields
+                version: data.version || 1,
+                recentChangeDate: new Date().toISOString(),
+                logbook: data.logbook || [[`${new Date().toISOString()}`, `Created experiment ${data.name}`]],
+            };
 
-                // Insert the rawdata document
-                const rawDataResult = await rawdata.insertOne(rawDataDocument);
-                const sampleResult = await samples.updateOne(
-                    { _id: new ObjectId(data.sampleId) },
-                    { $set: { recentTraitChangeDate: new Date().toISOString() }, $push: { logbook: [`${new Date().toISOString()}`, `New experiment of specimen ${data.SpecimenName} for ${data.sampleId}`] } }
-                );
-
-                // Process experiment data using the appropriate parser
-                const context = {
-                    db,
-                    collections: {
-                        experiments,
-                        traits: db.collection("traits"),
-                        samples,
-                        rawdata
-                    }
-                };
-
-                const parserResult = await processExperiment(data.type, data, data, context);
+            // Extract embedded traits for separate insertion
+            if (data.traits && Array.isArray(data.traits)) {
+                embeddedTraits = data.traits.map(trait => ({
+                    ...trait,
+                    experimentId: null, // Will be set after experiment creation
+                    createdAt: new Date().toISOString()
+                }));
                 
-                if (parserResult.success) {
-                    // Apply experiment updates if any
-                    if (Object.keys(parserResult.experimentUpdates).length > 0) {
-                        await experiments.updateOne(
-                            { _id: experimentResult.insertedId },
-                            {
-                                $set: {
-                                    ...parserResult.experimentUpdates,
-                                    recentChangeDate: new Date().toISOString()
-                                },
-                                $push: {
-                                    logbook: [
-                                        `${new Date().toISOString()}`,
-                                        parserResult.logMessage || `Processed ${data.type} data automatically`
-                                    ]
-                                }
-                            }
-                        );
-                    }
+                // Remove traits from experiment data to avoid duplication
+                delete experimentData.traits;
+            }
 
-                    // Create traits generated by the parser
-                    const traits = db.collection("traits");
-                    for (const trait of parserResult.traits) {
-                        await traits.insertOne(trait);
-                    }
-                    
-                    console.log(`Parser processed ${parserResult.traits.length} traits for experiment ${data.name}`);
-                } else {
-                    console.warn(`Parser failed for experiment ${data.name}: ${parserResult.error}`);
-                    // Continue with experiment creation even if parser fails
-                }
+            console.log(`Processing structured experiment data with ${embeddedTraits.length} embedded traits`);
+            
+        } else {
+            // Legacy format: create basic experiment structure
+            experimentData = {
+                name: data.name,
+                sampleId: data.sampleId,
+                responsible: data.responsible,
+                type: data.type,
+                date: data.date,
+                notes: data.notes,
+                filename: data.filename,
+                filepath: data.filepath,
+                fileId: data.fileId,
+                version: 1,
+                conversionHistory: [],
+                recentChangeDate: new Date().toISOString(),
+                logbook: [[`${new Date().toISOString()}`, `Uploaded experiment ${data.name}`]],
+                window: data.window,
+                // Embed rawdata directly into the experiment document
+                data: data.dataFields,
+                originalData: data.dataFields, // Store original data on creation
+                metadata: data.metadata,
+            };
 
-                if (experimentResult.insertedCount == 0 || rawDataResult.insertedCount == 0 || sampleResult.modifiedCount == 0) {
-                    return new NextResponse(JSON.stringify({ error: "Failed to create experiment" }), { status: 500 });
-                } else {
-                    return new NextResponse(JSON.stringify({ success: true, id: experimentResult.insertedId }), { status: 200 });
-                }
-            } else {
-                return new NextResponse(JSON.stringify({ error: "Failed to create experiment" }), { status: 500 });
+            console.log("Processing legacy experiment data format");
+        }
+
+        // Insert the experiment
+        const experimentResult = await experiments.insertOne(experimentData);
+        
+        if (!experimentResult.insertedId) {
+            return new NextResponse(JSON.stringify({ error: "Failed to create experiment" }), { status: 500 });
+        }
+
+        const experimentId = experimentResult.insertedId;
+
+        // Update sample logbook
+        const sampleResult = await samples.updateOne(
+            { _id: new ObjectId(data.sampleId) },
+            { 
+                $set: { recentTraitChangeDate: new Date().toISOString() }, 
+                $push: { 
+                    logbook: [
+                        `${new Date().toISOString()}`, 
+                        `New experiment ${data.name} created for sample ${data.sampleId}`
+                    ] 
+                } 
+            }
+        );
+
+        if (sampleResult.modifiedCount === 0) {
+            console.warn(`Failed to update sample logbook for sample ${data.sampleId}`);
+        }
+
+        // Insert embedded traits if present
+        if (embeddedTraits.length > 0) {
+            const traits = db.collection("traits");
+            
+            // Set the experiment ID for each trait
+            const traitsToInsert = embeddedTraits.map(trait => ({
+                ...trait,
+                experimentId: experimentId.toString(),
+                sampleId: data.sampleId, // Ensure sampleId is consistent
+                responsible: data.responsible, // Ensure responsible is consistent
+            }));
+
+            try {
+                const traitResult = await traits.insertMany(traitsToInsert);
+                console.log(`Successfully created ${traitResult.insertedCount} traits for experiment ${data.name}`);
+                
+                // Update experiment logbook with trait creation info
+                await experiments.updateOne(
+                    { _id: experimentId },
+                    {
+                        $push: {
+                            logbook: [
+                                `${new Date().toISOString()}`,
+                                `Automatically created ${traitResult.insertedCount} traits from parsed data`
+                            ]
+                        }
+                    }
+                );
+                
+            } catch (traitError) {
+                console.error("Error creating traits:", traitError);
+                // Don't fail the experiment creation, just log the error
+                await experiments.updateOne(
+                    { _id: experimentId },
+                    {
+                        $push: {
+                            logbook: [
+                                `${new Date().toISOString()}`,
+                                `Warning: Failed to create ${embeddedTraits.length} embedded traits - ${traitError.message}`
+                            ]
+                        }
+                    }
+                );
             }
         }
+
+        return new NextResponse(JSON.stringify({ 
+            success: true, 
+            id: experimentId,
+            experimentId: experimentId,
+            traitsCreated: embeddedTraits.length
+        }), { status: 200 });
     }
     if (data.method === "setfield") {
 

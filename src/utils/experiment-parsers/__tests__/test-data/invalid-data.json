@@ -1,8 +1,0 @@
-{
-  "includedData": {
-    "InvalidField": "not an array",
-    "EmptyArray": [],
-    "MixedTypes": [1, "two", 3, null, 5]
-  },
-  "metadata": []
-}

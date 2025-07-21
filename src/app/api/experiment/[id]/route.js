@@ -124,22 +124,25 @@ async function getExperiment(client, id, includeRawData = false, includeOriginal
     const dbname = await get_database_user();
     const db = client.db(dbname);
     
-    // Get base experiment data
-    const experiment = await db.collection("experiments").findOne({ _id: new ObjectId(id) });
+    // Performance optimization: exclude heavy data fields by default
+    // Usage: GET /api/experiment/id (fast, no rawdata)
+    //        GET /api/experiment/id?includeRawData=true (includes processed data)
+    //        GET /api/experiment/id?includeRawData=true&includeOriginalData=true (includes original unprocessed data)
+    const projection = includeRawData ? {} : { data: 0, originalData: 0, metadata: 0 };
+    const experiment = await db.collection("experiments").findOne({ _id: new ObjectId(id) }, { projection });
     
     if (!experiment) {
         return null;
     }
 
-    // If raw data is requested, fetch and include it
+    // Add rawdata field for backward compatibility if requested
     if (includeRawData) {
-        const rawdata = db.collection("rawdata");
-        const rawdata_experiment = await rawdata.findOne({ experimentId: new ObjectId(id) });
-        if (rawdata_experiment) {
-            experiment.rawdata = {
-                data: rawdata_experiment.data,
-                ...(includeOriginalData && { original: rawdata_experiment.originalData })
-            };
+        if (includeOriginalData && experiment.originalData) {
+            experiment.rawdata = experiment.originalData;
+            experiment.isOriginalData = true;
+        } else if (experiment.data) {
+            experiment.rawdata = experiment.data;
+            experiment.isOriginalData = false;
         }
     }
 
