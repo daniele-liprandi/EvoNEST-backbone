@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.js", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/sample-hover-card.tsx", "src/app/api/*", "src/app/(nest)/samples/[type]/page.jx", "src/components/plots/plotly-treemap.js", "src/middleware.js", "postcss.config.cjs"],
+  "include": ["src/*", "next-env.d.ts", ".next/types/**/*.ts", "postcss.config.cjs"],
   "exclude": ["node_modules"]
 }

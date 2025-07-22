@@ -11,6 +11,7 @@ import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 
 import { ComboFormBox } from "@/components/forms/combo-form-box";
+import { TaxonomicHierarchy } from "@/components/ui/custom/TaxonomicHierarchy";
 
 import { useCallback } from "react";
 
@@ -851,68 +852,37 @@ export function ProfileFormSamples({
             />
           </TabsContent>
           <TabsContent value="animal" className="space-y-4">
-            <FormField
-              control={form.control}
-              name="family"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Family</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter family name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        const id = generateIDanimal(form);
-                        form.setValue("name", id);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="genus"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Genus</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter genus name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        const id = generateIDanimal(form);
-                        form.setValue("name", id);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="species"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Species</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter species name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        const id = generateIDanimal(form);
-                        form.setValue("name", id);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <TaxonomicHierarchy
+              values={{
+                family: form.watch("family") || "",
+                genus: form.watch("genus") || "",
+                species: form.watch("species") || ""
+              }}
+              onChange={(values: { family: string; genus: string; species: string | undefined; }) => {
+                form.setValue("family", values.family);
+                form.setValue("genus", values.genus);
+                form.setValue("species", values.species);
+                form.setValue("nomenclature", `${values.genus} ${values.species}`);
+                
+                // Generate ID when taxonomic data changes
+                const id = generateIDanimal(form);
+                form.setValue("name", id);
+              }}
+              onValidated={(correctedValues: { family: string; genus: string; species: string | undefined; }, source: any, fullName: string) => {
+                // Handle validated taxonomy with corrections
+                form.setValue("family", correctedValues.family);
+                form.setValue("genus", correctedValues.genus);
+                form.setValue("species", correctedValues.species);
+                form.setValue("nomenclature", fullName);
+                
+                // Generate ID with corrected values
+                const id = generateIDanimal(form);
+                form.setValue("name", id);
+              }}
+              source="auto"
+              autoCorrect={true}
+              disabled={false}
+              fieldProps={{}}
             />
             <ComboFormBox
               control={form.control}
@@ -944,68 +914,47 @@ export function ProfileFormSamples({
                 "Parent sample from which the current sample is derived"
               }
             />
-            <FormField
-              control={form.control}
-              name="family"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Family</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter family name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        const id = generateIDanimal(form);
-                        form.setValue("name", id);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="genus"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Genus</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter genus name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        const id = generateIDanimal(form);
-                        form.setValue("name", id);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="species"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Species</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter species name"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        const id = generateIDanimal(form);
-                        form.setValue("name", id);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <TaxonomicHierarchy
+              values={{
+                family: form.watch("family") || "",
+                genus: form.watch("genus") || "",
+                species: form.watch("species") || ""
+              }}
+              onChange={(values: { family: string; genus: string; species: string | undefined; }) => {
+                form.setValue("family", values.family);
+                form.setValue("genus", values.genus);
+                form.setValue("species", values.species);
+                form.setValue("nomenclature", `${values.genus} ${values.species}`);
+                
+                // Generate ID when taxonomic data changes (for subsample)
+                const parent = samples.find(
+                  (sample: { _id: any }) => sample._id === form.watch("parentId")
+                );
+                if (parent) {
+                  const id = generateIDsubsample(form, parent.name);
+                  form.setValue("name", id);
+                }
+              }}
+              onValidated={(correctedValues: { family: string; genus: string; species: string | undefined; }, source: any, fullName: string) => {
+                // Handle validated taxonomy with corrections
+                form.setValue("family", correctedValues.family);
+                form.setValue("genus", correctedValues.genus);
+                form.setValue("species", correctedValues.species);
+                form.setValue("nomenclature", fullName);
+                
+                // Generate ID with corrected values
+                const parent = samples.find(
+                  (sample: { _id: any }) => sample._id === form.watch("parentId")
+                );
+                if (parent) {
+                  const id = generateIDsubsample(form, parent.name);
+                  form.setValue("name", id);
+                }
+              }}
+              source="auto"
+              autoCorrect={true}
+              disabled={false}
+              fieldProps={{}}
             />
             <div className="flex flex-row items-center space-x-2 justify-between">
               <FormField
