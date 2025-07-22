@@ -4,16 +4,18 @@ import { updateFormValues } from "./utils";
 
 // Processor metadata for experiment type discovery
 export const losslessImageProcessorMetadata = {
-    name: 'LosslessImageProcessor',
-    label: 'Lossless Image Processor',
-    supportedFormats: ['.png', '.bmp', '.tiff', '.tif'],
-    version: '1.0.0',
-    description: 'Processes lossless image formats preserving original quality for scientific analysis',
-    author: 'EvoNEST Team',
-    supportedExperimentTypes: ['image_lossless'],
-    primaryExperimentType: 'image_lossless',
-    requiredFields: [],
-    generatedTraits: [] // No traits are actually generated - only metadata extraction and file processing
+  name: "LosslessImageProcessor",
+  label: "Lossless Image Processor",
+  supportedFormats: [".png", ".bmp", ".tiff", ".tif"],
+  version: "1.0.0",
+  description:
+    "Processes lossless image formats preserving original quality for scientific analysis",
+  author: "Daniele Liprandi",
+  supportedExperimentTypes: ["image_lossless"],
+  primaryExperimentType: "image_lossless",
+  requiresStructuredData: false,
+  requiredFields: [],
+  generatedTraits: [], // No traits are actually generated - only metadata extraction and file processing
 };
 
 export async function processLosslessImageFile(params: FileProcessorParams): Promise<void> {

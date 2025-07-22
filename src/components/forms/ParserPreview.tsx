@@ -22,7 +22,7 @@ interface ParserInfo {
         description: string;
     }>;
     version: string;
-    hasSupport: boolean;
+    requiresStructuredData: boolean;
 }
 
 interface ParserPreviewProps {

@@ -5,16 +5,18 @@ import { updateFormValues } from "./utils";
 
 // Processor metadata for experiment type discovery
 export const tiffProcessorMetadata = {
-    name: 'TiffProcessor',
-    label: 'TIFF Image Processor',
-    supportedFormats: ['.tiff', '.tif'],
-    version: '1.0.0',
-    description: 'Processes TIFF image files with specialized handling for scientific imaging',
-    author: 'EvoNEST Team',
-    supportedExperimentTypes: ['image_tiff'],
-    primaryExperimentType: 'image_tiff',
-    requiredFields: [],
-    generatedTraits: [] // No traits are actually generated - only metadata extraction and thumbnail creation
+  name: "TiffProcessor",
+  label: "TIFF Image Processor",
+  supportedFormats: [".tiff", ".tif"],
+  version: "1.0.0",
+  description:
+    "Processes TIFF image files with specialized handling for scientific imaging",
+  author: "Daniele Liprandi",
+  supportedExperimentTypes: ["image_tiff"],
+  primaryExperimentType: "image_tiff",
+  requiresStructuredData: false,
+  requiredFields: [],
+  generatedTraits: [], // No traits are actually generated - only metadata extraction and thumbnail creation
 };
 
 export async function processTiffFile(params: FileProcessorParams): Promise<void> {

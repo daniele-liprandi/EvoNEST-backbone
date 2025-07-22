@@ -4,16 +4,18 @@ import { updateFormValues } from "./utils";
 
 // Processor metadata for experiment type discovery
 export const imageProcessorMetadata = {
-    name: 'ImageProcessor',
-    label: 'Image Processor',
-    supportedFormats: ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'],
-    version: '1.0.0',
-    description: 'Processes standard image files and creates thumbnails for experiments',
-    author: 'EvoNEST Team',
-    supportedExperimentTypes: ['image'],
-    primaryExperimentType: 'image',
-    requiredFields: [],
-    generatedTraits: [] // No traits are actually generated - only metadata is extracted
+  name: "ImageProcessor",
+  label: "Image Processor",
+  supportedFormats: [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg"],
+  version: "1.0.0",
+  description:
+    "Processes standard image files and creates thumbnails for experiments",
+  author: "Daniele Liprandi",
+  supportedExperimentTypes: ["image"],
+  primaryExperimentType: "image",
+  requiresStructuredData: false,
+  requiredFields: [],
+  generatedTraits: [],
 };
 
 export async function processImageFile(params: FileProcessorParams): Promise<void> {

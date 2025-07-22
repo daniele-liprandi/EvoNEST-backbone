@@ -4,16 +4,18 @@ import { generateUniqueName, updateFormValues } from "./utils";
 
 // Processor metadata for experiment type discovery
 export const documentProcessorMetadata = {
-    name: 'DocumentProcessor',
-    label: 'Document Processor',
-    supportedFormats: ['.pdf', '.doc', '.docx', '.txt', '.rtf', '.odt'],
-    version: '1.0.0',
-    description: 'Processes document files for experimental documentation and protocols',
-    author: 'EvoNEST Team',
-    supportedExperimentTypes: ['document'],
-    primaryExperimentType: 'document',
-    requiredFields: [],
-    generatedTraits: [] // No traits are actually generated - only basic file processing
+  name: "DocumentProcessor",
+  label: "Document Processor",
+  supportedFormats: [".pdf", ".doc", ".docx", ".txt", ".rtf", ".odt"],
+  version: "1.0.0",
+  description:
+    "Processes document files for experimental documentation and protocols",
+  author: "Daniele Liprandi",
+  supportedExperimentTypes: ["document"],
+  primaryExperimentType: "document",
+  requiresStructuredData: false,
+  requiredFields: [],
+  generatedTraits: [], // No traits are actually generated - only basic file processing
 };
 
 export async function processDocumentFile(params: FileProcessorParams): Promise<void> {

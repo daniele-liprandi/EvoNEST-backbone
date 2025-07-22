@@ -92,7 +92,7 @@ export function checkParserSupport(experimentType: string): boolean {
  * Get parser/processor information for an experiment type
  */
 export function getParserInfo(experimentType: string): {
-  hasSupport: boolean;
+  requiresStructuredData: boolean;
   type: string;
   label: string;
   description: string;
@@ -112,7 +112,7 @@ export function getParserInfo(experimentType: string): {
     
     if (parser) {
       return {
-        hasSupport: true,
+        requiresStructuredData: parser.requiresStructuredData || false,
         type: experimentType,
         parser: parserType.parser,
         label: parser.label || parserType.label,
@@ -134,7 +134,7 @@ export function getParserInfo(experimentType: string): {
     
     if (processorMetadata) {
       return {
-        hasSupport: true,
+        requiresStructuredData: processorMetadata.requiresStructuredData || false,
         type: experimentType,
         parser: processorMetadata.name,
         label: processorMetadata.label,
@@ -142,14 +142,14 @@ export function getParserInfo(experimentType: string): {
         supportedTypes: processorMetadata.supportedExperimentTypes,
         requiredFields: processorMetadata.requiredFields,
         generatedTraits: processorMetadata.generatedTraits,
-        version: processorMetadata.version
+        version: processorMetadata.version,
       };
     }
   }
   
   // Return default values for unsupported types
   return {
-    hasSupport: false,
+    requiresStructuredData: false,
     type: experimentType,
     label: 'Unknown Type',
     description: 'No parser or processor available for this experiment type',
@@ -169,7 +169,7 @@ export function validateExperimentType(type: string, fileData: any): {
 } {
   const parserInfo = getParserInfo(type);
   
-  if (!parserInfo.hasSupport) {
+  if (!parserInfo.requiresStructuredData) {
     // For non-parser types (image, document), validation always passes
     return { valid: true };
   }

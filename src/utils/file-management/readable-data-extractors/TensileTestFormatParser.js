@@ -21,9 +21,9 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
         this.description = 'Parser for EVOMECT150NanoTestDataFile format from tensile test machines';
         this.supportedFormats = ['.txt']; // File extensions this parser supports
         this.version = '1.0.0';
-        this.author = 'EvoNEST Team';
+        this.author = 'Daniele Liprandi'; 
         
-        // NEW: Parser-specific metadata for automatic discovery
+        this.requiresStructuredData = true; 
         this.supportedExperimentTypes = ['tensile_test'];
         this.primaryExperimentType = 'tensile_test';
         this.requiredFields = ['force', 'displacement', 'time'];

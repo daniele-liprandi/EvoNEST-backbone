@@ -23,7 +23,7 @@ export class CSVFormatParser extends BaseDataFormatParser {
         this.description = 'Generic CSV parser with customizable delimiters and header detection';
         this.author = 'Daniele Liprandi';
         
-        // NEW: Parser-specific metadata for automatic discovery
+        this.requiresStructuredData = true; 
         this.supportedExperimentTypes = ['tabular_data'];
         this.primaryExperimentType = 'tabular_data';
         this.requiredFields = []; // CSV can have any fields

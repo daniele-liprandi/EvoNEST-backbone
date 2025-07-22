@@ -15,9 +15,9 @@ export class LoggerMateFormatParser extends BaseDataFormatParser {
         this.supportedFormats = ['.txt', '.csv', '.log'];
         this.version = '1.0.0';
         this.description = 'Parses LoggerMate wireless datalogger files containing temperature, GPS, and accelerometer data';
-        this.author = 'EvoNEST Team';
+        this.author = 'Daniele Liprandi';
         
-        // NEW: Parser-specific metadata for automatic discovery
+        this.requiresStructuredData = true; 
         this.supportedExperimentTypes = ['temperature_monitoring'];
         this.primaryExperimentType = 'temperature_monitoring';
         this.requiredFields = ['temperature', 'timestamp'];
