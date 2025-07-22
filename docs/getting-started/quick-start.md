@@ -37,11 +37,9 @@ openssl rand -base64 32
 Create a new file called `.env.local` in your project directory with the following content and your key:
 
 ```env
-NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-secret-key
-MONGODB_URI=mongodb://root:pass@mongo:27017
-STORAGE_PATH='/usr/evonest/file_storage'
 ```
+
 
 Go to the file `docker-compose.dev.yml` and set up the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` variables to secure your MongoDB instance. 
 
@@ -49,6 +47,15 @@ Go to the file `docker-compose.dev.yml` and set up the `MONGO_INITDB_ROOT_USERNA
 # Make sure to also set your MongoDB connection string in the .env file
 MONGO_URL=mongodb://your_username:your_secure_password@mongo:27017
 ```
+
+Finally, create a new file called `.env.development` containing
+
+```env
+NEXTAUTH_URL=http://localhost:3005
+MONGODB_URI=mongodb://your_username:your_secure_password@mongo:27019
+STORAGE_PATH='/usr/evonest/file_storage_dev'
+```
+
 
 #### 3. Start the development environment
 
@@ -72,11 +79,21 @@ Open your browser and navigate to `http://localhost:3005`
 
 If you haven't already, make sure to complete [Step 1](#1-clone-the-repository) and [Step 2](#2-set-up-environment-files) before proceeding.
 
+
+Finally, create the production environment file `.env.production`
+
+```env
+NEXTAUTH_URL=http://localhost:3000
+MONGODB_URI=mongodb://your_username:your_secure_password@mongo:27017
+STORAGE_PATH='/usr/evonest/file_storage'
+```
+
 To start the production setup, make sure that your docker instance is running and execute
 
 ```bash
 docker-compose -f docker-compose.yml up -d
 ```
+
 
 This will start:
 

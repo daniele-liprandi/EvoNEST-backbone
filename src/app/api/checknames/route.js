@@ -23,10 +23,14 @@ import { NextResponse } from "next/server";
  *           example: "correctName"
  *         source:
  *           type: string
- *           enum: [auto, WSC, GNR]
+ *           enum: [auto, WSC, GNames]
  *           default: auto
- *           description: Data source for name checking (WSC = World Spider Catalog, GNR = Global Names Resolver)
+ *           description: Data source for name checking (WSC = World Spider Catalog, GNames = Global Names Verifier)
  *           example: "auto"
+ *         family:
+ *           type: string
+ *           description: Optional family name to provide taxonomic context (used with GNames)
+ *           example: "Pholcidae"
  *     TaxonomicInfo:
  *       type: object
  *       properties:
@@ -34,6 +38,14 @@ import { NextResponse } from "next/server";
  *           type: string
  *           description: Standardized scientific name
  *           example: "Araneus diadematus"
+ *         kingdom:
+ *           type: string
+ *           description: Taxonomic kingdom
+ *           example: "Animalia"
+ *         phylum:
+ *           type: string
+ *           description: Taxonomic phylum
+ *           example: "Arthropoda"
  *         class:
  *           type: string
  *           description: Taxonomic class
@@ -101,8 +113,8 @@ import { NextResponse } from "next/server";
  *       
  *       Data sources:
  *       - **WSC**: World Spider Catalog (spider-specific)
- *       - **GNR**: Global Names Resolver (general taxa)
- *       - **auto**: Tries WSC first, falls back to GNR
+ *       - **GNames**: Global Names Verifier (general taxa) - uses data sources 1, 12, 13 (Catalogue of Life, Encyclopedia of Life, GBIF)
+ *       - **auto**: Tries WSC first, falls back to GNames
  *     tags:
  *       - Utilities
  *     requestBody:
@@ -121,9 +133,10 @@ import { NextResponse } from "next/server";
  *             fullTaxaInfo:
  *               summary: Get complete taxonomic information
  *               value:
- *                 taxa: "Araneus diadematus"
+ *                 taxa: "Pholcus phalangioides"
  *                 method: "fullTaxaInfo"
- *                 source: "GNR"
+ *                 source: "GNames"
+ *                 family: "Pholcidae"
  *     responses:
  *       200:
  *         description: Name validation successful
@@ -144,28 +157,60 @@ import { NextResponse } from "next/server";
  */
 
 function extractTaxonomicInfo(data) {
-    const results = data.data[0].results[0];
-    const canonicalForm = results.canonical_form;
+    // Handle the Global Names Verifier POST API response format
+    if (!data.names || !data.names[0] || !data.names[0].bestResult) {
+        throw new Error('Invalid response format from Global Names API');
+    }
 
-    const classificationPath = results.classification_path.split('|');
-    const classificationRanks = results.classification_path_ranks.split('|');
+    const result = data.names[0].bestResult;
+    const canonicalForm = result.currentCanonicalSimple || result.matchedCanonicalSimple;
 
-    const taxonomicInfo = {};
+    // Parse classification path and ranks
+    const classificationPath = result.classificationPath ? result.classificationPath.split('|') : [];
+    const classificationRanks = result.classificationRanks ? result.classificationRanks.split('|') : [];
+
+    // Build taxonomic info object from classification data
+    const taxonomicInfo = {
+        canonical_form: canonicalForm,
+        kingdom: '',
+        phylum: '',
+        class: '',
+        order: '',
+        family: '',
+        genus: '',
+        species: ''
+    };
+
+    // Map the classification path to taxonomic ranks
     classificationRanks.forEach((rank, index) => {
-        taxonomicInfo[rank.toLowerCase()] = classificationPath[index];
+        if (classificationPath[index] && taxonomicInfo.hasOwnProperty(rank.toLowerCase())) {
+            taxonomicInfo[rank.toLowerCase()] = classificationPath[index];
+        }
     });
 
-    /* consider only the last word of species */
-    const speciesname = taxonomicInfo.species.split(" ").pop()
+    // if species has two words, split them and take the second one
+    if (taxonomicInfo.species && taxonomicInfo.species.includes(' ')) {
+        const speciesParts = taxonomicInfo.species.split(' ');
+        taxonomicInfo.species = speciesParts[speciesParts.length - 1]; // Take the last part as species
+    }
 
-    return {
-        canonical_form: canonicalForm,
-        class: taxonomicInfo.class || '',
-        order: taxonomicInfo.order || '',
-        family: taxonomicInfo.family || '',
-        genus: taxonomicInfo.genus || '',
-        species: speciesname || ''
-    };
+    // If genus is unknown, use gen.
+    if (!taxonomicInfo.genus && taxonomicInfo.family) {
+        taxonomicInfo.genus = "gen.";
+        taxonomicInfo.species = "sp.";
+        taxonomicInfo.canonical_form = `${taxonomicInfo.family} gen. sp.`;
+    }
+
+    // If species is unknown, use sp.
+    if (!taxonomicInfo.species && taxonomicInfo.family) {
+        taxonomicInfo.species = "sp.";
+        taxonomicInfo.canonical_form = `${taxonomicInfo.genus} sp.`;
+    }
+
+    
+    
+
+    return taxonomicInfo;
 }
 
 
@@ -202,23 +247,45 @@ export async function POST(req) {
                 return new NextResponse(JSON.stringify({ error: { error } }), { status: 500 });
             }
         }
-        if (source == 'GNR') {
-            const gnrtaxa = data.taxa.replace(/ /g, '+'); // Replace spaces with pluses
-            const GNRurl = `https://resolver.globalnames.org/name_resolvers.json?names=${gnrtaxa}&data_source_ids=3`;
+        if (source == 'GNames') {
+            const requestBody = {
+                nameStrings: [data.taxa],
+                dataSources: [1, 12, 13], // Your favorite data sources
+                withAllMatches: false,
+                withCapitalization: false,
+                withSpeciesGroup: false,
+                withUninomialFuzzyMatch: false,
+                withStats: true,
+                mainTaxonThreshold: 0.6
+            };
+            
+            const GNRurl = 'https://verifier.globalnames.org/api/v1/verifications';
             try {
                 const GNRresponse = await fetch(GNRurl, {
-                    method: 'GET',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
                 });
                 if (GNRresponse.ok) {
                     const GNRjson = await GNRresponse.json();
-                    const taxonomicInfo = extractTaxonomicInfo(GNRjson)
-                    return new NextResponse(JSON.stringify({ status: 'success', data: taxonomicInfo.canonical_form }), { status: 200 });
+                    if (GNRjson.names && GNRjson.names[0] && GNRjson.names[0].bestResult) {
+                        const taxonomicInfo = extractTaxonomicInfo(GNRjson);
+                        return new NextResponse(JSON.stringify({ 
+                            status: 'success', 
+                            data: taxonomicInfo.canonical_form,
+                            source: 'GNames'
+                        }), { status: 200 });
+                    } else {
+                        return new NextResponse(JSON.stringify({ error: 'No results found from GNames' }), { status: 404 });
+                    }
                 } else {
-                    return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNR' }), { status: 500 });
+                    return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNames' }), { status: 500 });
                 }
             } catch (error) {
                 console.log(error);
-                return new NextResponse(JSON.stringify({ error: { error } }), { status: 500 });
+                return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNames' }), { status: 500 });
             }
         }
         if (source == 'auto') {
@@ -229,22 +296,44 @@ export async function POST(req) {
                 const checkedNames = await spytraxCheckTaxa(wsctaxa, wscData);
                 return new NextResponse(JSON.stringify({ status: 'success', data: checkedNames.data[0].best_match }), { status: 200 });
             } catch (error) {
-                const gnrtaxa = taxa.replace(/ /g, '+'); // Replace spaces with pluses
-                const GNRurl = `https://resolver.globalnames.org/name_resolvers.json?names=${gnrtaxa}&data_source_ids=3`;
+                const requestBody = {
+                    nameStrings: [taxa],
+                    dataSources: [1, 12, 13], // Your favorite data sources
+                    withAllMatches: false,
+                    withCapitalization: false,
+                    withSpeciesGroup: false,
+                    withUninomialFuzzyMatch: false,
+                    withStats: true,
+                    mainTaxonThreshold: 0.6
+                };
+                
+                const GNRurl = 'https://verifier.globalnames.org/api/v1/verifications';
                try {
                     const GNRresponse = await fetch(GNRurl, {
-                        method: 'GET',
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestBody),
                     });
                     if (GNRresponse.ok) {
                         const GNRjson = await GNRresponse.json();
-                        const taxonomicInfo = extractTaxonomicInfo(GNRjson)
-                        return new NextResponse(JSON.stringify({ status: 'success', data: taxonomicInfo.canonical_form }), { status: 200 });
+                        if (GNRjson.names && GNRjson.names[0] && GNRjson.names[0].bestResult) {
+                            const taxonomicInfo = extractTaxonomicInfo(GNRjson);
+                            return new NextResponse(JSON.stringify({ 
+                                status: 'success', 
+                                data: taxonomicInfo.canonical_form,
+                                source: 'GNames'
+                            }), { status: 200 });
+                        } else {
+                            return new NextResponse(JSON.stringify({ error: 'No results found from GNames fallback' }), { status: 404 });
+                        }
                     } else {
-                        return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNR fallback' }), { status: 500 });
+                        return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNames fallback' }), { status: 500 });
                     }
                 } catch (error) {
                     console.log(error);
-                    return new NextResponse(JSON.stringify({ error: { error } }), { status: 500 });
+                    return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNames fallback' }), { status: 500 });
                 }
             }
         }
@@ -253,23 +342,52 @@ export async function POST(req) {
         if (source == 'WSC') {
             return new NextResponse(JSON.stringify({ error: 'WSC does not support fullTaxaInfo method' }), { status: 400 });
         }
-        if (source == 'auto' || source == 'GNR') {
-            const taxa = data.taxa.replace(/ /g, '+'); // Replace spaces with pluses
-            const GNRurl = `https://resolver.globalnames.org/name_resolvers.json?names=${taxa}&data_source_ids=3`;
+        if (source == 'auto' || source == 'GNames') {
+            let taxa = data.taxa;
+            
+            // Build request body for POST API
+            const requestBody = {
+                nameStrings: [taxa],
+                dataSources: [1, 12, 13], // Your favorite data sources
+                withAllMatches: false,
+                withCapitalization: false,
+                withSpeciesGroup: false,
+                withUninomialFuzzyMatch: false,
+                withStats: true,
+                mainTaxonThreshold: 0.6
+            };
+            
+            // If family information is provided, we could potentially include it in the search
+            // but the POST API doesn't directly support context - it works better with clean names
+            
+            const GNRurl = 'https://verifier.globalnames.org/api/v1/verifications';
             try {
                 const GNRresponse = await fetch(GNRurl, {
-                    method: 'GET',
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
                 });
                 if (GNRresponse.ok) {
                     const GNRjson = await GNRresponse.json();
-                    const taxonomicInfo = extractTaxonomicInfo(GNRjson)
-                    return new NextResponse(JSON.stringify({ status: 'success', data: taxonomicInfo, source: 'GNR' }), { status: 200 });
+                    console.log(GNRjson.names[0].bestResult);
+                    if (GNRjson.names && GNRjson.names[0] && GNRjson.names[0].bestResult) {
+                        const taxonomicInfo = extractTaxonomicInfo(GNRjson);
+                        return new NextResponse(JSON.stringify({ 
+                            status: 'success', 
+                            data: taxonomicInfo, 
+                            source: 'GNames' 
+                        }), { status: 200 });
+                    } else {
+                        return new NextResponse(JSON.stringify({ error: 'No results found from GNames' }), { status: 404 });
+                    }
                 } else {
-                    return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNR' }), { status: 500 });
+                    return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNames' }), { status: 500 });
                 }
             } catch (error) {
                 console.log(error);
-                return new NextResponse(JSON.stringify({ error: { error } }), { status: 500 });
+                return new NextResponse(JSON.stringify({ error: 'Failed to fetch from GNames' }), { status: 500 });
             }
         }
     }
