@@ -7,11 +7,11 @@
 
 import { BaseDataFormatParser } from './BaseDataFormatParser.js';
 
-export class LoggerMateFormatParser extends BaseDataFormatParser {
+export class LoggerMateTemperatureParser extends BaseDataFormatParser {
     constructor() {
         super();
-        this.name = 'LoggerMateFormatParser';
-        this.label = 'LoggerMate Parser';
+        this.name = 'LoggerMateTemperatureParser';
+        this.label = 'LoggerMate Temperature Parser';
         this.supportedFormats = ['.txt', '.csv', '.log'];
         this.version = '1.0.0';
         this.description = 'Parses LoggerMate wireless datalogger files containing temperature, GPS, and accelerometer data';
@@ -25,32 +25,12 @@ export class LoggerMateFormatParser extends BaseDataFormatParser {
             {
                 name: 'temperature',
                 unit: '°C',
-                description: 'Temperature measurements from wireless datalogger'
+                description: 'Average temperature during the monitoring period with statistical analysis'
             },
             {
-                name: 'gps_latitude',
-                unit: 'degrees',
-                description: 'GPS latitude coordinates'
-            },
-            {
-                name: 'gps_longitude',
-                unit: 'degrees',
-                description: 'GPS longitude coordinates'
-            },
-            {
-                name: 'accelerometer_x',
-                unit: 'g',
-                description: 'X-axis acceleration data'
-            },
-            {
-                name: 'accelerometer_y',
-                unit: 'g',
-                description: 'Y-axis acceleration data'
-            },
-            {
-                name: 'accelerometer_z',
-                unit: 'g',
-                description: 'Z-axis acceleration data'
+                name: 'temperature_recording_duration',
+                unit: 'samples',
+                description: 'Number of temperature samples recorded'
             }
         ];
     }
@@ -214,23 +194,48 @@ export class LoggerMateFormatParser extends BaseDataFormatParser {
             return traits;
         }
 
-        // Extract temperature measurements as traits
-        data.forEach((record, index) => {
-            if (record.TEMPERATURE && typeof record.TEMPERATURE === 'number') {
-                traits.push({
-                    method: "create",
-                    type: "temperature",
-                    sampleId: sampleId,
-                    responsible: "", // Will be filled by the UI
-                    date: date,
-                    measurement: record.TEMPERATURE,
-                    unit: "°C",
-                    equipment: "LoggerMate",
-                    detail: `Sample ${record.SAMPLE_NUM || index + 1}`,
-                    notes: `Recorded at ${record.DAY || 'unknown'}/${record.HOUR || 'unknown'}:${record.MINUTE || 'unknown'}:${record.SECOND || 'unknown'}`
-                });
+        // Extract temperature values
+        const temperatures = data
+            .map(record => record.TEMPERATURE)
+            .filter(temp => typeof temp === 'number');
+
+        if (temperatures.length === 0) {
+            return traits;
+        }
+
+        // Calculate summary statistics
+        const minTemp = Math.min(...temperatures);
+        const maxTemp = Math.max(...temperatures);
+        const avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
+
+        traits.push(
+            {
+                method: "create",
+                type: "temperature",
+                sampleId: sampleId,
+                responsible: "",
+                date: date,
+                measurement: parseFloat(avgTemp.toFixed(3)),
+                std: this.calculateStandardDeviation(temperatures),
+                min: minTemp,
+                max: maxTemp,
+                listvals: temperatures,
+                unit: "°C",
+                equipment: "LoggerMate",
+                detail: `Average temperature from ${temperatures.length} readings`,
+            },
+            {
+                method: "create",
+                type: "temp_rec_length",
+                sampleId: sampleId,
+                responsible: "",
+                date: date,
+                measurement: temperatures.length,
+                unit: "samples",
+                equipment: "LoggerMate",
+                detail: `Total number of temperature measurements recorded`,
             }
-        });
+        );
 
         return traits;
     }
@@ -353,5 +358,18 @@ export class LoggerMateFormatParser extends BaseDataFormatParser {
             success: errors.length === 0,
             errors: [...baseValidation.errors, ...errors]
         };
+    }
+
+    /**
+     * Calculate standard deviation of an array of numbers
+     */
+    calculateStandardDeviation(numbers) {
+        if (numbers.length === 0) return 0;
+        
+        const mean = numbers.reduce((sum, num) => sum + num, 0) / numbers.length;
+        const squaredDiffs = numbers.map(num => Math.pow(num - mean, 2));
+        const variance = squaredDiffs.reduce((sum, sqDiff) => sum + sqDiff, 0) / numbers.length;
+        
+        return Math.sqrt(variance);
     }
 }

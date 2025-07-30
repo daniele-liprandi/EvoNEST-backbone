@@ -347,19 +347,6 @@ validateMeasurements(measurements) {
 }
 ```
 
-## Available Parsers
-
-### Data Format Parsers (Text/Data Files)
-- **LoggerMateFormatParser**: Wireless datalogger files with metadata sections
-- **CSVFormatParser**: Generic CSV/TSV files with configurable delimiters
-- **TensileTestFormatParser**: Mechanical testing data files
-
-### File Processors (Extension-Based)
-- **Image Processor**: JPEG, PNG, GIF, BMP, WebP, SVG files - creates thumbnails
-- **TIFF Processor**: TIFF image files with specialized scientific imaging support
-- **Document Processor**: PDF, DOC, TXT document files for protocols and documentation
-- **Lossless Image Processor**: Raw and lossless image formats preserving quality
-
 **Note**: File processors handle specific file extensions and create basic file records, while data format parsers convert instrument data into structured experiments with traits. Choose data format parsers for scientific instruments, file processors for general file handling.
 
 ## Testing

@@ -67,6 +67,7 @@ export function determineFileType(file: File): string {
     file.name.toLowerCase().endsWith(".json") ||
     file.name.toLowerCase().endsWith(".txt") ||
     file.name.toLowerCase().endsWith(".csv") ||
+    file.name.toLowerCase().endsWith(".dat") ||
     file.name.toLowerCase().endsWith(".tsv")
   ) {
     return "readable";

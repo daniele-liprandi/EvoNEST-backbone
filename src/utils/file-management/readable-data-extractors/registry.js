@@ -5,9 +5,12 @@
  * Handles parser discovery and selection.
  */
 
-import { LoggerMateFormatParser } from './LoggerMateFormatParser.js';
+import { LoggerMateTemperatureParser } from './LoggerMateTemperatureParser.js';
+import { LoggerMateGPSParser } from './LoggerMateGPSParser.js';
+import { LoggerMateAccelerometerParser } from './LoggerMateAccelerometerParser.js';
 import { CSVFormatParser } from './CSVFormatParser.js';
 import { TensileTestFormatParser } from './TensileTestFormatParser.js';
+import { StarOddiParser } from './StarOddiParser.js';
 
 class DataFormatParserRegistry {
     constructor() {
@@ -19,9 +22,12 @@ class DataFormatParserRegistry {
      * Register default parsers
      */
     registerDefaultParsers() {
-        this.register(new LoggerMateFormatParser());
+        this.register(new LoggerMateTemperatureParser());
+        this.register(new LoggerMateGPSParser());
+        this.register(new LoggerMateAccelerometerParser());
         this.register(new CSVFormatParser());
         this.register(new TensileTestFormatParser());
+        this.register(new StarOddiParser());
     }
 
     /**

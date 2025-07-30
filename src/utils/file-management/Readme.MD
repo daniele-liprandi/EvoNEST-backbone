@@ -6,6 +6,9 @@ EvoNEST processes experiment files through a three-layer architecture:
 Raw File → File Processor → Data Format Parser → Structured Data → API
 ```
 
+The documentation on how to write new parsers can be found at [Data Format Parser Development Guide](https://daniele-liprandi.github.io/EvoNEST-backbone/developer-guide/data-format-parser-development.html) and at [File Processor Development Guide](https://daniele-liprandi.github.io/EvoNEST-backbone/developer-guide/file-processor-development.html)
+
+
 ## Processing Layers
 
 ### 1. File Processors (`processors/`)
