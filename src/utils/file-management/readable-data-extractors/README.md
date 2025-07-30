@@ -110,12 +110,6 @@ Add to `index.js` exports:
 export { MyInstrumentParser } from './MyInstrumentParser.js';
 ```
 
-## Available Parsers
-
-- **LoggerMateFormatParser**: Wireless datalogger files with metadata sections
-- **CSVFormatParser**: Generic CSV/TSV with customizable delimiters  
-- **TensileTestFormatParser**: Mechanical testing data files
-
 ## Parser Requirements
 
 ### Essential Methods
