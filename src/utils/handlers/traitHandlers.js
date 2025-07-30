@@ -73,3 +73,30 @@ export async function handleTraitConversion(traitsToUpdate, conversionData) {
 
     return response.json();
 }
+
+// Function to handle downloading 
+export const handleTraitDataDownload = async (trait) => {
+    const response = await fetch(`${prepend_path}/api/traits?id=${trait._id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to download list values');
+    }
+
+    const data = await response.json();
+
+    // download as json
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${trait.type}_data.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
