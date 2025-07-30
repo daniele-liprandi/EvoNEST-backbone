@@ -8,6 +8,7 @@ import React from "react"
 import { dateColumn, logbookColumn, measurementColumn, parentColumn, responsibleColumn, sampleColumn, selectColumn, sortableFilterableColumn, unitColumn } from "@/components/tables/columns"
 import { handleFileDownloads } from "@/utils/handlers/experimentHandlers"
 import { Button } from "@/components/ui/button"
+import { handleTraitDataDownload } from "@/utils/handlers/traitHandlers"
 
 
 
@@ -44,15 +45,24 @@ export const baseColumns = [
   {
     accessorKey: "listvals",
     header: "List of Values",
+    // show only first 5 values
+    cell: (info) => {
+      const trait = info.row.original;
+      if (!trait.listvals || trait.listvals.length === 0) {
+        return "";
+      }
+      return trait.listvals.slice(0, 5).join(", ") + (trait.listvals.length > 5 ? ", ..." : "");
+    },
   },
   {
-    accessorKey: "fileId",
-    header: "Download",
+    accessorKey: "trait_download",
+    header: "Download JSON",
     cell: (info) => {
       const trait = info.row.original;
       return (
-        (trait.filesId) &&
-        <Button onClick={() => handleFileDownloads(trait.filesId)}>Download</Button>
+        <Button onClick={() => handleTraitDataDownload(trait)}>
+          Download
+        </Button>
       );
     },
   },
