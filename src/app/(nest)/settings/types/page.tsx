@@ -323,6 +323,30 @@ export default function TypesPage() {
     await fetchConfigs()
   }
 
+  const loadDefaults = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/config/defaults')
+      if (response.ok) {
+        const defaults = await response.json()
+        console.log('Loaded defaults:', defaults)
+        // Update the configs state with defaults
+        setConfigs(prev => ({
+          sampletypes: defaults.sampletypes || prev.sampletypes,
+          traittypes: defaults.traittypes || prev.traittypes,
+          samplesubtypes: defaults.samplesubtypes || prev.samplesubtypes,
+          equipmenttypes: defaults.equipmenttypes || prev.equipmenttypes
+        }))
+      } else {
+        console.error('Failed to load defaults')
+      }
+    } catch (error) {
+      console.error('Error loading defaults:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const seedDatabase = async () => {
     setLoading(true)
     try {
@@ -353,6 +377,9 @@ export default function TypesPage() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold">Types Configuration</h1>
             <div className="space-x-2">
+              <Button onClick={loadDefaults} disabled={loading} variant="outline">
+                {loading ? 'Loading...' : 'Load Defaults'}
+              </Button>
               <Button onClick={seedDatabase} disabled={loading} variant="outline">
                 {loading ? 'Seeding...' : 'Seed Database'}
               </Button>
