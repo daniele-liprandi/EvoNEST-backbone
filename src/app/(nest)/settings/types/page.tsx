@@ -45,17 +45,7 @@ interface LabelType {
   description?: string
   unit?: string
   shortened?: string
-  [key: string]: string | undefined
-}
-
-interface ConfigType {
-  _id?: string
-  type: string
-  data: LabelType[]
-  version?: number
-  lastModified?: string
-  modifiedBy?: string
-  isDefault?: boolean
+  [key: string]: string | number | undefined
 }
 
 interface TypeTableProps {
@@ -323,7 +313,11 @@ export default function TypesPage() {
     await fetchConfigs()
   }
 
-  const seedDatabase = async () => {
+  const setToDefaults = async () => {
+    if (!confirm('Are you sure you want to set all configurations to defaults? This will overwrite any custom changes.')) {
+      return;
+    }
+
     setLoading(true)
     try {
       const response = await fetch('/api/config/types/seed', {
@@ -333,13 +327,13 @@ export default function TypesPage() {
       
       if (response.ok) {
         const result = await response.json()
-        console.log('Seed result:', result)
-        await fetchConfigs() // Refresh after seeding
+        console.log('Reset result:', result)
+        await fetchConfigs() // Refresh after resetting
       } else {
-        console.error('Failed to seed database')
+        console.error('Failed to set to defaults')
       }
     } catch (error) {
-      console.error('Error seeding database:', error)
+      console.error('Error resetting to defaults:', error)
     } finally {
       setLoading(false)
     }
@@ -353,8 +347,8 @@ export default function TypesPage() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold">Types Configuration</h1>
             <div className="space-x-2">
-              <Button onClick={seedDatabase} disabled={loading} variant="outline">
-                {loading ? 'Seeding...' : 'Seed Database'}
+              <Button onClick={setToDefaults} disabled={loading} variant="outline">
+                {loading ? 'Resetting...' : 'Set to Defaults'}
               </Button>
               <Button onClick={refreshConfig} disabled={loading}>
                 {loading ? 'Loading...' : 'Refresh'}
