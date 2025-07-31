@@ -1,7 +1,8 @@
 {
   "name": "evonest",
   "version": "0.1.0",
-  "private": true,  "scripts": {
+  "private": true,
+  "scripts": {
     "dev": "next dev -p 3005",
     "build": "next build",
     "start": "next start",
@@ -63,10 +64,11 @@
     "lucide-react": "^0.407.0",
     "match-sorter": "^6.3.4",
     "mime-types": "^2.1.35",
-    "mongodb": "^6.5.0",
+    "mongodb": "^6.18.0",
     "next": "^14.2.4",
     "next-auth": "^4.24.11",
     "next-themes": "^0.3.0",
+    "node-cron": "^4.2.1",
     "papaparse": "^5.4.1",
     "plotly.js": "^2.32.0",
     "react": "^18.3.1",
