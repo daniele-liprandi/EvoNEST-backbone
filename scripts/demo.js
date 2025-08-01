@@ -486,6 +486,9 @@ async function resetDatabase() {
     try {
       await mainDb.collection("samples").drop();
       await mainDb.collection("traits").drop();
+      await mainDb.collection("files").drop();
+      await mainDb.collection("experiments").drop();
+      console.log("   🗑️  Dropped existing collections in main database");
     } catch (error) {
       // Ignore if collections don't exist
     }
