@@ -25,7 +25,7 @@ export default function SignIn() {
             if (res?.error) {
                 setError('Invalid credentials');
             } else {
-                router.push('/'); // Redirect to home page on success
+                router.push('/home'); // Redirect to home page on success
                 router.refresh();
             }
         } catch (error) {
@@ -38,7 +38,8 @@ export default function SignIn() {
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Welcome to EvoNEST</CardTitle>
-                    <CardDescription>Please sign in to continue</CardDescription>
+                    <CardDescription>Please sign in to continue. 
+                        The default login is <code>admin / pass</code></CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
@@ -46,7 +47,7 @@ export default function SignIn() {
                             <div className="text-sm text-red-500">{error}</div>
                         )}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium" htmlFor="username">Username</label>
+                            <label className="text-sm font-medium" htmlFor="username">Username (default: admin)</label>
                             <Input
                                 id="username"
                                 name="username"
@@ -56,7 +57,7 @@ export default function SignIn() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium" htmlFor="password">Password</label>
+                            <label className="text-sm font-medium" htmlFor="password">Password (default: pass)</label>
                             <Input
                                 id="password"
                                 name="password"

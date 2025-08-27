@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   flexRender,
@@ -9,7 +9,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -18,29 +18,40 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { rankItem } from '@tanstack/match-sorter-utils'
+} from "@/components/ui/table";
+import { rankItem } from "@tanstack/match-sorter-utils";
 
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import Papa from 'papaparse'
-import { useState } from "react"
-import { MdChevronLeft, MdChevronRight, MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight } from "react-icons/md"
-import * as XLSX from 'xlsx'
+import Papa from "papaparse";
+import { useState } from "react";
+import {
+  MdChevronLeft,
+  MdChevronRight,
+  MdKeyboardDoubleArrowLeft,
+  MdKeyboardDoubleArrowRight,
+} from "react-icons/md";
+import * as XLSX from "xlsx";
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), value)
+  const itemRank = rankItem(row.getValue(columnId), value);
 
   // Store the itemRank info
   addMeta({
     itemRank,
-  })
+  });
 
   // Return if the item should be filtered in/out
-  return itemRank.passed
-}
+  return itemRank.passed;
+};
 
 export function DataTable({
   columns,
@@ -51,10 +62,10 @@ export function DataTable({
   onIncrement,
   enableDownload = true,
 }) {
-  const [columnFilters, setColumnFilters] = useState([])
-  const [sorting, setSorting] = useState([])
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState({})
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [sorting, setSorting] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [columnVisibility, setColumnVisibility] = useState({});
   const [pagination, setPagination] = useState({
     pageIndex: 0, //initial page index
     pageSize: 10, //default page size
@@ -93,55 +104,98 @@ export function DataTable({
       columnVisibility,
       pagination,
     },
-  })
+  });
 
   const handleDownloadCSV = () => {
-    const csvData = Papa.unparse(table.getFilteredRowModel().rows.map(row => row.original));
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const csvData = Papa.unparse(
+      table.getFilteredRowModel().rows.map((row) => row.original)
+    );
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = 'samples_data.csv';
+    link.download = "samples_data.csv";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleDownloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(table.getFilteredRowModel().rows.map(row => row.original));
+    const worksheet = XLSX.utils.json_to_sheet(
+      table.getFilteredRowModel().rows.map((row) => row.original)
+    );
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    const link = document.createElement('a');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = 'data.xlsx';
+    link.download = "data.xlsx";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleDownloadJSON = () => {
-    const json = JSON.stringify(table.getFilteredRowModel().rows.map(row => row.original), null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const link = document.createElement('a');
+    const json = JSON.stringify(
+      table.getFilteredRowModel().rows.map((row) => row.original),
+      null,
+      2
+    );
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = 'data.json';
+    link.download = "data.json";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
 
   return (
     <div className="rounded-md border">
-      {
-        enableDownload && (
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <Button variant="default" size="sm" onClick={handleDownloadExcel}>Download Excel</Button>
-            <Button variant="outline" size="sm" onClick={handleDownloadCSV}>Download CSV</Button>
-            <Button variant="outline" size="sm" onClick={handleDownloadJSON}>Download JSON</Button>
+      {enableDownload && (
+        <>
+          {/* On medium or below screens, the download buttons will be hidden show only Excel, CSV, and JSON as text */}
+          <div className="hidden lg:flex">
+            <div className="flex items-center justify-between py-4 px-4">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleDownloadExcel}
+                >
+                  Download Excel
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+                  Download CSV
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadJSON}
+                >
+                  Download JSON
+                </Button>
+              </div>
+            </div>
           </div>
-        )
-      }
+          <div className="flex lg:hidden items-center justify-between py-4 px-4">
+            <div className="flex items-center space-x-2">
+              <Button variant="default" size="sm" onClick={handleDownloadExcel}>
+                Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+                CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadJSON}>
+                JSON
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
       <div>
         <Table>
           <TableHeader>
@@ -153,11 +207,11 @@ export function DataTable({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -171,14 +225,20 @@ export function DataTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -192,7 +252,7 @@ export function DataTable({
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              table.setPageSize(Number(value));
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
@@ -241,8 +301,9 @@ export function DataTable({
         </Button>
       </div>
       <div className="flex-1 text-sm text-muted-foreground">
-        {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+        {table.getFilteredSelectedRowModel().rows.length} of{" "}
+        {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
     </div>
-  )
+  );
 }

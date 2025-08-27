@@ -66,7 +66,7 @@ const usersProps = {
 
 const experimentsProps = {
   label: "Experiments",
-  icon: <PiMathOperationsBold size={60} />, 
+  icon: <PiMathOperationsBold size={60} />,
   description: "All the experiments collected in the NEST",
   options: [
     {
@@ -80,7 +80,7 @@ const experimentsProps = {
 
 const traitsProps = {
   label: "Traits",
-  icon: <PiRulerBold size={60} />, 
+  icon: <PiRulerBold size={60} />,
   description: "Traits in the NEST",
   options: [
     {
@@ -99,7 +99,7 @@ const traitsProps = {
 
 const settingsProps = {
   label: "Settings",
-  icon: <PiWrenchBold size={60} />, 
+  icon: <PiWrenchBold size={60} />,
   description: "Settings for the NEST",
   options: [
     {
@@ -115,7 +115,6 @@ const settingsProps = {
   ],
   href: "/settings",
 };
-
 
 // Types for the component props
 interface NavStandardItemProps {
@@ -305,7 +304,7 @@ export function NavBar() {
           <NavStandardItem {...traitsProps} />
           <NavStandardItem {...settingsProps} />
           {/*link to utils*/}
-          
+
           <NavigationMenuItem>
             <NavigationMenuTrigger>Documentation</NavigationMenuTrigger>
             <NavigationMenuContent className="z-40">
@@ -414,17 +413,21 @@ export function NavBar() {
         )}
         {scanning && (
           <>
-            <div className="absolute inset-x-0 top-10 md:right-0 md:left-auto md:w-4/5 bg-white">
-              <Scanner
-                onScan={handleBarcodeScanned}
-                formats={["code_128", "qr_code"]}
-                components={{ zoom: true }}
-              />
+            {/* QR Scanner - full screen on sm/md, corner on lg+ */}
+            <div className="fixed inset-0 z-40 bg-black bg-opacity-80 lg:inset-auto lg:top-16 lg:right-4 lg:w-80 lg:h-60 lg:bg-transparent">
+              <div className="w-full h-full lg:bg-black lg:bg-opacity-50 lg:rounded-lg lg:overflow-hidden">
+                <Scanner
+                  onScan={handleBarcodeScanned}
+                  formats={["code_128", "qr_code"]}
+                  components={{ zoom: true, finder: false }}
+                />
+              </div>
             </div>
             <Button
               variant="destructive"
               size="sm"
               onClick={() => setScanning(false)}
+              className="fixed top-4 right-4 z-50 lg:absolute lg:top-2 lg:right-2"
             >
               Close
             </Button>
