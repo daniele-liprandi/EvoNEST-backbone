@@ -2,11 +2,12 @@
 layout: home
 
 hero:
-  name: "EvoNEST Documentation"
+  name: "EvoNEST Backbone"
   text: "User Guide & Developer Documentation"
   tagline: "Learn how to use EvoNEST and contribute to the platform"
   image:
-    src: /EvoNESTlogo.svg
+    light: /EvoNESTlogo.svg
+    dark: /EvoNESTlogo_dark.svg
     alt: EvoNEST Logo
   actions:
     - theme: brand
@@ -18,8 +19,15 @@ hero:
     - theme: alt
       text: Developer Guide
       link: /developer-guide/
+    - theme: brand
+      text: Visit the Demo
+      link: /demo/
 
 features:
+  - icon: 🚀
+    title: Quick Start Guides
+    details: Step-by-step tutorials to get you up and running with EvoNEST quickly and efficiently.
+
   - icon: 📚
     title: User Documentation
     details: Comprehensive guides covering all aspects of using EvoNEST, from basic operations to advanced features.
@@ -28,13 +36,9 @@ features:
     title: Developer Resources
     details: Technical documentation, API references, and contribution guidelines for developers and contributors.
 
-  - icon: 🚀
-    title: Quick Start Guides
-    details: Step-by-step tutorials to get you up and running with EvoNEST quickly and efficiently.
-
-  - icon: 🔍
-    title: Searchable Content
-    details: Easily find the information you need with our powerful search functionality across all documentation.
+  - icon: 🎯
+    title: Live Demo
+    details: Try EvoNEST in action with our fully functional demo environment - no setup required.
 ---
 
 ## Welcome to EvoNEST Documentation
@@ -50,7 +54,7 @@ This documentation site provides comprehensive guides for both users and develop
 - **[Data Collection](/user-guide/data-collection)** - Learn how to effectively collect and manage your research data
 - **[Sample Management](/user-guide/sample-management)** - Organize and track biological specimens
 - **[Experiments](/user-guide/experiments)** - Manage experimental procedures and protocols
-- **[Traits Management](/user-guide/traits-management)** - Handle biomechanical properties and measurements
+- **[Traits Management](/user-guide/traits-management)** - Handle any kind of traits, properties and measurements
 - **[Data Analysis](/user-guide/data-analysis)** - Statistical analysis and data exploration tools
 - **[Visualization](/user-guide/visualization)** - Create compelling charts and graphs
 - **[Collaboration](/user-guide/collaboration)** - Work with team members and manage permissions
@@ -62,21 +66,63 @@ This documentation site provides comprehensive guides for both users and develop
 ### For Developers
 
 - **[Developer Guide](/developer-guide/)** - Set up your development environment and learn the architecture
-- **[API Documentation](https://your-api-docs-url.com)** - Complete API reference and examples
+- **[API Documentation](/api-docs/)** - Complete API reference and examples
 - **[Contributing](/developer-guide/contributing)** - How to contribute to the EvoNEST project
 
 ## About EvoNEST
 
-EvoNEST (Evolutionary Nexus of Experiments, Samples, and Traits) is a web-based platform designed for researchers to collect, analyze, and share data across diverse animal species. The platform focuses on biomechanical research and collaborative data management.
+EvoNEST (Evolutionary, ecological and biological Nexus of Experiments, Samples, and Traits) is a web-based platform designed for researchers to collect, analyze, and share data across diverse animal species. The platform focuses on organismal research and collaborative data management.
+
+### Our Mission
+
+EvoNEST aims to **democratise access to biodiversity data**, **preserve data privacy and ownership**, and **increase the efficiency of laboratories** dealing with different types of organismal data. We help laboratories and researchers by centralising, annotating, and harmonising their data, making ecological, evolutionary and biological analysis easier and more transparent. As the scientific community and funding agencies increasingly require transparency and data preservation, EvoNEST provides a unified platform for data collection, storage, and organism maintenance. By aiding the digitisation of phenotypic data, we want EvoNEST to contribute to advancing our understanding of biodiversity and evolutionary processes. 
+
+
+
+<script setup>
+import { VPTeamMembers } from 'vitepress/theme'
+
+const members = [
+  {
+    avatar: 'https://www.github.com/daniele-liprandi.png',
+    name: 'Daniele Liprandi',
+    title: 'Creator & Developer',
+    links: [
+      { icon: 'github', link: 'https://github.com/daniele-liprandi' },
+      { icon: 'gitlab', link: 'https://gitlab.com/DanieleLiprandi' },
+      { icon: 'bluesky', link: 'https://bsky.app/profile/danieleliprandi.bsky.social'},
+      { icon: 'linkedin', link: 'https://www.linkedin.com/in/daniele-liprandi-8a4199187/'},
+    ]
+  },
+  {
+    avatar: 'https://zoologie.uni-greifswald.de/storages/uni-greifswald/fakultaet/mnf/biologie/zoologie/allg_und_syst_zool/Staff/Jonas_Wolff.jpg',
+    name: 'Jonas Wolff',
+    title: 'Creator',
+    links: [
+      {
+        icon: {
+          svg: '<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Website</title><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>'
+        },
+        link: 'https://zoologie.uni-greifswald.de/struktur/abteilungen/allgemeine-und-systematische-zoologie/personal/dr-jonas-wolff/'
+      },
+      { icon: 'bluesky', link:'https://bsky.app/profile/wolffspider.bsky.social'}
+    ]
+  }
+]
+</script>
+
+## Our Team
+
+<VPTeamMembers size="small" :members />
 
 ## Need Help?
 
 - Browse the documentation sections above
 - Check our [FAQ](/user-guide/faq) for common questions
 - Visit the main [EvoNEST application](/) to start using the platform
-- Report issues or contribute on [GitHub](https://github.com/yourusername/EvoNext)
+- Report issues or contribute on [GitHub](https://github.com/daniele-liprandi/EvoNEST-backbone)
 
----
+
 
 <footer style="margin-top: 3rem; padding: 2rem 0;">
 
