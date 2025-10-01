@@ -73,6 +73,18 @@ This documentation site provides comprehensive guides for both users and develop
 
 EvoNEST (Evolutionary, ecological and biological Nexus of Experiments, Samples, and Traits) is a web-based platform designed for researchers to collect, analyze, and share data across diverse animal species. The platform focuses on organismal research and collaborative data management.
 
+<div style="margin: 1.5rem 0;">
+  <a href="https://doi.org/10.7717/peerj-cs.3186" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%); color: white; text-decoration: none; border-radius: 6px; font-size: 0.95rem; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s ease; min-width: 280px; max-width: 320px;">
+    <span style="display: flex; align-items: center; gap: 0.5rem;">
+      <svg style="width: 20px; height: 20px; fill: white;" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      </svg>
+      <strong>PeerJ</strong>
+    </span>
+    <span style="font-family: monospace; font-size: 0.85rem; opacity: 0.95;">10.7717/peerj-cs.3186</span>
+  </a>
+</div>
+
 ### Our Mission
 
 EvoNEST aims to **democratise access to biodiversity data**, **preserve data privacy and ownership**, and **increase the efficiency of laboratories** dealing with different types of organismal data. We help laboratories and researchers by centralising, annotating, and harmonising their data, making ecological, evolutionary and biological analysis easier and more transparent. As the scientific community and funding agencies increasingly require transparency and data preservation, EvoNEST provides a unified platform for data collection, storage, and organism maintenance. By aiding the digitisation of phenotypic data, we want EvoNEST to contribute to advancing our understanding of biodiversity and evolutionary processes. 

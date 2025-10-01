@@ -19,6 +19,12 @@
     <img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker">
     <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" alt="TypeScript">
   </p>
+  
+  <p align="center">
+    <a href="https://doi.org/10.7717/peerj-cs.3186">
+      <img src="https://img.shields.io/badge/PeerJ-10.7717%2Fpeerj--cs.3186-1e88e5?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTVsLTUtNSAxLjQxLTEuNDFMMTAgMTQuMTdsNy41OS03LjU5TDE5IDhsLTkgOXoiIGZpbGw9IndoaXRlIi8+PC9zdmc+&logoColor=white" alt="Cite as" height="28">
+    </a>
+  </p>
 </div>
 
 ---
@@ -28,6 +34,12 @@
 *EvoNEST* is a modular data management application designed to minimize data handling and conversions by integrating all aspects of biodiversity research—from specimen sourcing to publication—into a unified platform.
 
 Here you can find *EvoNEST Backbone*, the core of the app. It is a fully functional version of the application, ready to be customised further for the specific needs of different labs.
+
+<p align="center">
+  <a href="https://doi.org/10.7717/peerj-cs.3186">
+    <img src="https://img.shields.io/badge/PeerJ-10.7717%2Fpeerj--cs.3186-1e88e5?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTVsLTUtNSAxLjQxLTEuNDFMMTAgMTQuMTdsNy41OS03LjU5TDE5IDhsLTkgOXoiIGZpbGw9IndoaXRlIi8+PC9zdmc+&logoColor=white" alt="Cite on PeerJ">
+  </a>
+</p>
 
 ## Features
 
