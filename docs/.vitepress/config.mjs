@@ -21,11 +21,12 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started/' },
+      { text: 'Workshop', link: '/workshop/' },
       { text: 'User Guide', link: '/user-guide/' },
       { text: 'Developer Guide', link: '/developer-guide/' },
       { text: 'Demo', link: '/demo'},
-      { 
-        text: 'API Docs', 
+      {
+        text: 'API Docs',
         link: '/api-docs.html',
         target: '_self'
       }
@@ -41,7 +42,22 @@ export default defineConfig({
           ]
         }
       ],
-      
+
+      '/workshop/': [
+        {
+          text: 'Workshop',
+          items: [
+            { text: 'Workshop Overview', link: '/workshop/' },
+            { text: 'Module 1: Preparation', link: '/workshop/01-preparation' },
+            { text: 'Module 2: Installation', link: '/workshop/02-installation' },
+            { text: 'Module 3: First Launch', link: '/workshop/03-first-launch' },
+            { text: 'Module 4: Configuration', link: '/workshop/04-configuration' },
+            { text: 'Module 5: Data Entry', link: '/workshop/05-data-entry' },
+            { text: 'Module 6: Troubleshooting', link: '/workshop/06-troubleshooting' },
+          ]
+        }
+      ],
+
       '/user-guide/': [
         {
           text: 'User Guide',
