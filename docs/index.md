@@ -12,7 +12,7 @@ hero:
   actions:
     - theme: brand
       text: Step-by-step guide
-      link: /workshop/
+      link: /tutorial/
     - theme: alt
       text: EvoNEST User guide
       link: /user-docs/
@@ -21,22 +21,26 @@ hero:
       link: /developer-docs/
 
 features:
-  - icon: 🎓
-    title: Step-by-step guide
-    details: Complete beginner-friendly guide from installation to first data entry. Perfect for non-technical users installing EvoNEST themselves. 2-3 hours.
+  - icon: 🗄️
+    title: Multi-database architecture
+    details: Isolate data by lab or project. Users can access multiple databases with full data sovereignty and GDPR compliance.
 
-  - icon: 📚
-    title: User documentation
-    details: For using an already-installed EvoNEST instance. Covers NEST setup, user management, sample tracking, experiments, and analysis.
+  - icon: 🔐
+    title: Flexible authentication
+    details: Support for Google OAuth, Keycloak (EU-compliant), or custom NextAuth providers. Full control over user access and permissions.
 
-  - icon: 👨‍💻
-    title: Technical documentation
-    details: For IT staff and developers. Installation, authentication setup, customization, component development, and API references. 
+  - icon: 🐳
+    title: Docker-based deployment
+    details: Simple installation with Docker Compose. Automated backups, easy scaling, and portable across Windows, macOS, and Linux.
+
+  - icon: 🔧
+    title: Highly customizable
+    details: Define your own sample types, trait types, equipment lists, and ID generation rules. Extend with custom components and parsers. 
 ---
 
 ## Welcome to EvoNEST Documentation
 
-This documentation site provides guides for both users and developers of the EvoNEST platform. Whether you're a [researcher looking to install EvoNEST for their lab](/workshop), a [user of an existing NEST](/user-docs), or a [developer wanting to contribute](/developer-docs), you'll find the resources you need here.
+This documentation site provides guides for both users and developers of the EvoNEST platform. Whether you're a [researcher looking to install EvoNEST for their lab](/tutorial), a [user of an existing NEST](/user-docs), or a [developer wanting to contribute](/developer-docs), you'll find the resources you need here.
 
 ## About EvoNEST
 
