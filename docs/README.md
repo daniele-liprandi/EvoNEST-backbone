@@ -58,8 +58,8 @@ docs/
 │   └── config.js          # VitePress configuration
 ├── public/                # Static assets
 ├── getting-started/       # Getting started guides
-├── user-guide/           # User documentation
-├── developer-guide/      # Developer documentation
+├── user-docs/           # User documentation
+├── developer-docs/      # Developer documentation
 └── index.md             # Homepage
 ```
 

@@ -1,6 +1,6 @@
-# Module 3: First Launch
+# Module 3: First launch
 
-::: tip Learning Objectives
+::: tip Learning objectives
 By the end of this module, you will have:
 - ✅ Logged into EvoNEST for the first time
 - ✅ Explored the main interface
@@ -8,7 +8,7 @@ By the end of this module, you will have:
 - ✅ Understood the main navigation
 :::
 
-**Estimated Time:** 20 minutes
+**Estimated time:** 20 minutes
 
 ---
 
@@ -45,7 +45,7 @@ In this module, you'll:
 
    Visit: **[http://localhost:3005](http://localhost:3005)**
 
-   ::: tip Supported Browsers
+   ::: tip Supported browsers
    EvoNEST works best with:
    - Chrome/Chromium (recommended)
    - Firefox
@@ -62,27 +62,27 @@ In this module, you'll:
 
 ---
 
-## Step 2: Log In with Default Credentials
+## Step 2: Log in with default credentials
 
 EvoNEST comes with a default admin account for initial setup.
 
-### Login Details
+### Login details
 
 Use these credentials to log in:
 
 - **Username:** `admin`
 - **Password:** `pass`
 
-::: warning Change Default Credentials Later
+::: warning Change default credentials later
 After the workshop, you should:
 1. Set up proper authentication (Auth0, Google, etc.)
 2. Create individual user accounts
 3. Disable or change the default admin account
 
-See the [User Guide](/user-guide/user-account) for details.
+See the [Developer documentation](/developer-docs) for details.
 :::
 
-### Steps to Log In
+### Steps to log in
 
 1. **Enter the username** in the first field: `admin`
 
@@ -94,7 +94,7 @@ See the [User Guide](/user-guide/user-account) for details.
 
 **Expected result:** You should be redirected to the EvoNEST homepage/dashboard.
 
-::: details Troubleshooting: Can't Log In
+::: details Troubleshooting: Can't log in
 
 **"Invalid credentials" or "Authentication failed":**
 - Double-check you typed `admin` and `pass` correctly (lowercase)
@@ -117,15 +117,15 @@ See the [User Guide](/user-guide/user-account) for details.
 
 ---
 
-## Step 3: Explore the Dashboard
+## Step 3: Explore the dashboard
 
 After logging in, you'll see the EvoNEST dashboard (homepage).
 
-### What You'll See
+### What you'll see
 
 The dashboard provides an overview of your system:
 
-#### 📊 **Quick Statistics**
+#### 📊 **Quick statistics**
 At the top, you'll see cards showing:
 - **Samples** - Total number of biological samples in the system
 - **Traits** - Total trait measurements recorded
@@ -134,26 +134,26 @@ At the top, you'll see cards showing:
 
 Right now, these will all show **0** or **1** (just the admin user) since this is a fresh installation.
 
-#### 🎯 **Quick Actions**
+#### 🎯 **Quick actions**
 Buttons to quickly access common tasks:
 - "Add New Sample"
 - "Record Trait"
 - "Create Experiment"
 
-#### 📰 **Recent Activity** (if configured)
+#### 📰 **Recent activity** (if configured)
 Shows recent changes and updates to your data.
 
-::: tip Your First Look
+::: tip Your first look
 Don't worry if the dashboard looks empty - that's expected! In the next modules, you'll add data and see these sections populate.
 :::
 
 ---
 
-## Step 4: Navigate the Main Menu
+## Step 4: Navigate the main menu
 
 Let's explore the main navigation to understand where everything is.
 
-### Navigation Bar
+### Navigation bar
 
 At the top or side of the screen, you'll see the main navigation menu with these sections:
 
@@ -187,13 +187,13 @@ At the top or side of the screen, you'll see the main navigation menu with these
 - Manage lab information
 - Database settings
 
-#### 👤 **User Profile**
+#### 👤 **User profile**
 - View your account information
 - Change database (if you have multiple)
 - Manage preferences
 - Log out
 
-### Try Navigating
+### Try navigating
 
 Click through each section to get familiar with the layout:
 
@@ -203,17 +203,17 @@ Click through each section to get familiar with the layout:
 4. **Click "Settings"** - This is where we'll configure types in Module 4
 5. **Click "Home"** - Returns to the dashboard
 
-::: tip Get Comfortable
+::: tip Get comfortable
 Take a few minutes to click around. You can't break anything at this stage - there's no data yet!
 :::
 
 ---
 
-## Step 5: Verify Installation Components
+## Step 5: Verify installation components
 
 Let's make sure all features are working correctly.
 
-### 5.1 Check Database Connection
+### 5.1 Check database connection
 
 1. **Go to Samples** (click "Samples" in the navigation)
 
@@ -227,7 +227,7 @@ Let's make sure all features are working correctly.
    - ✅ Collections are created
    - ✅ Frontend can query the database
 
-### 5.2 Check Configuration System
+### 5.2 Check configuration system
 
 1. **Go to Settings** → **Configuration** (or `/settings/main`)
 
@@ -241,7 +241,7 @@ Let's make sure all features are working correctly.
    - ✅ Default types are loaded
    - ✅ Settings can be modified
 
-### 5.3 Check File System
+### 5.3 Check file system
 
 1. **Look for** file upload interfaces in:
    - Experiments section (upload documents)
@@ -255,17 +255,17 @@ Let's make sure all features are working correctly.
    - ✅ File storage is configured
    - ✅ Upload system is ready
 
-::: tip Don't Upload Yet
+::: tip Don't upload yet
 We'll practice uploading files in Module 5. For now, just verify the upload interfaces are visible.
 :::
 
 ---
 
-## Step 6: Understand the Data Structure
+## Step 6: Understand the data structure
 
 Before we start adding data, let's understand how EvoNEST organizes information.
 
-### Hierarchical Structure
+### Hierarchical structure
 
 EvoNEST uses a hierarchical data model:
 
@@ -291,7 +291,7 @@ EvoNEST uses a hierarchical data model:
 └─────────────────────────────────────┘
 ```
 
-### Key Concepts
+### Key concepts
 
 #### **Samples**
 - Represent biological specimens (animals, plants, etc.)
@@ -351,7 +351,7 @@ Look for search boxes in different sections:
 
 Check if these links are accessible:
 - **Help** or **?** icon - Quick tips
-- **Documentation** link - Full user guide
+- **Documentation** link - Full user documentation
 - **API Docs** - For developers
 
 ---

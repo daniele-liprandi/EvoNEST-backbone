@@ -590,9 +590,9 @@ Gather this information:
 ### Where to Get Help
 
 1. **Documentation:**
-   - [User Guide](/user-guide/)
-   - [Developer Guide](/developer-guide/)
-   - [FAQ](/user-guide/faq)
+   - [User documentation](/user-docs/)
+   - [Developer Docs](/developer-docs/)
+   - [FAQ](/user-docs/faq)
 
 2. **GitHub Issues:**
    - [github.com/daniele-liprandi/EvoNEST-backbone/issues](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
@@ -705,9 +705,9 @@ You've completed all workshop modules:
 
 ### What's Next?
 
-- **Explore advanced features:** [User Guide](/user-guide/)
-- **Import existing data:** [Data Import Guide](/user-guide/data-import)
-- **Analyze your data:** [Data Analysis Guide](/user-guide/data-analysis)
+- **Explore advanced features:** [User documentation](/user-docs/)
+- **Import existing data:** [Data Import Guide](/user-docs/data-import)
+- **Analyze your data:** [Data Analysis Guide](/user-docs/data-analysis)
 - **Deploy to production:** [Quick Start - Production Setup](/getting-started/quick-start#production-setup)
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">

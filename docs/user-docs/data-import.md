@@ -268,12 +268,12 @@ BMNH-002,Salticidae,Salticus,scenicus,animal,curator@bmnh.ac.uk,2024-01-11,Edinb
 
 If you encounter issues with data import:
 
-- **Check the [FAQ section](/user-guide/faq)** for common import questions
-- **Review [Troubleshooting Guide](/user-guide/troubleshooting)** for technical issues
+- **Check the [FAQ section](/user-docs/faq)** for common import questions
+- **Review [Troubleshooting Guide](/user-docs/troubleshooting)** for technical issues
 - **Visit our [GitHub Issues](https://github.com/yourusername/EvoNext/issues)** for bug reports
 - **Contact your system administrator** for permission-related issues
 
 For more information on managing your imported data, see:
-- **[Sample Management](/user-guide/sample-management)** - Organizing and editing samples
-- **[Data Export](/user-guide/data-export)** - Exporting data for analysis
-- **[Visualization](/user-guide/visualization)** - Creating charts and graphs from your data
+- **[Sample Management](/user-docs/sample-management)** - Organizing and editing samples
+- **[Data Export](/user-docs/data-export)** - Exporting data for analysis
+- **[Visualization](/user-docs/visualization)** - Creating charts and graphs from your data

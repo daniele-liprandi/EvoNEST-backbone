@@ -22,8 +22,8 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Getting Started', link: '/getting-started/' },
       { text: 'Workshop', link: '/workshop/' },
-      { text: 'User Guide', link: '/user-guide/' },
-      { text: 'Developer Guide', link: '/developer-guide/' },
+      { text: 'User documentation', link: '/user-docs/' },
+      { text: 'Developer Docs', link: '/developer-docs/' },
       { text: 'Demo', link: '/demo'},
       {
         text: 'API Docs',
@@ -58,30 +58,42 @@ export default defineConfig({
         }
       ],
 
-      '/user-guide/': [
+      '/user-docs/': [
         {
-          text: 'User Guide',
+          text: 'User documentation',
           items: [
-            { text: 'Overview', link: '/user-guide/' },
-            { text: 'NEST Setup', link: '/user-guide/nest-setup' },
-            { text: 'User management', link: 'user-guide/user-account'},
-            { text: 'Data Import', link: '/user-guide/data-import' },
-            { text: 'Data Collection', link: '/user-guide/data-collection' },
-            { text: 'Data Analysis', link: '/user-guide/data-analysis' },
-            { text: 'Data Export', link: '/user-guide/data-export' },
-            { text: 'FAQ', link: '/user-guide/faq' }
+            { text: 'Overview', link: '/user-docs/' },
+            { text: 'NEST Setup', link: '/user-docs/nest-setup' },
+            { text: 'User Management', link: '/user-docs/user-account'},
+            { text: 'Data Import', link: '/user-docs/data-import' },
+            { text: 'Data Collection', link: '/user-docs/data-collection' },
+            { text: 'Data Analysis', link: '/user-docs/data-analysis' },
+            { text: 'Data Export', link: '/user-docs/data-export' },
+            { text: 'FAQ', link: '/user-docs/faq' }
           ]
         }
       ],
-      
-      '/developer-guide/': [
+
+      '/developer-docs/': [
         {
-          text: 'Developer Guide',
+          text: 'Developer Docs',
           items: [
-            { text: 'Overview', link: '/developer-guide/' },
-            { text: 'Custom Card Development', link: '/developer-guide/component-development' },
-            { text: 'Data Format Parser Development', link: '/developer-guide/data-format-parser-development' },
-            { text: 'File Processor Development', link: '/developer-guide/file-processor-development' },
+            { text: 'Overview', link: '/developer-docs/' },
+          ]
+        },
+        {
+          text: 'Authentication Setup',
+          items: [
+            { text: 'Google OAuth Setup', link: '/developer-docs/auth-google' },
+            { text: 'EU-Compliant Auth (Keycloak)', link: '/developer-docs/auth-eu-compliant' },
+          ]
+        },
+        {
+          text: 'Customization',
+          items: [
+            { text: 'Custom Card Development', link: '/developer-docs/component-development' },
+            { text: 'Data Format Parser Development', link: '/developer-docs/data-format-parser-development' },
+            { text: 'File Processor Development', link: '/developer-docs/file-processor-development' },
           ]
         }
       ]

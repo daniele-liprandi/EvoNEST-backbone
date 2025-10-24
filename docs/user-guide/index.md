@@ -1,12 +1,19 @@
-# User Guide
+---
+layout: home
+---
 
-Welcome to the EvoNEST User Guide. This comprehensive guide covers all the features and functionality available in the platform.
+<script setup>
+import { onMounted } from 'vue'
 
-## Overview
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.location.href = '/EvoNEST-backbone/user-docs/'
+  }
+})
+</script>
 
-EvoNEST is designed to streamline your biomechanical research workflow, from data collection through analysis and publication. This guide will walk you through each major feature and show you how to make the most of the platform.
+# Redirecting...
 
-Your first step should be setting up your NEST and users:
+This page has moved to [User documentation](/user-docs/).
 
-- [**NEST Setup Guide**](/user-guide/nest-setup) - Configure your NEST and invite users
-- [**User Management**](/user-guide/user-management) - Add and manage users
+If you are not redirected automatically, please click the link above.

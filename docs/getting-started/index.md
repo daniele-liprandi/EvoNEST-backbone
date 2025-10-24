@@ -1,16 +1,31 @@
-# Getting Started with EvoNEST
+# Getting started with EvoNEST
 
-Welcome to EvoNEST! This guide will help you get up and running.
+::: tip For technical users
+This is a **quick installation guide** for users familiar with Docker and command line tools.
 
-## Need Help?
+**Non-technical user?** Try the [Workshop](/workshop/) instead - it provides detailed step-by-step instructions with screenshots and troubleshooting.
+:::
 
-If you encounter any issues or have questions:
+Welcome to EvoNEST! This guide will help you install EvoNEST quickly and efficiently.
 
-1. Check the [User Guide](/user-guide/) for detailed instructions
-2. Review the [API Documentation](https://your-api-docs-url.com) for technical details
-3. Visit our [GitHub repository](https://github.com/daniele-liprandi/EvoNext) for issues and discussions
-4. Contact the development team
+## Installation
 
-## Next Steps
+**Estimated time:** 15 minutes
 
-Ready to dive in? Start with our [Quick Start Guide](/getting-started/quick-start) to set up your first project!
+Ready to install? Continue to the [Quick start guide](/getting-started/quick-start) for installation instructions.
+
+## After installation
+
+Once EvoNEST is running:
+
+1. **Configure your NEST:** See the [User documentation](/user-docs/nest-setup) to set up your laboratory's instance
+2. **Learn the features:** Explore the [User documentation](/user-docs/) for sample management, data analysis, and more
+3. **Customize EvoNEST:** See the [Developer documentation](/developer-docs/) for authentication setup and customization
+
+## Need help?
+
+If you encounter issues:
+
+1. Check the [Workshop troubleshooting guide](/workshop/06-troubleshooting) for common problems
+2. Review the [User documentation](/user-docs/) for detailed feature instructions
+3. Visit our [GitHub repository](https://github.com/daniele-liprandi/EvoNEST-backbone) for issues and discussions

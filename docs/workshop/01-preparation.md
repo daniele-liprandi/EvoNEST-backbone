@@ -1,6 +1,6 @@
 # Module 1: Preparation
 
-::: tip Learning Objectives
+::: tip Learning objectives
 By the end of this module, you will have:
 - ✅ Verified your system meets the requirements
 - ✅ Installed Docker Desktop
@@ -8,11 +8,11 @@ By the end of this module, you will have:
 - ✅ Prepared your workspace
 :::
 
-**Estimated Time:** 15-20 minutes
+**Estimated time:** 15-20 minutes
 
 ---
 
-## Before You Begin
+## Before you begin
 
 This module prepares your computer for EvoNEST installation. We'll install the necessary software and verify that your system is ready.
 
@@ -22,9 +22,9 @@ You'll need **administrator privileges** on your computer to install software. M
 
 ---
 
-## Step 1: Check System Requirements
+## Step 1: Check system requirements
 
-### Minimum Requirements
+### Minimum requirements
 
 Before installing EvoNEST, verify your system meets these requirements:
 
@@ -45,7 +45,7 @@ Before installing EvoNEST, verify your system meets these requirements:
 - [ ] **Internet Connection:**
   - Required for downloading Docker and the repository
 
-::: details How to Check Your System Specs
+::: details How to check your system specs
 
 **Windows:**
 1. Press `Windows Key + Pause/Break` or search for "About Your PC"
@@ -94,7 +94,7 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
    - Accept the service agreement
    - Skip the tutorial (we'll guide you through everything)
 
-::: details Troubleshooting Windows Installation
+::: details Troubleshooting Windows installation
 
 **"WSL 2 installation is incomplete" error:**
 1. Open PowerShell as Administrator
@@ -110,7 +110,7 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
 
 ### For macOS
 
-1. **Check Your Mac's Processor**
+1. **Check your Mac's processor**
    - Click Apple menu → "About This Mac"
    - Note whether you have "Intel" or "Apple Silicon" (M1/M2/M3)
 
@@ -126,12 +126,12 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
    - Drag Docker icon to Applications folder
    - Open Docker from Applications
 
-4. **Grant Permissions**
+4. **Grant permissions**
    - Docker will ask for permissions
    - Enter your password when prompted
    - Accept the service agreement
 
-::: details Troubleshooting macOS Installation
+::: details Troubleshooting macOS installation
 
 **"Docker Desktop requires macOS 10.15 or later":**
 - You need to update macOS first
@@ -195,16 +195,16 @@ After installation, log out and log back in for group changes to take effect.
 
 ---
 
-## Step 3: Verify Docker Installation
+## Step 3: Verify Docker installation
 
 Let's make sure Docker is working correctly.
 
-1. **Open a Terminal/Command Prompt**
+1. **Open a terminal/command prompt**
    - **Windows:** Search for "Command Prompt" or "PowerShell"
    - **macOS:** Open "Terminal" from Applications → Utilities
    - **Linux:** Open your terminal application
 
-2. **Check Docker Version**
+2. **Check Docker version**
 
    Run this command:
    ```bash
@@ -218,7 +218,7 @@ Let's make sure Docker is working correctly.
 
    ✅ If you see a version number, Docker is installed correctly!
 
-3. **Test Docker is Running**
+3. **Test Docker is running**
 
    Run this command:
    ```bash
@@ -234,7 +234,7 @@ Let's make sure Docker is working correctly.
 
    ✅ If you see this message, Docker is working!
 
-::: danger Docker Not Running?
+::: danger Docker not running?
 
 **If you see "Cannot connect to Docker daemon":**
 
@@ -255,7 +255,7 @@ Let's make sure Docker is working correctly.
 
 Git is used to download (clone) the EvoNEST code repository.
 
-### Check if Git is Already Installed
+### Check if Git is already installed
 
 Open your terminal and run:
 ```bash
@@ -265,6 +265,8 @@ git --version
 ✅ If you see a version number (e.g., `git version 2.40.0`), Git is already installed! Skip to [Step 5](#step-5-create-a-workspace-folder).
 
 ### Installing Git
+
+If you don't have Git installed:
 
 ::: code-group
 ```bash [Windows]
@@ -302,7 +304,7 @@ git --version
 
 ---
 
-## Step 5: Create a Workspace Folder
+## Step 5: Create a workspace folder
 
 Let's create a dedicated folder for your EvoNEST installation.
 
@@ -356,13 +358,13 @@ cd EvoNEST
    - macOS: `/Users/YourName/Documents/EvoNEST`
    - Linux: `/home/YourName/Documents/EvoNEST`
 
-::: tip Keep This Terminal Open
+::: tip Keep this terminal open
 Keep your terminal window open - you'll use it in the next module for installation!
 :::
 
 ---
 
-## Checkpoint: Are You Ready?
+## Checkpoint: Are you ready?
 
 Before moving to the next module, verify you have:
 
@@ -372,17 +374,17 @@ Before moving to the next module, verify you have:
 - [ ] ✅ Created a workspace folder (e.g., `Documents/EvoNEST`)
 - [ ] ✅ Terminal/command prompt open in your workspace folder
 
-::: tip All Set?
+::: tip All set?
 If you've checked all the boxes above, you're ready to proceed!
 :::
 
-::: warning Need Help?
-If something didn't work, check the [Troubleshooting](/workshop/06-troubleshooting) guide or ask your workshop instructor.
+::: warning Need help?
+If something didn't work, check the [Troubleshooting](/workshop/06-troubleshooting) guide for assistance.
 :::
 
 ---
 
-## Next Steps
+## Next steps
 
 **Congratulations!** Your system is now prepared for EvoNEST installation.
 

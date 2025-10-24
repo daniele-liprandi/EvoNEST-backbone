@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: "EvoNEST Backbone"
-  text: "User Guide & Developer Documentation"
+  text: "User documentation & Developer Documentation"
   tagline: "Learn how to use EvoNEST and contribute to the platform"
   image:
     light: /EvoNESTlogo.svg
@@ -11,34 +11,32 @@ hero:
     alt: EvoNEST Logo
   actions:
     - theme: brand
-      text: Get Started
+      text: Step-by-step guide
+      link: /workshop/
+    - theme: alt
+      text: EvoNEST User guide
+      link: /user-docs/
+    - theme: alt
+      text: Installation guide 
       link: /getting-started/
     - theme: alt
-      text: User Guide
-      link: /user-guide/
-    - theme: alt
-      text: Developer Guide
-      link: /developer-guide/
-    - theme: brand
-      text: Visit the Demo
-      link: /demo/
+      text: Developer docs
+      link: /developer-docs/
 
 features:
-  - icon: 🚀
-    title: Quick Start Guides
-    details: Step-by-step tutorials to get you up and running with EvoNEST quickly and efficiently.
+  - icon: 🎓
+    title: From installation to use
+    details: Complete beginner-friendly guide from installation to first data entry. Perfect for non-technical users installing EvoNEST themselves. 2-3 hours.
 
   - icon: 📚
     title: User Documentation
-    details: Comprehensive guides covering all aspects of using EvoNEST, from basic operations to advanced features.
+    details: For using an already-installed EvoNEST instance. Covers NEST setup, user management, sample tracking, experiments, and analysis.
 
   - icon: 👨‍💻
-    title: Developer Resources
-    details: Technical documentation, API references, and contribution guidelines for developers and contributors.
+    title: Technical Documentation
+    details: For developers customizing EvoNEST. Authentication setup, component development, parsers, API references, and contribution guidelines.
 
-  - icon: 🎯
-    title: Live Demo
-    details: Try EvoNEST in action with our fully functional demo environment - no setup required.
+  - 
 ---
 
 ## Welcome to EvoNEST Documentation
@@ -47,27 +45,38 @@ This documentation site provides comprehensive guides for both users and develop
 
 ## Documentation Sections
 
-### For Users
+### 🎓 Installing EvoNEST?
 
-- **[Getting Started](/getting-started/)** - New to EvoNEST? Start with installation and first steps
-- **[User Guide](/user-guide/)** - Complete guide to using all EvoNEST features
-- **[Data Collection](/user-guide/data-collection)** - Learn how to effectively collect and manage your research data
-- **[Sample Management](/user-guide/sample-management)** - Organize and track biological specimens
-- **[Experiments](/user-guide/experiments)** - Manage experimental procedures and protocols
-- **[Traits Management](/user-guide/traits-management)** - Handle any kind of traits, properties and measurements
-- **[Data Analysis](/user-guide/data-analysis)** - Statistical analysis and data exploration tools
-- **[Visualization](/user-guide/visualization)** - Create compelling charts and graphs
-- **[Collaboration](/user-guide/collaboration)** - Work with team members and manage permissions
-- **[Data Export](/user-guide/data-export)** - Export your data and results for publication
-- **[User Account](/user-guide/user-account)** - Manage your account settings and preferences
-- **[FAQ](/user-guide/faq)** - Frequently asked questions and answers
-- **[Troubleshooting](/user-guide/troubleshooting)** - Solutions to common problems
+**Choose your path:**
 
-### For Developers
+- **[Workshop](/workshop/)** - **Non-technical users:** Complete step-by-step guide from installation to first data entry (2-3 hours)
+- **[Getting Started](/getting-started/)** - **Technical users:** Quick installation for those familiar with Docker/command line (15 minutes)
 
-- **[Developer Guide](/developer-guide/)** - Set up your development environment and learn the architecture
-- **[API Documentation](/api-docs/)** - Complete API reference and examples
-- **[Contributing](/developer-guide/contributing)** - How to contribute to the EvoNEST project
+### 📚 Using EvoNEST (After Installation)
+
+**For lab heads, researchers, and users of an already-installed EvoNEST instance:**
+
+- **[User documentation](/user-docs/)** - Complete guide to using all EvoNEST features
+  - **[NEST Setup](/user-docs/nest-setup)** - Configure your laboratory's EvoNEST instance (for lab heads)
+  - **[User Management](/user-docs/user-management)** - Add and manage team members
+  - **[Sample Management](/user-docs/sample-management)** - Organize and track biological specimens
+  - **[Data Collection](/user-docs/data-collection)** - Effectively collect and manage research data
+  - **[Traits Management](/user-docs/traits-management)** - Handle measurements and properties
+  - **[Experiments](/user-docs/experiments)** - Manage experimental procedures and protocols
+  - **[Data Analysis](/user-docs/data-analysis)** - Statistical analysis and data exploration
+  - **[Data Export](/user-docs/data-export)** - Export data for publication
+  - **[FAQ](/user-docs/faq)** - Frequently asked questions
+
+### 👨‍💻 For Developers
+
+**For developers customizing, extending, or contributing to EvoNEST:**
+
+- **[Developer documentation](/developer-docs/)** - Technical documentation and customization guides
+  - **[Authentication Setup](/developer-docs/auth-google)** - Configure Google OAuth or Keycloak
+  - **[Component Development](/developer-docs/component-development)** - Create custom sample cards
+  - **[File Processor Development](/developer-docs/file-processor-development)** - Support new file formats
+  - **[Data Format Parser Development](/developer-docs/data-format-parser-development)** - Build custom parsers
+- **[GitHub Repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** - Report issues and contribute to the project
 
 ## About EvoNEST
 
@@ -130,7 +139,7 @@ const members = [
 ## Need Help?
 
 - Browse the documentation sections above
-- Check our [FAQ](/user-guide/faq) for common questions
+- Check our [FAQ](/user-docs/faq) for common questions
 - Visit the main [EvoNEST application](/) to start using the platform
 - Report issues or contribute on [GitHub](https://github.com/daniele-liprandi/EvoNEST-backbone)
 

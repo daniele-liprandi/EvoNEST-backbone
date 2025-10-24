@@ -49,7 +49,7 @@ A: Commercial use may be possible under specific licensing agreements. Contact t
 
 **Q: What types of data can I store in EvoNEST?**
 
-A: EvoNEST theoretically supports any kind of numerical data. Just [set up your data types](/user-guide/nest-setup) according to your research needs. 
+A: EvoNEST theoretically supports any kind of numerical data. Just [set up your data types](/user-docs/nest-setup) according to your research needs. 
 
 **Q: Can I edit data after it's been entered?**
 
@@ -111,7 +111,7 @@ A: Yes, EvoNEST supports export to various formats:
 - Excel files with formatted data
 - Direct integration with statistical software packages
 
-See the [Data Export guide](/user-guide/data-export) for detailed export options.
+See the [Data Export guide](/user-docs/data-export) for detailed export options.
 
 **Q: How do I compare traits across different species?**
 
@@ -332,7 +332,7 @@ Contact support for specific DOI requirements and procedures.
 **Q: Where can I find help with using EvoNEST?**
 
 A: Help resources include:
-- **Documentation**: Comprehensive user guides and tutorials
+- **Documentation**: Comprehensive user documentations and tutorials
 - **Video tutorials**: Step-by-step visual instructions
 - **Community forums**: Peer support and discussion
 - **Email support**: Direct assistance from the support team

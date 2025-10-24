@@ -1,10 +1,16 @@
-# EvoNEST Workshop
+# EvoNEST tutorial
 
-Welcome to the hands-on EvoNEST workshop! This interactive tutorial will guide you through installing, configuring, and using EvoNEST for biodiversity research data management.
+::: tip Complete beginner's course
+This is a **complete step-by-step guide** from installation to first data entry, designed for **non-technical users**.
 
-## Workshop Overview
+**Technical user?** For a faster installation, see the [Getting started guide](/getting-started/) instead (15 minutes vs 2-3 hours).
+:::
 
-By the end of this workshop, you will be able to:
+Welcome to the EvoNEST tutorial! This comprehensive guide will walk you through installing, configuring, and using EvoNEST for research data management - no technical experience required.
+
+## What you'll learn
+
+By the end of this tutorial, you will be able to:
 
 - ✅ Install and run EvoNEST using Docker
 - ✅ Configure EvoNEST for your laboratory's needs
@@ -12,34 +18,34 @@ By the end of this workshop, you will be able to:
 - ✅ Record trait measurements and experimental data
 - ✅ Troubleshoot common issues
 
-## Who This Workshop Is For
+## Who this guide is for
 
-This workshop is designed for:
+This guide is designed for:
 - Researchers and lab technicians new to EvoNEST
 - Users with minimal command-line experience
 - Labs setting up EvoNEST for the first time
 
-::: tip No Coding Required
-You don't need programming experience for this workshop. We'll guide you through every step with instructions and screenshots.
+::: tip No coding required
+You don't need programming experience for this guide. We'll guide you through every step with instructions and screenshots.
 :::
 
-## Time Estimate
+## Time estimate
 
-**Total Duration:** Approximately 2-3 hours
+**Total duration:** Approximately 2-3 hours
 
 | Module | Topic | Duration |
 |--------|-------|----------|
 | 1 | [Preparation](/workshop/01-preparation) | 15 min |
 | 2 | [Installation](/workshop/02-installation) | 30 min |
-| 3 | [First Launch](/workshop/03-first-launch) | 20 min |
+| 3 | [First launch](/workshop/03-first-launch) | 20 min |
 | 4 | [Configuration](/workshop/04-configuration) | 30 min |
-| 5 | [Data Entry & Management](/workshop/05-data-entry) | 45 min |
+| 5 | [Data entry and management](/workshop/05-data-entry) | 45 min |
 | 6 | [Troubleshooting](/workshop/06-troubleshooting) | Reference |
 
-## Workshop Modules
+## Guide modules
 
 ### Module 1: Preparation
-**[Start Here → Preparation Guide](/workshop/01-preparation)**
+**[Start here → Preparation guide](/workshop/01-preparation)**
 
 Get your computer ready for EvoNEST installation. Install required software (Docker Desktop) and verify system requirements.
 
@@ -51,7 +57,7 @@ Get your computer ready for EvoNEST installation. Install required software (Doc
 ---
 
 ### Module 2: Installation
-**[Installation Guide →](/workshop/02-installation)**
+**[Installation guide →](/workshop/02-installation)**
 
 Set up EvoNEST on your computer using Docker. This module walks through cloning the repository and starting the development environment.
 
@@ -62,8 +68,8 @@ Set up EvoNEST on your computer using Docker. This module walks through cloning 
 
 ---
 
-### Module 3: First Launch
-**[First Launch Guide →](/workshop/03-first-launch)**
+### Module 3: First launch
+**[First launch guide →](/workshop/03-first-launch)**
 
 Launch EvoNEST for the first time, log in, and verify everything is working correctly.
 
@@ -76,7 +82,7 @@ Launch EvoNEST for the first time, log in, and verify everything is working corr
 ---
 
 ### Module 4: Configuration
-**[Configuration Guide →](/workshop/04-configuration)**
+**[Configuration guide →](/workshop/04-configuration)**
 
 Customize EvoNEST for your laboratory. Set up sample types, trait types, equipment, and lab-specific settings.
 
@@ -88,8 +94,8 @@ Customize EvoNEST for your laboratory. Set up sample types, trait types, equipme
 
 ---
 
-### Module 5: Data Entry & Management
-**[Data Entry Guide →](/workshop/05-data-entry)**
+### Module 5: Data entry and management
+**[Data entry guide →](/workshop/05-data-entry)**
 
 Learn the core workflows for managing research data in EvoNEST through hands-on exercises.
 
@@ -103,7 +109,7 @@ Learn the core workflows for managing research data in EvoNEST through hands-on 
 ---
 
 ### Module 6: Troubleshooting
-**[Troubleshooting Guide →](/workshop/06-troubleshooting)**
+**[Troubleshooting guide →](/workshop/06-troubleshooting)**
 
 Reference guide for common issues and solutions. Consult this when you encounter problems.
 
@@ -116,19 +122,19 @@ Reference guide for common issues and solutions. Consult this when you encounter
 
 ---
 
-## Workshop Format
+## Guide format
 
 Each module follows this structure:
 
-1. **Learning Objectives** - What you'll accomplish
+1. **Learning objectives** - What you'll accomplish
 2. **Prerequisites** - What you need before starting
-3. **Step-by-Step Instructions** - Detailed walkthrough with screenshots
+3. **Step-by-step instructions** - Detailed walkthrough with screenshots
 4. **Checkpoint** - Verify you've completed the module successfully
 5. **Troubleshooting** - Solutions to common issues
 
 ## Prerequisites
 
-Before starting the workshop, ensure you have:
+Before starting the guide, ensure you have:
 
 - **A computer with:**
   - Windows 10/11, macOS 10.15+, or Linux
@@ -150,37 +156,29 @@ Before starting the workshop, ensure you have:
 Make sure you have administrator rights on your computer. You'll need them to install Docker Desktop.
 :::
 
-## Getting Help During the Workshop
+## Getting help
 
 If you get stuck:
 
-1. **Check the Troubleshooting Module** - Most common issues are covered there
+1. **Check the troubleshooting module** - Most common issues are covered there
 2. **Review the specific module's tips** - Each section has inline troubleshooting
-3. **Ask for help** - Raise your hand or ask in the workshop chat
-4. **Consult the full documentation** - [User Guide](/user-guide/) has comprehensive details
+3. **Ask for help** - Contact the EvoNEST team or open an issue on GitHub
+4. **Consult the full documentation** - [User guide](/user-docs/) has comprehensive details
 
-## After the Workshop
+## After completing the tutorial
 
-Once you complete the workshop, explore:
+Once you complete this tutorial, you'll have EvoNEST installed and know the basics of data entry.
 
-- **[Data Analysis Guide](/user-guide/data-analysis)** - Statistical analysis and visualization
-- **[Data Import Guide](/user-guide/data-import)** - Importing existing datasets
-- **[Data Export Guide](/user-guide/data-export)** - Exporting data for publication
-- **[FAQ](/user-guide/faq)** - Frequently asked questions
+**Continue learning:**
 
-## Ready to Begin?
+- **[User documentation](/user-docs/)** - Complete guide to all EvoNEST features:
+  - Advanced sample management
+  - Data analysis and visualization
+  - Data import and export
+  - Collaboration and permissions
+- **[FAQ](/user-docs/faq)** - Frequently asked questions
+
+## Ready to begin?
 
 Let's get started! Head to **[Module 1: Preparation](/workshop/01-preparation)** to begin setting up your environment.
 
-::: tip Workshop Support
-If you're doing this workshop independently, take breaks between modules. Each module builds on the previous one, so make sure you complete them in order.
-:::
-
----
-
-## Quick Navigation
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <div></div>
-  <a href="/workshop/01-preparation" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Start Workshop →</a>
-</div>

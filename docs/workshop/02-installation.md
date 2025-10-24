@@ -1,6 +1,6 @@
 # Module 2: Installation
 
-::: tip Learning Objectives
+::: tip Learning objectives
 By the end of this module, you will have:
 - ✅ Cloned the EvoNEST repository
 - ✅ Configured environment files
@@ -8,7 +8,7 @@ By the end of this module, you will have:
 - ✅ Verified the application is running
 :::
 
-**Estimated Time:** 30-40 minutes
+**Estimated time:** 30-40 minutes
 
 ---
 
@@ -31,7 +31,7 @@ In this module, you'll:
 
 ---
 
-## Step 1: Clone the EvoNEST Repository
+## Step 1: Clone the EvoNEST repository
 
 Let's download the EvoNEST code to your computer.
 
@@ -47,7 +47,7 @@ Let's download the EvoNEST code to your computer.
 2. **Clone the repository**
 
    ::: code-group
-   ```bash [HTTPS (Recommended)]
+   ```bash [HTTPS (recommended)]
    git clone https://github.com/daniele-liprandi/EvoNEST-backbone.git
    ```
 
@@ -65,7 +65,7 @@ Let's download the EvoNEST code to your computer.
    Receiving objects: 100% (1234/1234), 5.67 MiB | 2.34 MiB/s, done.
    ```
 
-   ::: details Troubleshooting: Clone Failed
+   ::: details Troubleshooting: Clone failed
 
    **"Permission denied" or "repository not found":**
    - Make sure you have internet connectivity
@@ -108,11 +108,11 @@ Let's download the EvoNEST code to your computer.
 
 ---
 
-## Step 2: Generate a Secret Key
+## Step 2: Generate a secret key
 
 EvoNEST uses NextAuth for authentication, which requires a secure secret key. Let's generate one.
 
-### Generate the Secret
+### Generate the secret
 
 ::: code-group
 ```bash [macOS / Linux]
@@ -134,7 +134,7 @@ openssl rand -base64 32
 Xk7pQm2nR9sT3vY8wE5zL1aB4cD6fH9j
 ```
 
-::: tip Save This!
+::: tip Save this!
 Copy this secret key somewhere safe - you'll need it in the next step. This key ensures your authentication system is secure.
 :::
 
@@ -148,11 +148,11 @@ Copy this secret key somewhere safe - you'll need it in the next step. This key 
 
 ---
 
-## Step 3: Create Environment Files
+## Step 3: Create environment files
 
 Now we'll create configuration files with your secret key and database credentials.
 
-### 3.1 Create `.env.local` File
+### 3.1 Create `.env.local` file
 
 This file stores your secret key.
 
@@ -176,14 +176,14 @@ This file stores your secret key.
    NEXTAUTH_SECRET=Xk7pQm2nR9sT3vY8wE5zL1aB4cD6fH9j
    ```
 
-::: tip Opening Files in a Text Editor
+::: tip Opening files in a text editor
 
 **Windows:** Use Notepad, VS Code, or right-click → "Edit"
 **macOS:** Use TextEdit, VS Code, or run `open -a TextEdit .env.local`
 **Linux:** Use nano, vim, gedit, or VS Code
 :::
 
-### 3.2 Create `.env.development` File
+### 3.2 Create `.env.development` file
 
 This file configures the development environment.
 
@@ -196,7 +196,7 @@ This file configures the development environment.
    STORAGE_PATH='/usr/evonest/file_storage_dev'
    ```
 
-   ::: warning Change the Password!
+   ::: warning Change the password!
    Replace `secure_password_123` with your own secure password. Use something unique!
 
    **Example:**
@@ -207,7 +207,7 @@ This file configures the development environment.
 
 2. **Save and close** the file.
 
-### 3.3 Update Docker Compose Configuration
+### 3.3 Update Docker Compose configuration
 
 Now we need to match the MongoDB credentials in the Docker configuration.
 
@@ -255,7 +255,7 @@ Now we need to match the MongoDB credentials in the Docker configuration.
 
 Now for the exciting part - let's start EvoNEST!
 
-### 4.1 Start Docker Containers
+### 4.1 Start Docker containers
 
 Run this command in your terminal (make sure you're in the `EvoNEST-backbone` folder):
 
@@ -263,7 +263,7 @@ Run this command in your terminal (make sure you're in the `EvoNEST-backbone` fo
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-::: details Understanding This Command
+::: details Understanding this command
 - `docker compose` - Runs Docker Compose
 - `-f docker-compose.dev.yml` - Uses the development configuration file
 - `up` - Starts the containers
@@ -279,11 +279,11 @@ docker compose -f docker-compose.dev.yml up -d
  ✔ Container evonest_backbone_dev           Started
 ```
 
-::: tip First Run Takes Longer
+::: tip First run takes longer
 The first time you run this, Docker needs to download images (MongoDB, Node.js). This can take 5-10 minutes depending on your internet speed. Subsequent starts will be much faster (under 30 seconds).
 :::
 
-### 4.2 Monitor the Startup
+### 4.2 Monitor the startup
 
 Watch the logs to see EvoNEST starting up:
 
@@ -302,11 +302,11 @@ evonest_backbone_dev  |
 evonest_backbone_dev  |  ✓ Ready in 3.2s
 ```
 
-::: tip Exit Log View
+::: tip Exit log view
 Press `Ctrl+C` to stop viewing logs (this won't stop the containers)
 :::
 
-### 4.3 Wait for Startup
+### 4.3 Wait for startup
 
 The application needs a minute or two to fully start. You'll know it's ready when you see:
 
@@ -314,7 +314,7 @@ The application needs a minute or two to fully start. You'll know it's ready whe
 ✓ Ready in 3.2s
 ```
 
-::: details Troubleshooting: Container Won't Start
+::: details Troubleshooting: Container won't start
 
 **Port already in use error:**
 ```
@@ -338,11 +338,11 @@ docker compose -f docker-compose.dev.yml up --build -d
 
 ---
 
-## Step 5: Verify Installation
+## Step 5: Verify installation
 
 Let's make sure everything is running correctly.
 
-### 5.1 Check Container Status
+### 5.1 Check container status
 
 ```bash
 docker compose -f docker-compose.dev.yml ps
@@ -358,7 +358,7 @@ mongo_express           Up          127.0.0.1:8081->8081/tcp
 
 All containers should show `Up` status. ✅
 
-### 5.2 Access the Application
+### 5.2 Access the application
 
 Open your web browser and go to:
 
@@ -366,7 +366,7 @@ Open your web browser and go to:
 
 You should see the EvoNEST login page! 🎉
 
-::: tip What You Should See
+::: tip What you should see
 A clean login interface with:
 - EvoNEST logo
 - Username field
@@ -374,7 +374,7 @@ A clean login interface with:
 - "Sign in" button
 :::
 
-### 5.3 Check MongoDB (Optional)
+### 5.3 Check MongoDB (optional)
 
 Verify the database is running by accessing Mongo Express:
 
@@ -412,7 +412,7 @@ You should see the MongoDB admin interface with databases listed.
 
 ---
 
-## Step 6: Stop and Start EvoNEST
+## Step 6: Stop and start EvoNEST
 
 Learn how to control your EvoNEST installation.
 
@@ -425,7 +425,7 @@ docker compose -f docker-compose.dev.yml down
 
 This stops all containers but **keeps your data**.
 
-### Start EvoNEST Again
+### Start EvoNEST again
 
 Next time you want to use EvoNEST:
 ```bash
@@ -434,21 +434,21 @@ docker compose -f docker-compose.dev.yml up -d
 
 This is much faster than the first run (5-10 seconds).
 
-### View Logs Anytime
+### View logs anytime
 
 ```bash
 docker compose -f docker-compose.dev.yml logs -f
 ```
 
-### Restart If Something Goes Wrong
+### Restart if something goes wrong
 
 ```bash
 docker compose -f docker-compose.dev.yml restart
 ```
 
-### Complete Reset (Deletes Data!)
+### Complete reset (deletes data!)
 
-::: danger Warning: This Deletes All Data!
+::: danger Warning: This deletes all data!
 Only use this if you want to start completely fresh.
 :::
 
@@ -459,7 +459,7 @@ docker compose -f docker-compose.dev.yml up -d
 
 ---
 
-## Checkpoint: Is Everything Working?
+## Checkpoint: Is everything working?
 
 Before moving to the next module, verify:
 
@@ -469,17 +469,17 @@ Before moving to the next module, verify:
 - [ ] ✅ No error messages in the logs
 - [ ] ✅ You know how to stop and start EvoNEST
 
-::: tip All Working?
+::: tip All working?
 Great! You're ready to log in and start using EvoNEST!
 :::
 
 ::: warning Issues?
-If something's not working, check the [Troubleshooting Guide](/workshop/06-troubleshooting) or ask your instructor.
+If something's not working, check the [Troubleshooting guide](/workshop/06-troubleshooting).
 :::
 
 ---
 
-## Useful Commands Reference
+## Useful commands reference
 
 Here's a quick reference for managing your EvoNEST installation:
 
@@ -492,13 +492,13 @@ Here's a quick reference for managing your EvoNEST installation:
 | Restart | `docker compose -f docker-compose.dev.yml restart` |
 | Complete reset | `docker compose -f docker-compose.dev.yml down -v` |
 
-::: tip Bookmark This Page
+::: tip Bookmark this page
 You might want to keep this page bookmarked for reference when managing your EvoNEST installation.
 :::
 
 ---
 
-## Next Steps
+## Next steps
 
 **Excellent work!** EvoNEST is now installed and running on your computer.
 

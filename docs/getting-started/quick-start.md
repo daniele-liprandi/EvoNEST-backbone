@@ -1,16 +1,13 @@
-# Quick Start Guide
+# Quick start guide
 
-Get EvoNEST running in just a few minutes with this quick start guide.
+Get EvoNEST running in just a few minutes with this quick installation guide.
 
-## Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Git (for cloning the repository)
+::: tip Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- Git installed
+- Basic familiarity with command line
 - A modern web browser (Chrome, Firefox, Safari, or Edge)
-
-You also need basic familiarity with the command line interface.
+:::
 
 ## Installation guide
 
@@ -114,32 +111,25 @@ This will start:
 
 ## Verify installation
 
-To ensure everything is working correctly:
+To ensure everything is working:
 
 1. **Check the dashboard**: You should see the main EvoNEST interface
-2. **Test navigation**: Click through the main menu items
-3. **Create a test sample**: Try uploading a sample to verify the database connection
-   - Go to the "Samples" section
-   - Click "Create Sample"
-   - Fill in the required fields and submit
-4. **Upload a document in Experiments**: Test the data upload functionality
-5. **Create a test trait**: Try creating a trait to ensure the trait management system is functioning
-   - Go to the "Traits" section
-   - Click "Create Trait"
-   - Fill in the required fields and submit
+2. **Test navigation**: Click through the main menu items (Samples, Traits, Experiments, Settings)
+
+✅ Installation complete!
 
 ## Next steps
 
 Now that you have EvoNEST running:
 
-1. **[Complete your first steps](/getting-started/)** - Set up your profile and create your first experiment
-2. **[Explore the user guide](/user-guide/)** - Learn about all the features including:
-   - [Sample Management](/user-guide/sample-management)
-   - [Trait Management](/user-guide/traits-management)
-   - [Data Analysis](/user-guide/data-analysis)
-   - [Visualization](/user-guide/visualization)
-   - [Data Export](/user-guide/data-export)
-3. **[Join the community](https://github.com/yourusername/EvoNext)** - Connect with other researchers
+1. **Configure your NEST**: See the [NEST setup guide](/user-docs/nest-setup) to configure your laboratory's instance
+2. **Add users**: Follow the [User management guide](/user-docs/user-management) to add team members
+3. **Learn the features**: Explore the [User documentation](/user-docs/) for:
+   - Sample management
+   - Data collection
+   - Experiments
+   - Data analysis
+   - Data export
 
 ## Getting help
 
@@ -147,16 +137,13 @@ If you encounter issues:
 
 - **Check the logs**: `docker-compose logs -f`
 - **View container status**: `docker-compose ps`
-- **Visit our [GitHub Issues](https://github.com/yourusername/EvoNext/issues)** for bug reports and feature requests
-- **Read the detailed [User Guide](/user-guide/)** for comprehensive documentation
-- **Check the [FAQ section](/user-guide/faq)** for common questions
-- **Review [Troubleshooting Guide](/user-guide/troubleshooting)** for common issues
+- **Troubleshooting**: See the [Workshop troubleshooting guide](/workshop/06-troubleshooting)
+- **Report issues**: Visit our [GitHub repository](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
 
-### Development resources
+## For developers
 
-For developers:
+Need to customize EvoNEST?
 
-- **Contributing Guide**: See [CONTRIBUTING.md](../../CONTRIBUTING.md)
-- **Developer Documentation**: [/docs/developer-guide/](/docs/developer-guide/)
-- **Project Structure**: Explore the codebase structure and conventions
+- **[Developer documentation](/developer-docs/)** - Authentication setup, component development, parsers
+- **[GitHub repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** - Report issues and contribute
 - **Testing**: Run tests with `npm run test` or `npm run nxtest`
