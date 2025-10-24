@@ -20,7 +20,7 @@ export default defineConfig({
     
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Step-by-Step Guide', link: '/workshop/' },
+      { text: 'Step-by-Step Guide', link: '/tutorial/' },
       { text: 'User Docs', link: '/user-docs/' },
       { text: 'Technical Docs', link: '/developer-docs/' },
       { text: 'Demo', link: '/demo'},
@@ -42,17 +42,17 @@ export default defineConfig({
         }
       ],
 
-      '/workshop/': [
+      '/tutorial/': [
         {
           text: 'Workshop',
           items: [
-            { text: 'Workshop Overview', link: '/workshop/' },
-            { text: 'Module 1: Preparation', link: '/workshop/01-preparation' },
-            { text: 'Module 2: Installation', link: '/workshop/02-installation' },
-            { text: 'Module 3: First Launch', link: '/workshop/03-first-launch' },
-            { text: 'Module 4: Configuration', link: '/workshop/04-configuration' },
-            { text: 'Module 5: Data Entry', link: '/workshop/05-data-entry' },
-            { text: 'Module 6: Troubleshooting', link: '/workshop/06-troubleshooting' },
+            { text: 'Workshop Overview', link: '/tutorial/' },
+            { text: 'Module 1: Preparation', link: '/tutorial/01-preparation' },
+            { text: 'Module 2: Installation', link: '/tutorial/02-installation' },
+            { text: 'Module 3: First Launch', link: '/tutorial/03-first-launch' },
+            { text: 'Module 4: Configuration', link: '/tutorial/04-configuration' },
+            { text: 'Module 5: Data Entry', link: '/tutorial/05-data-entry' },
+            { text: 'Module 6: Troubleshooting', link: '/tutorial/06-troubleshooting' },
           ]
         }
       ],
