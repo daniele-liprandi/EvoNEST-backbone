@@ -20,10 +20,9 @@ export default defineConfig({
     
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Getting Started', link: '/getting-started/' },
-      { text: 'Workshop', link: '/workshop/' },
-      { text: 'User documentation', link: '/user-docs/' },
-      { text: 'Developer Docs', link: '/developer-docs/' },
+      { text: 'Step-by-Step Guide', link: '/workshop/' },
+      { text: 'User Docs', link: '/user-docs/' },
+      { text: 'Technical Docs', link: '/developer-docs/' },
       { text: 'Demo', link: '/demo'},
       {
         text: 'API Docs',
