@@ -17,40 +17,35 @@ hero:
       text: EvoNEST User guide
       link: /user-docs/
     - theme: alt
-      text: Installation guide 
-      link: /getting-started/
-    - theme: alt
-      text: Developer docs
+      text: Technical docs
       link: /developer-docs/
 
 features:
   - icon: 🎓
-    title: From installation to use
+    title: Step-by-step guide
     details: Complete beginner-friendly guide from installation to first data entry. Perfect for non-technical users installing EvoNEST themselves. 2-3 hours.
 
   - icon: 📚
-    title: User Documentation
+    title: User documentation
     details: For using an already-installed EvoNEST instance. Covers NEST setup, user management, sample tracking, experiments, and analysis.
 
   - icon: 👨‍💻
-    title: Technical Documentation
-    details: For developers customizing EvoNEST. Authentication setup, component development, parsers, API references, and contribution guidelines.
-
-  - 
+    title: Technical documentation
+    details: For IT staff and developers. Installation, authentication setup, customization, component development, and API references. 
 ---
 
 ## Welcome to EvoNEST Documentation
 
 This documentation site provides comprehensive guides for both users and developers of the EvoNEST platform. Whether you're a researcher looking to manage your data or a developer wanting to contribute, you'll find the resources you need here.
 
-## Documentation Sections
+## Documentation sections
 
 ### 🎓 Installing EvoNEST?
 
 **Choose your path:**
 
 - **[Workshop](/workshop/)** - **Non-technical users:** Complete step-by-step guide from installation to first data entry (2-3 hours)
-- **[Getting Started](/getting-started/)** - **Technical users:** Quick installation for those familiar with Docker/command line (15 minutes)
+- **[Technical docs](/developer-docs/installation)** - **IT staff/Developers:** Quick Docker installation for technical users (15 minutes)
 
 ### 📚 Using EvoNEST (After Installation)
 
@@ -67,16 +62,18 @@ This documentation site provides comprehensive guides for both users and develop
   - **[Data Export](/user-docs/data-export)** - Export data for publication
   - **[FAQ](/user-docs/faq)** - Frequently asked questions
 
-### 👨‍💻 For Developers
+### 👨‍💻 For IT staff and developers
 
-**For developers customizing, extending, or contributing to EvoNEST:**
+**For technical users deploying, customizing, or contributing to EvoNEST:**
 
-- **[Developer documentation](/developer-docs/)** - Technical documentation and customization guides
+- **[Technical documentation](/developer-docs/)** - Installation, deployment, and development guides
+  - **[Quick Installation](/developer-docs/installation)** - Fast Docker-based setup (15 minutes)
   - **[Authentication Setup](/developer-docs/auth-google)** - Configure Google OAuth or Keycloak
   - **[Component Development](/developer-docs/component-development)** - Create custom sample cards
   - **[File Processor Development](/developer-docs/file-processor-development)** - Support new file formats
   - **[Data Format Parser Development](/developer-docs/data-format-parser-development)** - Build custom parsers
-- **[GitHub Repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** - Report issues and contribute to the project
+- **[Contributing](https://github.com/daniele-liprandi/EvoNEST-backbone/blob/main/CONTRIBUTING.md)** - How to contribute to the project
+- **[GitHub Repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** - Report issues and view source code
 
 ## About EvoNEST
 

@@ -5,7 +5,7 @@ This documentation is for using EvoNEST **after installation** - whether you ins
 
 **Need to install EvoNEST?**
 - **Non-technical:** See the [Workshop tutorial](/workshop/)
-- **Technical:** See the [Getting started guide](/getting-started/)
+- **Technical:** See the [Technical documentation](/developer-docs/installation)
 :::
 
 Welcome to the EvoNEST user documentation. This comprehensive guide covers all features and functionality for managing your research data.

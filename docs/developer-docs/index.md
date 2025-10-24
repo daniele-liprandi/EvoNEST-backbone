@@ -1,6 +1,22 @@
-# Developer Docs
+# Technical documentation
 
-Welcome to the EvoNEST Developer Docs. This section provides technical documentation for developers who want to customize, extend, or deploy EvoNEST.
+::: tip For technical users and developers
+This section provides technical documentation for:
+- **IT staff/System administrators:** Quick installation and deployment
+- **Developers:** Customizing, extending, and contributing to EvoNEST
+
+**Non-technical user?** See the [Workshop tutorial](/workshop/) for a beginner-friendly installation guide.
+:::
+
+Welcome to the EvoNEST technical documentation. This section covers installation, deployment, customization, and development.
+
+## 🚀 Installation & Deployment
+
+Get EvoNEST running quickly with our technical installation guide:
+
+- **[Quick Installation](./installation.md)** – Docker-based installation for technical users
+
+**After installation:** See the [User documentation](/user-docs/nest-setup) to configure your NEST and add users.
 
 ## 🔐 Authentication Setup
 
@@ -23,5 +39,14 @@ Extend EvoNEST functionality to match your laboratory's specific needs:
 
 - **[API Documentation](/api-docs/)** – Complete REST API reference
 - **[Contributing Guidelines](https://github.com/daniele-liprandi/EvoNEST-backbone/blob/main/CONTRIBUTING.md)** – How to contribute to EvoNEST
+- **[GitHub Repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** – Report issues and contribute code
+
+## Getting help
+
+Need assistance?
+
+- **Installation issues:** Check the [troubleshooting guide](/workshop/06-troubleshooting)
+- **Development questions:** Open an issue on [GitHub](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
+- **General usage:** See the [User documentation](/user-docs/)
 
 

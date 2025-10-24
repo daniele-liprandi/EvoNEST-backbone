@@ -39,7 +39,7 @@ const options = {
       description: `
 # EvoNEST General Documentation
 
-**The EvoNEST User Guide and the EvoNEST Developer Guide are found here**: https://daniele-liprandi.github.io/EvoNEST-backbone/
+**The EvoNEST User documentation and the EvoNEST Developer Docs are found here**: https://daniele-liprandi.github.io/EvoNEST-backbone/
 
 # EvoNEST API Documentation
 
