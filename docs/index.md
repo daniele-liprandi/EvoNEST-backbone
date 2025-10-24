@@ -36,44 +36,7 @@ features:
 
 ## Welcome to EvoNEST Documentation
 
-This documentation site provides comprehensive guides for both users and developers of the EvoNEST platform. Whether you're a researcher looking to manage your data or a developer wanting to contribute, you'll find the resources you need here.
-
-## Documentation sections
-
-### 🎓 Installing EvoNEST?
-
-**Choose your path:**
-
-- **[Workshop](/workshop/)** - **Non-technical users:** Complete step-by-step guide from installation to first data entry (2-3 hours)
-- **[Technical docs](/developer-docs/installation)** - **IT staff/Developers:** Quick Docker installation for technical users (15 minutes)
-
-### 📚 Using EvoNEST (After Installation)
-
-**For lab heads, researchers, and users of an already-installed EvoNEST instance:**
-
-- **[User documentation](/user-docs/)** - Complete guide to using all EvoNEST features
-  - **[NEST Setup](/user-docs/nest-setup)** - Configure your laboratory's EvoNEST instance (for lab heads)
-  - **[User Management](/user-docs/user-management)** - Add and manage team members
-  - **[Sample Management](/user-docs/sample-management)** - Organize and track biological specimens
-  - **[Data Collection](/user-docs/data-collection)** - Effectively collect and manage research data
-  - **[Traits Management](/user-docs/traits-management)** - Handle measurements and properties
-  - **[Experiments](/user-docs/experiments)** - Manage experimental procedures and protocols
-  - **[Data Analysis](/user-docs/data-analysis)** - Statistical analysis and data exploration
-  - **[Data Export](/user-docs/data-export)** - Export data for publication
-  - **[FAQ](/user-docs/faq)** - Frequently asked questions
-
-### 👨‍💻 For IT staff and developers
-
-**For technical users deploying, customizing, or contributing to EvoNEST:**
-
-- **[Technical documentation](/developer-docs/)** - Installation, deployment, and development guides
-  - **[Quick Installation](/developer-docs/installation)** - Fast Docker-based setup (15 minutes)
-  - **[Authentication Setup](/developer-docs/auth-google)** - Configure Google OAuth or Keycloak
-  - **[Component Development](/developer-docs/component-development)** - Create custom sample cards
-  - **[File Processor Development](/developer-docs/file-processor-development)** - Support new file formats
-  - **[Data Format Parser Development](/developer-docs/data-format-parser-development)** - Build custom parsers
-- **[Contributing](https://github.com/daniele-liprandi/EvoNEST-backbone/blob/main/CONTRIBUTING.md)** - How to contribute to the project
-- **[GitHub Repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** - Report issues and view source code
+This documentation site provides guides for both users and developers of the EvoNEST platform. Whether you're a [researcher looking to install EvoNEST for their lab](/workshop), a [user of an existing NEST](/user-docs), or a [developer wanting to contribute](/developer-docs), you'll find the resources you need here.
 
 ## About EvoNEST
 
