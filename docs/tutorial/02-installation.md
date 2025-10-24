@@ -474,7 +474,7 @@ Great! You're ready to log in and start using EvoNEST!
 :::
 
 ::: warning Issues?
-If something's not working, check the [Troubleshooting guide](/tutorial/06-troubleshooting).
+If something's not working, check the [Troubleshooting guide](/tutorial/troubleshooting).
 :::
 
 ---
@@ -506,8 +506,3 @@ In the next module, you'll:
 - Log in to EvoNEST for the first time
 - Explore the interface
 - Verify all features are working
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/tutorial/01-preparation" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 1: Preparation</a>
-  <a href="/tutorial/03-first-launch" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 3: First Launch →</a>
-</div>

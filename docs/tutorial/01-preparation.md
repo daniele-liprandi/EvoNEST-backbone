@@ -480,7 +480,7 @@ If you've checked all the boxes above, you're ready to proceed!
 :::
 
 ::: warning Need help?
-If something didn't work, check the [Troubleshooting](/tutorial/06-troubleshooting) guide for assistance.
+If something didn't work, check the [Troubleshooting](/tutorial/troubleshooting) guide for assistance.
 :::
 
 ---
@@ -493,8 +493,3 @@ In the next module, you'll:
 - Clone the EvoNEST repository
 - Configure your environment
 - Start EvoNEST for the first time
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/tutorial/" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Back to Overview</a>
-  <a href="/tutorial/02-installation" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 2: Installation →</a>
-</div>

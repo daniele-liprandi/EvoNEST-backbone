@@ -1,4 +1,4 @@
-# Module 6: Troubleshooting
+# Troubleshooting
 
 ::: tip Purpose
 This reference guide covers common issues you might encounter while using EvoNEST and how to solve them.
@@ -709,8 +709,3 @@ You've completed all tutorial modules:
 - **Import existing data:** [Data Import Guide](/user-docs/data-import)
 - **Analyze your data:** [Data Analysis Guide](/user-docs/data-analysis)
 - **Deploy to production:** [Technical docs - Production setup](/developer-docs/installation#setting-up-the-production-environment)
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/tutorial/05-data-entry" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 5: Data Entry</a>
-  <a href="/tutorial/" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to Workshop Home</a>
-</div>

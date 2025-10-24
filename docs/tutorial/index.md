@@ -40,7 +40,6 @@ You don't need programming experience for this guide. We'll guide you through ev
 | 3 | [First launch](/tutorial/03-first-launch) | 20 min |
 | 4 | [Configuration](/tutorial/04-configuration) | 30 min |
 | 5 | [Data entry and management](/tutorial/05-data-entry) | 45 min |
-| 6 | [Troubleshooting](/tutorial/06-troubleshooting) | Reference |
 
 ## Guide modules
 
@@ -108,8 +107,8 @@ Learn the core workflows for managing research data in EvoNEST through hands-on 
 
 ---
 
-### Module 6: Troubleshooting
-**[Troubleshooting guide →](/tutorial/06-troubleshooting)**
+### Troubleshooting
+**[Troubleshooting guide →](/tutorial/troubleshooting)**
 
 Reference guide for common issues and solutions. Consult this when you encounter problems.
 

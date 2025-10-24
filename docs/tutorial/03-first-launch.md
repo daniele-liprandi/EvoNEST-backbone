@@ -375,7 +375,7 @@ Perfect! You're ready to start configuring EvoNEST for your laboratory's needs.
 If something isn't working, check:
 1. Browser console for errors (F12)
 2. Docker logs: `docker compose -f docker-compose.dev.yml logs -f`
-3. [Troubleshooting Guide](/tutorial/06-troubleshooting)
+3. [Troubleshooting Guide](/tutorial/troubleshooting)
 :::
 
 ---
@@ -402,8 +402,3 @@ In the next module, you'll:
 - Set up trait types with proper units
 - Define equipment and measurement tools
 - Customize sample ID generation
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/tutorial/02-installation" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 2: Installation</a>
-  <a href="/tutorial/04-configuration" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 4: Configuration →</a>
-</div>

@@ -599,8 +599,3 @@ The final module covers:
 - Error messages and fixes
 - Performance optimization
 - Getting help and support
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/tutorial/04-configuration" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 4: Configuration</a>
-  <a href="/tutorial/06-troubleshooting" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 6: Troubleshooting →</a>
-</div>

@@ -483,8 +483,3 @@ In the next module, you'll:
 - Record trait measurements
 - Upload files and images
 - Organize data into experiments
-
-<div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/tutorial/03-first-launch" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 3: First Launch</a>
-  <a href="/tutorial/05-data-entry" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 5: Data Entry →</a>
-</div>

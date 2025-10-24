@@ -137,7 +137,7 @@ If you encounter issues:
 
 - **Check the logs**: `docker-compose logs -f`
 - **View container status**: `docker-compose ps`
-- **Troubleshooting**: See the [Workshop troubleshooting guide](/tutorial/06-troubleshooting)
+- **Troubleshooting**: See the [Workshop troubleshooting guide](/tutorial/troubleshooting)
 - **Report issues**: Visit our [GitHub repository](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
 
 ## For developers
