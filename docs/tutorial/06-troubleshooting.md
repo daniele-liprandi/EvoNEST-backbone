@@ -695,7 +695,7 @@ Avoid future problems:
 
 ## Workshop Complete! 🎉
 
-You've completed all workshop modules:
+You've completed all tutorial modules:
 
 - ✅ Prepared your system and installed Docker
 - ✅ Installed and launched EvoNEST
@@ -711,6 +711,6 @@ You've completed all workshop modules:
 - **Deploy to production:** [Technical docs - Production setup](/developer-docs/installation#setting-up-the-production-environment)
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/workshop/05-data-entry" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 5: Data Entry</a>
-  <a href="/workshop/" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to Workshop Home</a>
+  <a href="/tutorial/05-data-entry" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 5: Data Entry</a>
+  <a href="/tutorial/" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to Workshop Home</a>
 </div>

@@ -35,29 +35,29 @@ You don't need programming experience for this guide. We'll guide you through ev
 
 | Module | Topic | Duration |
 |--------|-------|----------|
-| 1 | [Preparation](/workshop/01-preparation) | 15 min |
-| 2 | [Installation](/workshop/02-installation) | 30 min |
-| 3 | [First launch](/workshop/03-first-launch) | 20 min |
-| 4 | [Configuration](/workshop/04-configuration) | 30 min |
-| 5 | [Data entry and management](/workshop/05-data-entry) | 45 min |
-| 6 | [Troubleshooting](/workshop/06-troubleshooting) | Reference |
+| 1 | [Preparation](/tutorial/01-preparation) | 15 min |
+| 2 | [Installation](/tutorial/02-installation) | 30 min |
+| 3 | [First launch](/tutorial/03-first-launch) | 20 min |
+| 4 | [Configuration](/tutorial/04-configuration) | 30 min |
+| 5 | [Data entry and management](/tutorial/05-data-entry) | 45 min |
+| 6 | [Troubleshooting](/tutorial/06-troubleshooting) | Reference |
 
 ## Guide modules
 
 ### Module 1: Preparation
-**[Start here → Preparation guide](/workshop/01-preparation)**
+**[Start here → Preparation guide](/tutorial/01-preparation)**
 
 Get your computer ready for EvoNEST installation. Install required software (Docker Desktop) and verify system requirements.
 
 **What you'll do:**
 - Check system requirements
 - Install Docker Desktop
-- Download workshop materials
+- Download tutorial materials
 
 ---
 
 ### Module 2: Installation
-**[Installation guide →](/workshop/02-installation)**
+**[Installation guide →](/tutorial/02-installation)**
 
 Set up EvoNEST on your computer using Docker. This module walks through cloning the repository and starting the development environment.
 
@@ -69,7 +69,7 @@ Set up EvoNEST on your computer using Docker. This module walks through cloning 
 ---
 
 ### Module 3: First launch
-**[First launch guide →](/workshop/03-first-launch)**
+**[First launch guide →](/tutorial/03-first-launch)**
 
 Launch EvoNEST for the first time, log in, and verify everything is working correctly.
 
@@ -82,7 +82,7 @@ Launch EvoNEST for the first time, log in, and verify everything is working corr
 ---
 
 ### Module 4: Configuration
-**[Configuration guide →](/workshop/04-configuration)**
+**[Configuration guide →](/tutorial/04-configuration)**
 
 Customize EvoNEST for your laboratory. Set up sample types, trait types, equipment, and lab-specific settings.
 
@@ -95,7 +95,7 @@ Customize EvoNEST for your laboratory. Set up sample types, trait types, equipme
 ---
 
 ### Module 5: Data entry and management
-**[Data entry guide →](/workshop/05-data-entry)**
+**[Data entry guide →](/tutorial/05-data-entry)**
 
 Learn the core workflows for managing research data in EvoNEST through hands-on exercises.
 
@@ -109,7 +109,7 @@ Learn the core workflows for managing research data in EvoNEST through hands-on 
 ---
 
 ### Module 6: Troubleshooting
-**[Troubleshooting guide →](/workshop/06-troubleshooting)**
+**[Troubleshooting guide →](/tutorial/06-troubleshooting)**
 
 Reference guide for common issues and solutions. Consult this when you encounter problems.
 
@@ -180,5 +180,5 @@ Once you complete this tutorial, you'll have EvoNEST installed and know the basi
 
 ## Ready to begin?
 
-Let's get started! Head to **[Module 1: Preparation](/workshop/01-preparation)** to begin setting up your environment.
+Let's get started! Head to **[Module 1: Preparation](/tutorial/01-preparation)** to begin setting up your environment.
 

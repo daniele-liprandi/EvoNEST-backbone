@@ -3,12 +3,13 @@
 ::: tip Learning objectives
 By the end of this module, you will have:
 - ✅ Verified your system meets the requirements
+- ✅ Installed WSL2 (Windows users)
 - ✅ Installed Docker Desktop
 - ✅ Installed Git
 - ✅ Prepared your workspace
 :::
 
-**Estimated time:** 15-20 minutes
+**Estimated time:** 20-30 minutes, 30-50 minutes on Windows
 
 ---
 
@@ -70,7 +71,106 @@ lsb_release -a
 
 ---
 
-## Step 2: Install Docker Desktop
+## Step 2: Install WSL2 (Windows only)
+
+::: info What is WSL2?
+**WSL2 (Windows Subsystem for Linux 2)** allows Windows to run a Linux environment. Docker Desktop on Windows requires WSL2 to work properly.
+
+**If you're on macOS or Linux, skip to [Step 3](#step-3-install-docker-desktop).**
+:::
+
+### Check if WSL2 is already installed
+
+Before installing, let's check if you already have WSL2:
+
+1. **Open PowerShell**
+   - Press `Windows Key`
+   - Type "PowerShell"
+   - Click "Windows PowerShell" (no need for administrator mode yet)
+
+2. **Check WSL version**
+
+   Run this command:
+   ```bash
+   wsl --status
+   ```
+
+   **If you see version information and "Default Version: 2":**
+   - ✅ WSL2 is already installed! Skip to [Step 3](#step-3-install-docker-desktop)
+
+   **If you see an error or "command not found":**
+   - Continue with installation below
+
+### Install WSL2
+
+1. **Open PowerShell as Administrator**
+   - Press `Windows Key`
+   - Type "PowerShell"
+   - **Right-click** on "Windows PowerShell"
+   - Select **"Run as Administrator"**
+   - Click "Yes" when prompted
+
+2. **Install WSL2**
+
+   Run this single command:
+   ```bash
+   wsl --install
+   ```
+
+   This will:
+   - Enable required Windows features
+   - Download and install the Linux kernel
+   - Install Ubuntu as the default Linux distribution
+   - This may take 5-10 minutes depending on your internet speed
+
+3. **Restart your computer**
+   - WSL requires a restart to complete installation
+   - Save any open work before restarting
+
+4. **After restart: Complete Ubuntu setup**
+   - Ubuntu will automatically open
+   - You'll be asked to create a username and password
+   - **Important:** Remember these credentials (though you won't need them often)
+   - Username: Use lowercase letters and numbers only
+   - Password: You won't see characters as you type (this is normal)
+
+5. **Verify WSL2 installation**
+
+   Open PowerShell and run:
+   ```bash
+   wsl --status
+   ```
+
+   **Expected output:**
+   ```
+   Default Distribution: Ubuntu
+   Default Version: 2
+   ```
+
+   ✅ If you see "Default Version: 2", WSL2 is ready!
+
+::: details Troubleshooting WSL2 installation
+
+**"This operation returned because the timeout period expired":**
+- Your internet connection may be slow
+- Try running `wsl --install` again
+
+**"WslRegisterDistribution failed with error":**
+1. Open PowerShell as Administrator
+2. Run: `dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart`
+3. Run: `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart`
+4. Restart your computer
+5. Try `wsl --install` again
+
+**"WSL 2 requires an update to its kernel component":**
+1. Download the kernel update from: [https://aka.ms/wsl2kernel](https://aka.ms/wsl2kernel)
+2. Run the installer
+3. Try `wsl --install` again
+:::
+
+---
+
+## Step 3: Install Docker Desktop
 
 Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which includes everything you need.
 
@@ -84,6 +184,7 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
    - Double-click `Docker Desktop Installer.exe`
    - Follow the installation wizard
    - **Important:** When prompted, enable "Use WSL 2 instead of Hyper-V" (recommended)
+   - Since you installed WSL2 in Step 2, this should work smoothly
 
 3. **Restart Your Computer**
    - Docker will prompt you to restart
@@ -97,15 +198,14 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
 ::: details Troubleshooting Windows installation
 
 **"WSL 2 installation is incomplete" error:**
-1. Open PowerShell as Administrator
-2. Run: `wsl --install`
-3. Restart your computer
-4. Launch Docker Desktop again
+- This shouldn't happen if you completed Step 2
+- Verify WSL2 is installed: Open PowerShell and run `wsl --status`
+- If needed, return to [Step 2](#step-2-install-wsl2-windows-only) and complete WSL2 installation
 
-**"Hyper-V feature is not enabled" error:**
-1. Search for "Turn Windows features on or off"
-2. Enable "Hyper-V" and "Windows Subsystem for Linux"
-3. Restart your computer
+**Docker Desktop won't start:**
+1. Make sure WSL2 is running: Open PowerShell and run `wsl --status`
+2. Restart Docker Desktop
+3. Check if virtualization is enabled in your BIOS (consult your PC manufacturer's documentation)
 :::
 
 ### For macOS
@@ -195,7 +295,7 @@ After installation, log out and log back in for group changes to take effect.
 
 ---
 
-## Step 3: Verify Docker installation
+## Step 4: Verify Docker installation
 
 Let's make sure Docker is working correctly.
 
@@ -251,7 +351,7 @@ Let's make sure Docker is working correctly.
 
 ---
 
-## Step 4: Install Git
+## Step 5: Install Git
 
 Git is used to download (clone) the EvoNEST code repository.
 
@@ -262,7 +362,7 @@ Open your terminal and run:
 git --version
 ```
 
-✅ If you see a version number (e.g., `git version 2.40.0`), Git is already installed! Skip to [Step 5](#step-5-create-a-workspace-folder).
+✅ If you see a version number (e.g., `git version 2.40.0`), Git is already installed! Skip to [Step 6](#step-6-create-a-workspace-folder).
 
 ### Installing Git
 
@@ -304,7 +404,7 @@ git --version
 
 ---
 
-## Step 5: Create a workspace folder
+## Step 6: Create a workspace folder
 
 Let's create a dedicated folder for your EvoNEST installation.
 
@@ -368,6 +468,7 @@ Keep your terminal window open - you'll use it in the next module for installati
 
 Before moving to the next module, verify you have:
 
+- [ ] ✅ **Windows users only:** WSL2 installed (`wsl --status` shows "Default Version: 2")
 - [ ] ✅ Docker Desktop installed and running
 - [ ] ✅ Docker tested successfully (`docker run hello-world` worked)
 - [ ] ✅ Git installed (`git --version` shows a version number)
@@ -379,7 +480,7 @@ If you've checked all the boxes above, you're ready to proceed!
 :::
 
 ::: warning Need help?
-If something didn't work, check the [Troubleshooting](/workshop/06-troubleshooting) guide for assistance.
+If something didn't work, check the [Troubleshooting](/tutorial/06-troubleshooting) guide for assistance.
 :::
 
 ---
@@ -394,6 +495,6 @@ In the next module, you'll:
 - Start EvoNEST for the first time
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/workshop/" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Back to Overview</a>
-  <a href="/workshop/02-installation" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 2: Installation →</a>
+  <a href="/tutorial/" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Back to Overview</a>
+  <a href="/tutorial/02-installation" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 2: Installation →</a>
 </div>

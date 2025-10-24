@@ -4,7 +4,7 @@
 This documentation is for using EvoNEST **after installation** - whether you installed it yourself or someone else (like IT staff) installed it for you.
 
 **Need to install EvoNEST?**
-- **Non-technical:** See the [Workshop tutorial](/workshop/)
+- **Non-technical:** See the [Workshop tutorial](/tutorial/)
 - **Technical:** See the [Technical documentation](/developer-docs/installation)
 :::
 

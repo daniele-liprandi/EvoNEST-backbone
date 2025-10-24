@@ -14,7 +14,7 @@ By the end of this module, you will have:
 
 ## Prerequisites
 
-Before starting this module, make sure you've completed [Module 1: Preparation](/workshop/01-preparation) and have:
+Before starting this module, make sure you've completed [Module 1: Preparation](/tutorial/01-preparation) and have:
 - ✅ Docker Desktop installed and running
 - ✅ Git installed
 - ✅ Terminal open in your workspace folder (e.g., `Documents/EvoNEST`)
@@ -474,7 +474,7 @@ Great! You're ready to log in and start using EvoNEST!
 :::
 
 ::: warning Issues?
-If something's not working, check the [Troubleshooting guide](/workshop/06-troubleshooting).
+If something's not working, check the [Troubleshooting guide](/tutorial/06-troubleshooting).
 :::
 
 ---
@@ -508,6 +508,6 @@ In the next module, you'll:
 - Verify all features are working
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/workshop/01-preparation" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 1: Preparation</a>
-  <a href="/workshop/03-first-launch" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 3: First Launch →</a>
+  <a href="/tutorial/01-preparation" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 1: Preparation</a>
+  <a href="/tutorial/03-first-launch" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 3: First Launch →</a>
 </div>

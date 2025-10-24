@@ -15,7 +15,7 @@ By the end of this module, you will have:
 
 ## Prerequisites
 
-Before starting this module, make sure you've completed [Module 3: First Launch](/workshop/03-first-launch) and have:
+Before starting this module, make sure you've completed [Module 3: First Launch](/tutorial/03-first-launch) and have:
 - ✅ EvoNEST running and accessible
 - ✅ Logged in as admin
 - ✅ Familiar with the navigation
@@ -485,6 +485,6 @@ In the next module, you'll:
 - Organize data into experiments
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/workshop/03-first-launch" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 3: First Launch</a>
-  <a href="/workshop/05-data-entry" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 5: Data Entry →</a>
+  <a href="/tutorial/03-first-launch" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 3: First Launch</a>
+  <a href="/tutorial/05-data-entry" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 5: Data Entry →</a>
 </div>

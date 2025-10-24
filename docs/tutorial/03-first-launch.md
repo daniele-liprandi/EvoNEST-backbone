@@ -14,7 +14,7 @@ By the end of this module, you will have:
 
 ## Prerequisites
 
-Before starting this module, make sure you've completed [Module 2: Installation](/workshop/02-installation) and have:
+Before starting this module, make sure you've completed [Module 2: Installation](/tutorial/02-installation) and have:
 - ✅ EvoNEST running (Docker containers up)
 - ✅ Access to the login page at [http://localhost:3005](http://localhost:3005)
 
@@ -74,7 +74,7 @@ Use these credentials to log in:
 - **Password:** `pass`
 
 ::: warning Change default credentials later
-After the workshop, you should:
+After the tutorial, you should:
 1. Set up proper authentication (Auth0, Google, etc.)
 2. Create individual user accounts
 3. Disable or change the default admin account
@@ -375,7 +375,7 @@ Perfect! You're ready to start configuring EvoNEST for your laboratory's needs.
 If something isn't working, check:
 1. Browser console for errors (F12)
 2. Docker logs: `docker compose -f docker-compose.dev.yml logs -f`
-3. [Troubleshooting Guide](/workshop/06-troubleshooting)
+3. [Troubleshooting Guide](/tutorial/06-troubleshooting)
 :::
 
 ---
@@ -404,6 +404,6 @@ In the next module, you'll:
 - Customize sample ID generation
 
 <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-  <a href="/workshop/02-installation" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 2: Installation</a>
-  <a href="/workshop/04-configuration" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 4: Configuration →</a>
+  <a href="/tutorial/02-installation" style="padding: 0.5rem 1rem; background: var(--vp-c-bg-soft); color: var(--vp-c-text-1); text-decoration: none; border-radius: 6px;">← Module 2: Installation</a>
+  <a href="/tutorial/04-configuration" style="padding: 0.5rem 1rem; background: var(--vp-c-brand-1); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Module 4: Configuration →</a>
 </div>

@@ -5,7 +5,7 @@ This section provides technical documentation for:
 - **IT staff/System administrators:** Quick installation and deployment
 - **Developers:** Customizing, extending, and contributing to EvoNEST
 
-**Non-technical user?** See the [Workshop tutorial](/workshop/) for a beginner-friendly installation guide.
+**Non-technical user?** See the [Workshop tutorial](/tutorial/) for a beginner-friendly installation guide.
 :::
 
 Welcome to the EvoNEST technical documentation. This section covers installation, deployment, customization, and development.
@@ -45,7 +45,7 @@ Extend EvoNEST functionality to match your laboratory's specific needs:
 
 Need assistance?
 
-- **Installation issues:** Check the [troubleshooting guide](/workshop/06-troubleshooting)
+- **Installation issues:** Check the [troubleshooting guide](/tutorial/06-troubleshooting)
 - **Development questions:** Open an issue on [GitHub](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
 - **General usage:** See the [User documentation](/user-docs/)
 
