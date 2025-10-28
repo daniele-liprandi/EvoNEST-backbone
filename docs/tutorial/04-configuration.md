@@ -418,14 +418,14 @@ It's good practice to backup your configuration.
 
 Before moving to the next module, verify:
 
-- [ ] ✅ Sample types configured (at least 2-3 custom types)
-- [ ] ✅ Subsample types added (relevant to your work)
-- [ ] ✅ Trait types with proper units (at least 3-5 types)
-- [ ] ✅ Equipment list created (2-3 items)
-- [ ] ✅ Sample ID generation rules set
-- [ ] ✅ Lab information filled in
-- [ ] ✅ All changes saved
-- [ ] ✅ Tested that types appear in sample creation form
+- [ ] Sample types configured (at least 2-3 custom types)
+- [ ] Subsample types added (relevant to your work)
+- [ ] Trait types with proper units (at least 3-5 types)
+- [ ] Equipment list created (2-3 items)
+- [ ] Sample ID generation rules set
+- [ ] Lab information filled in
+- [ ] All changes saved
+- [ ] Tested that types appear in sample creation form
 
 ::: tip Ready to Add Data?
 Perfect! Now you can start entering real samples and measurements.

@@ -542,14 +542,14 @@ For one subsample, add:
 
 Before moving to the next module, verify:
 
-- [ ] ✅ Created at least one parent sample
-- [ ] ✅ Added at least one subsample
-- [ ] ✅ Recorded at least 2 trait measurements
-- [ ] ✅ Uploaded at least one file/image
-- [ ] ✅ Created an experiment linking samples and traits
-- [ ] ✅ Used filters to explore data
-- [ ] ✅ Edited an entry and checked the logbook
-- [ ] ✅ Understand the sample → subsample → trait hierarchy
+- [ ] Created at least one parent sample
+- [ ] Added at least one subsample
+- [ ] Recorded at least 2 trait measurements
+- [ ] Uploaded at least one file/image
+- [ ] Created an experiment linking samples and traits
+- [ ] Used filters to explore data
+- [ ] Edited an entry and checked the logbook
+- [ ] Understand the sample → subsample → trait hierarchy
 
 ::: tip Data Entry Skills Achieved!
 You now have the core skills to use EvoNEST for your research data management!
@@ -564,7 +564,7 @@ You now have the core skills to use EvoNEST for your research data management!
 - **Use standard taxonomic names** - Check against databases (GBIF, WoRMS)
 - **Consistent units** - Always use the same units for each trait type
 - **Detailed notes** - Future you will thank past you
-- **Regular backups** - Export data periodically
+- **Regular backups** - Learn more in [Module 6: Backup & Maintenance](/tutorial/06-backup-maintenance)
 
 ### Metadata Matters
 
@@ -592,10 +592,13 @@ Always record:
 
 ## Next Steps
 
-**Fantastic progress!** You've learned the complete EvoNEST workflow from specimen to analysis.
+Congratulations on completing the data entry module! You now know how to manage research data in EvoNEST.
 
-The final module covers:
-- Common problems and solutions
-- Error messages and fixes
-- Performance optimization
-- Getting help and support
+### Continue Learning
+
+- **[Module 6: Backup & Maintenance](/tutorial/06-backup-maintenance)** - Protect your data with automated backups
+- **[Troubleshooting](/tutorial/troubleshooting)** - Fix common problems
+- **[User Documentation](/user-docs/)** - Explore advanced features
+- **[Data Import Guide](/user-docs/data-import)** - Import existing data
+- **[Data Analysis Guide](/user-docs/data-analysis)** - Analyze your data
+

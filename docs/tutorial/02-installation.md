@@ -463,11 +463,11 @@ docker compose -f docker-compose.dev.yml up -d
 
 Before moving to the next module, verify:
 
-- [ ] ✅ All Docker containers show "Up" status
-- [ ] ✅ EvoNEST login page loads at [http://localhost:3005](http://localhost:3005)
-- [ ] ✅ Mongo Express loads at [http://localhost:8081](http://localhost:8081) (optional)
-- [ ] ✅ No error messages in the logs
-- [ ] ✅ You know how to stop and start EvoNEST
+- [ ] All Docker containers show "Up" status
+- [ ] EvoNEST login page loads at [http://localhost:3005](http://localhost:3005)
+- [ ] Mongo Express loads at [http://localhost:8081](http://localhost:8081) (optional)
+- [ ] No error messages in the logs
+- [ ] You know how to stop and start EvoNEST
 
 ::: tip All working?
 Great! You're ready to log in and start using EvoNEST!

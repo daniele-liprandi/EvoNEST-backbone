@@ -29,21 +29,18 @@ You'll need **administrator privileges** on your computer to install software. M
 
 Before installing EvoNEST, verify your system meets these requirements:
 
-- [ ] **Operating System:**
+- [ ] Operating System
   - Windows 10/11 (64-bit) **or**
   - macOS 10.15 (Catalina) or newer **or**
   - Linux (Ubuntu 20.04+, Fedora, Debian)
-
-- [ ] **Hardware:**
+- [ ] Hardware
   - 8GB RAM minimum (16GB recommended)
   - 20GB free disk space
   - Dual-core processor (quad-core recommended)
-
-- [ ] **Permissions:**
+- [ ] Permissions
   - Administrator/sudo privileges
   - Ability to install software
-
-- [ ] **Internet Connection:**
+- [ ] Internet Connection
   - Required for downloading Docker and the repository
 
 ::: details How to check your system specs
@@ -468,12 +465,12 @@ Keep your terminal window open - you'll use it in the next module for installati
 
 Before moving to the next module, verify you have:
 
-- [ ] ✅ **Windows users only:** WSL2 installed (`wsl --status` shows "Default Version: 2")
-- [ ] ✅ Docker Desktop installed and running
-- [ ] ✅ Docker tested successfully (`docker run hello-world` worked)
-- [ ] ✅ Git installed (`git --version` shows a version number)
-- [ ] ✅ Created a workspace folder (e.g., `Documents/EvoNEST`)
-- [ ] ✅ Terminal/command prompt open in your workspace folder
+- [ ] **Windows users only:** WSL2 installed (`wsl --status` shows "Default Version: 2")
+- [ ] Docker Desktop installed and running
+- [ ] Docker tested successfully (`docker run hello-world` worked)
+- [ ] Git installed (`git --version` shows a version number)
+- [ ] Created a workspace folder (e.g., `Documents/EvoNEST`)
+- [ ] Terminal/command prompt open in your workspace folder
 
 ::: tip All set?
 If you've checked all the boxes above, you're ready to proceed!

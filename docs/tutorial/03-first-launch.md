@@ -360,12 +360,12 @@ Check if these links are accessible:
 
 Before moving to the next module, verify:
 
-- [ ] ✅ Successfully logged in with admin/pass
-- [ ] ✅ Can navigate between Samples, Traits, Experiments, Settings
-- [ ] ✅ See empty tables (no data yet - that's correct!)
-- [ ] ✅ Configuration/Settings page loads
-- [ ] ✅ Understand the data structure (Samples → Traits → Experiments)
-- [ ] ✅ Can log out and log back in
+- [ ] Successfully logged in with admin/pass
+- [ ] Can navigate between Samples, Traits, Experiments, Settings
+- [ ] See empty tables (no data yet - that's correct!)
+- [ ] Configuration/Settings page loads
+- [ ] Understand the data structure (Samples → Traits → Experiments)
+- [ ] Can log out and log back in
 
 ::: tip All Verified?
 Perfect! You're ready to start configuring EvoNEST for your laboratory's needs.
