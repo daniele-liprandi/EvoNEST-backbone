@@ -2,11 +2,12 @@
 
 ::: tip Learning objectives
 By the end of this module, you will have:
+
 - ✅ Cloned the EvoNEST repository
 - ✅ Configured environment files
 - ✅ Started EvoNEST with Docker
 - ✅ Verified the application is running
-:::
+  :::
 
 **Estimated time:** 30-40 minutes
 
@@ -15,6 +16,7 @@ By the end of this module, you will have:
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 1: Preparation](/tutorial/01-preparation) and have:
+
 - ✅ Docker Desktop installed and running
 - ✅ Git installed
 - ✅ Terminal open in your workspace folder (e.g., `Documents/EvoNEST`)
@@ -24,6 +26,7 @@ Before starting this module, make sure you've completed [Module 1: Preparation](
 ## Overview
 
 In this module, you'll:
+
 1. Download the EvoNEST code from the repository
 2. Set up configuration files with secure credentials
 3. Launch EvoNEST using Docker
@@ -38,6 +41,7 @@ Let's download the EvoNEST code to your computer.
 1. **Make sure you're in your workspace folder**
 
    Check your current location:
+
    ```bash
    pwd
    ```
@@ -47,6 +51,7 @@ Let's download the EvoNEST code to your computer.
 2. **Clone the repository**
 
    ::: code-group
+
    ```bash [HTTPS (recommended)]
    git clone https://github.com/daniele-liprandi/EvoNEST-backbone.git
    ```
@@ -54,9 +59,11 @@ Let's download the EvoNEST code to your computer.
    ```bash [SSH (If you have SSH keys set up)]
    git clone git@github.com:daniele-liprandi/EvoNEST-backbone.git
    ```
+
    :::
 
    **Expected output:**
+
    ```
    Cloning into 'EvoNEST-backbone'...
    remote: Enumerating objects: 1234, done.
@@ -68,15 +75,17 @@ Let's download the EvoNEST code to your computer.
    ::: details Troubleshooting: Clone failed
 
    **"Permission denied" or "repository not found":**
+
    - Make sure you have internet connectivity
    - Try the HTTPS method if SSH didn't work
    - Verify the repository URL is correct
 
    **"Git is not recognized":**
+
    - Git might not be in your PATH
    - Try restarting your terminal
    - Reinstall Git from [git-scm.com](https://git-scm.com)
-   :::
+     :::
 
 3. **Enter the project directory**
 
@@ -89,6 +98,7 @@ Let's download the EvoNEST code to your computer.
    List the contents:
 
    ::: code-group
+
    ```bash [Windows (Command Prompt)]
    dir
    ```
@@ -96,9 +106,11 @@ Let's download the EvoNEST code to your computer.
    ```bash [Windows (PowerShell) / macOS / Linux]
    ls
    ```
+
    :::
 
    You should see files and folders including:
+
    - `src/` - Source code
    - `docker-compose.dev.yml` - Docker configuration
    - `package.json` - Dependencies
@@ -115,6 +127,7 @@ EvoNEST uses NextAuth for authentication, which requires a secure secret key. Le
 ### Generate the secret
 
 ::: code-group
+
 ```bash [macOS / Linux]
 openssl rand -base64 32
 ```
@@ -127,10 +140,12 @@ openssl rand -base64 32
 ```bash [Windows (Git Bash)]
 openssl rand -base64 32
 ```
+
 :::
 
 **Expected output:**
-```
+
+```txt
 Xk7pQm2nR9sT3vY8wE5zL1aB4cD6fH9j
 ```
 
@@ -141,10 +156,11 @@ Copy this secret key somewhere safe - you'll need it in the next step. This key 
 ::: details What if openssl is not found?
 
 **Windows users:** If `openssl` doesn't work:
+
 1. Use the PowerShell method shown above, OR
 2. Generate a random 32-character string manually, OR
 3. Use an online generator like [randomkeygen.com](https://randomkeygen.com/) (choose "Fort Knox Passwords")
-:::
+   :::
 
 ---
 
@@ -159,6 +175,7 @@ This file stores your secret key.
 1. **Create the file:**
 
    ::: code-group
+
    ```bash [Windows (Command Prompt)]
    echo NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE > .env.local
    ```
@@ -166,13 +183,14 @@ This file stores your secret key.
    ```bash [macOS / Linux / Windows (Git Bash)]
    echo "NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE" > .env.local
    ```
+
    :::
 
 2. **Edit the file with your secret key:**
 
    Open `.env.local` in a text editor and replace `PASTE_YOUR_SECRET_HERE` with the secret you generated:
 
-   ```env
+   ```txt
    NEXTAUTH_SECRET=Xk7pQm2nR9sT3vY8wE5zL1aB4cD6fH9j
    ```
 
@@ -190,7 +208,8 @@ This file configures the development environment.
 1. **Create and edit `.env.development`:**
 
    Add this content:
-   ```env
+
+   ```txt
    NEXTAUTH_URL=http://localhost:3005
    MONGODB_URI=mongodb://evonest_user:secure_password_123@mongo_dev:27017
    STORAGE_PATH='/usr/evonest/file_storage_dev'
@@ -200,9 +219,11 @@ This file configures the development environment.
    Replace `secure_password_123` with your own secure password. Use something unique!
 
    **Example:**
-   ```env
+
+   ```txt
    MONGODB_URI=mongodb://evonest_user:MyLabPassword2024!@mongo_dev:27017
    ```
+
    :::
 
 2. **Save and close** the file.
@@ -245,6 +266,7 @@ Now we need to match the MongoDB credentials in the Docker configuration.
 4. **Save and close** the file.
 
 ✅ **Checkpoint:** You should now have three files configured:
+
 - `.env.local` - Contains your NEXTAUTH_SECRET
 - `.env.development` - Contains database connection string
 - `docker-compose.dev.yml` - Updated with matching MongoDB credentials
@@ -264,14 +286,16 @@ docker compose -f docker-compose.dev.yml up -d
 ```
 
 ::: details Understanding this command
+
 - `docker compose` - Runs Docker Compose
 - `-f docker-compose.dev.yml` - Uses the development configuration file
 - `up` - Starts the containers
 - `-d` - Runs in detached mode (background)
-:::
+  :::
 
 **Expected output:**
-```
+
+```txt
 [+] Running 3/3
  ✔ Network evonest-backbone_default         Created
  ✔ Container evonest_mongodb_dev            Started
@@ -292,7 +316,8 @@ docker compose -f docker-compose.dev.yml logs -f
 ```
 
 **What you'll see:**
-```
+
+```txt
 evonest_backbone_dev  | > evonest@0.1.0 dev
 evonest_backbone_dev  | > next dev -p 3005
 evonest_backbone_dev  |
@@ -310,30 +335,36 @@ Press `Ctrl+C` to stop viewing logs (this won't stop the containers)
 
 The application needs a minute or two to fully start. You'll know it's ready when you see:
 
-```
+```txt
 ✓ Ready in 3.2s
 ```
 
 ::: details Troubleshooting: Container won't start
 
 **Port already in use error:**
-```
+
+```txt
 Error: bind: address already in use
 ```
+
 Something else is using port 3005 or 27019. Options:
+
 1. Stop the other application using those ports
 2. Change the ports in `docker-compose.dev.yml`
 
 **MongoDB connection errors:**
+
 - Make sure your credentials match in both `.env.development` and `docker-compose.dev.yml`
 - Wait a bit longer - MongoDB takes time to initialize on first run
 
 **Node modules errors:**
+
 ```bash
 # Reset and rebuild
 docker compose -f docker-compose.dev.yml down -v
 docker compose -f docker-compose.dev.yml up --build -d
 ```
+
 :::
 
 ---
@@ -349,6 +380,7 @@ docker compose -f docker-compose.dev.yml ps
 ```
 
 **Expected output:**
+
 ```
 NAME                    STATUS      PORTS
 evonest_backbone_dev    Up          0.0.0.0:3005->3005/tcp
@@ -368,11 +400,12 @@ You should see the EvoNEST login page! 🎉
 
 ::: tip What you should see
 A clean login interface with:
+
 - EvoNEST logo
 - Username field
 - Password field
 - "Sign in" button
-:::
+  :::
 
 ### 5.3 Check MongoDB (optional)
 
@@ -390,11 +423,13 @@ You should see the MongoDB admin interface with databases listed.
 **Try these steps:**
 
 1. **Make sure Docker containers are running:**
+
    ```bash
    docker compose -f docker-compose.dev.yml ps
    ```
 
 2. **Check the logs for errors:**
+
    ```bash
    docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
    ```
@@ -403,12 +438,13 @@ You should see the MongoDB admin interface with databases listed.
    [http://127.0.0.1:3005](http://127.0.0.1:3005)
 
 4. **Restart the containers:**
+
    ```bash
    docker compose -f docker-compose.dev.yml restart
    ```
 
 5. **Check your firewall** - make sure it's not blocking port 3005
-:::
+   :::
 
 ---
 
@@ -419,6 +455,7 @@ Learn how to control your EvoNEST installation.
 ### Stop EvoNEST
 
 When you're done working:
+
 ```bash
 docker compose -f docker-compose.dev.yml down
 ```
@@ -428,6 +465,7 @@ This stops all containers but **keeps your data**.
 ### Start EvoNEST again
 
 Next time you want to use EvoNEST:
+
 ```bash
 docker compose -f docker-compose.dev.yml up -d
 ```
@@ -483,13 +521,13 @@ If something's not working, check the [Troubleshooting guide](/tutorial/troubles
 
 Here's a quick reference for managing your EvoNEST installation:
 
-| Task | Command |
-|------|---------|
-| Start EvoNEST | `docker compose -f docker-compose.dev.yml up -d` |
-| Stop EvoNEST | `docker compose -f docker-compose.dev.yml down` |
-| View logs | `docker compose -f docker-compose.dev.yml logs -f` |
-| Check status | `docker compose -f docker-compose.dev.yml ps` |
-| Restart | `docker compose -f docker-compose.dev.yml restart` |
+| Task           | Command                                            |
+| -------------- | -------------------------------------------------- |
+| Start EvoNEST  | `docker compose -f docker-compose.dev.yml up -d`   |
+| Stop EvoNEST   | `docker compose -f docker-compose.dev.yml down`    |
+| View logs      | `docker compose -f docker-compose.dev.yml logs -f` |
+| Check status   | `docker compose -f docker-compose.dev.yml ps`      |
+| Restart        | `docker compose -f docker-compose.dev.yml restart` |
 | Complete reset | `docker compose -f docker-compose.dev.yml down -v` |
 
 ::: tip Bookmark this page
@@ -503,6 +541,7 @@ You might want to keep this page bookmarked for reference when managing your Evo
 **Excellent work!** EvoNEST is now installed and running on your computer.
 
 In the next module, you'll:
+
 - Log in to EvoNEST for the first time
 - Explore the interface
 - Verify all features are working

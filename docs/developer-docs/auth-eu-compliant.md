@@ -351,7 +351,7 @@ NextAuth already supports Keycloak, no additional packages needed!
 
 #### 2.1 Update `.env.local`
 
-```env
+```txt
 NEXTAUTH_SECRET=your-existing-secret
 
 # Keycloak Configuration
@@ -362,7 +362,7 @@ KEYCLOAK_ISSUER=http://localhost:8080/realms/evonest
 
 #### 2.2 Update `.env.development`
 
-```env
+```txt
 NEXTAUTH_URL=http://localhost:3005
 MONGODB_URI=mongodb://evonest_user:your_password@mongo_dev:27017
 STORAGE_PATH='/usr/evonest/file_storage_dev'
@@ -655,14 +655,14 @@ Mount certificates in Docker and configure Keycloak to use them.
 
 #### 2.1 Create `.env.production` for Keycloak
 
-```env
+```txt
 KEYCLOAK_DB_PASSWORD=your-strong-db-password
 KEYCLOAK_ADMIN_PASSWORD=your-strong-admin-password
 ```
 
 #### 2.2 Update EvoNEST `.env.production`
 
-```env
+```txt
 NEXTAUTH_URL=https://your-domain.com
 MONGODB_URI=mongodb://evonest_user:password@mongo:27017
 STORAGE_PATH='/usr/evonest/file_storage'

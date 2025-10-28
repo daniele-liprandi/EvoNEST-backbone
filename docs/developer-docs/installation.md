@@ -33,7 +33,7 @@ openssl rand -base64 32
 
 Create a new file called `.env.local` in your project directory with the following content and your key:
 
-```env
+```txt
 NEXTAUTH_SECRET=your-secret-key
 ```
 
@@ -47,7 +47,7 @@ MONGO_URL=mongodb://your_username:your_secure_password@mongo:27017
 
 Finally, create a new file called `.env.development` containing
 
-```env
+```txt
 NEXTAUTH_URL=http://localhost:3005
 MONGODB_URI=mongodb://your_username:your_secure_password@mongo:27019
 STORAGE_PATH='/usr/evonest/file_storage_dev'
@@ -79,7 +79,7 @@ If you haven't already, make sure to complete [Step 1](#1-clone-the-repository) 
 
 Finally, create the production environment file `.env.production`
 
-```env
+```txt
 NEXTAUTH_URL=http://localhost:3000
 MONGODB_URI=mongodb://your_username:your_secure_password@mongo:27017
 STORAGE_PATH='/usr/evonest/file_storage'

@@ -125,7 +125,7 @@ Add Google OAuth credentials to your environment files.
 
 Open `.env.local` and add:
 
-```env
+```txt
 NEXTAUTH_SECRET=your-existing-secret-here
 
 # Google OAuth
@@ -135,7 +135,7 @@ GOOGLE_CLIENT_SECRET=GOCSPX-abc123...
 
 ### 2.2 Update `.env.development`
 
-```env
+```txt
 NEXTAUTH_URL=http://localhost:3005
 MONGODB_URI=mongodb://evonest_user:your_password@mongo_dev:27017
 STORAGE_PATH='/usr/evonest/file_storage_dev'
@@ -147,7 +147,7 @@ GOOGLE_CLIENT_SECRET=GOCSPX-abc123...
 
 ### 2.3 Update `.env.production` (for production)
 
-```env
+```txt
 NEXTAUTH_URL=https://your-production-domain.com
 MONGODB_URI=mongodb://evonest_user:your_password@mongo:27017
 STORAGE_PATH='/usr/evonest/file_storage'
@@ -541,7 +541,7 @@ async signIn({ user, account, profile }) {
    - Use your production domain
 
 2. **Update `.env.production`**
-   ```env
+   ```txt
    NEXTAUTH_URL=https://your-domain.com
    GOOGLE_CLIENT_ID=your-production-id
    GOOGLE_CLIENT_SECRET=your-production-secret

@@ -240,7 +240,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 2. **Verify credentials match:**
 
    **In `.env.development`:**
-   ```env
+   ```txt
    MONGODB_URI=mongodb://evonest_user:MyPassword123@mongo_dev:27017
    ```
 
