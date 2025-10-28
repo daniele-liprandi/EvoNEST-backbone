@@ -5,6 +5,7 @@ This guide shows you how to set up authentication that complies with EU regulati
 ## Why EU-Compliant Authentication?
 
 **GDPR Requirements:**
+
 - ✅ Data sovereignty - Keep authentication data in EU
 - ✅ User consent management
 - ✅ Right to be forgotten
@@ -12,6 +13,7 @@ This guide shows you how to set up authentication that complies with EU regulati
 - ✅ Privacy by design
 
 **Keycloak Benefits:**
+
 - ✅ Open-source and self-hosted
 - ✅ Full control over user data
 - ✅ EU data residency compliant
@@ -26,6 +28,7 @@ This guide shows you how to set up authentication that complies with EU regulati
 ## Prerequisites
 
 Before starting:
+
 - ✅ EvoNEST installed and running
 - ✅ Docker installed (for Keycloak)
 - ✅ Admin access to your server
@@ -79,7 +82,7 @@ We'll run Keycloak in a Docker container alongside EvoNEST.
 Create a new file: `docker-compose.keycloak.yml`
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres-keycloak:
@@ -137,11 +140,13 @@ docker compose -f docker-compose.keycloak.yml up -d
 ```
 
 **Wait for startup** (1-2 minutes). Watch logs:
+
 ```bash
 docker compose -f docker-compose.keycloak.yml logs -f keycloak
 ```
 
 Look for:
+
 ```
 Keycloak 23.0.0 started in Xms.
 ```
@@ -169,6 +174,7 @@ A "realm" is a isolated space for managing users and applications.
 2. Click **"Create Realm"**
 
 3. Configure:
+
    - **Realm name:** `evonest`
    - **Enabled:** ✅
 
@@ -179,12 +185,14 @@ A "realm" is a isolated space for managing users and applications.
 1. Go to **"Realm settings"** (left sidebar)
 
 2. **General tab:**
+
    - **Display name:** `EvoNEST`
    - **HTML Display name:** `<b>EvoNEST</b> Authentication`
    - **User-managed access:** ✅ (GDPR - allows users to manage their data)
    - **Endpoints:** Note the OpenID Endpoint Configuration URL
 
 3. **Login tab:**
+
    - **User registration:** ✅ (if you want users to self-register)
    - **Forgot password:** ✅
    - **Remember me:** ✅
@@ -192,6 +200,7 @@ A "realm" is a isolated space for managing users and applications.
    - **Require SSL:** external requests (for production, change to "all requests")
 
 4. **Email tab** (important for user verification):
+
    - **From:** `noreply@your-domain.com`
    - **Host:** Your SMTP server
    - **Port:** 587 (or your SMTP port)
@@ -201,6 +210,7 @@ A "realm" is a isolated space for managing users and applications.
    - **Enable StartTLS:** ✅
 
 5. **Themes tab:**
+
    - Customize login page appearance (optional)
 
 6. Click **"Save"**
@@ -223,11 +233,13 @@ A "realm" is a isolated space for managing users and applications.
 2. Click **"Create client"**
 
 3. **General Settings:**
+
    - **Client type:** OpenID Connect
    - **Client ID:** `evonest-app`
    - Click **"Next"**
 
 4. **Capability config:**
+
    - **Client authentication:** ON
    - **Authorization:** OFF
    - **Standard flow:** ✅ (OAuth 2.0 Authorization Code Flow)
@@ -235,6 +247,7 @@ A "realm" is a isolated space for managing users and applications.
    - Click **"Next"**
 
 5. **Login settings:**
+
    - **Root URL:** `http://localhost:3005` (development)
    - **Home URL:** `http://localhost:3005`
    - **Valid redirect URIs:**
@@ -260,10 +273,11 @@ A "realm" is a isolated space for managing users and applications.
 
 ::: tip Save These Values
 You need:
+
 - **Client ID:** `evonest-app`
 - **Client Secret:** (from Credentials tab)
 - **Issuer URL:** `http://localhost:8080/realms/evonest`
-:::
+  :::
 
 ---
 
@@ -286,6 +300,7 @@ For EvoNEST-specific data:
 1. Click **"Create attribute"**
 
 2. Add attribute:
+
    - **Name:** `laboratory`
    - **Display name:** Laboratory
    - **Validation:** None
@@ -298,6 +313,7 @@ For EvoNEST-specific data:
 1. Go to **"Clients"** → **"evonest-app"**
 
 2. **Settings** tab:
+
    - **Consent required:** ON
    - **Display client on consent screen:** ON
    - **Consent screen text:** `Allow EvoNEST to access your profile information`
@@ -317,6 +333,7 @@ This ensures users explicitly consent to data usage (GDPR requirement).
 2. Click **"Add user"**
 
 3. Fill in:
+
    - **Username:** `testuser`
    - **Email:** `test@example.com`
    - **Email verified:** ✅
@@ -333,6 +350,7 @@ This ensures users explicitly consent to data usage (GDPR requirement).
 2. Click **"Set password"**
 
 3. Enter:
+
    - **Password:** `TestPassword123`
    - **Confirm:** `TestPassword123`
    - **Temporary:** OFF (so user doesn't have to change on first login)
@@ -382,6 +400,7 @@ KEYCLOAK_ISSUER=http://localhost:8080/realms/evonest
 Open `src/app/api/auth/[...nextauth]/options.ts`
 
 Add import:
+
 ```typescript{3}
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -480,10 +499,12 @@ docker compose -f docker-compose.dev.yml restart
 3. You'll be redirected to Keycloak login page
 
 4. Login with test user:
+
    - **Username:** `testuser`
    - **Password:** `TestPassword123`
 
 5. **Consent screen** appears (if enabled):
+
    - Review permissions
    - Click **"Accept"**
 
@@ -551,9 +572,11 @@ Enable audit logging:
 1. **"Realm settings"** → **"Events"**
 
 2. **Event Listeners:**
+
    - Add `jboss-logging`
 
 3. **User Events Settings:**
+
    - **Save Events:** ON
    - **Expiration:** 365 days
    - **Saved Types:** Select all
@@ -573,7 +596,7 @@ View events: **"Events"** tab shows login history, admin actions, etc.
 Create `docker-compose.keycloak.prod.yml`:
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres-keycloak:
@@ -682,12 +705,14 @@ KEYCLOAK_ISSUER=https://auth.your-domain.com/realms/evonest
 2. Go to **"Clients"** → **"evonest-app"**
 
 3. Update **Valid redirect URIs:**
+
    ```
    https://your-domain.com/api/auth/callback/keycloak
    https://your-domain.com/*
    ```
 
 4. Update **Web origins:**
+
    ```
    https://your-domain.com
    ```
@@ -732,6 +757,7 @@ docker exec evonest_keycloak_db_prod pg_dump -U keycloak keycloak > keycloak_bac
 ```
 
 Restore:
+
 ```bash
 docker exec -i evonest_keycloak_db_prod psql -U keycloak keycloak < keycloak_backup.sql
 ```
@@ -739,11 +765,13 @@ docker exec -i evonest_keycloak_db_prod psql -U keycloak keycloak < keycloak_bac
 ### 5. Monitor Logs
 
 View Keycloak logs:
+
 ```bash
 docker logs evonest_keycloak_prod -f
 ```
 
 Check for:
+
 - Failed login attempts
 - Unusual access patterns
 - Error messages
@@ -757,6 +785,7 @@ Check for:
 **Cause:** Redirect URI mismatch
 
 **Solution:**
+
 1. Check exact URI in error message
 2. Add to Keycloak client's "Valid redirect URIs"
 3. Include wildcards: `http://localhost:3005/*`
@@ -764,11 +793,13 @@ Check for:
 ### Problem: Keycloak won't start
 
 **Check logs:**
+
 ```bash
 docker logs evonest_keycloak
 ```
 
 **Common causes:**
+
 - Database not ready (wait longer)
 - Port 8080 already in use
 - Invalid environment variables
@@ -776,11 +807,13 @@ docker logs evonest_keycloak
 ### Problem: "Token verification failed"
 
 **Causes:**
+
 - NEXTAUTH_SECRET not set
 - Issuer URL mismatch
 - Clock skew between containers
 
 **Solutions:**
+
 1. Verify environment variables
 2. Check issuer URL matches exactly
 3. Synchronize system clocks
@@ -788,6 +821,7 @@ docker logs evonest_keycloak
 ### Problem: Users can't login after migration
 
 **Solution:**
+
 1. Clear browser cookies
 2. Clear NextAuth session
 3. Re-login with Keycloak
@@ -838,6 +872,7 @@ providers: [
 ### Step 3: Deprecate Old Auth
 
 After migration period:
+
 1. Remove old providers
 2. Update documentation
 3. Notify remaining users
