@@ -406,14 +406,14 @@ git --version
 Let's create a dedicated folder for your EvoNEST installation.
 
 1. **Choose a location** for your EvoNEST files
-   - We recommend: `Documents/EvoNEST` or `Desktop/EvoNEST`
+   - This is not the same folder where your data or the applications are going to be stored, as we are using Docker. We advise to create a folder in your common work directory, e.g. Documents/Work/EvoNEST
 
 2. **Create the folder:**
 
 ::: code-group
 ```bash [Windows (Command Prompt)]
 # Navigate to your Documents folder
-cd %USERPROFILE%\Documents
+cd %USERPROFILE%\Documents\Work
 
 # Create EvoNEST folder
 mkdir EvoNEST
