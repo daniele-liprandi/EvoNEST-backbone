@@ -1,11 +1,36 @@
 import { defineConfig } from 'vitepress'
+import taskLists from 'markdown-it-task-lists'
+import attrs from 'markdown-it-attrs'
+import footnote from 'markdown-it-footnote'
 
 export default defineConfig({
   title: 'EvoNEST Docs',
   description: 'User guide and documentation for EvoNEST Backbone',
   base: '/EvoNEST-backbone/', // Match your actual repository name
   ignoreDeadLinks: true, // Ignore dead links during build (for placeholder pages)
-    vite: {
+
+  markdown: {
+    config: (md) => {
+      // GitHub-style task lists with checkboxes
+      md.use(taskLists, {
+        enabled: true,
+        label: true,
+        labelAfter: true
+      })
+
+      // Add attributes to elements (e.g., {.class-name #id})
+      md.use(attrs, {
+        leftDelimiter: '{',
+        rightDelimiter: '}',
+        allowedAttributes: ['id', 'class', 'style']
+      })
+
+      // Footnote support
+      md.use(footnote)
+    }
+  },
+
+  vite: {
     css: {
       postcss: {
         plugins: [] // Empty PostCSS plugins to avoid parent project conflicts
@@ -52,7 +77,8 @@ export default defineConfig({
             { text: 'Module 3: First Launch', link: '/tutorial/03-first-launch' },
             { text: 'Module 4: Configuration', link: '/tutorial/04-configuration' },
             { text: 'Module 5: Data Entry', link: '/tutorial/05-data-entry' },
-            { text: 'Module 6: Troubleshooting', link: '/tutorial/06-troubleshooting' },
+            { text: 'Module 6: Backup & Maintenance', link: '/tutorial/06-backup-maintenance' },
+            { text: 'Troubleshooting', link: '/tutorial/troubleshooting' },
           ]
         }
       ],
