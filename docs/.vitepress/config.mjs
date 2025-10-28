@@ -12,11 +12,11 @@ export default defineConfig({
   markdown: {
     config: (md) => {
       // GitHub-style task lists with checkboxes
-      md.use(taskLists, {
+      /* md.use(taskLists, {
         enabled: true,
         label: true,
         labelAfter: true
-      })
+      }) */
 
       // Add attributes to elements (e.g., {.class-name #id})
       md.use(attrs, {
