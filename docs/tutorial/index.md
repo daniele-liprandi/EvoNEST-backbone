@@ -16,6 +16,7 @@ By the end of this tutorial, you will be able to:
 - ✅ Configure EvoNEST for your laboratory's needs
 - ✅ Create and manage biological samples
 - ✅ Record trait measurements and experimental data
+- ✅ Manage backups and protect your data
 - ✅ Troubleshoot common issues
 
 ## Who this guide is for
@@ -31,15 +32,16 @@ You don't need programming experience for this guide. We'll guide you through ev
 
 ## Time estimate
 
-**Total duration:** Approximately 2-3 hours
+**Total duration:** Approximately 3-4 hours
 
 | Module | Topic | Duration |
 |--------|-------|----------|
-| 1 | [Preparation](/tutorial/01-preparation) | 15 min |
+| 1 | [Preparation](/tutorial/01-preparation) | 20-30 min |
 | 2 | [Installation](/tutorial/02-installation) | 30 min |
 | 3 | [First launch](/tutorial/03-first-launch) | 20 min |
 | 4 | [Configuration](/tutorial/04-configuration) | 30 min |
 | 5 | [Data entry and management](/tutorial/05-data-entry) | 45 min |
+| 6 | [Backup & Maintenance](/tutorial/06-backup-maintenance) | 30-45 min |
 
 ## Guide modules
 
@@ -104,6 +106,25 @@ Learn the core workflows for managing research data in EvoNEST through hands-on 
 - Manage experiments
 - Upload files and images
 - Use the data explorer
+
+---
+
+### Module 6: Backup & Maintenance
+**[Backup & Maintenance guide →](/tutorial/06-backup-maintenance)**
+
+Learn how to protect your data with EvoNEST's automated backup system and perform maintenance tasks.
+
+**What you'll do:**
+- Understand the automated backup system
+- Check backup status and logs
+- Download backups to your computer
+- Restore from backups
+- Create manual backups
+- Back up file storage
+
+::: warning Production Only
+This module applies to production deployments. The development environment does not include automated backups.
+:::
 
 ---
 
