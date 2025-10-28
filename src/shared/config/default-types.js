@@ -10,21 +10,45 @@ export const DEFAULT_CONFIGS = {
     { label: "Secretion", value: "secretion", description: "Secretion sample", shortened: "se" }
   ],
   traittypes: [
-    { value: "mass", label: "Mass", unit: "g", description: "Mass of the sample measured using a microbalance" },
-    { value: "length", label: "Length", unit: "mm", description: "Length of the sample measured from maximum to minimum point along the longest symmetry axis" },
-    { value: "width", label: "Width", unit: "mm", description: "Width of the sample measured from maximum to minimum point along the perpendicular to the longest symmetry axis" },
-    { value: "dna_concentration", label: "DNA Concentration", unit: "ng/µl", description: "DNA concentration of the sample" },
-    { value: "resting_metabolic_rate", label: "Resting Metabolic Rate", unit: "W", description: "Metabolic rate measured by respirometry at rest" },
-    { value: "fiber_diameter", label: "Fiber Diameter", unit: "μm", description: "Diameter of individual fibers" },
-    { value: "tensile_strength", label: "Tensile Strength", unit: "MPa", description: "Maximum stress material can withstand while being stretched" },
-    { value: "bone_density", label: "Bone Density", unit: "g/cm³", description: "Density of bone tissue" },
-    { value: "cortical_thickness", label: "Cortical Thickness", unit: "mm", description: "Thickness of cortical bone layer" },
-    { value: "leaf_area", label: "Leaf Area", unit: "cm²", description: "Total surface area of leaf" },
-    { value: "chlorophyll_content", label: "Chlorophyll Content", unit: "mg/g", description: "Chlorophyll concentration in leaf tissue" },
-    { value: "wood_density", label: "Wood Density", unit: "g/cm³", description: "Density of wood tissue" },
-    { value: "ring_width", label: "Ring Width", unit: "mm", description: "Width of annual growth rings" },
-    { value: "stomatal_density", label: "Stomatal Density", unit: "stomata/mm²", description: "Number of stomata per unit area" },
-    { value: "bark_thickness", label: "Bark Thickness", unit: "mm", description: "Thickness of bark layer" }
+    // Quantitative traits (numerical measurements)
+    { value: "mass", label: "Mass", unit: "g", description: "Mass of the sample measured using a microbalance", dataType: "quantitative" },
+    { value: "length", label: "Length", unit: "mm", description: "Length of the sample measured from maximum to minimum point along the longest symmetry axis", dataType: "quantitative" },
+    { value: "width", label: "Width", unit: "mm", description: "Width of the sample measured from maximum to minimum point along the perpendicular to the longest symmetry axis", dataType: "quantitative" },
+    { value: "dna_concentration", label: "DNA Concentration", unit: "ng/µl", description: "DNA concentration of the sample", dataType: "quantitative" },
+    { value: "resting_metabolic_rate", label: "Resting Metabolic Rate", unit: "W", description: "Metabolic rate measured by respirometry at rest", dataType: "quantitative" },
+    { value: "fiber_diameter", label: "Fiber Diameter", unit: "μm", description: "Diameter of individual fibers", dataType: "quantitative" },
+    { value: "tensile_strength", label: "Tensile Strength", unit: "MPa", description: "Maximum stress material can withstand while being stretched", dataType: "quantitative" },
+    { value: "bone_density", label: "Bone Density", unit: "g/cm³", description: "Density of bone tissue", dataType: "quantitative" },
+    { value: "cortical_thickness", label: "Cortical Thickness", unit: "mm", description: "Thickness of cortical bone layer", dataType: "quantitative" },
+    { value: "leaf_area", label: "Leaf Area", unit: "cm²", description: "Total surface area of leaf", dataType: "quantitative" },
+    { value: "chlorophyll_content", label: "Chlorophyll Content", unit: "mg/g", description: "Chlorophyll concentration in leaf tissue", dataType: "quantitative" },
+    { value: "wood_density", label: "Wood Density", unit: "g/cm³", description: "Density of wood tissue", dataType: "quantitative" },
+    { value: "ring_width", label: "Ring Width", unit: "mm", description: "Width of annual growth rings", dataType: "quantitative" },
+    { value: "stomatal_density", label: "Stomatal Density", unit: "stomata/mm²", description: "Number of stomata per unit area", dataType: "quantitative" },
+    { value: "bark_thickness", label: "Bark Thickness", unit: "mm", description: "Thickness of bark layer", dataType: "quantitative" },
+
+    // Categorical traits (predefined categories)
+    { value: "sex", label: "Sex", description: "Biological sex of the specimen", dataType: "categorical", options: ["male", "female", "hermaphrodite", "unknown"] },
+    { value: "life_stage", label: "Life Stage", description: "Developmental stage of the specimen", dataType: "categorical", options: ["egg", "embryo", "larva", "pupa", "nymph", "juvenile", "subadult", "adult", "senescent"] },
+    { value: "color", label: "Color", description: "Primary coloration of the specimen or sample", dataType: "categorical", options: ["red", "orange", "yellow", "green", "blue", "purple", "brown", "black", "white", "grey", "transparent", "iridescent"] },
+    { value: "habitat_type", label: "Habitat Type", description: "Type of habitat where specimen was found", dataType: "categorical", options: ["aquatic", "terrestrial", "arboreal", "fossorial", "aerial", "littoral", "benthic"] },
+    { value: "preservation_method", label: "Preservation Method", description: "How the sample was preserved", dataType: "categorical", options: ["frozen", "ethanol", "formalin", "dried", "fresh", "RNAlater", "DMSO"] },
+
+    // Boolean traits (yes/no observations)
+    { value: "has_wings", label: "Has Wings", description: "Presence of wings", dataType: "boolean" },
+    { value: "sexually_mature", label: "Sexually Mature", description: "Whether specimen is sexually mature", dataType: "boolean" },
+    { value: "gravid", label: "Gravid", description: "Whether specimen is carrying eggs/offspring", dataType: "boolean" },
+    { value: "molting", label: "Molting", description: "Whether specimen is in the process of molting", dataType: "boolean" },
+
+    // Ordinal traits (ordered scales)
+    { value: "condition_score", label: "Condition Score", description: "Overall physical condition (1=poor to 5=excellent)", dataType: "ordinal", min: 1, max: 5 },
+    { value: "damage_level", label: "Damage Level", description: "Level of specimen damage (1=none to 5=severe)", dataType: "ordinal", min: 1, max: 5 },
+    { value: "parasite_load", label: "Parasite Load", description: "Ectoparasite abundance (0=none to 5=heavy)", dataType: "ordinal", min: 0, max: 5 },
+
+    // Multi-select traits (multiple simultaneous values)
+    { value: "body_markings", label: "Body Markings", description: "Visible markings or patterns on the body", dataType: "multiselect", options: ["stripes", "spots", "bands", "patches", "reticulation", "mottling", "solid", "gradient"] },
+    { value: "visible_features", label: "Visible Features", description: "Observable morphological features", dataType: "multiselect", options: ["antennae", "horns", "spines", "tubercles", "setae", "scales", "feathers", "fur", "claws", "suckers"] },
+    { value: "behavioral_observations", label: "Behavioral Observations", description: "Observed behaviors during collection or handling", dataType: "multiselect", options: ["aggressive", "docile", "defensive_posture", "autotomy", "thanatosis", "vocalization", "burrowing", "climbing", "flying", "swimming"] }
   ],
   equipmenttypes: [
     { label: "Hematology analyzer", value: "hematology_analyzer", description: "Hematology analyzer" },

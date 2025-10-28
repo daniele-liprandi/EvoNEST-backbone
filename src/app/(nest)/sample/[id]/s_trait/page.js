@@ -717,7 +717,26 @@ export default function IDTraitPage() {
     },
     dateColumn(),
     editableColumn("notes", "Notes"),
-    editableColumn("measurement", "Measurement"),
+    // Conditional value column - shows either quantitative or qualitative data
+    {
+      accessorKey: "value",
+      header: "Value",
+      cell: info => {
+        const trait = info.row.original;
+        // Check if trait has qualitative data
+        if (trait.categoricalValue) {
+          return <span>{trait.categoricalValue}</span>;
+        } else if (trait.categoricalValues && Array.isArray(trait.categoricalValues)) {
+          return <span>{trait.categoricalValues.join(", ")}</span>;
+        } else if (trait.measurement !== undefined) {
+          // Quantitative trait
+          return <span>{trait.measurement} {trait.unit || ''}</span>;
+        }
+        return <span>-</span>;
+      }
+    },
+    editableColumn("measurement", "Measurement (Numeric)"),
+    editableColumn("categoricalValue", "Categorical Value"),
     editableColumn("unit", "Unit"),
     editableColumn("std", "Standard Deviation"),
     editableColumn("listvals", "List of Values"),

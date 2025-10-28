@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user } from "../utils/get_database_user";
 import { get_name_authuser } from "../utils/get_database_user";
+import { traittypes } from "@/shared/config/default-types";
 
 /**
  * @swagger
@@ -26,16 +27,26 @@ import { get_name_authuser } from "../utils/get_database_user";
  *           example: "silk_diameter"
  *         measurement:
  *           type: number
- *           description: The measured value
+ *           description: The measured value (for quantitative traits)
  *           example: 2.5
  *         std:
  *           type: number
- *           description: Standard deviation of measurements
+ *           description: Standard deviation of measurements (for quantitative traits)
  *           example: 0.3
  *         unit:
  *           type: string
- *           description: Unit of measurement
+ *           description: Unit of measurement (for quantitative traits)
  *           example: "μm"
+ *         categoricalValue:
+ *           type: string
+ *           description: The value for categorical, boolean, or ordinal traits
+ *           example: "male"
+ *         categoricalValues:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Multiple values for multi-select traits
+ *           example: ["stripes", "spots", "bands"]
  *         sampleId:
  *           type: string
  *           description: Reference to the sample
@@ -120,12 +131,22 @@ import { get_name_authuser } from "../utils/get_database_user";
  *           example: "2024-03-15"
  *         measurement:
  *           type: number
- *           description: The measured value
+ *           description: The measured value (for quantitative traits)
  *           example: 2.5
  *         unit:
  *           type: string
- *           description: Unit of measurement
+ *           description: Unit of measurement (for quantitative traits)
  *           example: "μm"
+ *         categoricalValue:
+ *           type: string
+ *           description: The value for categorical, boolean, or ordinal traits
+ *           example: "male"
+ *         categoricalValues:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Multiple values for multi-select traits
+ *           example: ["stripes", "spots", "bands"]
  *         detail:
  *           type: string
  *           description: Additional details about the measurement
@@ -849,6 +870,57 @@ export async function POST(req) {
       );
     }
 
+    // Validate trait data based on trait type
+    const traitType = traittypes.find(t => t.value === data.type);
+    const dataType = traitType?.dataType || "quantitative"; // Default to quantitative for backward compatibility
+
+    // Validate based on data type
+    if (dataType === "quantitative") {
+      // Quantitative traits require measurement or listvals
+      if (data.measurement === undefined && !data.listvals) {
+        return new NextResponse(
+          JSON.stringify({ error: "Quantitative traits require a measurement value" }),
+          { status: 400 }
+        );
+      }
+    } else if (dataType === "categorical" || dataType === "boolean" || dataType === "ordinal") {
+      // These types require categoricalValue
+      if (!data.categoricalValue) {
+        return new NextResponse(
+          JSON.stringify({ error: `${dataType} traits require a categoricalValue` }),
+          { status: 400 }
+        );
+      }
+      // Validate ordinal range if applicable
+      if (dataType === "ordinal" && traitType) {
+        const value = parseInt(data.categoricalValue);
+        if (isNaN(value) || value < traitType.min || value > traitType.max) {
+          return new NextResponse(
+            JSON.stringify({ error: `Ordinal value must be between ${traitType.min} and ${traitType.max}` }),
+            { status: 400 }
+          );
+        }
+      }
+    } else if (dataType === "multiselect") {
+      // Multi-select requires categoricalValues array
+      if (!data.categoricalValues || !Array.isArray(data.categoricalValues) || data.categoricalValues.length === 0) {
+        return new NextResponse(
+          JSON.stringify({ error: "Multi-select traits require a categoricalValues array with at least one value" }),
+          { status: 400 }
+        );
+      }
+    }
+
+    // Determine the value for logging
+    let traitValue;
+    if (dataType === "quantitative") {
+      traitValue = data.measurement;
+    } else if (dataType === "multiselect") {
+      traitValue = data.categoricalValues.join(", ");
+    } else {
+      traitValue = data.categoricalValue;
+    }
+
     // Create a new trait if it's not an update
     const traitData = {
       ...data,
@@ -871,7 +943,7 @@ export async function POST(req) {
           $push: {
             logbook: [
               `${new Date().toISOString()}`,
-              `New trait of type ${data.type} and value ${data.measurement} for ${data.sampleId} by ${authuser}`,
+              `New trait of type ${data.type} and value ${traitValue} for ${data.sampleId} by ${authuser}`,
             ],
           },
         }

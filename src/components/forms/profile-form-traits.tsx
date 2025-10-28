@@ -50,6 +50,8 @@ const formSchema = z.object({
     nfibres: z.string().optional(),
     files: z.any().optional(),
     notes: z.string().optional(),
+    categoricalValue: z.string().optional(),
+    categoricalValues: z.array(z.string()).optional(),
 })
 
 
@@ -114,21 +116,29 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
         const method = 'create';
         const endpoint = `${prepend_path}/api/traits`;
         console.log(values)
-        // if measurements is a list of measurement, do the following
-        // 1. save the list formatted correctly inside listvals
-        // 2. calculate the average of the list
-        // 3. calculate the standard deviation of the list
 
+        // Get the dataType for the selected trait type
+        const dataType = selectedTypeFeatures?.dataType || 'quantitative';
+
+        // Initialize variables for quantitative traits
         let avg = 0.0;
         let std = 0.0;
         let listvals: number[] = [];
-        if (values.measurements) {
-            // check what is the separator being used between the numbers between ',', ';' and space
-            const separator = values.measurements.includes(',') ? ',' : values.measurements.includes(';') ? ';' : ' ';
-            listvals = values.measurements.split(separator).map(Number);
-            const sum = listvals.reduce((a, b) => a + b, 0);
-            avg = sum / listvals.length;
-            std = Math.sqrt(listvals.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b) / listvals.length);
+
+        // Process data based on trait type
+        if (dataType === 'quantitative') {
+            // if measurements is a list of measurement, do the following
+            // 1. save the list formatted correctly inside listvals
+            // 2. calculate the average of the list
+            // 3. calculate the standard deviation of the list
+            if (values.measurements) {
+                // check what is the separator being used between the numbers between ',', ';' and space
+                const separator = values.measurements.includes(',') ? ',' : values.measurements.includes(';') ? ';' : ' ';
+                listvals = values.measurements.split(separator).map(Number);
+                const sum = listvals.reduce((a, b) => a + b, 0);
+                avg = sum / listvals.length;
+                std = Math.sqrt(listvals.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b) / listvals.length);
+            }
         }
 
         let fileResponse = null;
@@ -137,28 +147,40 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
             const renamedFiles = renameFiles(files, sampleName);
             // Update to include entryType and entryId
             fileResponse = await uploadFiles(renamedFiles, values.type, { deferredLink: true, mediaType: 'image/jpeg' });
-        }        
-        
+        }
+
+        // Build request body based on data type
+        const requestBody: any = {
+            method: method,
+            sampleId: values.sampleId,
+            responsible: values.responsible,
+            type: values.type,
+            detail: values.detail,
+            equipment: values.equipment,
+            date: values.date,
+            nfibres: values.nfibres,
+            notes: values.notes,
+            filesId: fileResponse,
+            recentChangeDate: new Date().toISOString()
+        };
+
+        // Add appropriate fields based on data type
+        if (dataType === 'quantitative') {
+            requestBody.unit = values.unit;
+            requestBody.measurement = avg;
+            requestBody.std = std;
+            requestBody.listvals = listvals;
+        } else if (dataType === 'multiselect') {
+            requestBody.categoricalValues = values.categoricalValues;
+        } else {
+            // categorical, boolean, ordinal
+            requestBody.categoricalValue = values.categoricalValue;
+        }
+
         const traitResponse = await fetch(endpoint, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                method: method,
-                sampleId: values.sampleId,
-                responsible: values.responsible,
-                type: values.type,
-                detail: values.detail,
-                equipment: values.equipment,
-                date: values.date,
-                nfibres: values.nfibres,
-                unit: values.unit,
-                measurement: avg,
-                std: std,
-                listvals: listvals,
-                notes: values.notes,
-                filesId: fileResponse,
-                recentChangeDate: new Date().toISOString()
-            })
+            body: JSON.stringify(requestBody)
         });        if (!traitResponse.ok) {
             const error = await traitResponse.json();
             toast.error(error.error || 'Failed to submit');
@@ -286,30 +308,123 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="measurements"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{selectedTypeFeatures?.label} measurements</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="0.0" {...field} />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{selectedTypeFeatures?.label} unit</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Please insert unit" {...field} />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
+
+                        {/* Conditional rendering based on trait dataType */}
+                        {(!selectedTypeFeatures?.dataType || selectedTypeFeatures?.dataType === 'quantitative') && (
+                            <>
+                                <FormField
+                                    control={form.control}
+                                    name="measurements"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{selectedTypeFeatures?.label} measurements</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="0.0" {...field} />
+                                            </FormControl>
+                                            <FormDescription>
+                                                Enter a single value or multiple values separated by commas, semicolons, or spaces
+                                            </FormDescription>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="unit"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{selectedTypeFeatures?.label} unit</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Please insert unit" {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </>
+                        )}
+
+                        {selectedTypeFeatures?.dataType === 'categorical' && (
+                            <ComboFormBox
+                                control={form.control}
+                                setValue={form.setValue}
+                                name="categoricalValue"
+                                options={selectedTypeFeatures.options?.map((opt: string) => ({ value: opt, label: opt })) || []}
+                                fieldlabel={selectedTypeFeatures.label}
+                                description={"Select a category"}
+                            />
+                        )}
+
+                        {selectedTypeFeatures?.dataType === 'boolean' && (
+                            <FormField
+                                control={form.control}
+                                name="categoricalValue"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{selectedTypeFeatures.label}</FormLabel>
+                                        <FormControl>
+                                            <select {...field} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors">
+                                                <option value="">Select...</option>
+                                                <option value="yes">Yes</option>
+                                                <option value="no">No</option>
+                                            </select>
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+
+                        {selectedTypeFeatures?.dataType === 'ordinal' && (
+                            <FormField
+                                control={form.control}
+                                name="categoricalValue"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{selectedTypeFeatures.label}</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                min={selectedTypeFeatures.min}
+                                                max={selectedTypeFeatures.max}
+                                                placeholder={`Enter a value between ${selectedTypeFeatures.min} and ${selectedTypeFeatures.max}`}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            {selectedTypeFeatures.description} (Range: {selectedTypeFeatures.min}-{selectedTypeFeatures.max})
+                                        </FormDescription>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+
+                        {selectedTypeFeatures?.dataType === 'multiselect' && (
+                            <FormField
+                                control={form.control}
+                                name="categoricalValues"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{selectedTypeFeatures.label}</FormLabel>
+                                        <FormControl>
+                                            <select
+                                                multiple
+                                                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+                                                value={field.value || []}
+                                                onChange={(e) => {
+                                                    const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                                    field.onChange(selected);
+                                                }}
+                                            >
+                                                {selectedTypeFeatures.options?.map((opt: string) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                        </FormControl>
+                                        <FormDescription>
+                                            Hold Ctrl/Cmd to select multiple values
+                                        </FormDescription>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                     </TabsContent>
                 </Tabs>
                 <Button type="submit">Submit</Button>
