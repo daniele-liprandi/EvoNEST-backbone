@@ -405,7 +405,8 @@ A clean login interface with:
 - Username field
 - Password field
 - "Sign in" button
-  :::
+
+:::
 
 ### 5.3 Check MongoDB (optional)
 

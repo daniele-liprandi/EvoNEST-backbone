@@ -98,12 +98,12 @@ Before you start contributing, make sure you have:
    ```
 
    Create `.env.local`:
-   ```env
+   ```txt
    NEXTAUTH_SECRET=your-generated-secret
    ```
 
    Create `.env.development`:
-   ```env
+   ```txt
    NEXTAUTH_URL=http://localhost:3005
    MONGODB_URI=mongodb://evonest_user:your_password@mongo_dev:27017
    STORAGE_PATH='/usr/evonest/file_storage_dev'
