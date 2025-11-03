@@ -33,10 +33,10 @@ Before installing EvoNEST, verify your system meets these requirements:
 
 - [ ] Operating System
   - Windows 10/11 (64-bit) **or**
-  - macOS 10.15 (Catalina) or newer **or**
-  - Linux (Ubuntu 20.04+, Fedora, Debian)
+  - macOS 10.X or newer **or**
+  - Linux (Ubuntu, Fedora, Debian)
 - [ ] Hardware
-  - 8GB RAM minimum (16GB recommended)
+  - 4GB RAM minimum (16GB recommended)
   - 20GB free disk space
   - Dual-core processor (quad-core recommended)
 - [ ] Permissions
