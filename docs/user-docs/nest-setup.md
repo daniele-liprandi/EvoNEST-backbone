@@ -8,7 +8,7 @@ EvoNEST now features a user-friendly web interface for configuration. When you f
 
 The configuration system is divided into two main areas:
 
-### 1. types configuration (`/config/types`)
+### 1. Types configuration (`/config/types`)
 
 This section allows you to configure the different types of data your lab works with:
 
@@ -18,7 +18,7 @@ This section allows you to configure the different types of data your lab works 
 - **Equipment Types** - List measurement equipment used in your lab
 - **Silk Types** - Define specific spider silk types for detailed classification
 
-### 2. main settings (`/config/settings`)
+### 2. Main settings (`/config/settings`)
 
 Configure core system behavior and lab information:
 
