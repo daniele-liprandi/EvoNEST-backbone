@@ -18,6 +18,7 @@ By the end of this module, you will have:
 Before starting this module, make sure you've completed [Module 1: Preparation](/tutorial/01-preparation) and have:
 
 - ✅ Docker Desktop installed and running
+- ✅ VS Code installed
 - ✅ Git installed
 - ✅ Terminal open in your workspace folder (e.g., `Documents/EvoNEST`)
 
@@ -116,7 +117,36 @@ Let's download the EvoNEST code to your computer.
    - `package.json` - Dependencies
    - `.env.example` - Example environment file
 
-✅ **Checkpoint:** You should now be inside the `EvoNEST-backbone` folder with all the project files.
+5. **Open the project in VS Code**
+
+   Run this command to open the entire project folder in VS Code:
+
+   ```bash
+   code .
+   ```
+
+   This will launch VS Code with the EvoNEST project loaded, making it easy to create and edit configuration files in the next steps.
+
+   ::: tip VS Code not opening?
+   If the `code` command doesn't work:
+   - You may need to restart your terminal after installing VS Code
+   - On macOS, you might need to install the `code` command: Open VS Code → Command Palette (Cmd+Shift+P) → type "Shell Command: Install 'code' command in PATH"
+   - Alternatively, open VS Code manually and use File → Open Folder to open the `EvoNEST-backbone` folder
+   :::
+
+6. **Optional: Use VS Code's integrated terminal**
+
+   Now that VS Code is open, you can switch to using its built-in terminal instead of your external terminal:
+
+   - Open the terminal in VS Code: **View → Terminal** or press **Ctrl+`** (Cmd+` on Mac)
+   - The terminal will automatically start in your project folder
+   - You can continue with all the commands in the rest of this tutorial using this integrated terminal
+
+   ::: tip Why use the integrated terminal?
+   Using VS Code's terminal keeps everything in one window - you can edit files and run commands without switching between applications. It's especially convenient for the rest of this tutorial!
+   :::
+
+✅ **Checkpoint:** You should now be inside the `EvoNEST-backbone` folder with all the project files, and VS Code should be open. Optionally, you have the integrated terminal ready to use.
 
 ---
 
@@ -172,73 +202,89 @@ Now we'll create configuration files with your secret key and database credentia
 
 This file stores your secret key.
 
-1. **Create the file:**
+1. **In VS Code, create the file:**
 
-   ::: code-group
+   - In the Explorer panel on the left, click the "New File" icon
+   - Name it `.env.local`
+   - Add this content:
 
-   ```bash [Windows (Command Prompt)]
-   echo NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE > .env.local
+   ```txt
+   NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE
    ```
 
-   ```bash [macOS / Linux / Windows (Git Bash)]
-   echo "NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE" > .env.local
-   ```
+2. **Replace with your secret key:**
 
-   :::
-
-2. **Edit the file with your secret key:**
-
-   Open `.env.local` in a text editor and replace `PASTE_YOUR_SECRET_HERE` with the secret you generated:
+   Replace `PASTE_YOUR_SECRET_HERE` with the secret you generated in Step 2:
 
    ```txt
    NEXTAUTH_SECRET=Xk7pQm2nR9sT3vY8wE5zL1aB4cD6fH9j
    ```
 
-::: tip Opening files in a text editor
+3. **Save the file** (Ctrl+S or Cmd+S)
 
-**Windows:** Use Notepad, VS Code, or right-click → "Edit"
-**macOS:** Use TextEdit, VS Code, or run `open -a TextEdit .env.local`
-**Linux:** Use nano, vim, gedit, or VS Code
+::: tip Alternative: Create via command line
+If you prefer the terminal, you can create the file with:
+
+::: code-group
+
+```bash [macOS / Linux / Windows (Git Bash)]
+echo "NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE" > .env.local
+```
+
+```bash [Windows (Command Prompt)]
+echo NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE > .env.local
+```
+
+:::
+
+Then open it in VS Code to replace the placeholder with your actual secret.
 :::
 
 ### 3.2 Create `.env.development` file
 
 This file configures the development environment.
 
-1. **Create and edit `.env.development`:**
+1. **In VS Code, create another new file:**
 
-   Add this content:
+   - Click the "New File" icon again
+   - Name it `.env.development`
+   - Add this content:
 
    ```txt
    NEXTAUTH_URL=http://localhost:3005
-   MONGODB_URI=mongodb://evonest_user:secure_password_123@mongo_dev:27017
+   MONGODB_URI=mongodb://evonest_user:pass@mongo_dev:27017
    STORAGE_PATH='/usr/evonest/file_storage_dev'
    ```
 
    ::: warning Change the password!
-   Replace `secure_password_123` with your own secure password. Use something unique!
+   Replace `pass` with your own secure password. Use something unique!
 
    **Example:**
 
    ```txt
-   MONGODB_URI=mongodb://evonest_user:MyLabPassword2024!@mongo_dev:27017
+   MONGODB_URI=mongodb://admin_name:MyLabPassword2024!@mongo_dev:27017
    ```
 
    :::
 
-2. **Save and close** the file.
+2. **Save the file** (Ctrl+S or Cmd+S)
 
 ### 3.3 Update Docker Compose configuration
 
 Now we need to match the MongoDB credentials in the Docker configuration.
 
-1. **Open `docker-compose.dev.yml`** in a text editor
+1. **In VS Code, open `docker-compose.dev.yml`**
+
+   - Find it in the Explorer panel and click to open
+   - Or use Ctrl+P (Cmd+P on Mac) and type `docker-compose.dev.yml`
 
 2. **Find the MongoDB section** (around line 27-35)
 
+   - Use Ctrl+F (Cmd+F on Mac) to search for `mongo_dev:`
+
 3. **Update the username and password** to match what you set in `.env.development`:
 
-   ```yaml{5,6,9}
+   ```yaml{8,9}
    mongo_dev:
      image: mongo:5.0
      ports:
@@ -246,7 +292,7 @@ Now we need to match the MongoDB credentials in the Docker configuration.
      container_name: evonest_mongodb_dev
      restart: unless-stopped
      environment:
-       MONGO_INITDB_ROOT_USERNAME: evonest_user
+       MONGO_INITDB_ROOT_USERNAME: admin_name
        MONGO_INITDB_ROOT_PASSWORD: MyLabPassword2024!
    ```
 
@@ -256,16 +302,16 @@ Now we need to match the MongoDB credentials in the Docker configuration.
    mongo-express:
      # ... other config ...
      environment:
-       ME_CONFIG_MONGODB_ADMINUSERNAME: evonest_user
+       ME_CONFIG_MONGODB_ADMINUSERNAME: admin_name
        ME_CONFIG_MONGODB_ADMINPASSWORD: MyLabPassword2024!
-       ME_CONFIG_MONGODB_URL: mongodb://evonest_user:MyLabPassword2024!@mongo_dev:27017/
+       ME_CONFIG_MONGODB_URL: mongodb://admin_name:MyLabPassword2024!@mongo_dev:27017/
        ME_CONFIG_BASICAUTH_USERNAME: admin
        ME_CONFIG_BASICAUTH_PASSWORD: pass
    ```
 
-4. **Save and close** the file.
+4. **Save the file** (Ctrl+S or Cmd+S)
 
-✅ **Checkpoint:** You should now have three files configured:
+✅ **Checkpoint:** You should now have three files configured in VS Code:
 
 - `.env.local` - Contains your NEXTAUTH_SECRET
 - `.env.development` - Contains database connection string
