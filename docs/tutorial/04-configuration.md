@@ -44,11 +44,14 @@ EvoNEST can automatically generate sample IDs from taxonomy, and quickly fill th
    | **Number Padding**  | 3           | Digits (001, 002, ..., 999)  |
 
 :::tip ID Generation Example
-For a sample of *Nephila clavipes*, the ID would be:
-- Genus: `Nep` (first 3 letters)
-- Species: `cla` (first 3 letters)
-- Number: `001` (first sample)
-Resulting ID: `Nepcla001`
+For the first sample of _Tegenaria ferruginea_, the ID would be:
+
+- Genus: `Teg` (first 3 letters)
+- Species: `fer` (first 3 letters)
+- Starting Number: 1
+- Number Padding: 3
+  Resulting ID: `Tegfer001`
+
 :::
 
 ### Lab details
@@ -59,10 +62,9 @@ Resulting ID: `Nepcla001`
 
    - **Lab Name:** Your laboratory name
    - **Lab Location:** Your laboratory address
-   - **Lab Coordinates:** Latitude and Longitude 
+   - **Lab Coordinates:** Latitude and Longitude
 
 3. **Press "Save Settings"** at the bottom of the page
-
 
 ## Step 2: Access types configuration
 
@@ -110,16 +112,6 @@ Review the default sample types and remove any that don't apply to your work by 
 ## Step 4: Configure subsample types
 
 Subsamples are parts or derivatives of parent samples.
-
-### Default subsample types
-
-Review the defaults:
-
-| Value    | Label         | Description           |
-| -------- | ------------- | --------------------- |
-| `muscle` | Muscle Tissue | Muscle tissue samples |
-| `bone`   | Bone          | Bone tissue samples   |
-| `organ`  | Organ         | Organ samples         |
 
 ### Add your subsample types
 
@@ -197,19 +189,6 @@ Example: Add "T150 Universal Testing Machine":
 
 4. **Save**
 
-
-## Step 7: Review and save configuration
-
-### Review your settings
-
-1. **Go back through each section** and verify:
-   - [ ] Sample types include your research organisms
-   - [ ] Subsample types cover the tissues you work with
-   - [ ] Trait types have correct units
-   - [ ] Equipment is listed
-   - [ ] Sample ID rules are set
-   - [ ] Lab information is filled in
-
 ### Test your configuration
 
 1. **Navigate to "Samples"**
@@ -254,4 +233,4 @@ In the next module, you'll:
 - Create your first biological sample
 - Record trait measurements
 - Upload files and images
-- Organize data into experiments
+- Organise data into experiments
