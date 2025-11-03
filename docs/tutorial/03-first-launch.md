@@ -139,7 +139,7 @@ After initialization completes, you'll see the EvoNEST dashboard (homepage).
 
 The dashboard provides an overview of your current NEST:
 
-#### 📊 **Total Entries**
+#### 📊 **Total entries**
 
 At the top, you'll see cards showing:
 
@@ -154,7 +154,7 @@ Right now, these will all show a **1** (just the admin user) since this is a fre
 
 A world map visualizing sample collection locations from your current NEST. Currently empty.
 
-#### 📝 **Name Checker**
+#### 📝 **Name checker**
 
 A tool to validate taxonomic names using the Global Name Verifier. You can see if the service is working by writing the name of any organism. If a photo is available, it will be shown.
 
@@ -192,7 +192,7 @@ At the top-right, you'll see the `Scan QR` button, the theme toggle, **the curre
 From the **Users** page, admins can create additional NESTs for different projects or research groups. Users can be granted access to multiple NESTs and switch between them using the NEST selector in the top-right corner.
 :::
 
-## Step 6: Understand the data structure
+## Step 6: understand the data structure
 
 Before we start adding data, let's understand how EvoNEST organizes information.
 
@@ -224,7 +224,7 @@ EvoNEST uses a hierarchical data model:
 
 ### Key concepts
 
-#### **Samples**
+#### Samples
 
 - Represent biological specimens (animals, plants, etc.)
 - Have taxonomic information (family, genus, species)
@@ -232,7 +232,7 @@ EvoNEST uses a hierarchical data model:
 - Can undergo experiments and have traits directly
 - Example: "PANTH_001" - a panther specimen
 
-#### **Subsamples**
+#### Subsamples
 
 - Parts or derivatives of parent samples
 - Linked to a parent sample
@@ -240,7 +240,7 @@ EvoNEST uses a hierarchical data model:
 - Can also undergo experiments and have traits
 - Example: "PANTH_001_muscle_01" - muscle tissue from the panther
 
-#### **Experiments**
+#### Experiments
 
 - Raw data and measurements from instruments/equipment
 - Linked to samples or subsamples
@@ -248,7 +248,7 @@ EvoNEST uses a hierarchical data model:
 - Example: "SEM imaging of fibre sample" with raw microscopy files
 - Example: "Tensile test run" with force-extension curves
 
-#### **Traits**
+#### Traits
 
 - Processed, extracted measurements from experiments
 - Clean data points without raw files
@@ -269,7 +269,7 @@ EvoNEST uses a hierarchical data model:
    - Default admin user email
    - Logout button
    
-## Checkpoint: Ready to configure?
+## Checkpoint: ready to configure?
 
 Before moving to the next module, verify:
 

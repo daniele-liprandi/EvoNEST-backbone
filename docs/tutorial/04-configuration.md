@@ -20,21 +20,13 @@ Before starting this module, make sure you've completed [Module 3: First Launch]
 
 ## Overview
 
-Configuration is crucial for tailoring EvoNEST to your laboratory's needs. In this module, you'll set up the types and categories that define how you organize and measure your specimens.
+In this module, you'll set up the types and categories that define how you organize and measure your specimens.
 
-**What we'll configure:**
-1. Sample types (what kinds of organisms you work with)
-2. Subsample types (tissues, parts, derivatives)
-3. Trait types with units (what you measure)
-4. Equipment types (measurement tools)
-5. Sample ID generation rules
-6. Lab information
-
-## Understanding the Configuration System
+## Understanding the configuration system
 
 EvoNEST uses a **type system** to organize data:
 
-### Types of Types
+### Types of types
 
 | Type Category | Purpose | Examples |
 |--------------|---------|----------|
@@ -43,50 +35,18 @@ EvoNEST uses a **type system** to organize data:
 | **Trait Types** | Measurements | diameter, strength, weight |
 | **Equipment Types** | Measurement tools | microscope, tensile tester |
 
-::: tip Why Configure First?
-Setting up types before entering data ensures:
-- Consistency across your lab
-- Proper units for measurements
-- Meaningful sample IDs
-- Easy filtering and analysis
-:::
 
-## Step 1: Access Configuration
+## Step 1: access configuration
 
-1. **Click "Settings"** in the main navigation
+1. **Hover the mouse on "Settings"** in the Navigation Menu
 
-2. **Look for configuration options:**
-   - "Types Configuration"
-   - "Main Settings"
-   - "NEST Setup"
+2. **Click "Types"**
 
-3. **Go to Type Configuration**
-   - This might be at `/settings/main` or `/config/types`
-   - You should see sections for different type categories
-
-::: details First-Time Setup Wizard
-If this is your first login, EvoNEST might show a **configuration wizard**. This guides you through basic setup. You can either:
-- Follow the wizard (recommended for beginners)
-- Skip and configure manually (this tutorial)
-
-Both approaches cover the same configuration.
-:::
-
-## Step 2: Configure Sample Types
+## Step 2: configure sample types
 
 Sample types define the main categories of specimens you work with.
 
-### Default Sample Types
-
-EvoNEST comes with default types. Review them:
-
-| Value | Label | Description |
-|-------|-------|-------------|
-| `animal` | Animal Sample | Whole animal specimens |
-| `plant` | Plant Sample | Plant specimens |
-| `tissue` | Tissue Sample | Tissue or subsample |
-
-### Add Your Custom Sample Types
+### Add your custom sample types
 
 Let's add a type specific to your research. For this example, we'll add "Spider Silk":
 
@@ -117,27 +77,15 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 - This is what users will see
 :::
 
-### Practice: Add More Types
+### Practice: delete sample types which are not relevant to your research
 
-Add types relevant to your lab:
+Review the default sample types and remove any that don't apply to your work by pressing the delete button next to each type.
 
-::: details Example: Biomechanics Lab
-- `web` → "Spider Web" → "Complete spider web samples"
-- `dragline` → "Dragline Silk" → "Isolated dragline silk fibers"
-- `prey_wrapping` → "Prey Wrapping Silk" → "Silk used for prey capture"
-:::
-
-::: details Example: Ecology Lab
-- `sediment` → "Sediment" → "Soil or water sediment samples"
-- `water` → "Water Sample" → "Water samples for analysis"
-- `microbe` → "Microbial Culture" → "Bacterial or fungal cultures"
-:::
-
-## Step 3: Configure Subsample Types
+## Step 3: configure subsample types
 
 Subsamples are parts or derivatives of parent samples.
 
-### Default Subsample Types
+### Default subsample types
 
 Review the defaults:
 
@@ -147,7 +95,7 @@ Review the defaults:
 | `bone` | Bone | Bone tissue samples |
 | `organ` | Organ | Organ samples |
 
-### Add Your Subsample Types
+### Add your subsample types
 
 Example: Add "Venom Gland" for spider research:
 
@@ -162,7 +110,7 @@ Example: Add "Venom Gland" for spider research:
 
 4. **Save**
 
-### Practice: Add More Subsample Types
+### Practice: add more subsample types
 
 ::: details Common Subsample Types
 **Animal tissues:**
@@ -175,11 +123,11 @@ Example: Add "Venom Gland" for spider research:
 - `silk_gland`, `spinnerets`, `egg_sac`, `molt`
 :::
 
-## Step 4: Configure Trait Types (with Units!)
+## Step 4: configure trait types (with units!)
 
 Trait types define what you measure. **Units are crucial** for proper data analysis.
 
-### Default Trait Types
+### Default trait types
 
 Review defaults:
 
@@ -189,7 +137,7 @@ Review defaults:
 | `length` | Length | mm | Length measurements |
 | `weight` | Weight | g | Weight measurements |
 
-### Add Trait Type with Unit
+### Add trait type with unit
 
 Example: Add "Tensile Strength" measurement:
 
@@ -213,7 +161,7 @@ Example: Add "Tensile Strength" measurement:
 - Common units: `μm`, `mm`, `g`, `kg`, `MPa`, `GPa`, `°C`, `%`
 :::
 
-### Practice: Add Measurement Types
+### Practice: add measurement types
 
 Add trait types for your common measurements:
 
@@ -238,11 +186,11 @@ Not all traits are quantitative:
 - `life_stage` → "Life Stage" → (no unit) → "Developmental stage"
 :::
 
-## Step 5: Configure Equipment Types
+## Step 5: configure equipment types
 
 Define the equipment used for measurements. This helps with metadata and method tracking.
 
-### Add Equipment
+### Add equipment
 
 Example: Add "Instron Tensile Tester":
 
@@ -257,7 +205,7 @@ Example: Add "Instron Tensile Tester":
 
 4. **Save**
 
-### Practice: Add Your Lab Equipment
+### Practice: add your lab equipment
 
 ::: details Equipment Examples
 **Microscopy:**
@@ -273,11 +221,11 @@ Example: Add "Instron Tensile Tester":
 - `ph_meter` → "pH Meter"
 :::
 
-## Step 6: Configure Sample ID Generation
+## Step 6: configure sample iD generation
 
 EvoNEST can automatically generate sample IDs from taxonomy.
 
-### How It Works
+### How it works
 
 With rules like:
 - Genus: first 3 letters
@@ -286,7 +234,7 @@ With rules like:
 
 **Example:** *Tegenaria ferruginea* specimen #1 becomes: **TegFerr01**
 
-### Set Up ID Rules
+### Set up iD rules
 
 1. **Go to "Main Settings"** or "Sample ID Generation"
 
@@ -312,11 +260,11 @@ You can also:
 - **Different Rules** - Use different lengths if needed
 :::
 
-## Step 7: Configure Lab Information
+## Step 7: configure lab information
 
 Set default values for your laboratory.
 
-### Lab Details
+### Lab details
 
 1. **Go to "Lab Information"** section
 
@@ -336,9 +284,9 @@ Set default values for your laboratory.
 - Useful for multi-lab setups
 :::
 
-## Step 8: Review and Save Configuration
+## Step 8: review and save configuration
 
-### Review Your Settings
+### Review your settings
 
 1. **Go back through each section** and verify:
    - [ ] Sample types include your research organisms
@@ -352,7 +300,7 @@ Set default values for your laboratory.
 
 3. **Save all changes**
 
-### Test Your Configuration
+### Test your configuration
 
 1. **Navigate to "Samples"**
 
@@ -369,11 +317,11 @@ Set default values for your laboratory.
 Your EvoNEST instance is now configured for your laboratory's specific needs!
 :::
 
-## Step 9: Export Configuration (Optional)
+## Step 9: export configuration (optional)
 
 It's good practice to backup your configuration.
 
-### Export Config
+### Export config
 
 1. **Look for "Export Configuration"** button (might be in Settings)
 
@@ -381,14 +329,14 @@ It's good practice to backup your configuration.
 
 3. **Save it** somewhere safe (e.g., in your project folder or cloud storage)
 
-### Why Export?
+### Why export?
 
 - **Backup** - Restore if you accidentally delete types
 - **Share** - Give to other labs using similar workflows
 - **Version control** - Track changes over time
 - **Documentation** - Reference for publications
 
-## Checkpoint: Configuration Complete?
+## Checkpoint: configuration complete?
 
 Before moving to the next module, verify:
 
@@ -405,9 +353,9 @@ Before moving to the next module, verify:
 Perfect! Now you can start entering real samples and measurements.
 :::
 
-## Common Configuration Scenarios
+## Common configuration scenarios
 
-### Scenario 1: Multi-Species Research Lab
+### Scenario 1: multi-species research lab
 
 ```
 Sample Types: animal, plant, algae, fungi
@@ -418,7 +366,7 @@ Trait Types:
   - abundance (count)
 ```
 
-### Scenario 2: Biomechanics Lab
+### Scenario 2: biomechanics lab
 
 ```
 Sample Types: spider_silk, spider_web, insect_cuticle
@@ -431,7 +379,7 @@ Trait Types:
 Equipment: instron_5944, SEM, light_microscope
 ```
 
-### Scenario 3: Ecology Field Station
+### Scenario 3: ecology field station
 
 ```
 Sample Types: animal, plant, water, sediment
@@ -444,7 +392,7 @@ Trait Types:
 Equipment: ph_meter, dissolved_oxygen_sensor, spectrophotometer
 ```
 
-## Next Steps
+## Next steps
 
 **Excellent work!** EvoNEST is now configured specifically for your laboratory's research needs.
 

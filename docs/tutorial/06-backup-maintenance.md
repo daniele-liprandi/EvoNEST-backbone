@@ -34,7 +34,7 @@ EvoNEST includes a comprehensive automated backup system that:
 
 ## Understanding the backup system
 
-### Automated Backup Schedule
+### Automated backup schedule
 
 When running in production mode, EvoNEST automatically backs up your database:
 
@@ -44,7 +44,7 @@ When running in production mode, EvoNEST automatically backs up your database:
 | **Weekly** | Every Sunday | 4 weeks |
 | **Monthly** | 1st of each month | 12 months |
 
-### Backup Storage Structure
+### Backup storage structure
 
 Backups are stored in Docker volumes with this organization:
 
@@ -66,7 +66,7 @@ Backups are stored in Docker volumes with this organization:
     └── backup_status.txt
 ```
 
-### What Gets Backed Up?
+### What gets backed up?
 
 ✅ **Included in backups:**
 - All database collections (samples, traits, experiments, users, etc.)
@@ -83,9 +83,9 @@ Backups are stored in Docker volumes with this organization:
 Uploaded files are stored separately in the `file_storage` Docker volume. To back up files, you'll need to copy this volume separately (covered later in this module).
 :::
 
-## Step 1: Check Backup Status
+## Step 1: check backup status
 
-### 1.1 Verify Backup Container is Running
+### 1.1 verify backup container is running
 
 Open your terminal and check that the backup container is active:
 
@@ -121,7 +121,7 @@ If you don't see the backup container:
    ```
 :::
 
-### 1.2 Check Last Backup Status
+### 1.2 check last backup status
 
 View the status file to see when the last backup completed:
 
@@ -136,7 +136,7 @@ Backup file: mongodb_backup_20241024_000015.tar.gz
 Backup size: 15M
 ```
 
-### 1.3 View Detailed Backup Information
+### 1.3 view detailed backup information
 
 Check the latest backup details:
 
@@ -162,7 +162,7 @@ Backup rotation policy:
 - Monthly backups kept for 12 months
 ```
 
-### 1.4 List All Available Backups
+### 1.4 list all available backups
 
 **Daily backups:**
 ```bash
@@ -188,11 +188,11 @@ total 75M
 ...
 ```
 
-## Step 2: Download Backups Locally
+## Step 2: download backups locally
 
 It's **strongly recommended** to keep local copies of your backups on a separate computer or external drive.
 
-### Method 1: Copy from Docker Volume (Local Server)
+### Method 1: copy from Docker volume (local server)
 
 If EvoNEST is running on your local computer:
 
@@ -217,7 +217,7 @@ dir mongodb_backup_*.tar.gz
 ls -lh mongodb_backup_*.tar.gz
 ```
 
-### Method 2: Download from Remote Server (SSH)
+### Method 2: download from remote server (sSH)
 
 If EvoNEST is running on a remote server:
 
@@ -245,7 +245,7 @@ scp user@your-server:/var/lib/docker/volumes/mongo_backups/_data/daily/mongodb_b
 You may need `sudo` privileges on the server to access Docker volumes directly. If you get permission errors, ask your server administrator for help.
 :::
 
-### Method 3: Schedule Automated Downloads
+### Method 3: schedule automated downloads
 
 For production servers, consider setting up automated backup downloads using:
 - **rsync** with cron (Linux/macOS)
@@ -260,9 +260,9 @@ Download backups to **at least two locations**:
 This protects against both server failures and local computer failures.
 :::
 
-## Step 3: Restore from Backup
+## Step 3: restore from backup
 
-### When to Restore
+### When to restore
 
 You might need to restore from backup if:
 - Data was accidentally deleted
@@ -274,7 +274,7 @@ You might need to restore from backup if:
 Restoring from backup will **overwrite all current data**. Make sure you have a current backup before restoring!
 :::
 
-### 3.1 Prepare for Restoration
+### 3.1 prepare for restoration
 
 **1. Stop the EvoNEST application (but keep database running):**
 ```bash
@@ -290,7 +290,7 @@ docker exec mongo_backup ls /backups/daily/mongodb_backup_20241024_000015.tar.gz
 docker cp mongodb_backup_20241024_000015.tar.gz mongo_backup:/backups/
 ```
 
-### 3.2 Extract the Backup
+### 3.2 extract the backup
 
 **1. Enter the backup container:**
 ```bash
@@ -305,7 +305,7 @@ tar -xzf daily/mongodb_backup_20241024_000015.tar.gz
 
 This creates a directory named `temp_mongodb_backup_20241024_000015` with the database dump.
 
-### 3.3 Restore to MongoDB
+### 3.3 restore to MongoDB
 
 **Still inside the backup container**, run the restore command:
 
@@ -330,7 +330,7 @@ finished restoring evonest.traits (450 documents, 0 failures)
 120 document(s) restored successfully. 0 document(s) failed to restore.
 ```
 
-### 3.4 Clean Up and Restart
+### 3.4 clean up and restart
 
 **1. Exit the container:**
 ```sh
@@ -360,11 +360,11 @@ Before restoring, note down:
 After restoring, verify these match the backup date.
 :::
 
-## Step 4: Create Manual Backups
+## Step 4: create manual backups
 
 Sometimes you may want to create a backup immediately (not waiting for the scheduled backup):
 
-### Manual Backup via Backup Container
+### Manual backup via backup container
 
 **1. Trigger a manual backup:**
 ```bash
@@ -404,11 +404,11 @@ tar -czf manual_backup_$(date +%Y%m%d_%H%M%S).tar.gz manual_backup_*
 Compress-Archive -Path manual_backup_* -DestinationPath "manual_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').zip"
 ```
 
-## Step 5: Backup File Storage
+## Step 5: backup file storage
 
 Remember that database backups do **NOT** include uploaded files (images, documents). Back these up separately:
 
-### Check File Storage Size
+### Check file storage size
 
 **1. Check the file storage volume:**
 ```bash
@@ -420,7 +420,7 @@ docker exec evonest_backbone_prod du -sh /usr/evonest/file_storage
 2.3G    /usr/evonest/file_storage
 ```
 
-### Backup File Storage
+### Backup file storage
 
 **1. Copy the entire file storage directory:**
 ```bash
@@ -441,7 +441,7 @@ Compress-Archive -Path file_storage_backup_* -DestinationPath "file_storage_back
 - Upload to cloud storage
 - Keep alongside database backups
 
-### Restore File Storage
+### Restore file storage
 
 If you need to restore files:
 
@@ -460,7 +460,7 @@ docker cp file_storage_backup_20241024/. evonest_backbone_prod:/usr/evonest/file
 docker exec evonest_backbone_prod chown -R node:node /usr/evonest/file_storage
 ```
 
-## Checkpoint: Verify Backup System
+## Checkpoint: verify backup system
 
 Before finishing this module, make sure you can:
 
@@ -477,7 +477,7 @@ If you can check all boxes above, your backup system is working correctly!
 
 ## Best practices
 
-### 1. Regular Backup Verification
+### 1. regular backup verification
 
 **Monthly checklist:**
 - [ ] Verify backups are being created automatically
@@ -485,7 +485,7 @@ If you can check all boxes above, your backup system is working correctly!
 - [ ] Download latest backup to local storage
 - [ ] Test restoration process (on test environment)
 
-### 2. Backup Storage Strategy
+### 2. backup storage strategy
 
 Implement the **3-2-1 backup rule**:
 - **3** copies of your data
@@ -497,7 +497,7 @@ Implement the **3-2-1 backup rule**:
 2. Weekly downloads to office computer
 3. Monthly uploads to cloud storage
 
-### 3. Monitor Disk Space
+### 3. monitor disk space
 
 If your database grows large, backups can fill up disk space:
 
@@ -522,7 +522,7 @@ backup:
 docker-compose up -d backup
 ```
 
-### 4. Test Your Backups
+### 4. test your backups
 
 **Regularly test restoration** on a separate test environment:
 
@@ -538,7 +538,7 @@ Many people never test their backups until they need them. Don't be one of them!
 
 ## Troubleshooting
 
-### Backup Container Not Starting
+### Backup container not starting
 
 **Problem:** `docker ps` doesn't show mongo_backup container
 
@@ -555,7 +555,7 @@ Many people never test their backups until they need them. Don't be one of them!
 
 3. Verify backup service is defined in `docker-compose.yml`
 
-### No Backups Being Created
+### No backups being created
 
 **Problem:** `/backups/daily/` is empty
 
@@ -575,7 +575,7 @@ Many people never test their backups until they need them. Don't be one of them!
    docker exec mongo_backup mongodump --uri="mongodb://root:pass@mongo:27017" --out=/tmp/test
    ```
 
-### "Permission Denied" When Downloading Backups
+### "permission denied" when downloading backups
 
 **Problem:** Can't access Docker volumes on remote server
 
@@ -589,7 +589,7 @@ Many people never test their backups until they need them. Don't be one of them!
 
 3. Set up a backup export script on the server
 
-### Restore Failed or Incomplete
+### Restore failed or incomplete
 
 **Problem:** `mongorestore` shows errors
 

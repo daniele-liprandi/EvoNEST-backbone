@@ -529,7 +529,7 @@ Keep your terminal window open - you'll use it in the next module for installati
 
 ---
 
-## Checkpoint: Are you ready?
+## Checkpoint: are you ready?
 
 Before moving to the next module, verify you have:
 
