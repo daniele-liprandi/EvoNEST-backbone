@@ -268,11 +268,225 @@ EvoNEST uses a hierarchical data model:
    - Default admin user email
    - Logout button
 
-## Checkpoint: ready to configure?
+## Checkpoint: ready to move to a production launch?
+
+::: warning Issues?
+If something isn't working, check:
+
+1. Browser console for errors (F12)
+2. Docker logs: `docker compose -f docker-compose.dev.yml logs -f`
+3. [Troubleshooting Guide](/tutorial/troubleshooting)
+   :::
+
+
+## Step 8: Running in production mode
+
+So far, you've been running EvoNEST in **development mode**, which is great for learning and testing. However, if you want to run EvoNEST in a production-like environment with better performance and optimization, you can switch to **production mode**.
+
+::: warning Development vs Production
+**Development mode** is ideal for:
+
+- Learning and testing EvoNEST's code
+- Making code changes (auto-reloads on file changes)
+- Debugging with detailed error messages
+
+**Production mode** should be used for:
+- Daily lab use with real data
+- Better performance and optimized builds
+- Running on servers accessible to multiple users
+
+:::
+
+### 8.1 Stop development containers
+
+First, stop the development environment:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+### 8.2 Create `.env.production` file
+
+Production mode requires a different environment configuration.
+
+1. **In VS Code, create a new file:**
+
+   - Click the "New File" icon
+   - Name it `.env.production`
+   - Add this content:
+
+   ```txt
+   NEXTAUTH_URL=http://localhost:3000
+   MONGODB_URI=mongodb://root:pass@mongo:27017
+   STORAGE_PATH='/usr/evonest/file_storage'
+   ```
+
+   ::: warning Change the password!
+   Replace `pass` with your own secure password. Use something unique and different from your development password!
+
+   **Example:**
+
+   ```txt
+   MONGODB_URI=mongodb://root:MyLabPassword2024!@mongo:27017
+   ```
+
+   :::
+
+2. **Save the file** (Ctrl+S or Cmd+S)
+
+::: tip Port difference
+Notice that production mode uses port **3000** instead of 3005. This is the standard port for production deployments.
+:::
+
+### 8.3 Update production Docker compose credentials
+
+The production configuration in `docker-compose.yml` also needs to match your MongoDB credentials.
+
+1. **In VS Code, open `docker-compose.yml`**
+
+   - Find it in the Explorer panel and click to open
+
+2. **Find the MongoDB section** (around line 23-31)
+
+   - Use Ctrl+F (Cmd+F on Mac) to search for `mongo:`
+
+3. **Update the username and password** to match what you set in `.env.production`:
+
+   ```yaml{7,8}
+   mongo:
+     image: mongo:5.0
+     ports:
+       - "27017:27017"
+     container_name: evonest_mongodb
+     restart: unless-stopped
+     environment:
+       MONGO_INITDB_ROOT_USERNAME: root
+       MONGO_INITDB_ROOT_PASSWORD: pass
+     volumes:
+       - mongo_data:/data/db
+   ```
+
+4. **Also update the backup service** (around line 33-46):
+
+   ```yaml{8}
+   backup:
+     build:
+       context: .
+       dockerfile: Dockerfile.backup
+     container_name: mongo_backup
+     restart: unless-stopped
+     depends_on:
+       - mongo
+     volumes:
+       - mongo_backups:/backups
+     environment:
+       MONGO_URI: "mongodb://root:pass@mongo:27017"
+       DAILY_RETENTION: "7"
+       WEEKLY_RETENTION: "4"
+       MONTHLY_RETENTION: "12"
+   ```
+
+5. **Save the file** (Ctrl+S or Cmd+S)
+
+### 8.4 Build and start production containers
+
+Production mode requires building the application first (this creates an optimized version).
+
+```bash
+docker compose up --build -d
+```
+
+::: tip First build takes time
+The first production build can take 5-10 minutes as it:
+
+- Installs all dependencies
+- Builds an optimized Next.js application
+- Creates production Docker images
+
+Subsequent starts will be much faster.
+:::
+
+**Expected output:**
+
+```txt
+[+] Building 245.3s (15/15) FINISHED
+[+] Running 4/4
+ ✔ Network evonest-backbone_default    Created
+ ✔ Container evonest_mongodb            Started
+ ✔ Container mongo_backup               Started
+ ✔ Container evonest_backbone_prod      Started
+```
+
+### 8.5 Monitor production startup
+
+Watch the logs to see the production server starting:
+
+```bash
+docker compose logs -f node
+```
+
+**What you'll see:**
+
+```txt
+evonest_backbone_prod  | > evonest@0.1.0 start
+evonest_backbone_prod  | > next start -p 3000
+evonest_backbone_prod  |
+evonest_backbone_prod  |  ▲ Next.js 14.2.4
+evonest_backbone_prod  |  - Local:        http://localhost:3000
+evonest_backbone_prod  |
+evonest_backbone_prod  |  ✓ Ready in 1.8s
+```
+
+::: tip Faster startup
+Production mode typically is much faster than development mode because the code is pre-compiled.
+:::
+
+### 8.6 Access production EvoNEST
+
+Once the containers are running, open your browser and visit:
+
+**[http://localhost:3000](http://localhost:3000)**
+
+### 8.7 Production management commands
+
+Here's a quick reference for managing production mode:
+
+| Task               | Command                        |
+| ------------------ | ------------------------------ |
+| Start production   | `docker compose up -d`         |
+| Stop production    | `docker compose down`          |
+| View logs          | `docker compose logs -f`       |
+| View app logs only | `docker compose logs -f node`  |
+| Check status       | `docker compose ps`            |
+| Restart            | `docker compose restart`       |
+| Rebuild & start    | `docker compose up --build -d` |
+| Complete reset     | `docker compose down -v`       |
+
+### 8.8 Switching between development and production
+
+You can switch between modes anytime:
+
+**To use development mode:**
+
+```bash
+docker compose down                              # Stop production
+docker compose -f docker-compose.dev.yml up -d   # Start development
+# Access at http://localhost:3005
+```
+
+**To use production mode:**
+
+```bash
+docker compose -f docker-compose.dev.yml down    # Stop development
+docker compose up -d                              # Start production
+# Access at http://localhost:3000
+```
+
+## Checkpoint: let's get ready for NEST configuration
 
 Before moving to the next module, verify:
 
-- [ ] Successfully logged in with admin/pass
+- [ ] Successfully logged in with admin/pass into the production EvoNEST, on port 3000
 - [ ] Initialized the configuration (clicked "Initialize Configuration")
 - [ ] Can navigate between Users, Samples, Traits, Experiments, Settings
 - [ ] See empty tables (no data yet - that's correct!)
@@ -283,26 +497,6 @@ Before moving to the next module, verify:
 ::: tip All Verified?
 Perfect! You're ready to start configuring EvoNEST for your laboratory's needs.
 :::
-
-::: warning Issues?
-If something isn't working, check:
-
-1. Browser console for errors (F12)
-2. Docker logs: `docker compose -f docker-compose.dev.yml logs -f`
-3. [Troubleshooting Guide](/tutorial/troubleshooting)
-   :::
-
-## Quick reference: navigation shortcuts
-
-| Section          | What You'll Find                                  |
-| ---------------- | ------------------------------------------------- |
-| **Home**         | Dashboard, statistics, name checker, news         |
-| **Users**        | Manage users, NEST access, create new NESTs       |
-| **Samples**      | Create and manage specimens, subsamples           |
-| **Experiments**  | Upload raw data from instruments, link to samples |
-| **Traits**       | Record processed measurements, data analysis      |
-| **Settings**     | Configure types, units, lab info for current NEST |
-| **User Profile** | Account info, logout                              |
 
 ## Next steps
 
