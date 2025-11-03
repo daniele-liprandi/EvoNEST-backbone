@@ -116,7 +116,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>First Time Setup</DialogTitle>
+            <DialogTitle>First time setup</DialogTitle>
             <DialogDescription>
               Initialize your NEST to get started.
             </DialogDescription>
@@ -130,7 +130,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>First Time Setup</CardTitle>
+        <CardTitle>First time setup</CardTitle>
         <CardDescription>
               Initialize your NEST to get started.
         </CardDescription>
