@@ -36,13 +36,13 @@ EvoNEST uses a **type system** to organize data:
 | **Equipment Types** | Measurement tools | microscope, tensile tester |
 
 
-## Step 1: access configuration
+## Step 1: Access configuration
 
 1. **Hover the mouse on "Settings"** in the Navigation Menu
 
 2. **Click "Types"**
 
-## Step 2: configure sample types
+## Step 2: Configure sample types
 
 Sample types define the main categories of specimens you work with.
 
@@ -52,15 +52,15 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 
 1. **Find the "Sample Types" section**
 
-2. **Click "Add Item"** or "Add Type"
+2. **Click "Add Item"**
 
 3. **Fill in the form:**
    - **Value:** `silk` (lowercase, no spaces - this is the internal ID)
-   - **Label:** `Spider Silk` (display name for users)
+   - **Label:** `Spider silk` (display name for users)
    - **Description:** `Spider silk samples for biomechanical analysis`
-   - **Shortened:** `Silk` (optional, for compact displays)
+   - **Shortened:** `slk` (optional, for compact displays)
 
-4. **Click "Save"** or "Add"
+4. **Click "Add item"**
 
 5. **Verify** the new type appears in the list
 
@@ -71,17 +71,13 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 - Keep it short and descriptive
 - Once created and used, don't change it!
 
-**Label field** (display name):
-- Use proper capitalization
-- Can include spaces
-- This is what users will see
 :::
 
 ### Practice: delete sample types which are not relevant to your research
 
 Review the default sample types and remove any that don't apply to your work by pressing the delete button next to each type.
 
-## Step 3: configure subsample types
+## Step 3: Configure subsample types
 
 Subsamples are parts or derivatives of parent samples.
 
@@ -97,49 +93,27 @@ Review the defaults:
 
 ### Add your subsample types
 
-Example: Add "Venom Gland" for spider research:
+Example: Add "Drop-down dragline" for spider research:
 
 1. **Go to "Subsample Types"** section
 
 2. **Click "Add Item"**
 
 3. **Fill in:**
-   - **Value:** `venom_gland`
-   - **Label:** `Venom Gland`
-   - **Description:** `Venom-producing gland tissue`
+   - **Value:** `dropdown_dragline`
+   - **Label:** `Drop-down Dragline`
+   - **Description:** `Drop-down dragline silk sample`
 
-4. **Save**
+4. **Click "Add item"**
 
-### Practice: add more subsample types
 
-::: details Common Subsample Types
-**Animal tissues:**
-- `liver`, `kidney`, `heart`, `brain`, `skin`, `blood`
+## Step 4: Configure trait types
 
-**Plant parts:**
-- `leaf`, `root`, `stem`, `flower`, `seed`, `bark`
-
-**Specialized:**
-- `silk_gland`, `spinnerets`, `egg_sac`, `molt`
-:::
-
-## Step 4: configure trait types (with units!)
-
-Trait types define what you measure. **Units are crucial** for proper data analysis.
-
-### Default trait types
-
-Review defaults:
-
-| Value | Label | Unit | Description |
-|-------|-------|------|-------------|
-| `diameter` | Fiber Diameter | μm | Diameter measurements |
-| `length` | Length | mm | Length measurements |
-| `weight` | Weight | g | Weight measurements |
+Trait types define what you measure. 
 
 ### Add trait type with unit
 
-Example: Add "Tensile Strength" measurement:
+Example: Add "Tensile strength" measurement:
 
 1. **Go to "Trait Types"** section
 
@@ -147,18 +121,15 @@ Example: Add "Tensile Strength" measurement:
 
 3. **Fill in:**
    - **Value:** `tensile_strength`
-   - **Label:** `Tensile Strength`
-   - **Unit:** `MPa` (megapascals)
+   - **Label:** `Strength`
+   - **Unit:** `Pa` (pascals)
    - **Description:** `Maximum stress before failure`
-   - **Shortened:** `Strength` (optional)
+   - **Shortened:** `strength` (optional)
 
 4. **Save**
 
-::: warning Units Are Important!
-- Always specify units for quantitative traits
-- Use standard abbreviations (SI units preferred)
-- Be consistent across your lab
-- Common units: `μm`, `mm`, `g`, `kg`, `MPa`, `GPa`, `°C`, `%`
+::: warning Units are important!
+- Use SI standard units
 :::
 
 ### Practice: add measurement types
@@ -166,62 +137,32 @@ Example: Add "Tensile Strength" measurement:
 Add trait types for your common measurements:
 
 ::: details Example: Biomechanics Measurements
-- `youngs_modulus` → "Young's Modulus" → `GPa` → "Elastic modulus"
+- `youngs_modulus` → "Young's Modulus" → `Pa` → "Elastic modulus"
 - `extensibility` → "Extensibility" → `%` → "Strain at failure"
-- `toughness` → "Toughness" → `MJ/m³` → "Energy to break"
-- `cross_section` → "Cross-Sectional Area" → `μm²` → "Fiber cross-section"
+- `toughness` → "Toughness" → `J/m³` → "Energy to break"
+- `cross_section` → "Cross-sectional area" → `μm²` → "Fiber cross-section"
 :::
 
-::: details Example: Ecological Measurements
-- `body_mass` → "Body Mass" → `g` → "Individual body weight"
-- `abundance` → "Abundance" → `count` → "Population count"
-- `ph` → "pH" → `pH` → "Acidity/alkalinity"
-- `temperature` → "Temperature" → `°C` → "Environmental temperature"
-:::
-
-::: details Example: Qualitative Traits
-Not all traits are quantitative:
-- `color` → "Color" → (no unit) → "Visual color"
-- `sex` → "Sex" → (no unit) → "Biological sex"
-- `life_stage` → "Life Stage" → (no unit) → "Developmental stage"
-:::
-
-## Step 5: configure equipment types
+## Step 5: Configure equipment types
 
 Define the equipment used for measurements. This helps with metadata and method tracking.
 
 ### Add equipment
 
-Example: Add "Instron Tensile Tester":
+Example: Add "T150 Universal Testing Machine":
 
 1. **Go to "Equipment Types"** section
 
 2. **Click "Add Item"**
 
 3. **Fill in:**
-   - **Value:** `instron_5944`
-   - **Label:** `Instron 5944 Tensile Tester`
-   - **Description:** `500N load cell, used for fiber testing`
+   - **Value:** `t150_universal_testing_machine`
+   - **Label:** `T150 UTM`
+   - **Description:** `500 mN load cell, used for fiber testing`
 
 4. **Save**
 
-### Practice: add your lab equipment
-
-::: details Equipment Examples
-**Microscopy:**
-- `sem` → "Scanning Electron Microscope"
-- `light_microscope` → "Olympus Light Microscope"
-
-**Measurement:**
-- `balance_analytical` → "Analytical Balance (0.1mg)"
-- `caliper_digital` → "Digital Caliper"
-
-**Sensors:**
-- `thermometer_digital` → "Digital Thermometer"
-- `ph_meter` → "pH Meter"
-:::
-
-## Step 6: configure sample iD generation
+## Step 6: Configure sample ID generation
 
 EvoNEST can automatically generate sample IDs from taxonomy.
 
@@ -229,16 +170,18 @@ EvoNEST can automatically generate sample IDs from taxonomy.
 
 With rules like:
 - Genus: first 3 letters
-- Species: first 4 letters
-- Number: padded to 2 digits
+- Species: first 3 letters
+- Number: progressive counter
 
-**Example:** *Tegenaria ferruginea* specimen #1 becomes: **TegFerr01**
+**Example:** *Tegenaria ferruginea* specimen #1 becomes: **Tegfer1**
 
-### Set up iD rules
+### Set up ID rules
 
-1. **Go to "Main Settings"** or "Sample ID Generation"
+1. **Hover the mouse on "Settings"** in the Navigation Menu
 
-2. **Configure the rules:**
+2. **Click "Main"**
+
+3. **Configure the rules:**
 
    | Setting | Recommended | Description |
    |---------|-------------|-------------|
@@ -247,20 +190,9 @@ With rules like:
    | **Starting Number** | 1 | First sample number |
    | **Number Padding** | 2 | Digits (01, 02, ..., 99) |
 
-3. **Test it:**
-   - Try: *Latrodectus hesperus* → `LatHesp01`
-   - Try: *Nephila clavipes* → `NepClav01`
+4. **Press "Save Settings"** at the bottom of the page
 
-4. **Save** the configuration
-
-::: tip ID Customization
-You can also:
-- **Manual IDs** - Enter custom IDs instead of auto-generated
-- **Prefix/Suffix** - Add lab codes (e.g., `LAB_TegFerr01`)
-- **Different Rules** - Use different lengths if needed
-:::
-
-## Step 7: configure lab information
+## Step 7: Configure lab information
 
 Set default values for your laboratory.
 
@@ -270,21 +202,13 @@ Set default values for your laboratory.
 
 2. **Fill in your details:**
    - **Lab Name:** Your laboratory name
-   - **Institution:** University or organization
-   - **Default Location:** Where you usually collect specimens
-   - **Default Coordinates:** Latitude/Longitude (optional)
-   - **Contact Information:** Lab contact email
+   - **Lab Location:** Your laboratory address
+   - **Lab Coordinates:** Latitude and Longitude
 
-3. **Save**
+3. **Press "Save Settings"** at the bottom of the page
 
-::: tip Why Set Lab Info?
-- Pre-fills location fields when creating samples
-- Provides context for collaborators
-- Appears in exported data
-- Useful for multi-lab setups
-:::
 
-## Step 8: review and save configuration
+## Step 8: Review and save configuration
 
 ### Review your settings
 
@@ -296,9 +220,6 @@ Set default values for your laboratory.
    - [ ] Sample ID rules are set
    - [ ] Lab information is filled in
 
-2. **Look for a "Save Configuration"** or "Apply Settings" button
-
-3. **Save all changes**
 
 ### Test your configuration
 
@@ -317,24 +238,6 @@ Set default values for your laboratory.
 Your EvoNEST instance is now configured for your laboratory's specific needs!
 :::
 
-## Step 9: export configuration (optional)
-
-It's good practice to backup your configuration.
-
-### Export config
-
-1. **Look for "Export Configuration"** button (might be in Settings)
-
-2. **Download** the configuration file (usually `config.json` or `types.json`)
-
-3. **Save it** somewhere safe (e.g., in your project folder or cloud storage)
-
-### Why export?
-
-- **Backup** - Restore if you accidentally delete types
-- **Share** - Give to other labs using similar workflows
-- **Version control** - Track changes over time
-- **Documentation** - Reference for publications
 
 ## Checkpoint: configuration complete?
 
@@ -349,48 +252,9 @@ Before moving to the next module, verify:
 - [ ] All changes saved
 - [ ] Tested that types appear in sample creation form
 
-::: tip Ready to Add Data?
+::: tip Ready to add data?
 Perfect! Now you can start entering real samples and measurements.
 :::
-
-## Common configuration scenarios
-
-### Scenario 1: multi-species research lab
-
-```
-Sample Types: animal, plant, algae, fungi
-Subsample Types: tissue, blood, DNA, RNA
-Trait Types:
-  - body_mass (g)
-  - length (mm)
-  - abundance (count)
-```
-
-### Scenario 2: biomechanics lab
-
-```
-Sample Types: spider_silk, spider_web, insect_cuticle
-Subsample Types: dragline, capture_spiral, egg_sac_silk
-Trait Types:
-  - diameter (μm)
-  - tensile_strength (MPa)
-  - extensibility (%)
-  - toughness (MJ/m³)
-Equipment: instron_5944, SEM, light_microscope
-```
-
-### Scenario 3: ecology field station
-
-```
-Sample Types: animal, plant, water, sediment
-Subsample Types: leaf, root, water_filtered
-Trait Types:
-  - ph (pH)
-  - temperature (°C)
-  - dissolved_oxygen (mg/L)
-  - chlorophyll (μg/L)
-Equipment: ph_meter, dissolved_oxygen_sensor, spectrophotometer
-```
 
 ## Next steps
 
