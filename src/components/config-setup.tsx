@@ -85,7 +85,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
           <h4 className="font-medium text-blue-900">Note:</h4>
           <p className="text-sm text-blue-800 mt-1">
-            These are default configurations that you can customize later. Each database has its own configuration, 
+            These are default configurations that you can customise later. Each database has its own configuration, 
             so different research projects can have their own sample types and measurements.
           </p>
         </div>
@@ -95,7 +95,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
         {seeded ? (
           <div className="flex items-center gap-2 text-green-600">
             <CheckCircle2 className="h-5 w-5" />
-            <span className="font-medium">Configuration initialized successfully!</span>
+            <span className="font-medium">Configuration initialised successfully!</span>
           </div>
         ) : (
           <Button 
@@ -104,7 +104,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
             size="lg"
             className="w-full sm:w-auto"
           >
-            {loading ? 'Initializing...' : 'Initialize Configuration'}
+            {loading ? 'Initialising...' : 'Initialise configuration'}
           </Button>
         )}
       </div>
