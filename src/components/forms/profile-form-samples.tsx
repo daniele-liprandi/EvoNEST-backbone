@@ -227,6 +227,7 @@ export function ProfileFormSamples({
       sex: "unknown",
       date: new Date(),
       responsible: getUserIdByName(user?.name, users),
+      includeSubsampleShortened: true,
     },
   });
 

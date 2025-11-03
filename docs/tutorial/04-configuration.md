@@ -22,28 +22,55 @@ Before starting this module, make sure you've completed [Module 3: First Launch]
 
 ## Overview
 
-In this module, you'll set up the types and categories that define how you organize and measure your specimens.
+In this module, you'll set up the NEST settings, and the types and categories that define how you organize and measure your specimens.
 
-## Understanding the configuration system
+## Step 1: Set up the Main settings
 
-EvoNEST uses a **type system** to organize data:
+EvoNEST can automatically generate sample IDs from taxonomy, and quickly fill the sample location with your lab position.
 
-### Types of types
+### Set up the ID generation
 
-| Type Category       | Purpose                 | Examples                   |
-| ------------------- | ----------------------- | -------------------------- |
-| **Sample Types**    | Categories of organisms | animal, plant, fungus      |
-| **Subsample Types** | Parts or tissues        | muscle, bone, leaf, silk   |
-| **Trait Types**     | Measurements            | diameter, strength, weight |
-| **Equipment Types** | Measurement tools       | microscope, tensile tester |
+1. **Hover the mouse on "Settings"** in the Navigation Menu
 
-## Step 1: Access configuration
+2. **Click "Main"**
+
+3. **Configure the rules:**
+
+   | Setting             | Recommended | Description                  |
+   | ------------------- | ----------- | ---------------------------- |
+   | **Genus Length**    | 3           | Characters from genus name   |
+   | **Species Length**  | 3           | Characters from species name |
+   | **Starting Number** | 1           | First sample number          |
+   | **Number Padding**  | 3           | Digits (001, 002, ..., 999)  |
+
+:::tip ID Generation Example
+For a sample of *Nephila clavipes*, the ID would be:
+- Genus: `Nep` (first 3 letters)
+- Species: `cla` (first 3 letters)
+- Number: `001` (first sample)
+Resulting ID: `Nepcla001`
+:::
+
+### Lab details
+
+1. **Go to "Lab Information"** section
+
+2. **Fill in your details:**
+
+   - **Lab Name:** Your laboratory name
+   - **Lab Location:** Your laboratory address
+   - **Lab Coordinates:** Latitude and Longitude 
+
+3. **Press "Save Settings"** at the bottom of the page
+
+
+## Step 2: Access types configuration
 
 1. **Hover the mouse on "Settings"** in the Navigation Menu
 
 2. **Click "Types"**
 
-## Step 2: Configure sample types
+## Step 3: Configure sample types
 
 Sample types define the main categories of specimens you work with.
 
@@ -59,8 +86,8 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 
    - **Value:** `silk` (lowercase, no spaces - this is the internal ID)
    - **Label:** `Spider silk` (display name for users)
-   - **Description:** `Spider silk samples for biomechanical analysis`
-   - **Shortened:** `slk` (optional, for compact displays)
+   - **Description:** `Spider silk samples`
+   - **Shortened:** `slk`
 
 4. **Click "Add item"**
 
@@ -80,7 +107,7 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 
 Review the default sample types and remove any that don't apply to your work by pressing the delete button next to each type.
 
-## Step 3: Configure subsample types
+## Step 4: Configure subsample types
 
 Subsamples are parts or derivatives of parent samples.
 
@@ -104,13 +131,14 @@ Example: Add "Drop-down dragline" for spider research:
 
 3. **Fill in:**
 
-   - **Value:** `dropdown_dragline`
+   - **Value:** `dragline`
    - **Label:** `Drop-down Dragline`
-   - **Description:** `Drop-down dragline silk sample`
+   - **Description:** `Drop-down dragline silk sample` (optional)
+   - **Shortened:** `dl`
 
 4. **Click "Add item"**
 
-## Step 4: Configure trait types
+## Step 5: Configure trait types
 
 Trait types define what you measure.
 
@@ -128,7 +156,7 @@ Example: Add "Tensile strength" measurement:
    - **Label:** `Strength`
    - **Unit:** `Pa` (pascals)
    - **Description:** `Maximum stress before failure`
-   - **Shortened:** `strength` (optional)
+   - **Shortened:** `strength`
 
 4. **Save**
 
@@ -146,10 +174,10 @@ Add trait types for your common measurements:
 - `youngs_modulus` → "Young's Modulus" → `Pa` → "Elastic modulus"
 - `extensibility` → "Extensibility" → `%` → "Strain at failure"
 - `toughness` → "Toughness" → `J/m³` → "Energy to break"
-- `cross_section` → "Cross-sectional area" → `μm²` → "Fiber cross-section"
+- `cross_section` → "Cross-sectional area" → `μm²` → "Fibre cross-section"
   :::
 
-## Step 5: Configure equipment types
+## Step 6: Configure equipment types
 
 Define the equipment used for measurements. This helps with metadata and method tracking.
 
@@ -163,60 +191,14 @@ Example: Add "T150 Universal Testing Machine":
 
 3. **Fill in:**
 
-   - **Value:** `t150_universal_testing_machine`
+   - **Value:** `t150`
    - **Label:** `T150 UTM`
-   - **Description:** `500 mN load cell, used for fiber testing`
+   - **Description:** `500 mN load cell, used for fibre testing`
 
 4. **Save**
 
-## Step 6: Configure sample ID generation
 
-EvoNEST can automatically generate sample IDs from taxonomy.
-
-### How it works
-
-With rules like:
-
-- Genus: first 3 letters
-- Species: first 3 letters
-- Number: progressive counter
-
-**Example:** _Tegenaria ferruginea_ specimen #1 becomes: **Tegfer1**
-
-### Set up ID rules
-
-1. **Hover the mouse on "Settings"** in the Navigation Menu
-
-2. **Click "Main"**
-
-3. **Configure the rules:**
-
-   | Setting             | Recommended | Description                  |
-   | ------------------- | ----------- | ---------------------------- |
-   | **Genus Length**    | 3           | Characters from genus name   |
-   | **Species Length**  | 4           | Characters from species name |
-   | **Starting Number** | 1           | First sample number          |
-   | **Number Padding**  | 2           | Digits (01, 02, ..., 99)     |
-
-4. **Press "Save Settings"** at the bottom of the page
-
-## Step 7: Configure lab information
-
-Set default values for your laboratory.
-
-### Lab details
-
-1. **Go to "Lab Information"** section
-
-2. **Fill in your details:**
-
-   - **Lab Name:** Your laboratory name
-   - **Lab Location:** Your laboratory address
-   - **Lab Coordinates:** Latitude and Longitude
-
-3. **Press "Save Settings"** at the bottom of the page
-
-## Step 8: Review and save configuration
+## Step 7: Review and save configuration
 
 ### Review your settings
 
@@ -237,7 +219,7 @@ Set default values for your laboratory.
 3. **Verify:**
 
    - Sample type dropdown shows your custom types
-   - Subsample types appear in the subsample section
+   - When inserting a subsample (any non-animal sample), and writing the subsample type in the form, the correct subsample type shortcode appears in the animal ID
    - Form uses your ID generation rules
 
 4. **Cancel** out of the form
