@@ -32,7 +32,7 @@ EvoNEST includes a comprehensive automated backup system that:
 
 **In this module**, you'll learn how to monitor, download, and restore your data.
 
-## Understanding the Backup System
+## Understanding the backup system
 
 ### Automated Backup Schedule
 
@@ -381,7 +381,7 @@ docker exec mongo_backup ls -lt /backups/daily/ | head -5
 docker exec mongo_backup cat /backups/logs/latest_backup.txt
 ```
 
-### Quick Manual Backup (Alternative Method)
+### Quick manual backup (alternative method)
 
 If you need a quick backup without the container:
 
@@ -475,7 +475,7 @@ Before finishing this module, make sure you can:
 If you can check all boxes above, your backup system is working correctly!
 :::
 
-## Best Practices
+## Best practices
 
 ### 1. Regular Backup Verification
 
@@ -633,7 +633,7 @@ In this module, you learned:
 
 You have completed the EvoNEST tutorial! You have learned how to install EvoNEST, how to configure it, how to insert new samples, experiments and traits, and how to make sure your data is safe. 
 
-### Next Steps
+### Next steps
 
 If you want to keep exploring, you can:
 

@@ -150,7 +150,7 @@ docker compose -f docker-compose.dev.yml logs
    docker compose -f docker-compose.dev.yml up --build -d
    ```
 
-## Application Won't Start
+## Application won't start
 
 ### Problem: "Ready in X.Xs" never appears
 
@@ -212,7 +212,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
    - [http://127.0.0.1:3005](http://127.0.0.1:3005)
    - [http://0.0.0.0:3005](http://0.0.0.0:3005)
 
-## Database Connection Problems
+## Database connection problems
 
 ### Problem: "Cannot connect to MongoDB"
 
@@ -343,7 +343,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    - Check your computer's date/time
    - JWT tokens use timestamps
 
-## File Upload Errors
+## File upload errors
 
 ### Problem: "Failed to upload file"
 
@@ -444,7 +444,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    docker compose -f docker-compose.yml up -d
    ```
 
-## Browser Compatibility
+## Browser compatibility
 
 ### Problem: Features not working in my browser
 
@@ -488,7 +488,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    - Press `F12`
    - Look for CSS/JavaScript errors
 
-## Data Entry Problems
+## Data entry problems
 
 ### Problem: Can't create sample - "Type not found"
 
@@ -544,7 +544,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    - Verify sample was actually created
    - Check Samples page
 
-## Getting Help
+## Getting help
 
 ### Before Asking for Help
 
@@ -583,7 +583,7 @@ Gather this information:
    - See README for contact information
    - Include logs and error messages
 
-## Complete Reset (Last Resort)
+## Complete reset (last resort)
 
 If nothing works, start fresh:
 
@@ -620,7 +620,7 @@ docker compose -f docker-compose.dev.yml up --build -d
 2. Go through Module 4 (Configuration) again
 3. Import your saved data (if import feature available)
 
-## Quick Command Reference
+## Quick command reference
 
 | Problem | Command |
 |---------|---------|
@@ -631,7 +631,7 @@ docker compose -f docker-compose.dev.yml up --build -d
 | Complete reset | `docker compose -f docker-compose.dev.yml down -v` |
 | Clean Docker | `docker system prune` |
 
-## Still Having Issues?
+## Still having issues?
 
 If you've tried everything in this guide and still have problems:
 
@@ -652,7 +652,7 @@ If you've tried everything in this guide and still have problems:
 4. **Ask in the workshop:**
    - If attending a workshop, ask the instructor
 
-## Preventive Measures
+## Preventive measures
 
 Avoid future problems:
 

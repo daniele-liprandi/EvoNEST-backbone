@@ -486,7 +486,7 @@ EvoNEST maintains a **logbook** (change history) for all edits:
 This ensures transparency and traceability of your data.
 :::
 
-## Practice Exercises
+## Practice exercises
 
 Now it's your turn! Practice by adding more data:
 
@@ -531,7 +531,7 @@ Before moving to the next module, verify:
 You now have the core skills to use EvoNEST for your research data management!
 :::
 
-## Best Practices for Data Entry
+## Best practices for data entry
 
 ### Consistency is Key
 
@@ -562,7 +562,7 @@ Always record:
 - **Verify units** - Double-check mm vs μm, g vs kg
 - **Use logbook** - Document why you made changes
 
-## Next Steps
+## Next steps
 
 Congratulations on completing the data entry module! You now know how to manage research data in EvoNEST.
 
