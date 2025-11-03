@@ -359,7 +359,7 @@ Now let's add the silk SEM image:
    - Upload date and responsible user
    - Any notes you added
 
-## Step 5: Use the data explorer
+## Step 5: Explore your data
 
 Learn to find and filter your data.
 
