@@ -2,13 +2,14 @@
 
 ::: tip Learning objectives
 By the end of this module, you will have:
+
 - ✅ Verified your system meets the requirements
 - ✅ Installed WSL2 (Windows users)
 - ✅ Installed Docker Desktop
 - ✅ Installed VS Code (code editor)
 - ✅ Installed Git
 - ✅ Prepared your workspace
-:::
+  :::
 
 **Estimated time:** 20-30 minutes, 30-50 minutes on Windows
 
@@ -47,14 +48,17 @@ Before installing EvoNEST, verify your system meets these requirements:
 ::: details How to check your system specs
 
 **Windows:**
+
 1. Press `Windows Key + Pause/Break` or search for "About Your PC"
 2. Check "Installed RAM" and "System type"
 
 **macOS:**
+
 1. Click Apple menu → "About This Mac"
 2. Check Memory and Storage tabs
 
 **Linux:**
+
 ```bash
 # Check RAM
 free -h
@@ -65,6 +69,7 @@ df -h
 # Check OS version
 lsb_release -a
 ```
+
 :::
 
 ---
@@ -82,6 +87,7 @@ lsb_release -a
 Before installing, let's check if you already have WSL2:
 
 1. **Open PowerShell**
+
    - Press `Windows Key`
    - Type "PowerShell"
    - Click "Windows PowerShell" (no need for administrator mode yet)
@@ -89,19 +95,23 @@ Before installing, let's check if you already have WSL2:
 2. **Check WSL version**
 
    Run this command:
+
    ```bash
    wsl --status
    ```
 
    **If you see version information and "Default Version: 2":**
+
    - ✅ WSL2 is already installed! Skip to [Step 3](#step-3-install-docker-desktop)
 
    **If you see an error or "command not found":**
+
    - Continue with installation below
 
 ### Install WSL2
 
 1. **Open PowerShell as Administrator**
+
    - Press `Windows Key`
    - Type "PowerShell"
    - **Right-click** on "Windows PowerShell"
@@ -111,21 +121,25 @@ Before installing, let's check if you already have WSL2:
 2. **Install WSL2**
 
    Run this single command:
+
    ```bash
    wsl --install
    ```
 
    This will:
+
    - Enable required Windows features
    - Download and install the Linux kernel
    - Install Ubuntu as the default Linux distribution
    - This may take 5-10 minutes depending on your internet speed
 
 3. **Restart your computer**
+
    - WSL requires a restart to complete installation
    - Save any open work before restarting
 
 4. **After restart: Complete Ubuntu setup**
+
    - Ubuntu will automatically open
    - You'll be asked to create a username and password
    - **Important:** Remember these credentials (though you won't need them often)
@@ -135,11 +149,13 @@ Before installing, let's check if you already have WSL2:
 5. **Verify WSL2 installation**
 
    Open PowerShell and run:
+
    ```bash
    wsl --status
    ```
 
    **Expected output:**
+
    ```
    Default Distribution: Ubuntu
    Default Version: 2
@@ -150,10 +166,12 @@ Before installing, let's check if you already have WSL2:
 ::: details Troubleshooting WSL2 installation
 
 **"This operation returned because the timeout period expired":**
+
 - Your internet connection may be slow
 - Try running `wsl --install` again
 
 **"WslRegisterDistribution failed with error":**
+
 1. Open PowerShell as Administrator
 2. Run: `dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart`
 3. Run: `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart`
@@ -161,10 +179,11 @@ Before installing, let's check if you already have WSL2:
 5. Try `wsl --install` again
 
 **"WSL 2 requires an update to its kernel component":**
+
 1. Download the kernel update from: [https://aka.ms/wsl2kernel](https://aka.ms/wsl2kernel)
 2. Run the installer
 3. Try `wsl --install` again
-:::
+   :::
 
 ---
 
@@ -175,16 +194,19 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
 ### For Windows
 
 1. **Download Docker Desktop**
+
    - Visit: [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
    - Click "Download for Windows"
 
 2. **Run the Installer**
+
    - Double-click `Docker Desktop Installer.exe`
    - Follow the installation wizard
    - **Important:** When prompted, enable "Use WSL 2 instead of Hyper-V" (recommended)
    - Since you installed WSL2 in Step 2, this should work smoothly
 
 3. **Restart Your Computer**
+
    - Docker will prompt you to restart
    - Restart is required to complete installation
 
@@ -196,23 +218,27 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
 ::: details Troubleshooting Windows installation
 
 **"WSL 2 installation is incomplete" error:**
+
 - This shouldn't happen if you completed Step 2
 - Verify WSL2 is installed: Open PowerShell and run `wsl --status`
 - If needed, return to [Step 2](#step-2-install-wsl2-windows-only) and complete WSL2 installation
 
 **Docker Desktop won't start:**
+
 1. Make sure WSL2 is running: Open PowerShell and run `wsl --status`
 2. Restart Docker Desktop
 3. Check if virtualization is enabled in your BIOS (consult your PC manufacturer's documentation)
-:::
+   :::
 
 ### For macOS
 
 1. **Check your Mac's processor**
+
    - Click Apple menu → "About This Mac"
    - Note whether you have "Intel" or "Apple Silicon" (M1/M2/M3)
 
 2. **Download Docker Desktop**
+
    - Visit: [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
    - Click "Download for Mac"
    - Choose the correct version:
@@ -220,6 +246,7 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
      - **Mac with Apple Silicon** → Apple Silicon version
 
 3. **Install Docker Desktop**
+
    - Open the downloaded `.dmg` file
    - Drag Docker icon to Applications folder
    - Open Docker from Applications
@@ -232,18 +259,21 @@ Docker is the platform that runs EvoNEST. We'll install Docker Desktop, which in
 ::: details Troubleshooting macOS installation
 
 **"Docker Desktop requires macOS 10.15 or later":**
+
 - You need to update macOS first
 - Go to System Preferences → Software Update
 
 **"System Extension Blocked":**
+
 - Go to System Preferences → Security & Privacy
 - Click "Allow" for Docker system extension
 - Restart Docker Desktop
-:::
+  :::
 
 ### For Linux
 
 ::: code-group
+
 ```bash [Ubuntu/Debian]
 # Update package index
 sudo apt-get update
@@ -287,6 +317,7 @@ sudo systemctl enable docker
 # Add your user to docker group
 sudo usermod -aG docker $USER
 ```
+
 :::
 
 After installation, log out and log back in for group changes to take effect.
@@ -298,6 +329,7 @@ After installation, log out and log back in for group changes to take effect.
 Let's make sure Docker is working correctly.
 
 1. **Open a terminal/command prompt**
+
    - **Windows:** Search for "Command Prompt" or "PowerShell"
    - **macOS:** Open "Terminal" from Applications → Utilities
    - **Linux:** Open your terminal application
@@ -305,11 +337,13 @@ Let's make sure Docker is working correctly.
 2. **Check Docker version**
 
    Run this command:
+
    ```bash
    docker --version
    ```
 
    **Expected output:**
+
    ```
    Docker version 24.0.0, build abc1234
    ```
@@ -319,11 +353,13 @@ Let's make sure Docker is working correctly.
 3. **Test Docker is running**
 
    Run this command:
+
    ```bash
    docker run hello-world
    ```
 
    **Expected output:**
+
    ```
    Hello from Docker!
    This message shows that your installation appears to be working correctly.
@@ -337,21 +373,26 @@ Let's make sure Docker is working correctly.
 **If you see "Cannot connect to Docker daemon":**
 
 1. **Make sure Docker Desktop is running**
+
    - Look for the Docker icon in your system tray/menu bar
    - If it's not there, launch Docker Desktop
 
 2. **Wait for Docker to fully start**
+
    - Docker can take 1-2 minutes to start on first launch
    - Watch for the icon to stop animating
 
 3. **Try the test command again**
 
 **Linux users: If group permissions don't work**
-   - If you're still getting permission errors after logging out and back in, try restarting your computer instead of just logging out and back in
-   - You can use `sudo` before docker commands:
-   ```bash
-   sudo docker run hello-world
-   ```
+
+- If you're still getting permission errors after logging out and back in, try restarting your computer instead of just logging out and back in
+- You can use `sudo` before docker commands:
+
+```bash
+sudo docker run hello-world
+```
+
 :::
 
 ---
@@ -367,6 +408,7 @@ VS Code is a free, lightweight code editor with excellent support for JavaScript
 ### Check if VS Code is already installed
 
 Try running:
+
 ```bash
 code --version
 ```
@@ -376,6 +418,7 @@ code --version
 ### Installing VS Code
 
 ::: code-group
+
 ```bash [Windows]
 # Download VS Code from:
 # https://code.visualstudio.com/
@@ -412,6 +455,7 @@ sudo dnf install ./code-*.rpm
 # Verify installation
 code --version
 ```
+
 :::
 
 ---
@@ -423,6 +467,7 @@ Git is used to download (clone) the EvoNEST code repository.
 ### Check if Git is already installed
 
 Open your terminal and run:
+
 ```bash
 git --version
 ```
@@ -434,6 +479,7 @@ git --version
 If you don't have Git installed:
 
 ::: code-group
+
 ```bash [Windows]
 # Download Git for Windows from:
 # https://git-scm.com/download/win
@@ -465,6 +511,7 @@ sudo dnf install git
 # Verify installation
 git --version
 ```
+
 :::
 
 ---
@@ -474,11 +521,13 @@ git --version
 Let's create a dedicated folder for your EvoNEST installation.
 
 1. **Choose a location** for your EvoNEST files
+
    - This is not the same folder where your data or the applications are going to be stored, as we are using Docker. We advise to create a folder in your common work directory, e.g. Documents/Work/EvoNEST
 
 2. **Create the folder:**
 
 ::: code-group
+
 ```bash [Windows (Command Prompt)]
 # Navigate to your Documents folder
 cd %USERPROFILE%\Documents\Work
@@ -511,14 +560,17 @@ mkdir EvoNEST
 # Enter the folder
 cd EvoNEST
 ```
+
 :::
 
 3. **Verify you're in the right place:**
+
    ```bash
    pwd
    ```
 
    You should see something like:
+
    - Windows: `C:\Users\YourName\Documents\EvoNEST`
    - macOS: `/Users/YourName/Documents/EvoNEST`
    - Linux: `/home/YourName/Documents/EvoNEST`
@@ -556,6 +608,7 @@ If something didn't work, check the [Troubleshooting](/tutorial/troubleshooting)
 **Congratulations!** Your system is now prepared for EvoNEST installation.
 
 In the next module, you'll:
+
 - Clone the EvoNEST repository
 - Configure your environment
 - Start EvoNEST for the first time

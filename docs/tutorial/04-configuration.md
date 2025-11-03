@@ -2,18 +2,20 @@
 
 ::: tip Learning Objectives
 By the end of this module, you will have:
+
 - ✅ Configured sample types for your laboratory
 - ✅ Set up trait types with units
 - ✅ Defined equipment and measurement tools
 - ✅ Customized sample ID generation
 - ✅ Configured lab information
-:::
+  :::
 
 **Estimated Time:** 30-40 minutes
 
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 3: First Launch](/tutorial/03-first-launch) and have:
+
 - ✅ EvoNEST running and accessible
 - ✅ Logged in as admin
 - ✅ Familiar with the navigation
@@ -28,13 +30,12 @@ EvoNEST uses a **type system** to organize data:
 
 ### Types of types
 
-| Type Category | Purpose | Examples |
-|--------------|---------|----------|
-| **Sample Types** | Categories of organisms | animal, plant, fungus |
-| **Subsample Types** | Parts or tissues | muscle, bone, leaf, silk |
-| **Trait Types** | Measurements | diameter, strength, weight |
-| **Equipment Types** | Measurement tools | microscope, tensile tester |
-
+| Type Category       | Purpose                 | Examples                   |
+| ------------------- | ----------------------- | -------------------------- |
+| **Sample Types**    | Categories of organisms | animal, plant, fungus      |
+| **Subsample Types** | Parts or tissues        | muscle, bone, leaf, silk   |
+| **Trait Types**     | Measurements            | diameter, strength, weight |
+| **Equipment Types** | Measurement tools       | microscope, tensile tester |
 
 ## Step 1: Access configuration
 
@@ -55,6 +56,7 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 2. **Click "Add Item"**
 
 3. **Fill in the form:**
+
    - **Value:** `silk` (lowercase, no spaces - this is the internal ID)
    - **Label:** `Spider silk` (display name for users)
    - **Description:** `Spider silk samples for biomechanical analysis`
@@ -66,6 +68,7 @@ Let's add a type specific to your research. For this example, we'll add "Spider 
 
 ::: tip Naming Conventions
 **Value field** (internal ID):
+
 - Use lowercase
 - No spaces (use underscores if needed: `spider_silk`)
 - Keep it short and descriptive
@@ -85,11 +88,11 @@ Subsamples are parts or derivatives of parent samples.
 
 Review the defaults:
 
-| Value | Label | Description |
-|-------|-------|-------------|
+| Value    | Label         | Description           |
+| -------- | ------------- | --------------------- |
 | `muscle` | Muscle Tissue | Muscle tissue samples |
-| `bone` | Bone | Bone tissue samples |
-| `organ` | Organ | Organ samples |
+| `bone`   | Bone          | Bone tissue samples   |
+| `organ`  | Organ         | Organ samples         |
 
 ### Add your subsample types
 
@@ -100,16 +103,16 @@ Example: Add "Drop-down dragline" for spider research:
 2. **Click "Add Item"**
 
 3. **Fill in:**
+
    - **Value:** `dropdown_dragline`
    - **Label:** `Drop-down Dragline`
    - **Description:** `Drop-down dragline silk sample`
 
 4. **Click "Add item"**
 
-
 ## Step 4: Configure trait types
 
-Trait types define what you measure. 
+Trait types define what you measure.
 
 ### Add trait type with unit
 
@@ -120,6 +123,7 @@ Example: Add "Tensile strength" measurement:
 2. **Click "Add Item"**
 
 3. **Fill in:**
+
    - **Value:** `tensile_strength`
    - **Label:** `Strength`
    - **Unit:** `Pa` (pascals)
@@ -129,19 +133,21 @@ Example: Add "Tensile strength" measurement:
 4. **Save**
 
 ::: warning Units are important!
+
 - Use SI standard units
-:::
+  :::
 
 ### Practice: add measurement types
 
 Add trait types for your common measurements:
 
 ::: details Example: Biomechanics Measurements
+
 - `youngs_modulus` → "Young's Modulus" → `Pa` → "Elastic modulus"
 - `extensibility` → "Extensibility" → `%` → "Strain at failure"
 - `toughness` → "Toughness" → `J/m³` → "Energy to break"
 - `cross_section` → "Cross-sectional area" → `μm²` → "Fiber cross-section"
-:::
+  :::
 
 ## Step 5: Configure equipment types
 
@@ -156,6 +162,7 @@ Example: Add "T150 Universal Testing Machine":
 2. **Click "Add Item"**
 
 3. **Fill in:**
+
    - **Value:** `t150_universal_testing_machine`
    - **Label:** `T150 UTM`
    - **Description:** `500 mN load cell, used for fiber testing`
@@ -169,11 +176,12 @@ EvoNEST can automatically generate sample IDs from taxonomy.
 ### How it works
 
 With rules like:
+
 - Genus: first 3 letters
 - Species: first 3 letters
 - Number: progressive counter
 
-**Example:** *Tegenaria ferruginea* specimen #1 becomes: **Tegfer1**
+**Example:** _Tegenaria ferruginea_ specimen #1 becomes: **Tegfer1**
 
 ### Set up ID rules
 
@@ -183,12 +191,12 @@ With rules like:
 
 3. **Configure the rules:**
 
-   | Setting | Recommended | Description |
-   |---------|-------------|-------------|
-   | **Genus Length** | 3 | Characters from genus name |
-   | **Species Length** | 4 | Characters from species name |
-   | **Starting Number** | 1 | First sample number |
-   | **Number Padding** | 2 | Digits (01, 02, ..., 99) |
+   | Setting             | Recommended | Description                  |
+   | ------------------- | ----------- | ---------------------------- |
+   | **Genus Length**    | 3           | Characters from genus name   |
+   | **Species Length**  | 4           | Characters from species name |
+   | **Starting Number** | 1           | First sample number          |
+   | **Number Padding**  | 2           | Digits (01, 02, ..., 99)     |
 
 4. **Press "Save Settings"** at the bottom of the page
 
@@ -201,12 +209,12 @@ Set default values for your laboratory.
 1. **Go to "Lab Information"** section
 
 2. **Fill in your details:**
+
    - **Lab Name:** Your laboratory name
    - **Lab Location:** Your laboratory address
    - **Lab Coordinates:** Latitude and Longitude
 
 3. **Press "Save Settings"** at the bottom of the page
-
 
 ## Step 8: Review and save configuration
 
@@ -220,7 +228,6 @@ Set default values for your laboratory.
    - [ ] Sample ID rules are set
    - [ ] Lab information is filled in
 
-
 ### Test your configuration
 
 1. **Navigate to "Samples"**
@@ -228,6 +235,7 @@ Set default values for your laboratory.
 2. **Click "Add Sample"** (don't create one yet, just look)
 
 3. **Verify:**
+
    - Sample type dropdown shows your custom types
    - Subsample types appear in the subsample section
    - Form uses your ID generation rules
@@ -237,7 +245,6 @@ Set default values for your laboratory.
 ::: tip Configuration Complete!
 Your EvoNEST instance is now configured for your laboratory's specific needs!
 :::
-
 
 ## Checkpoint: configuration complete?
 
@@ -261,6 +268,7 @@ Perfect! Now you can start entering real samples and measurements.
 **Excellent work!** EvoNEST is now configured specifically for your laboratory's research needs.
 
 In the next module, you'll:
+
 - Create your first biological sample
 - Record trait measurements
 - Upload files and images

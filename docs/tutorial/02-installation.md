@@ -29,7 +29,6 @@ In this module, you'll:
 3. Launch EvoNEST using Docker
 4. Verify the application is accessible in your browser
 
-
 ## Step 1: Clone the EvoNEST repository
 
 Let's download the EvoNEST code to your computer.
@@ -124,10 +123,11 @@ Let's download the EvoNEST code to your computer.
 
    ::: tip VS Code not opening?
    If the `code` command doesn't work:
+
    - You may need to restart your terminal after installing VS Code
    - On macOS, you might need to install the `code` command: Open VS Code → Command Palette (Cmd+Shift+P) → type "Shell Command: Install 'code' command in PATH"
    - Alternatively, open VS Code manually and use File → Open Folder to open the `EvoNEST-backbone` folder
-   :::
+     :::
 
 6. **Optional: Use VS Code's integrated terminal**
 

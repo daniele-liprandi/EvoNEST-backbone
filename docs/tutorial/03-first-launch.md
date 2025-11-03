@@ -258,7 +258,6 @@ EvoNEST uses a hierarchical data model:
 - Can be about a specific detail of the sample
 - Example: "fiber_diameter: 25.5 μm" extracted from SEM images
 
-
 ## Step 7: Explore additional features
 
 ### User profile
@@ -268,7 +267,7 @@ EvoNEST uses a hierarchical data model:
 2. **You'll see:**
    - Default admin user email
    - Logout button
-   
+
 ## Checkpoint: ready to configure?
 
 Before moving to the next module, verify:
@@ -298,12 +297,12 @@ If something isn't working, check:
 | Section          | What You'll Find                                  |
 | ---------------- | ------------------------------------------------- |
 | **Home**         | Dashboard, statistics, name checker, news         |
-| **Users**        | Manage users, NEST access, create new NESTs      |
+| **Users**        | Manage users, NEST access, create new NESTs       |
 | **Samples**      | Create and manage specimens, subsamples           |
 | **Experiments**  | Upload raw data from instruments, link to samples |
 | **Traits**       | Record processed measurements, data analysis      |
 | **Settings**     | Configure types, units, lab info for current NEST |
-| **User Profile** | Account info, logout              |
+| **User Profile** | Account info, logout                              |
 
 ## Next steps
 

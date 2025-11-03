@@ -23,22 +23,26 @@ This reference guide covers common issues you might encounter while using EvoNES
 ### Problem: Docker desktop won't start
 
 **Symptoms:**
+
 - Docker icon shows error
 - "Docker is not running" message
 
 **Solutions:**
 
 1. **Restart Docker Desktop**
+
    - Completely quit Docker Desktop (right-click icon → Quit)
    - Wait 10 seconds
    - Restart it
 
 2. **Check system resources**
+
    - Ensure you have enough RAM (8GB+ recommended)
    - Close other memory-intensive applications
    - Restart your computer
 
 3. **On Windows: WSL 2 issues**
+
    ```powershell
    # Update WSL
    wsl --update
@@ -48,6 +52,7 @@ This reference guide covers common issues you might encounter while using EvoNES
    ```
 
 4. **On Mac: Permissions issue**
+
    - Go to System Preferences → Security & Privacy
    - Allow Docker in Privacy tab
 
@@ -61,15 +66,18 @@ This reference guide covers common issues you might encounter while using EvoNES
 ### Problem: containers won't start
 
 **Symptoms:**
+
 - `docker compose up` fails
 - Containers show "Exited" status
 
 **Check container status:**
+
 ```bash
 docker compose -f docker-compose.dev.yml ps
 ```
 
 **View logs:**
+
 ```bash
 docker compose -f docker-compose.dev.yml logs
 ```
@@ -79,12 +87,14 @@ docker compose -f docker-compose.dev.yml logs
 1. **Port already in use**
 
    **Error message:**
+
    ```
    Error: bind: address already in use
    ```
 
    **Find what's using the port:**
    ::: code-group
+
    ```bash [Mac/Linux]
    lsof -i :3005
    lsof -i :27019
@@ -94,20 +104,24 @@ docker compose -f docker-compose.dev.yml logs
    netstat -ano | findstr :3005
    netstat -ano | findstr :27019
    ```
+
    :::
 
    **Solutions:**
+
    - Stop the conflicting application
    - OR change ports in `docker-compose.dev.yml`
 
 2. **Out of disk space**
 
    **Check disk space:**
+
    ```bash
    df -h  # Mac/Linux
    ```
 
    **Clean Docker:**
+
    ```bash
    docker system prune -a --volumes
    ```
@@ -119,6 +133,7 @@ docker compose -f docker-compose.dev.yml logs
 3. **Corrupted volumes**
 
    **Reset everything:**
+
    ```bash
    docker compose -f docker-compose.dev.yml down -v
    docker compose -f docker-compose.dev.yml up --build -d
@@ -129,17 +144,20 @@ docker compose -f docker-compose.dev.yml logs
 ### Problem: changes to code not reflected
 
 **Symptom:**
+
 - You edit code but don't see changes
 - Old version still running
 
 **Solutions:**
 
 1. **Restart containers:**
+
    ```bash
    docker compose -f docker-compose.dev.yml restart
    ```
 
 2. **Rebuild containers:**
+
    ```bash
    docker compose -f docker-compose.dev.yml up --build -d
    ```
@@ -155,11 +173,13 @@ docker compose -f docker-compose.dev.yml logs
 ### Problem: "ready in x.xs" never appears
 
 **Symptoms:**
+
 - Containers are running
 - But application won't load
 - Logs show errors or hang
 
 **Check logs:**
+
 ```bash
 docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 ```
@@ -169,11 +189,13 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 1. **Node modules not installed**
 
    **Error in logs:**
+
    ```
    Error: Cannot find module 'next'
    ```
 
    **Fix:**
+
    ```bash
    docker compose -f docker-compose.dev.yml down
    docker compose -f docker-compose.dev.yml up --build -d
@@ -184,6 +206,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
    **Symptom:** Errors about database connection
 
    **Fix:** Wait longer (MongoDB takes 30-60 seconds on first start)
+
    ```bash
    # Watch logs
    docker compose -f docker-compose.dev.yml logs -f
@@ -192,10 +215,12 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 3. **Environment variables missing**
 
    **Check you have:**
+
    - `.env.local` with `NEXTAUTH_SECRET`
    - `.env.development` with `MONGODB_URI`
 
    **Verify:**
+
    ```bash
    # Mac/Linux
    cat .env.local
@@ -209,6 +234,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 4. **Port forwarding issue**
 
    **Try accessing different address:**
+
    - [http://127.0.0.1:3005](http://127.0.0.1:3005)
    - [http://0.0.0.0:3005](http://0.0.0.0:3005)
 
@@ -217,12 +243,14 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 ### Problem: "cannot connect to MongoDB"
 
 **Symptoms:**
+
 - Error messages about database
 - Blank pages or infinite loading
 
 **Solutions:**
 
 1. **Check MongoDB is running:**
+
    ```bash
    docker compose -f docker-compose.dev.yml ps mongo_dev
    ```
@@ -232,11 +260,13 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 2. **Verify credentials match:**
 
    **In `.env.development`:**
+
    ```txt
    MONGODB_URI=mongodb://evonest_user:MyPassword123@mongo_dev:27017
    ```
 
    **In `docker-compose.dev.yml`:**
+
    ```yaml
    MONGO_INITDB_ROOT_USERNAME: evonest_user
    MONGO_INITDB_ROOT_PASSWORD: MyPassword123
@@ -245,6 +275,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
    **Must match exactly!**
 
 3. **Restart MongoDB:**
+
    ```bash
    docker compose -f docker-compose.dev.yml restart mongo_dev
    ```
@@ -261,16 +292,19 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 ### Problem: data disappeared
 
 **Symptom:**
+
 - Had data, now it's gone
 - Empty samples/traits tables
 
 **Possible causes:**
 
 1. **Switched databases**
+
    - Check which database is active (User Profile menu)
    - Switch back to correct database
 
 2. **Ran `docker compose down -v`**
+
    - The `-v` flag deletes volumes (data storage)
    - Data is permanently lost if no backup
 
@@ -280,6 +314,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 **Prevention:**
 
 **Regular backups:**
+
 ```bash
 # Export your data regularly
 # Use the "Export" feature in EvoNEST
@@ -294,11 +329,13 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Solutions:**
 
 1. **Check credentials:**
+
    - Username: `admin` (lowercase)
    - Password: `pass` (lowercase)
    - No spaces
 
 2. **Verify NEXTAUTH_SECRET is set:**
+
    ```bash
    # Mac/Linux
    cat .env.local | grep NEXTAUTH_SECRET
@@ -310,11 +347,13 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    Should show a long random string.
 
 3. **Clear browser cache:**
+
    - Press `Ctrl+Shift+Delete` (or `Cmd+Shift+Delete` on Mac)
    - Clear cookies and cache
    - Try again
 
 4. **Try incognito/private mode:**
+
    - Open private browsing window
    - Try logging in
 
@@ -328,6 +367,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 ### Problem: logged out automatically
 
 **Symptoms:**
+
 - Keep getting logged out
 - Session expires quickly
 
@@ -336,6 +376,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 1. **Check NEXTAUTH_SECRET is set correctly**
 
 2. **Browser cookies disabled:**
+
    - Enable cookies in browser settings
    - Allow cookies for localhost
 
@@ -350,21 +391,25 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Solutions:**
 
 1. **Check file size:**
+
    - Max size typically 10-50MB
    - Compress large images
    - Split large files
 
 2. **Check file format:**
+
    - Supported: JPEG, PNG, PDF, XLSX, CSV
    - Unsupported: EXE, DMG, certain proprietary formats
 
 3. **Check disk space:**
+
    ```bash
    # Check Docker has space
    docker system df
    ```
 
 4. **Check permissions:**
+
    ```bash
    # Linux/Mac: Check file_storage folder
    ls -la file_storage_dev
@@ -384,11 +429,13 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 1. **Clear browser cache**
 
 2. **Check file was actually uploaded:**
+
    - Go to Mongo Express: [http://localhost:8081](http://localhost:8081)
    - Check `files` collection
    - Verify entry exists
 
 3. **Check file_storage directory:**
+
    ```bash
    ls file_storage_dev/
    ```
@@ -406,16 +453,19 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 1. **Give Docker more resources:**
 
    **Docker Desktop → Settings → Resources:**
+
    - Increase Memory to 4GB+
    - Increase CPUs to 2-4
    - Restart Docker
 
 2. **Too much data loaded:**
+
    - Use filters to reduce displayed data
    - Paginate large tables
    - Export old data and archive
 
 3. **Check system resources:**
+
    - Close unnecessary applications
    - Restart your computer
 
@@ -430,12 +480,14 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 ### Problem: first page load is slow
 
 **Normal behavior:**
+
 - First load: 5-10 seconds (Docker startup)
 - Subsequent loads: 1-2 seconds
 
 **If consistently slow:**
 
 1. **Development mode is slower:**
+
    - Development mode rebuilds on changes
    - Normal in development
 
@@ -449,6 +501,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 ### Problem: features not working in my browser
 
 **Recommended browsers:**
+
 - ✅ Chrome/Chromium 90+ (best support)
 - ✅ Firefox 88+
 - ✅ Edge 90+
@@ -461,6 +514,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 2. **Enable JavaScript**
 
 3. **Disable browser extensions:**
+
    - Try in incognito/private mode
    - Ad blockers can interfere
 
@@ -471,6 +525,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 ### Problem: interface looks broken
 
 **Symptoms:**
+
 - Buttons misaligned
 - Text overlapping
 - Missing styles
@@ -478,10 +533,12 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Solutions:**
 
 1. **Hard refresh:**
+
    - Windows/Linux: `Ctrl+Shift+R`
    - Mac: `Cmd+Shift+R`
 
 2. **Clear cache:**
+
    - `Ctrl+Shift+Delete` → Clear cache
 
 3. **Check browser console:**
@@ -495,6 +552,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Cause:** Types not configured
 
 **Solution:**
+
 1. Go to Settings → Configuration
 2. Add sample types, trait types
 3. Save configuration
@@ -505,12 +563,14 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 ### Problem: sample ID not auto-generating
 
 **Check:**
+
 1. Settings → Main Settings
 2. Verify ID generation rules are set
 3. Try leaving Name field blank
 4. Save
 
 **Manual workaround:**
+
 - Enter custom ID manually in Name field
 
 ---
@@ -520,6 +580,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Cause:** Trait type doesn't have unit configured
 
 **Solution:**
+
 1. Settings → Types → Trait Types
 2. Find the trait type
 3. Edit it
@@ -533,10 +594,12 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Possible causes:**
 
 1. **Wrong database:**
+
    - Sample and experiment must be in same database
    - Check active database in User Profile
 
 2. **Search not finding sample:**
+
    - Type exact sample name
    - Try filtering by type/family first
 
@@ -570,11 +633,13 @@ Gather this information:
 ### Where to get help
 
 1. **Documentation:**
+
    - [User documentation](/user-docs/)
    - [Developer Docs](/developer-docs/)
    - [FAQ](/user-docs/faq)
 
 2. **GitHub Issues:**
+
    - [github.com/daniele-liprandi/EvoNEST-backbone/issues](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
    - Search existing issues first
    - Create new issue with template
@@ -622,29 +687,32 @@ docker compose -f docker-compose.dev.yml up --build -d
 
 ## Quick command reference
 
-| Problem | Command |
-|---------|---------|
-| Restart everything | `docker compose -f docker-compose.dev.yml restart` |
-| View logs | `docker compose -f docker-compose.dev.yml logs -f` |
-| Check status | `docker compose -f docker-compose.dev.yml ps` |
-| Rebuild | `docker compose -f docker-compose.dev.yml up --build -d` |
-| Complete reset | `docker compose -f docker-compose.dev.yml down -v` |
-| Clean Docker | `docker system prune` |
+| Problem            | Command                                                  |
+| ------------------ | -------------------------------------------------------- |
+| Restart everything | `docker compose -f docker-compose.dev.yml restart`       |
+| View logs          | `docker compose -f docker-compose.dev.yml logs -f`       |
+| Check status       | `docker compose -f docker-compose.dev.yml ps`            |
+| Rebuild            | `docker compose -f docker-compose.dev.yml up --build -d` |
+| Complete reset     | `docker compose -f docker-compose.dev.yml down -v`       |
+| Clean Docker       | `docker system prune`                                    |
 
 ## Still having issues?
 
 If you've tried everything in this guide and still have problems:
 
 1. **Document the issue:**
+
    - What you tried
    - What happened
    - Error messages
    - Logs
 
 2. **Search GitHub issues:**
+
    - Someone might have had the same problem
 
 3. **Create an issue:**
+
    - Use the issue template
    - Provide complete information
    - Attach logs if possible
@@ -662,4 +730,3 @@ Avoid future problems:
 - ✅ **Document your setup** - Note any custom configurations
 - ✅ **Use version control** - Keep config files in git
 - ✅ **Test before deploying** - Try changes in development first
-
