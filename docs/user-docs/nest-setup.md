@@ -1,14 +1,14 @@
 # EvoNEST Setup Guide
 
-## Initial Configuration
+## Initial configuration
 
 EvoNEST now features a user-friendly web interface for configuration. When you first access the system, you'll be guided through the setup process automatically.
 
-## Configuration Overview
+## Configuration overview
 
 The configuration system is divided into two main areas:
 
-### 1. Types Configuration (`/config/types`)
+### 1. types configuration (`/config/types`)
 
 This section allows you to configure the different types of data your lab works with:
 
@@ -18,23 +18,23 @@ This section allows you to configure the different types of data your lab works 
 - **Equipment Types** - List measurement equipment used in your lab
 - **Silk Types** - Define specific spider silk types for detailed classification
 
-### 2. Main Settings (`/config/settings`)
+### 2. main settings (`/config/settings`)
 
 Configure core system behavior and lab information:
 
 - **Sample ID Generation** - Rules for automatic ID creation from species names
 - **Lab Information** - Your laboratory details for location defaults
 
-## Getting Started
+## Getting started
 
-### First-Time Setup
+### First-time setup
 
 1. **Access the application** in your web browser
 2. **Configuration wizard** will automatically appear if no configuration exists
 3. **Follow the prompts** to set up your initial configuration
 4. **Review and customize** the default settings to match your lab's needs
 
-### Manual Configuration
+### Manual configuration
 
 :::details Navigation Steps
 If you need to modify settings after initial setup:
@@ -43,9 +43,9 @@ If you need to modify settings after initial setup:
 2. **Main Settings**: Go to `/config/settings` to configure system behavior
 :::
 
-## Managing Configuration
+## Managing configuration
 
-### Adding New Items
+### Adding new items
 
 :::details Step-by-Step Process
 1. Click the **"Add Item"** button in any type section
@@ -57,13 +57,13 @@ If you need to modify settings after initial setup:
    - **Shortened**: Optional abbreviated form
 :::
 
-### Configuration Management
+### Configuration management
 
 - **Set to Defaults**: Restore original configuration (overwrites custom changes)
 - **Refresh**: Reload settings from database (useful for multi-user environments)
 - **Delete**: Remove unwanted entries with confirmation
 
-## Configuration Examples
+## Configuration examples
 
 :::details Sample ID Generation
 With settings:
@@ -108,4 +108,3 @@ Weight Measurements:
 
 ---
 
-This new system eliminates the need for manual `types.js` file editing and provides a much more user-friendly way to manage your EvoNEST configuration.

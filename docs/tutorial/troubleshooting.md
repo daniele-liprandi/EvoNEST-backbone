@@ -6,7 +6,7 @@ This reference guide covers common issues you might encounter while using EvoNES
 
 **How to use this guide:** Find your issue in the table of contents and jump to the solution.
 
-## Table of Contents
+## Table of contents
 
 - [Docker and Container Issues](#docker-and-container-issues)
 - [Application Won't Start](#application-wont-start)
@@ -18,9 +18,9 @@ This reference guide covers common issues you might encounter while using EvoNES
 - [Data Entry Problems](#data-entry-problems)
 - [Getting Help](#getting-help)
 
-## Docker and Container Issues
+## Docker and container issues
 
-### Problem: Docker Desktop won't start
+### Problem: Docker desktop won't start
 
 **Symptoms:**
 - Docker icon shows error
@@ -58,7 +58,7 @@ This reference guide covers common issues you might encounter while using EvoNES
 
 ---
 
-### Problem: Containers won't start
+### Problem: containers won't start
 
 **Symptoms:**
 - `docker compose up` fails
@@ -126,7 +126,7 @@ docker compose -f docker-compose.dev.yml logs
 
 ---
 
-### Problem: Changes to code not reflected
+### Problem: changes to code not reflected
 
 **Symptom:**
 - You edit code but don't see changes
@@ -152,7 +152,7 @@ docker compose -f docker-compose.dev.yml logs
 
 ## Application won't start
 
-### Problem: "Ready in X.Xs" never appears
+### Problem: "ready in x.xs" never appears
 
 **Symptoms:**
 - Containers are running
@@ -214,7 +214,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 
 ## Database connection problems
 
-### Problem: "Cannot connect to MongoDB"
+### Problem: "cannot connect to MongoDB"
 
 **Symptoms:**
 - Error messages about database
@@ -258,7 +258,7 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 
 ---
 
-### Problem: Data disappeared
+### Problem: data disappeared
 
 **Symptom:**
 - Had data, now it's gone
@@ -287,9 +287,9 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 docker exec evonest_mongodb_dev mongodump --out /backup
 ```
 
-## Login and Authentication Issues
+## Login and authentication issues
 
-### Problem: Can't log in with admin/pass
+### Problem: can't log in with admin/pass
 
 **Solutions:**
 
@@ -325,7 +325,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: Logged out automatically
+### Problem: logged out automatically
 
 **Symptoms:**
 - Keep getting logged out
@@ -345,7 +345,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ## File upload errors
 
-### Problem: "Failed to upload file"
+### Problem: "failed to upload file"
 
 **Solutions:**
 
@@ -377,7 +377,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: Images show broken/not loading
+### Problem: images show broken/not loading
 
 **Solutions:**
 
@@ -397,7 +397,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 4. **Try re-uploading** the file
 
-## Performance and Slow Loading
+## Performance and slow loading
 
 ### Problem: EvoNEST is very slow
 
@@ -427,7 +427,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: First page load is slow
+### Problem: first page load is slow
 
 **Normal behavior:**
 - First load: 5-10 seconds (Docker startup)
@@ -446,7 +446,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ## Browser compatibility
 
-### Problem: Features not working in my browser
+### Problem: features not working in my browser
 
 **Recommended browsers:**
 - ✅ Chrome/Chromium 90+ (best support)
@@ -468,7 +468,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: Interface looks broken
+### Problem: interface looks broken
 
 **Symptoms:**
 - Buttons misaligned
@@ -490,7 +490,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ## Data entry problems
 
-### Problem: Can't create sample - "Type not found"
+### Problem: can't create sample - "type not found"
 
 **Cause:** Types not configured
 
@@ -502,7 +502,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: Sample ID not auto-generating
+### Problem: sample ID not auto-generating
 
 **Check:**
 1. Settings → Main Settings
@@ -515,7 +515,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: Units not showing for traits
+### Problem: units not showing for traits
 
 **Cause:** Trait type doesn't have unit configured
 
@@ -528,7 +528,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ---
 
-### Problem: Can't link sample to experiment
+### Problem: can't link sample to experiment
 
 **Possible causes:**
 
@@ -546,7 +546,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ## Getting help
 
-### Before Asking for Help
+### Before asking for help
 
 Gather this information:
 
@@ -560,14 +560,14 @@ Gather this information:
    docker compose -f docker-compose.dev.yml logs > logs.txt
    ```
 
-### Browser Console Errors
+### Browser console errors
 
 1. Press `F12` (or `Cmd+Option+I` on Mac)
 2. Go to **Console** tab
 3. Screenshot any red errors
 4. Include with help request
 
-### Where to Get Help
+### Where to get help
 
 1. **Documentation:**
    - [User documentation](/user-docs/)
@@ -591,14 +591,14 @@ If nothing works, start fresh:
 This will delete all your samples, traits, experiments, and files. **Backup first!**
 :::
 
-### Step 1: Export Your Data
+### Step 1: export your data
 
 1. Go to each section (Samples, Traits, Experiments)
 2. Use Export function
 3. Download CSV/Excel files
 4. Save files somewhere safe
 
-### Step 2: Complete Reset
+### Step 2: complete reset
 
 ```bash
 # Stop and remove everything
@@ -614,7 +614,7 @@ docker volume prune
 docker compose -f docker-compose.dev.yml up --build -d
 ```
 
-### Step 3: Reconfigure
+### Step 3: reconfigure
 
 1. Log in with admin/pass
 2. Go through Module 4 (Configuration) again

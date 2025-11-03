@@ -2,7 +2,7 @@
 
 This guide shows you how to set up authentication that complies with EU regulations (GDPR, Data Protection Directives) using **Keycloak**, an open-source identity and access management solution.
 
-## Why EU-Compliant Authentication?
+## Why EU-compliant authentication?
 
 **GDPR Requirements:**
 
@@ -38,7 +38,7 @@ Before starting:
 
 ---
 
-## Architecture Overview
+## Architecture overview
 
 ```
 ┌─────────────┐
@@ -71,13 +71,13 @@ Before starting:
 
 ---
 
-## Part 1: Setting Up Keycloak
+## Part 1: Setting up Keycloak
 
 ### Step 1: Install Keycloak with Docker
 
 We'll run Keycloak in a Docker container alongside EvoNEST.
 
-#### 1.1 Create Keycloak Configuration
+#### 1.1 Create Keycloak configuration
 
 Create a new file: `docker-compose.keycloak.yml`
 
@@ -151,7 +151,7 @@ Look for:
 Keycloak 23.0.0 started in Xms.
 ```
 
-#### 1.3 Access Keycloak Admin Console
+#### 1.3 Access Keycloak admin console
 
 1. Open browser: [http://localhost:8080](http://localhost:8080)
 
@@ -163,11 +163,11 @@ Keycloak 23.0.0 started in Xms.
 
 ---
 
-### Step 2: Configure Keycloak Realm
+### Step 2: Configure Keycloak realm
 
 A "realm" is a isolated space for managing users and applications.
 
-#### 2.1 Create a New Realm
+#### 2.1 Create a new realm
 
 1. Hover over **"Master"** (top-left dropdown)
 
@@ -180,7 +180,7 @@ A "realm" is a isolated space for managing users and applications.
 
 4. Click **"Create"**
 
-#### 2.2 Configure Realm Settings
+#### 2.2 Configure realm settings
 
 1. Go to **"Realm settings"** (left sidebar)
 
@@ -215,7 +215,7 @@ A "realm" is a isolated space for managing users and applications.
 
 6. Click **"Save"**
 
-#### 2.3 Test Email Configuration (Optional)
+#### 2.3 Test email configuration (optional)
 
 1. Scroll to **Email** tab
 2. Click **"Test connection"**
@@ -224,9 +224,9 @@ A "realm" is a isolated space for managing users and applications.
 
 ---
 
-### Step 3: Create OAuth Client for EvoNEST
+### Step 3: Create OAuth client for EvoNEST
 
-#### 3.1 Create Client
+#### 3.1 Create client
 
 1. Go to **"Clients"** (left sidebar)
 
@@ -263,7 +263,7 @@ A "realm" is a isolated space for managing users and applications.
 
 6. Click **"Save"**
 
-#### 3.2 Get Client Credentials
+#### 3.2 Get client credentials
 
 1. Go to **"Clients"** → **"evonest-app"**
 
@@ -281,9 +281,9 @@ You need:
 
 ---
 
-### Step 4: Configure User Attributes (GDPR Compliance)
+### Step 4: Configure user attributes (GDPR compliance)
 
-#### 4.1 Set Up Required User Attributes
+#### 4.1 Set up required user attributes
 
 1. Go to **"Realm settings"** → **"User profile"** tab
 
@@ -293,7 +293,7 @@ You need:
    - `firstName` - Optional
    - `lastName` - Optional
 
-#### 4.2 Add Custom Attributes (Optional)
+#### 4.2 Add custom attributes (optional)
 
 For EvoNEST-specific data:
 
@@ -308,7 +308,7 @@ For EvoNEST-specific data:
 
 3. Repeat for other custom fields if needed
 
-#### 4.3 Set Up Consent Screen (GDPR)
+#### 4.3 Set up consent screen (GDPR)
 
 1. Go to **"Clients"** → **"evonest-app"**
 
@@ -324,9 +324,9 @@ This ensures users explicitly consent to data usage (GDPR requirement).
 
 ---
 
-### Step 5: Create Test User
+### Step 5: Create test user
 
-#### 5.1 Add a User
+#### 5.1 Add a user
 
 1. Go to **"Users"** (left sidebar)
 
@@ -343,7 +343,7 @@ This ensures users explicitly consent to data usage (GDPR requirement).
 
 4. Click **"Create"**
 
-#### 5.2 Set Password
+#### 5.2 Set password
 
 1. After creating, go to **"Credentials"** tab
 
@@ -361,11 +361,11 @@ This ensures users explicitly consent to data usage (GDPR requirement).
 
 ## Part 2: Configure EvoNEST for Keycloak
 
-### Step 1: Install Keycloak Provider
+### Step 1: Install Keycloak provider
 
 NextAuth already supports Keycloak, no additional packages needed!
 
-### Step 2: Update Environment Variables
+### Step 2: Update environment variables
 
 #### 2.1 Update `.env.local`
 
@@ -393,9 +393,9 @@ KEYCLOAK_ISSUER=http://localhost:8080/realms/evonest
 
 ---
 
-### Step 3: Update NextAuth Configuration
+### Step 3: Update NextAuth configuration
 
-#### 3.1 Import Keycloak Provider
+#### 3.1 Import Keycloak provider
 
 Open `src/app/api/auth/[...nextauth]/options.ts`
 
@@ -408,7 +408,7 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 ```
 
-#### 3.2 Add Keycloak to Providers
+#### 3.2 Add Keycloak to providers
 
 ```typescript
 providers: [
@@ -421,7 +421,7 @@ providers: [
 ],
 ```
 
-#### 3.3 Update Callbacks
+#### 3.3 Update callbacks
 
 Add Keycloak user handling:
 
@@ -482,7 +482,7 @@ callbacks: {
 
 ---
 
-### Step 4: Test Keycloak Authentication
+### Step 4: Test Keycloak authentication
 
 #### 4.1 Restart EvoNEST
 
@@ -490,7 +490,7 @@ callbacks: {
 docker compose -f docker-compose.dev.yml restart
 ```
 
-#### 4.2 Test Login
+#### 4.2 Test login
 
 1. Go to: [http://localhost:3005](http://localhost:3005)
 
@@ -510,7 +510,7 @@ docker compose -f docker-compose.dev.yml restart
 
 6. Redirected back to EvoNEST, logged in!
 
-#### 4.3 Verify User in Database
+#### 4.3 Verify user in database
 
 1. Check Mongo Express: [http://localhost:8081](http://localhost:8081)
 
@@ -520,11 +520,11 @@ docker compose -f docker-compose.dev.yml restart
 
 ---
 
-## Part 3: GDPR Compliance Features
+## Part 3: GDPR compliance features
 
-### Data Protection Settings
+### Data protection settings
 
-#### 1. User Data Export (Right to Data Portability)
+#### 1. User data export (right to data portability)
 
 In Keycloak Admin Console:
 
@@ -536,7 +536,7 @@ In Keycloak Admin Console:
 
 4. Users can download their data as JSON
 
-#### 2. User Account Deletion (Right to be Forgotten)
+#### 2. User account deletion (right to be forgotten)
 
 **Option A: Self-Service** (recommended)
 
@@ -550,11 +550,11 @@ In Keycloak Admin Console:
 
 Create an admin interface in EvoNEST to handle deletion requests.
 
-#### 3. Consent Management
+#### 3. Consent management
 
 Already configured with consent screen. Users must explicitly accept.
 
-#### 4. Data Retention Policies
+#### 4. Data retention policies
 
 Configure session timeouts:
 
@@ -565,7 +565,7 @@ Configure session timeouts:
    - **SSO Session Max:** 10 hours
    - **Offline Session Idle:** 30 days
 
-#### 5. Audit Logging
+#### 5. Audit logging
 
 Enable audit logging:
 
@@ -587,11 +587,11 @@ View events: **"Events"** tab shows login history, admin actions, etc.
 
 ---
 
-## Part 4: Production Deployment
+## Part 4: Production deployment
 
-### Step 1: Production Keycloak Setup
+### Step 1: Production Keycloak setup
 
-#### 1.1 Update Docker Compose for Production
+#### 1.1 Update Docker compose for production
 
 Create `docker-compose.keycloak.prod.yml`:
 
@@ -644,7 +644,7 @@ volumes:
   keycloak_postgres_data_prod:
 ```
 
-#### 1.2 Set Up SSL/TLS
+#### 1.2 Set up SSL/TLS
 
 **Option A: Use Reverse Proxy (Recommended)**
 
@@ -674,7 +674,7 @@ Mount certificates in Docker and configure Keycloak to use them.
 
 ---
 
-### Step 2: Update Production Environment
+### Step 2: Update production environment
 
 #### 2.1 Create `.env.production` for Keycloak
 
@@ -698,7 +698,7 @@ KEYCLOAK_ISSUER=https://auth.your-domain.com/realms/evonest
 
 ---
 
-### Step 3: Update Keycloak Client Settings
+### Step 3: Update Keycloak client settings
 
 1. Login to Keycloak Admin Console (production)
 
@@ -721,15 +721,15 @@ KEYCLOAK_ISSUER=https://auth.your-domain.com/realms/evonest
 
 ---
 
-## Security Best Practices
+## Security best practices
 
-### 1. Strong Passwords
+### 1. Strong passwords
 
 - Enforce password policies in Keycloak
 - Go to **"Authentication"** → **"Policies"**
 - Set minimum length, complexity, etc.
 
-### 2. Two-Factor Authentication
+### 2. Two-factor authentication
 
 Enable OTP:
 
@@ -737,7 +737,7 @@ Enable OTP:
 2. Enable **"Configure OTP"**
 3. Users will be prompted to set up 2FA on first login
 
-### 3. Rate Limiting
+### 3. Rate limiting
 
 Protect against brute force:
 
@@ -748,7 +748,7 @@ Protect against brute force:
    - **Wait Increment:** 60 seconds
    - **Quick Login Check:** 1000 milliseconds
 
-### 4. Regular Backups
+### 4. Regular backups
 
 Backup PostgreSQL database:
 
@@ -762,7 +762,7 @@ Restore:
 docker exec -i evonest_keycloak_db_prod psql -U keycloak keycloak < keycloak_backup.sql
 ```
 
-### 5. Monitor Logs
+### 5. Monitor logs
 
 View Keycloak logs:
 
@@ -828,7 +828,7 @@ docker logs evonest_keycloak
 
 ---
 
-## GDPR Compliance Checklist
+## GDPR compliance checklist
 
 Use this checklist to ensure compliance:
 
@@ -847,11 +847,11 @@ Use this checklist to ensure compliance:
 
 ---
 
-## Migration from Existing Auth
+## Migration from existing auth
 
 If migrating from Google OAuth or credentials:
 
-### Step 1: Run Both Systems in Parallel
+### Step 1: Run both systems in parallel
 
 Keep existing auth while adding Keycloak:
 
@@ -863,13 +863,13 @@ providers: [
 ],
 ```
 
-### Step 2: Migrate Users Gradually
+### Step 2: Migrate users gradually
 
 1. Announce migration to users
 2. Have users login with Keycloak
 3. Link accounts if needed (custom logic)
 
-### Step 3: Deprecate Old Auth
+### Step 3: Deprecate old auth
 
 After migration period:
 
@@ -879,7 +879,7 @@ After migration period:
 
 ---
 
-## Next Steps
+## Next steps
 
 - **[User Management](/user-docs/user-account)** - Managing roles and permissions
 - **[Security Best Practices](/user-docs/security)** - Additional hardening
@@ -887,7 +887,7 @@ After migration period:
 
 ---
 
-## Additional Resources
+## Additional resources
 
 - **Keycloak Documentation:** [https://www.keycloak.org/documentation](https://www.keycloak.org/documentation)
 - **GDPR Compliance:** [https://gdpr.eu](https://gdpr.eu)

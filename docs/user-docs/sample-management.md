@@ -2,9 +2,9 @@
 
 EvoNEST provides tools for organizing, viewing, and maintaining samples in your database. The system handles different sample types (animals, subsamples, plants, etc.) with type-specific features for each. Creating ad-hoc cards for your own samples is easy: you can get more information by contacting the EvoNEST team or you can just do it yourself by visiting the [Developer documentation](/developer-docs/index).
 
-## Getting Started
+## Getting started
 
-### Accessing Samples
+### Accessing samples
 
 1. Navigate to **Samples** in the main menu
 2. Choose your view:
@@ -12,7 +12,7 @@ EvoNEST provides tools for organizing, viewing, and maintaining samples in your 
    - **By Type** - Filtered views (animal, subsample, silk, etc.)
    - **Maintenance** - Specialized views for live animal care
 
-### Sample Overview Tables
+### Sample overview tables
 
 **Features:**
 
@@ -28,9 +28,9 @@ EvoNEST provides tools for organizing, viewing, and maintaining samples in your 
 - Current status and recent changes
 - Storage information (box, slot, collection)
 
-## Individual Sample Management
+## Individual sample management
 
-### Sample Details Page
+### Sample details page
 
 Access by clicking any sample name. Each sample has a details page with cards for different functions:
 
@@ -63,7 +63,7 @@ Access by clicking any sample name. Each sample has a details page with cards fo
 - Edit geographic coordinates (latitude/longitude)
 - Quick link to OpenStreetMap
 
-### Type-Specific Features
+### Type-specific features
 
 **Animal Samples:**
 
@@ -96,9 +96,9 @@ Access by clicking any sample name. Each sample has a details page with cards fo
 - Storage details (collection, box, slot)
 - Preservation notes
 
-## Maintenance Features
+## Maintenance features
 
-### Live Animal Care
+### Live animal care
 
 Navigate to **Samples > Maintenance** for specialized animal management:
 
@@ -127,7 +127,7 @@ Navigate to **Samples > Maintenance** for specialized animal management:
 - Geographic coordinate editing
 - Location tracking for field samples
 
-### Status Tracking
+### Status tracking
 
 **Feeding System (Live Animals):**
 
@@ -147,16 +147,16 @@ Navigate to **Samples > Maintenance** for specialized animal management:
 - Extraction success/failure tracking
 - General status updates
 
-## Sample Creation
+## Sample creation
 
-### Manual Creation
+### Manual creation
 
 1. Use the **Add Sample** button in any samples view
 2. Fill required fields (family, genus, species, type, responsible person)
 3. Optional fields include location, dates, and notes
 4. System auto-generates sample names if not provided
 
-### Custom ID Creation
+### Custom iD creation
 
 Create samples with specific IDs:
 
@@ -165,7 +165,7 @@ Create samples with specific IDs:
 3. Fill sample details
 4. Automatic redirect to sample page once created
 
-## Data Export
+## Data export
 
 **Export Options:**
 
@@ -186,9 +186,9 @@ Create samples with specific IDs:
 3. Choose format (CSV/XLSX/JSON)
 4. File downloads automatically
 
-## Label Generation
+## Label generation
 
-### QR Code Labels
+### Qr code labels
 
 Each sample can generate printable labels:
 
@@ -207,9 +207,9 @@ Each sample can generate printable labels:
 - Compatible with mobile scanning
 - Automatic feeding when scanned in maintenance mode
 
-## Storage Management
+## Storage management
 
-### Physical Storage Tracking
+### Physical storage tracking
 
 **Storage Fields:**
 
@@ -223,7 +223,7 @@ Each sample can generate printable labels:
 - Filterable and sortable
 - Bulk editing capabilities
 
-### Preservation Tracking
+### Preservation tracking
 
 **Preservation Methods:**
 
@@ -240,7 +240,7 @@ Each sample can generate printable labels:
 - Detailed notes
 - Storage location after preservation
 
-## Current Limitations
+## Current limitations
 
 **Missing Features:**
 
@@ -265,7 +265,7 @@ Each sample can generate printable labels:
 
 ## Troubleshooting
 
-**Common Issues:**
+**Common issues:**
 
 **Sample not appearing in tables:**
 

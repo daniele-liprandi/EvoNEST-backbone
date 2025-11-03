@@ -2,7 +2,7 @@
 
 Find answers to the most common questions about using EvoNEST for biomechanical research.
 
-## Getting Started
+## Getting started
 
 ### What is EvoNEST and who should use it?
 
@@ -23,7 +23,7 @@ A: EvoNEST is designed for:
 
 A: The goal of EvoNEST is to be extremely user-friendly. The only person who needs to familiarise themself with the complexity of EvoNEST should be the NEST administrator.
 
-### Account and Access
+### Account and access
 
 **Q: How do I get access to EvoNEST?**
 
@@ -43,9 +43,9 @@ A: Access policies vary by institution and use case. Many academic and research 
 
 A: Commercial use may be possible under specific licensing agreements. Contact the EvoNEST team to discuss commercial licensing options and requirements.
 
-## Data Management
+## Data management
 
-### Data Collection and Entry
+### Data collection and entry
 
 **Q: What types of data can I store in EvoNEST?**
 
@@ -59,7 +59,7 @@ A: Yes, data can be edited with appropriate permissions. EvoNEST maintains versi
 - Approval workflows for sensitive modifications
 - Audit trails for compliance and quality assurance
 
-### Data Quality and Validation
+### Data quality and validation
 
 **Q: How does EvoNEST ensure data quality?**
 
@@ -90,9 +90,9 @@ A: EvoNEST provides tools for managing incomplete datasets:
 - Filtering options to include or exclude incomplete records
 - Documentation requirements for missing data explanations
 
-## Analysis and Visualization
+## Analysis and visualization
 
-### Statistical Analysis
+### Statistical analysis
 
 **Q: What statistical analyses can I perform in EvoNEST?**
 
@@ -154,7 +154,7 @@ A: EvoNEST provides tools for professional figure creation:
 
 ## Collaboration
 
-### Team Management
+### Team management
 
 **Q: How do I invite colleagues to collaborate on a project?**
 
@@ -183,7 +183,7 @@ A: External sharing options include:
 - Publication-ready datasets for manuscript review
 - Controlled access with time limitations and restrictions
 
-### Data Sharing and Privacy
+### Data sharing and privacy
 
 **Q: Who can see my data?**
 
@@ -210,9 +210,9 @@ A: EvoNEST employs multiple security measures:
 - Backup systems for data protection
 - Compliance with data protection regulations
 
-## Technical Issues
+## Technical issues
 
-### Common Problems
+### Common problems
 
 **Q: Why can't I log in to my account?**
 
@@ -245,7 +245,7 @@ A: Upload failures may be due to:
 
 Try smaller files, supported formats, or contact support for assistance.
 
-### Browser and Compatibility
+### Browser and compatibility
 
 **Q: Which browsers are supported by EvoNEST?**
 
@@ -275,9 +275,9 @@ A: EvoNEST is web-based and requires only:
 - PDF reader for documentation and reports
 - Optional: Statistical software for advanced external analysis
 
-## Data Export and Integration
+## Data export and integration
 
-### Export Options
+### Export options
 
 **Q: In what formats can I export my data?**
 
@@ -304,7 +304,7 @@ A: Integration options include:
 - File format compatibility with common analysis tools
 - Database connections for institutional systems
 
-### Publication and Sharing
+### Publication and sharing
 
 **Q: How do I prepare data for publication?**
 
@@ -325,9 +325,9 @@ A: Dataset DOI assignment may be available through:
 
 Contact support for specific DOI requirements and procedures.
 
-## Support and Training
+## Support and training
 
-### Getting Help
+### Getting help
 
 **Q: Where can I find help with using EvoNEST?**
 
@@ -365,7 +365,7 @@ A: For institutional inquiries:
 
 Visit the main EvoNEST website for current contact information and support channels.
 
-## Advanced Features
+## Advanced features
 
 **Q: Does EvoNEST have an API for programmatic access?**
 

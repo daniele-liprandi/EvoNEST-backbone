@@ -21,4 +21,3 @@ If you're a lab head or administrator setting up EvoNEST for the first time:
 1. **[NEST setup guide](/user-docs/nest-setup)** - Configure your laboratory's EvoNEST instance
 2. **[User management](/user-docs/user-management)** - Add and manage team members
 
-If you're a researcher joining an existing EvoNEST instance, your administrator will provide you with login credentials.

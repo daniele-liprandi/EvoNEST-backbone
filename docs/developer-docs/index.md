@@ -10,7 +10,7 @@ This section provides technical documentation for:
 
 Welcome to the EvoNEST technical documentation. This section covers installation, deployment, customization, and development.
 
-## 🚀 Installation & Deployment
+## Installation & Deployment
 
 Get EvoNEST running quickly with our technical installation guide:
 
@@ -18,7 +18,7 @@ Get EvoNEST running quickly with our technical installation guide:
 
 **After installation:** See the [User documentation](/user-docs/nest-setup) to configure your NEST and add users.
 
-## 🔐 Authentication Setup
+## Authentication setup
 
 Setting up secure authentication is essential for production deployments:
 
@@ -27,7 +27,7 @@ Setting up secure authentication is essential for production deployments:
 
 Choose Google OAuth for quick setup, or Keycloak for maximum control and EU compliance.
 
-## 🛠️ Customization & Extension
+## Customization & extension
 
 Extend EvoNEST functionality to match your laboratory's specific needs:
 
@@ -35,7 +35,7 @@ Extend EvoNEST functionality to match your laboratory's specific needs:
 - **[Data Format Parser Development](./data-format-parser-development.md)** – Build custom parsers for machine-readable files
 - **[File Processor Development](./file-processor-development.md)** – Add support for new file formats and data types
 
-## 📚 Additional Resources
+## Additional resources
 
 - **[API Documentation](/api-docs/)** – Complete REST API reference
 - **[Contributing Guidelines](https://github.com/daniele-liprandi/EvoNEST-backbone/blob/main/CONTRIBUTING.md)** – How to contribute to EvoNEST

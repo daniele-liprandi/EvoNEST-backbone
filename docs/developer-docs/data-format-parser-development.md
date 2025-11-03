@@ -8,7 +8,7 @@ EvoNEST uses data format parsers to convert raw files from scientific instrument
 
 **For file type processing (images, documents, etc.)**, see the [File Processor Development Guide](./file-processor-development.md).
 
-## Current Architecture
+## Current architecture
 
 ```
 Raw File → File Processor → Data Format Parser → Structured Experiment Data → API
@@ -20,16 +20,16 @@ Raw File → File Processor → Data Format Parser → Structured Experiment Dat
 4. **Experiment API** stores experiment and traits in database
 5. **Success notification** confirms trait generation
 
-## Quick Start
+## Quick start
 
 1. **Create parser class** in `src/utils/file-management/readable-data-extractors/`
 2. **Extend BaseDataFormatParser** with your parsing logic
 3. **Register** in `src/utils/file-management/readable-data-extractors/index.js`
 4. **Test** with your instrument files
 
-## Creating a Data Format Parser
+## Creating a data format parser
 
-### 1. Basic Parser Structure
+### 1. Basic parser structure
 
 ```typescript
 import { BaseDataFormatParser, ParsedDataResult } from './BaseDataFormatParser.js';
@@ -123,7 +123,7 @@ export class MyInstrumentParser extends BaseDataFormatParser {
 }
 ```
 
-### 2. Register Your Parser
+### 2. Register your parser
 
 Add to `src/utils/file-management/readable-data-extractors/index.js`:
 
@@ -140,9 +140,9 @@ function registerDefaultParsers() {
 export { MyInstrumentParser } from './MyInstrumentParser.js';
 ```
 
-### 3. Parser Metadata Properties
+### 3. Parser metadata properties
 
-#### Required Properties
+#### Required properties
 
 ```typescript
 constructor() {
@@ -160,16 +160,16 @@ constructor() {
 }
 ```
 
-#### Optional Properties
+#### Optional properties
 
 ```typescript
 this.requiredFields = ['field1', 'field2'];     // Required data fields
 this.author = 'Your Name';                      // Parser author
 ```
 
-## Available Methods
+## Available methods
 
-### BaseDataFormatParser Methods
+### BaseDataFormatParser methods
 
 ```typescript
 // Helper methods for calculations
@@ -190,7 +190,7 @@ this.createExperimentData({                     // Create structured experiment 
 })
 ```
 
-### Data Validation
+### Data validation
 
 ```typescript
 parse(rawData: string, fileMetadata?: any): ParsedDataResult {
@@ -214,9 +214,9 @@ parse(rawData: string, fileMetadata?: any): ParsedDataResult {
 }
 ```
 
-## Integration Flow
+## Integration flow
 
-### 1. Automatic Discovery
+### 1. Automatic discovery
 
 Your parser is automatically discovered when files are uploaded:
 
@@ -239,7 +239,7 @@ if (parsedData) {
 }
 ```
 
-### 2. Experiment Creation
+### 2. Experiment creation
 
 The API automatically handles structured data:
 
@@ -254,7 +254,7 @@ if (experimentData.traits) {
 }
 ```
 
-### 3. Frontend Integration
+### 3. Frontend integration
 
 Parsers integrate seamlessly with the form:
 
@@ -262,9 +262,9 @@ Parsers integrate seamlessly with the form:
 - **Validation**: Form shows "✓ This experiment type has automatic trait generation"
 - **Preview**: Parsed data and trait count displayed before submission
 
-## File Format Examples
+## File format examples
 
-### Simple CSV Data
+### Simple CSV data
 
 ```csv
 # MyInstrument Data Export
@@ -276,7 +276,7 @@ Time,Temperature,Pressure
 10:02,24.1,101315
 ```
 
-### Complex Format with Metadata
+### Complex format with metadata
 
 ```text
 INSTRUMENT_DATA_START
@@ -290,9 +290,9 @@ timestamp,temperature,pressure
 DATA_END
 ```
 
-## Best Practices
+## Best practices
 
-### 1. Robust Detection
+### 1. Robust detection
 
 ```typescript
 canParse(rawData: string, fileMetadata?: any): boolean {
@@ -305,7 +305,7 @@ canParse(rawData: string, fileMetadata?: any): boolean {
 }
 ```
 
-### 2. Error Handling
+### 2. Error handling
 
 ```typescript
 parse(rawData: string, fileMetadata?: any): ParsedDataResult {
@@ -322,7 +322,7 @@ parse(rawData: string, fileMetadata?: any): ParsedDataResult {
 }
 ```
 
-### 3. Data Quality Validation
+### 3. Data quality validation
 
 ```typescript
 validateMeasurements(measurements) {

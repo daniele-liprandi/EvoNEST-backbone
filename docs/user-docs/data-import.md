@@ -11,14 +11,14 @@ Before importing data, ensure you have:
 - **Basic understanding** of your data structure and relationships. For a successfull merging to happen, fields have to have the same values they have in EvoNEST (for example, sex is distinguished in EvoNEST by using "male" and "female", thus "ff", "mm" or others expression would cause problems during field recognition)
 - **Required field mappings** identified (family, genus, species, type, responsible person)
 
-## Import Methods
+## Import methods
 
 EvoNEST supports two import methods:
 
 1. **Standard Import**: For simple, flat data structures
 2. **Hierarchical Import**: For parent-child relationships (e.g., animals with subsamples)
 
-## Standard Import
+## Standard import
 
 Use standard import when your data doesn't have parent-child relationships, or when each row represents an independent sample.
 
@@ -63,14 +63,14 @@ Sample002,Araneidae,Nephila,clavipes,silk,jane.smith@example.com,Hamburg,2024-01
    - **Nomenclature**: Automatically splits "Genus species" format into separate genus and species fields
    - **Responsible Person**: Accepts names, emails, or user IDs and automatically resolves to user accounts
 
-### Step 4: Validate and import
+### Step 4: validate and import
 
 1. **Review validation errors**: Any issues will be highlighted in red
 2. **Fix mapping issues**: Ensure all required fields are mapped
 3. **Click Import**: Start the import process
 4. **Monitor progress**: Watch the progress bar and status updates
 
-## Hierarchical Import
+## Hierarchical import
 
 Use hierarchical import when you have animals with multiple subsamples, where several rows share the same specimen but represent different samples (e.g., draglines, silk samples, etc.).
 
@@ -123,21 +123,21 @@ The system will:
 
 The import happens in two phases:
 
-#### Phase 1: Animal Import
+#### Phase 1: animal import
 - **Creates or finds animals**: Each unique animal_id becomes one animal record
 - **Handles duplicates**: If an animal with the same name already exists, the existing record is used
 - **Uses first row data**: For animals with multiple rows, data from the first occurrence is used
 
-#### Phase 2: Subsample Import  
+#### Phase 2: subsample import  
 - **Creates all subsamples**: Each row becomes a subsample record
 - **Links to parents**: Each subsample is automatically linked to its parent animal
 - **Preserves relationships**: Parent-child relationships are maintained
 
-## Special Field Mappings
+## Special field mappings
 
 EvoNEST provides intelligent field mappings for common data formats:
 
-### Nomenclature Mapping
+### Nomenclature mapping
 Automatically splits scientific names:
 ```
 Input: "Homo sapiens"
@@ -147,7 +147,7 @@ Input: "Quercus robur subsp. pedunculiflora"
 Output: genus="Quercus", species="robur subsp. pedunculiflora"
 ```
 
-### Responsible Person Mapping
+### Responsible person mapping
 Automatically resolves to user accounts:
 ```
 Input: "John Doe" → Finds user with name "John Doe"
@@ -155,35 +155,35 @@ Input: "john.doe@lab.com" → Finds user with email "john.doe@lab.com"
 Input: "user_id_12345" → Finds user with ID "user_id_12345"
 ```
 
-### Custom Fields
+### Custom fields
 Create custom fields on-the-fly:
 - Select **"Use as custom field"** for any unmapped column
 - The field will be created and data preserved
 - Useful for project-specific metadata
 
-## Validation and Error Handling
+## Validation and error handling
 
 ### Common validation errors:
 
-#### Missing Required Fields
+#### Missing required fields
 ```
 ❌ Missing mappings for required fields: family, genus, species
 ```
 **Solution**: Map all required fields using the dropdown menus
 
-#### Data Type Mismatches  
+#### Data type mismatches  
 ```
 ❌ Row 5: Invalid date value "not-a-date"
 ```
 **Solution**: Check your data format matches expected types
 
-#### User Not Found
+#### User not found
 ```
 ❌ Row 3: User "unknown@email.com" not found
 ```
 **Solution**: Ensure responsible persons exist as users in EvoNEST
 
-#### Hierarchical Import Issues
+#### Hierarchical import issues
 ```
 ❌ Parent animal "SPECIMEN-001" not found for subsample "SAMPLE-001-1"
 ```
@@ -197,9 +197,9 @@ Create custom fields on-the-fly:
 4. **Use consistent naming**: Keep animal_id values identical across related rows
 5. **Review progress**: Watch for error messages during import
 
-## Advanced Features
+## Advanced features
 
-### Batch Import Strategies
+### Batch import strategies
 
 For large datasets:
 
@@ -207,7 +207,7 @@ For large datasets:
 2. **Import animals first**: In hierarchical data, you can import animals separately, then subsamples
 3. **Use consistent IDs**: Maintain consistent naming schemes across batches
 
-### Data Migration from Other Systems
+### Data migration from other systems
 
 When migrating from other systems:
 
@@ -216,7 +216,7 @@ When migrating from other systems:
 3. **Clean data**: Remove or fix invalid entries before import
 4. **Test incrementally**: Import small batches and verify results
 
-### Integration with External Databases
+### Integration with external databases
 
 EvoNEST imports can be enhanced with:
 
@@ -224,9 +224,9 @@ EvoNEST imports can be enhanced with:
 2. **Geographic validation**: Validate coordinates against known ranges
 3. **Collection protocols**: Link to standardized collection methods
 
-## Example Workflows
+## Example workflows
 
-### Workflow 1: Spider Dragline Study
+### Workflow 1: spider dragline study
 
 ```csv
 animal_id,sample_id,family,genus,species,responsible,collection_date,dragline_type
@@ -237,7 +237,7 @@ MACN-Ar-47148,MJR-2847-3,Araneidae,Micrathena,plana,ramirez@museo.com,2024-12-15
 
 **Result**: 1 animal (Micrathena plana) with 3 dragline subsamples
 
-### Workflow 2: Museum Collection Import
+### Workflow 2: museum collection import
 
 ```csv
 name,family,genus,species,type,responsible,collection_date,location
@@ -249,22 +249,22 @@ BMNH-002,Salticidae,Salticus,scenicus,animal,curator@bmnh.ac.uk,2024-01-11,Edinb
 
 ## Troubleshooting
 
-### Import Fails to Start
+### Import fails to start
 - **Check file format**: Ensure file is CSV with proper encoding (UTF-8)
 - **Verify file size**: Large files (>10MB) may need to be split
 - **Check permissions**: Ensure you have import permissions
 
-### Partial Import Success
+### Partial import success
 - **Review error log**: Check which records failed and why
 - **Fix data issues**: Correct invalid entries and re-import failed records
 - **Check relationships**: In hierarchical imports, ensure parent records exist
 
-### Performance Issues
+### Performance issues
 - **Reduce batch size**: Import smaller files more frequently
 - **Check server resources**: Large imports may require server optimization
 - **Schedule imports**: Run large imports during off-peak hours
 
-## Getting Help
+## Getting help
 
 If you encounter issues with data import:
 
@@ -276,4 +276,3 @@ If you encounter issues with data import:
 For more information on managing your imported data, see:
 - **[Sample Management](/user-docs/sample-management)** - Organizing and editing samples
 - **[Data Export](/user-docs/data-export)** - Exporting data for analysis
-- **[Visualization](/user-docs/visualization)** - Creating charts and graphs from your data
