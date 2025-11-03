@@ -10,15 +10,11 @@ By the end of this module, you will have:
 
 **Estimated time:** 20 minutes
 
----
-
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 2: Installation](/tutorial/02-installation) and have:
 - ✅ EvoNEST running (Docker containers up)
 - ✅ Access to the login page at [http://localhost:3005](http://localhost:3005)
-
----
 
 ## Overview
 
@@ -27,8 +23,6 @@ In this module, you'll:
 2. Take a tour of the EvoNEST interface
 3. Understand the main navigation areas
 4. Verify the installation is complete
-
----
 
 ## Step 1: Access EvoNEST
 
@@ -59,8 +53,6 @@ In this module, you'll:
    - EvoNEST logo
    - Welcome message
    - Login form
-
----
 
 ## Step 2: Log in with default credentials
 
@@ -115,8 +107,6 @@ See the [Developer documentation](/developer-docs) for details.
 - Clear browser cache and cookies, try again
 :::
 
----
-
 ## Step 3: Explore the dashboard
 
 After logging in, you'll see the EvoNEST dashboard (homepage).
@@ -146,8 +136,6 @@ Shows recent changes and updates to your data.
 ::: tip Your first look
 Don't worry if the dashboard looks empty - that's expected! In the next modules, you'll add data and see these sections populate.
 :::
-
----
 
 ## Step 4: Navigate the main menu
 
@@ -207,8 +195,6 @@ Click through each section to get familiar with the layout:
 Take a few minutes to click around. You can't break anything at this stage - there's no data yet!
 :::
 
----
-
 ## Step 5: Verify installation components
 
 Let's make sure all features are working correctly.
@@ -258,8 +244,6 @@ Let's make sure all features are working correctly.
 ::: tip Don't upload yet
 We'll practice uploading files in Module 5. For now, just verify the upload interfaces are visible.
 :::
-
----
 
 ## Step 6: Understand the data structure
 
@@ -326,8 +310,6 @@ The typical workflow is:
 4. Organize in **Experiments** (track research)
 :::
 
----
-
 ## Step 7: Explore Additional Features
 
 ### User Profile
@@ -354,8 +336,6 @@ Check if these links are accessible:
 - **Documentation** link - Full user documentation
 - **API Docs** - For developers
 
----
-
 ## Checkpoint: Ready to Configure?
 
 Before moving to the next module, verify:
@@ -378,8 +358,6 @@ If something isn't working, check:
 3. [Troubleshooting Guide](/tutorial/troubleshooting)
 :::
 
----
-
 ## Quick Reference: Navigation Shortcuts
 
 | Section | What You'll Find |
@@ -390,8 +368,6 @@ If something isn't working, check:
 | **Experiments** | Track research projects, upload files |
 | **Settings** | Configure types, units, lab info |
 | **User Profile** | Account info, database selection, logout |
-
----
 
 ## Next Steps
 

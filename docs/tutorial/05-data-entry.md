@@ -12,16 +12,12 @@ By the end of this module, you will have:
 
 **Estimated Time:** 45-60 minutes
 
----
-
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 4: Configuration](/tutorial/04-configuration) and have:
 - ✅ Sample types configured
 - ✅ Trait types with units set up
 - ✅ EvoNEST running and logged in
-
----
 
 ## Overview
 
@@ -35,8 +31,6 @@ Now for the fun part - adding real data to EvoNEST! In this hands-on module, you
 
 We'll use a practical example you can adapt to your own research.
 
----
-
 ## Exercise: Spider Silk Research Workflow
 
 Let's work through a realistic example: documenting a spider specimen and measuring its silk properties.
@@ -47,8 +41,6 @@ Let's work through a realistic example: documenting a spider specimen and measur
 - Measure silk diameter
 - Test mechanical properties
 - Organize everything in an experiment
-
----
 
 ## Step 1: Create a Parent Sample
 
@@ -139,8 +131,6 @@ If you have a photo:
 Congratulations! You've created your first sample in EvoNEST.
 :::
 
----
-
 ## Step 2: Create Subsamples
 
 Subsamples represent parts or derivatives of the parent sample.
@@ -214,8 +204,6 @@ You can create as many subsamples as needed from one parent:
    - List of associated subsamples
    - Links to each subsample
    - The hierarchical relationship
-
----
 
 ## Step 3: Record Trait Measurements
 
@@ -293,8 +281,6 @@ Add measurements for your second subsample (`AranDiad01_02`):
 - Extensibility: ~50% (more stretchy)
 :::
 
----
-
 ## Step 4: Upload Files and Images
 
 Attach documents, images, and data files to your samples or traits.
@@ -335,8 +321,6 @@ You can also attach files to specific measurements:
 **Data:** XLSX, CSV, JSON, YAML
 **Archives:** ZIP (for multiple files)
 :::
-
----
 
 ## Step 5: Create an Experiment
 
@@ -405,8 +389,6 @@ study on spider silk evolution.
 
 3. **Success!** Your experiment is created and linked to all relevant data
 
----
-
 ## Step 6: Use the Data Explorer
 
 Learn to find and filter your data.
@@ -462,8 +444,6 @@ Learn to find and filter your data.
 - **Print/PDF** - Generate reports
 :::
 
----
-
 ## Step 7: Edit and Update Data
 
 Learn to modify existing entries.
@@ -506,8 +486,6 @@ EvoNEST maintains a **logbook** (change history) for all edits:
 This ensures transparency and traceability of your data.
 :::
 
----
-
 ## Practice Exercises
 
 Now it's your turn! Practice by adding more data:
@@ -536,8 +514,6 @@ For one subsample, add:
 - 5 tensile strength measurements
 - Calculate mean and std dev
 
----
-
 ## Checkpoint: Data Entry Complete?
 
 Before moving to the next module, verify:
@@ -554,8 +530,6 @@ Before moving to the next module, verify:
 ::: tip Data Entry Skills Achieved!
 You now have the core skills to use EvoNEST for your research data management!
 :::
-
----
 
 ## Best Practices for Data Entry
 
@@ -587,8 +561,6 @@ Always record:
 - **Check for typos** - Review before saving
 - **Verify units** - Double-check mm vs μm, g vs kg
 - **Use logbook** - Document why you made changes
-
----
 
 ## Next Steps
 

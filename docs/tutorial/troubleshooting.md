@@ -6,8 +6,6 @@ This reference guide covers common issues you might encounter while using EvoNES
 
 **How to use this guide:** Find your issue in the table of contents and jump to the solution.
 
----
-
 ## Table of Contents
 
 - [Docker and Container Issues](#docker-and-container-issues)
@@ -19,8 +17,6 @@ This reference guide covers common issues you might encounter while using EvoNES
 - [Browser Compatibility](#browser-compatibility)
 - [Data Entry Problems](#data-entry-problems)
 - [Getting Help](#getting-help)
-
----
 
 ## Docker and Container Issues
 
@@ -154,8 +150,6 @@ docker compose -f docker-compose.dev.yml logs
    docker compose -f docker-compose.dev.yml up --build -d
    ```
 
----
-
 ## Application Won't Start
 
 ### Problem: "Ready in X.Xs" never appears
@@ -217,8 +211,6 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
    **Try accessing different address:**
    - [http://127.0.0.1:3005](http://127.0.0.1:3005)
    - [http://0.0.0.0:3005](http://0.0.0.0:3005)
-
----
 
 ## Database Connection Problems
 
@@ -295,8 +287,6 @@ docker compose -f docker-compose.dev.yml logs evonest_backbone_dev
 docker exec evonest_mongodb_dev mongodump --out /backup
 ```
 
----
-
 ## Login and Authentication Issues
 
 ### Problem: Can't log in with admin/pass
@@ -353,8 +343,6 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    - Check your computer's date/time
    - JWT tokens use timestamps
 
----
-
 ## File Upload Errors
 
 ### Problem: "Failed to upload file"
@@ -409,8 +397,6 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 4. **Try re-uploading** the file
 
----
-
 ## Performance and Slow Loading
 
 ### Problem: EvoNEST is very slow
@@ -458,8 +444,6 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    docker compose -f docker-compose.yml up -d
    ```
 
----
-
 ## Browser Compatibility
 
 ### Problem: Features not working in my browser
@@ -503,8 +487,6 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 3. **Check browser console:**
    - Press `F12`
    - Look for CSS/JavaScript errors
-
----
 
 ## Data Entry Problems
 
@@ -562,8 +544,6 @@ docker exec evonest_mongodb_dev mongodump --out /backup
    - Verify sample was actually created
    - Check Samples page
 
----
-
 ## Getting Help
 
 ### Before Asking for Help
@@ -603,8 +583,6 @@ Gather this information:
    - See README for contact information
    - Include logs and error messages
 
----
-
 ## Complete Reset (Last Resort)
 
 If nothing works, start fresh:
@@ -642,8 +620,6 @@ docker compose -f docker-compose.dev.yml up --build -d
 2. Go through Module 4 (Configuration) again
 3. Import your saved data (if import feature available)
 
----
-
 ## Quick Command Reference
 
 | Problem | Command |
@@ -654,8 +630,6 @@ docker compose -f docker-compose.dev.yml up --build -d
 | Rebuild | `docker compose -f docker-compose.dev.yml up --build -d` |
 | Complete reset | `docker compose -f docker-compose.dev.yml down -v` |
 | Clean Docker | `docker system prune` |
-
----
 
 ## Still Having Issues?
 
@@ -677,8 +651,6 @@ If you've tried everything in this guide and still have problems:
 
 4. **Ask in the workshop:**
    - If attending a workshop, ask the instructor
-
----
 
 ## Preventive Measures
 

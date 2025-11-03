@@ -11,8 +11,6 @@ By the end of this module, you will have:
 
 **Estimated time:** 30-40 minutes
 
----
-
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 1: Preparation](/tutorial/01-preparation) and have:
@@ -21,8 +19,6 @@ Before starting this module, make sure you've completed [Module 1: Preparation](
 - ✅ VS Code installed
 - ✅ Git installed
 - ✅ Terminal open in your workspace folder (e.g., `Documents/EvoNEST`)
-
----
 
 ## Overview
 
@@ -33,7 +29,6 @@ In this module, you'll:
 3. Launch EvoNEST using Docker
 4. Verify the application is accessible in your browser
 
----
 
 ## Step 1: Clone the EvoNEST repository
 
@@ -148,8 +143,6 @@ Let's download the EvoNEST code to your computer.
 
 ✅ **Checkpoint:** You should now be inside the `EvoNEST-backbone` folder with all the project files, and VS Code should be open. Optionally, you have the integrated terminal ready to use.
 
----
-
 ## Step 2: Generate a secret key
 
 EvoNEST uses NextAuth for authentication, which requires a secure secret key. Let's generate one.
@@ -191,8 +184,6 @@ Copy this secret key somewhere safe - you'll need it in the next step. This key 
 2. Generate a random 32-character string manually, OR
 3. Use an online generator like [randomkeygen.com](https://randomkeygen.com/) (choose "Fort Knox Passwords")
    :::
-
----
 
 ## Step 3: Create environment files
 
@@ -252,7 +243,7 @@ This file configures the development environment.
 
    ```txt
    NEXTAUTH_URL=http://localhost:3005
-   MONGODB_URI=mongodb://evonest_user:pass@mongo_dev:27017
+   MONGODB_URI=mongodb://user:pass@mongo_dev:27017
    STORAGE_PATH='/usr/evonest/file_storage_dev'
    ```
 
@@ -292,8 +283,8 @@ Now we need to match the MongoDB credentials in the Docker configuration.
      container_name: evonest_mongodb_dev
      restart: unless-stopped
      environment:
-       MONGO_INITDB_ROOT_USERNAME: admin_name
-       MONGO_INITDB_ROOT_PASSWORD: MyLabPassword2024!
+       MONGO_INITDB_ROOT_USERNAME: user
+       MONGO_INITDB_ROOT_PASSWORD: pass
    ```
 
    Also update the mongo-express section:
@@ -302,9 +293,9 @@ Now we need to match the MongoDB credentials in the Docker configuration.
    mongo-express:
      # ... other config ...
      environment:
-       ME_CONFIG_MONGODB_ADMINUSERNAME: admin_name
-       ME_CONFIG_MONGODB_ADMINPASSWORD: MyLabPassword2024!
-       ME_CONFIG_MONGODB_URL: mongodb://admin_name:MyLabPassword2024!@mongo_dev:27017/
+       ME_CONFIG_MONGODB_ADMINUSERNAME: user
+       ME_CONFIG_MONGODB_ADMINPASSWORD: pass
+       ME_CONFIG_MONGODB_URL: mongodb://admin_name:pass@mongo_dev:27017/
        ME_CONFIG_BASICAUTH_USERNAME: admin
        ME_CONFIG_BASICAUTH_PASSWORD: pass
    ```
@@ -313,11 +304,9 @@ Now we need to match the MongoDB credentials in the Docker configuration.
 
 ✅ **Checkpoint:** You should now have three files configured in VS Code:
 
-- `.env.local` - Contains your NEXTAUTH_SECRET
-- `.env.development` - Contains database connection string
-- `docker-compose.dev.yml` - Updated with matching MongoDB credentials
-
----
+- [ ] `.env.local` - Contains your NEXTAUTH_SECRET
+- [ ] `.env.development` - Contains database connection string
+- [ ] `docker-compose.dev.yml` - Updated with matching MongoDB credentials
 
 ## Step 4: Start EvoNEST with Docker
 
@@ -413,8 +402,6 @@ docker compose -f docker-compose.dev.yml up --build -d
 
 :::
 
----
-
 ## Step 5: Verify installation
 
 Let's make sure everything is running correctly.
@@ -493,8 +480,6 @@ You should see the MongoDB admin interface with databases listed.
 5. **Check your firewall** - make sure it's not blocking port 3005
    :::
 
----
-
 ## Step 6: Stop and start EvoNEST
 
 Learn how to control your EvoNEST installation.
@@ -542,8 +527,6 @@ docker compose -f docker-compose.dev.yml down -v
 docker compose -f docker-compose.dev.yml up -d
 ```
 
----
-
 ## Checkpoint: Is everything working?
 
 Before moving to the next module, verify:
@@ -562,8 +545,6 @@ Great! You're ready to log in and start using EvoNEST!
 If something's not working, check the [Troubleshooting guide](/tutorial/troubleshooting).
 :::
 
----
-
 ## Useful commands reference
 
 Here's a quick reference for managing your EvoNEST installation:
@@ -580,8 +561,6 @@ Here's a quick reference for managing your EvoNEST installation:
 ::: tip Bookmark this page
 You might want to keep this page bookmarked for reference when managing your EvoNEST installation.
 :::
-
----
 
 ## Next steps
 

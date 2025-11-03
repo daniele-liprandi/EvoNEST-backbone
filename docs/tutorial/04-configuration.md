@@ -11,16 +11,12 @@ By the end of this module, you will have:
 
 **Estimated Time:** 30-40 minutes
 
----
-
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 3: First Launch](/tutorial/03-first-launch) and have:
 - ✅ EvoNEST running and accessible
 - ✅ Logged in as admin
 - ✅ Familiar with the navigation
-
----
 
 ## Overview
 
@@ -33,8 +29,6 @@ Configuration is crucial for tailoring EvoNEST to your laboratory's needs. In th
 4. Equipment types (measurement tools)
 5. Sample ID generation rules
 6. Lab information
-
----
 
 ## Understanding the Configuration System
 
@@ -57,8 +51,6 @@ Setting up types before entering data ensures:
 - Easy filtering and analysis
 :::
 
----
-
 ## Step 1: Access Configuration
 
 1. **Click "Settings"** in the main navigation
@@ -79,8 +71,6 @@ If this is your first login, EvoNEST might show a **configuration wizard**. This
 
 Both approaches cover the same configuration.
 :::
-
----
 
 ## Step 2: Configure Sample Types
 
@@ -143,8 +133,6 @@ Add types relevant to your lab:
 - `microbe` → "Microbial Culture" → "Bacterial or fungal cultures"
 :::
 
----
-
 ## Step 3: Configure Subsample Types
 
 Subsamples are parts or derivatives of parent samples.
@@ -186,8 +174,6 @@ Example: Add "Venom Gland" for spider research:
 **Specialized:**
 - `silk_gland`, `spinnerets`, `egg_sac`, `molt`
 :::
-
----
 
 ## Step 4: Configure Trait Types (with Units!)
 
@@ -252,8 +238,6 @@ Not all traits are quantitative:
 - `life_stage` → "Life Stage" → (no unit) → "Developmental stage"
 :::
 
----
-
 ## Step 5: Configure Equipment Types
 
 Define the equipment used for measurements. This helps with metadata and method tracking.
@@ -288,8 +272,6 @@ Example: Add "Instron Tensile Tester":
 - `thermometer_digital` → "Digital Thermometer"
 - `ph_meter` → "pH Meter"
 :::
-
----
 
 ## Step 6: Configure Sample ID Generation
 
@@ -330,8 +312,6 @@ You can also:
 - **Different Rules** - Use different lengths if needed
 :::
 
----
-
 ## Step 7: Configure Lab Information
 
 Set default values for your laboratory.
@@ -355,8 +335,6 @@ Set default values for your laboratory.
 - Appears in exported data
 - Useful for multi-lab setups
 :::
-
----
 
 ## Step 8: Review and Save Configuration
 
@@ -391,8 +369,6 @@ Set default values for your laboratory.
 Your EvoNEST instance is now configured for your laboratory's specific needs!
 :::
 
----
-
 ## Step 9: Export Configuration (Optional)
 
 It's good practice to backup your configuration.
@@ -412,8 +388,6 @@ It's good practice to backup your configuration.
 - **Version control** - Track changes over time
 - **Documentation** - Reference for publications
 
----
-
 ## Checkpoint: Configuration Complete?
 
 Before moving to the next module, verify:
@@ -430,8 +404,6 @@ Before moving to the next module, verify:
 ::: tip Ready to Add Data?
 Perfect! Now you can start entering real samples and measurements.
 :::
-
----
 
 ## Common Configuration Scenarios
 
@@ -471,8 +443,6 @@ Trait Types:
   - chlorophyll (μg/L)
 Equipment: ph_meter, dissolved_oxygen_sensor, spectrophotometer
 ```
-
----
 
 ## Next Steps
 

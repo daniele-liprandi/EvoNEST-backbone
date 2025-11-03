@@ -11,8 +11,6 @@ By the end of this module, you will have:
 
 **Estimated Time:** 30-45 minutes
 
----
-
 ## Prerequisites
 
 Before starting this module, make sure you have:
@@ -24,8 +22,6 @@ Before starting this module, make sure you have:
 The **development environment** (`docker-compose.dev.yml`) does **NOT** include automated backups. This module applies to **production deployments** only.
 :::
 
----
-
 ## Overview
 
 EvoNEST includes a comprehensive automated backup system that:
@@ -35,8 +31,6 @@ EvoNEST includes a comprehensive automated backup system that:
 - Compresses backups for efficient storage
 
 **In this module**, you'll learn how to monitor, download, and restore your data.
-
----
 
 ## Understanding the Backup System
 
@@ -88,8 +82,6 @@ Backups are stored in Docker volumes with this organization:
 ::: tip File Storage Backups
 Uploaded files are stored separately in the `file_storage` Docker volume. To back up files, you'll need to copy this volume separately (covered later in this module).
 :::
-
----
 
 ## Step 1: Check Backup Status
 
@@ -196,8 +188,6 @@ total 75M
 ...
 ```
 
----
-
 ## Step 2: Download Backups Locally
 
 It's **strongly recommended** to keep local copies of your backups on a separate computer or external drive.
@@ -269,8 +259,6 @@ Download backups to **at least two locations**:
 
 This protects against both server failures and local computer failures.
 :::
-
----
 
 ## Step 3: Restore from Backup
 
@@ -372,8 +360,6 @@ Before restoring, note down:
 After restoring, verify these match the backup date.
 :::
 
----
-
 ## Step 4: Create Manual Backups
 
 Sometimes you may want to create a backup immediately (not waiting for the scheduled backup):
@@ -417,8 +403,6 @@ tar -czf manual_backup_$(date +%Y%m%d_%H%M%S).tar.gz manual_backup_*
 # Windows (PowerShell)
 Compress-Archive -Path manual_backup_* -DestinationPath "manual_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss').zip"
 ```
-
----
 
 ## Step 5: Backup File Storage
 
@@ -476,8 +460,6 @@ docker cp file_storage_backup_20241024/. evonest_backbone_prod:/usr/evonest/file
 docker exec evonest_backbone_prod chown -R node:node /usr/evonest/file_storage
 ```
 
----
-
 ## Checkpoint: Verify Backup System
 
 Before finishing this module, make sure you can:
@@ -492,8 +474,6 @@ Before finishing this module, make sure you can:
 ::: tip All good?
 If you can check all boxes above, your backup system is working correctly!
 :::
-
----
 
 ## Best Practices
 
@@ -555,8 +535,6 @@ docker-compose up -d backup
 ::: warning Don't Wait for a Disaster
 Many people never test their backups until they need them. Don't be one of them! Test restoration at least once per quarter.
 :::
-
----
 
 ## Troubleshooting
 
