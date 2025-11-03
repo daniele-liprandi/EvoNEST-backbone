@@ -121,14 +121,14 @@ After logging in for the first time, you'll see a **First Time Setup** dialog in
 
    This will:
 
-   - Create the default configuration in the database
+   - Create the default configuration in your NEST
    - Set up sample types (animal, plant, tissue, etc.)
    - Create default trait types (mass, length, etc.)
    - Configure equipment types
-   - Prepare the database structure
+   - Prepare the NEST structure
 
-::: tip Why is this needed?
-The first time you log in, EvoNEST needs to populate the database with default configurations. This is a one-time setup that prepares the system for use.
+::: tip What is a NEST?
+A **NEST** is what we call a database in EvoNEST. Think of it as a container for all your lab's data - samples, experiments, traits, and settings. Sometimes, research groups want to separate their data, so each project can have its own NEST, and users can be given access to specific NESTs. The first time you log in, EvoNEST creates your first NEST, admin, and populates it with default configurations.
 :::
 
 ## Step 4: Explore the dashboard
@@ -137,22 +137,22 @@ After initialization completes, you'll see the EvoNEST dashboard (homepage).
 
 ### What you'll see
 
-The dashboard provides an overview of your system:
+The dashboard provides an overview of your current NEST:
 
 #### 📊 **Total Entries**
 
 At the top, you'll see cards showing:
 
-- **Users** - Active users in the system
-- **Samples** - Total number of biological samples in the system
+- **Users** - Active users with access to this NEST
+- **Samples** - Total number of biological samples
 - **Experiments** - Number of experiments tracked
 - **Traits** - Total trait measurements recorded
 
-Right now, these will all show a **1** (just the admin user) since this is a fresh installation.
+Right now, these will all show a **1** (just the admin user) since this is a fresh NEST.
 
 #### 📰 **The collection over the world**
 
-A world map visualizing sample collection locations. Currently empty.
+A world map visualizing sample collection locations from your current NEST. Currently empty.
 
 #### 📝 **Name Checker**
 
@@ -179,14 +179,18 @@ Click through the different sections to get familiar with the interface. We'll w
 At the top or side of the screen, you'll see the main navigation menu with these sections:
 
 - 🏠 **Home** - Returns you to the dashboard
-- 👤 **Users** - Manage users and which databases they access
+- 👤 **Users** - Manage users and which NESTs they can access (you can also create additional NESTs here)
 - 🧬 **Samples** - Manage biological specimens, create parent samples and subsamples, search and filter
 - 🧪 **Experiments** - Record raw data from instruments, upload files, link to samples
 - 📏 **Traits** - Extract and record processed measurements, view clean data tables, statistical analysis
-- ⚙️ **Settings** - Configure sample types, trait types, equipment, and lab information
+- ⚙️ **Settings** - Configure sample types, trait types, equipment, and lab information for this NEST
 - 📚 **Documentation** - Access the main documentation
 
-At the top-right, you'll see the `Scan QR` button, the theme toggle, the current NEST, and the user avatar.
+At the top-right, you'll see the `Scan QR` button, the theme toggle, **the current NEST name**, and the user avatar.
+
+::: tip Managing Multiple NESTs
+From the **Users** page, admins can create additional NESTs for different projects or research groups. Users can be granted access to multiple NESTs and switch between them using the NEST selector in the top-right corner.
+:::
 
 ## Step 6: Understand the data structure
 
@@ -257,7 +261,7 @@ EvoNEST uses a hierarchical data model:
 
 ## Step 7: Explore additional features
 
-### User Profile
+### User profile
 
 1. **Click the avatar** in the top-right corner
 
@@ -289,19 +293,19 @@ If something isn't working, check:
 3. [Troubleshooting Guide](/tutorial/troubleshooting)
    :::
 
-## Quick Reference: Navigation Shortcuts
+## Quick reference: navigation shortcuts
 
 | Section          | What You'll Find                                  |
 | ---------------- | ------------------------------------------------- |
 | **Home**         | Dashboard, statistics, name checker, news         |
-| **Users**        | Manage users and database access                  |
+| **Users**        | Manage users, NEST access, create new NESTs      |
 | **Samples**      | Create and manage specimens, subsamples           |
 | **Experiments**  | Upload raw data from instruments, link to samples |
 | **Traits**       | Record processed measurements, data analysis      |
-| **Settings**     | Configure types, units, lab info                  |
-| **User Profile** | Account info, database selection, logout          |
+| **Settings**     | Configure types, units, lab info for current NEST |
+| **User Profile** | Account info, logout              |
 
-## Next Steps
+## Next steps
 
 **Great progress!** You've successfully logged in and explored the EvoNEST interface.
 
