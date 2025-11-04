@@ -33,7 +33,7 @@ In this module, you'll:
 
 Let's download the EvoNEST code to your computer.
 
-1. **Make sure you're in your workspace folder**
+### 1.1 Make sure you're in your workspace folder
 
    Check your current location:
 
@@ -43,7 +43,7 @@ Let's download the EvoNEST code to your computer.
 
    You should see your EvoNEST folder path (e.g., `/Users/YourName/Documents/EvoNEST`)
 
-2. **Clone the repository**
+### 1.2 Clone the repository
 
    ::: code-group
 
@@ -82,13 +82,13 @@ Let's download the EvoNEST code to your computer.
    - Reinstall Git from [git-scm.com](https://git-scm.com)
      :::
 
-3. **Enter the project directory**
+### 1.3 Enter the project directory
 
    ```bash
    cd EvoNEST-backbone
    ```
 
-4. **Verify the files are there**
+### 1.4 Verify the files are there
 
    List the contents:
 
@@ -111,7 +111,7 @@ Let's download the EvoNEST code to your computer.
    - `package.json` - Dependencies
    - `.env.example` - Example environment file
 
-5. **Open the project in VS Code**
+### 1.5 Open the project in VS Code
 
    Run this command to open the entire project folder in VS Code:
 
@@ -129,7 +129,7 @@ Let's download the EvoNEST code to your computer.
    - Alternatively, open VS Code manually and use File → Open Folder to open the `EvoNEST-backbone` folder
      :::
 
-6. **Optional: Use VS Code's integrated terminal**
+### 1.6 Optional: Use VS Code's integrated terminal
 
    Now that VS Code is open, you can switch to using its built-in terminal instead of your external terminal:
 
@@ -147,7 +147,7 @@ Let's download the EvoNEST code to your computer.
 
 EvoNEST uses NextAuth for authentication, which requires a secure secret key. Let's generate one.
 
-### Generate the secret
+### 2.1 Generate the secret
 
 ::: code-group
 
@@ -189,7 +189,7 @@ Copy this secret key somewhere safe - you'll need it in the next step. This key 
 
 Now we'll create configuration files with your secret key and database credentials.
 
-### 3.1 create `.env.local` file
+### 3.1 Create `.env.local` file
 
 This file stores your secret key.
 
@@ -231,7 +231,7 @@ echo NEXTAUTH_SECRET=PASTE_YOUR_SECRET_HERE > .env.local
 Then open it in VS Code to replace the placeholder with your actual secret.
 :::
 
-### 3.2 create `.env.development` file
+### 3.2 Create `.env.development` file
 
 This file configures the development environment.
 
@@ -260,7 +260,7 @@ This file configures the development environment.
 
 2. **Save the file** (Ctrl+S or Cmd+S)
 
-### 3.3 update Docker compose configuration
+### 3.3 Update Docker compose configuration
 
 Now we need to match the MongoDB credentials in the Docker configuration.
 
@@ -308,11 +308,11 @@ Now we need to match the MongoDB credentials in the Docker configuration.
 - [ ] `.env.development` - Contains database connection string
 - [ ] `docker-compose.dev.yml` - Updated with matching MongoDB credentials
 
-## Step 4: start EvoNEST with Docker
+## Step 4: Start EvoNEST with Docker
 
 Now for the exciting part - let's start EvoNEST!
 
-### 4.1 start Docker containers
+### 4.1 Start Docker containers
 
 Run this command in your terminal (make sure you're in the `EvoNEST-backbone` folder):
 
@@ -342,7 +342,7 @@ docker compose -f docker-compose.dev.yml up -d
 The first time you run this, Docker needs to download images (MongoDB, Node.js). This can take 5-10 minutes depending on your internet speed. Subsequent starts will be much faster (under 30 seconds).
 :::
 
-### 4.2 monitor the startup
+### 4.2 Monitor the startup
 
 Watch the logs to see EvoNEST starting up:
 
@@ -366,7 +366,7 @@ evonest_backbone_dev  |  ✓ Ready in 3.2s
 Press `Ctrl+C` to stop viewing logs (this won't stop the containers)
 :::
 
-### 4.3 wait for startup
+### 4.3 Wait for startup
 
 The application needs a minute or two to fully start. You'll know it's ready when you see:
 
@@ -402,11 +402,11 @@ docker compose -f docker-compose.dev.yml up --build -d
 
 :::
 
-## Step 5: verify installation
+## Step 5: Verify installation
 
 Let's make sure everything is running correctly.
 
-### 5.1 check container status
+### 5.1 Check container status
 
 ```bash
 docker compose -f docker-compose.dev.yml ps
@@ -423,7 +423,7 @@ mongo_express           Up          127.0.0.1:8081->8081/tcp
 
 All containers should show `Up` status. ✅
 
-### 5.2 access the application
+### 5.2 Access the application
 
 Open your web browser and go to:
 
@@ -441,7 +441,7 @@ A clean login interface with:
 
 :::
 
-### 5.3 check MongoDB (optional)
+### 5.3 Check MongoDB (optional)
 
 Verify the database is running by accessing Mongo Express:
 
@@ -480,7 +480,7 @@ You should see the MongoDB admin interface with databases listed.
 5. **Check your firewall** - make sure it's not blocking port 3005
    :::
 
-## Step 6: stop and start EvoNEST
+## Step 6: Stop and start EvoNEST
 
 Learn how to control your EvoNEST installation.
 
