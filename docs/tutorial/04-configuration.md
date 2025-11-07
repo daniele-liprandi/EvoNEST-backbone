@@ -12,7 +12,7 @@ By the end of this module, you will have:
 - ✅ Configured lab information
   :::
 
-**Estimated Time:** 30-40 minutes
+**Estimated Time:** 25-35 minutes
 
 ## Prerequisites
 

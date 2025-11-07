@@ -10,7 +10,7 @@ By the end of this module, you will have:
 - ✅ Created manual backups when needed
   :::
 
-**Estimated Time:** 30-45 minutes
+**Estimated Time:** 20-30 minutes
 
 ## Prerequisites
 

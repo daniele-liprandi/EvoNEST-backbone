@@ -11,7 +11,7 @@ By the end of this module, you will have:
 - ✅ Prepared your workspace
   :::
 
-**Estimated time:** 20-30 minutes, 30-50 minutes on Windows
+**Estimated time:** 20-50 minutes, depending on your system and internet speed.
 
 ---
 

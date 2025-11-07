@@ -10,7 +10,7 @@ By the end of this module, you will have:
 - ✅ Understood the main navigation
   :::
 
-**Estimated time:** 20 minutes
+**Estimated time:** 35-50 minutes
 
 ## Prerequisites
 

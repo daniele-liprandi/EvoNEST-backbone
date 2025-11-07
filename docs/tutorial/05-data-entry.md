@@ -11,7 +11,7 @@ By the end of this module, you will have:
 - ✅ Used the data explorer
   :::
 
-**Estimated Time:** 45-60 minutes
+**Estimated Time:** 25-35 minutes
 
 ## Prerequisites
 
