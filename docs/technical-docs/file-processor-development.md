@@ -6,7 +6,7 @@ Learn how to create custom file processors that handle specific file types and e
 
 File processors handle file-level operations such as image processing, document handling, and binary file management. Unlike data format parsers, they focus on file type detection and basic processing rather than extracting scientific traits.
 
-## Current Architecture
+## Current architecture
 
 ```
 Raw File → File Type Detection → File Processor → Processed File Data → Form Update
@@ -18,7 +18,7 @@ Raw File → File Type Detection → File Processor → Processed File Data → 
 4. **Form state updated** with processed file information
 5. **User sees preview** of processed file
 
-## When to Create File Processors
+## When to create file processors
 
 Create file processors when you need to:
 - Handle specific file extensions not covered by existing processors
@@ -29,16 +29,16 @@ Create file processors when you need to:
 
 **Note**: For scientific instrument data that needs trait extraction, create a [data format parser](./data-format-parser-development.md) instead.
 
-## Quick Start
+## Quick start
 
 1. **Create processor function** in `src/utils/file-management/processors/`
 2. **Define processor metadata** with supported formats and experiment types
 3. **Register** in `src/utils/file-management/processors/index.ts`
 4. **Test** with your file types
 
-## Creating a File Processor
+## Creating a file processor
 
-### 1. Basic Processor Structure
+### 1. Basic processor structure
 
 ```typescript
 import { FileProcessorParams } from './types';
@@ -122,7 +122,7 @@ async function processFile(file: File, content: ArrayBuffer | string): Promise<a
 }
 ```
 
-### 2. Image Processor Example
+### 2. Image processor example
 
 ```typescript
 export async function processImageFile(params: FileProcessorParams): Promise<void> {
@@ -185,7 +185,7 @@ export async function processImageFile(params: FileProcessorParams): Promise<voi
 }
 ```
 
-### 3. Document Processor Example
+### 3. Document processor example
 
 ```typescript
 export async function processDocumentFile(params: FileProcessorParams): Promise<void> {
@@ -204,7 +204,7 @@ export async function processDocumentFile(params: FileProcessorParams): Promise<
 }
 ```
 
-### 4. Register Your Processor
+### 4. Register your processor
 
 Add to `src/utils/file-management/processors/index.ts`:
 
@@ -219,7 +219,7 @@ export { processMyFileType, myFileTypeMetadata } from './my-file-processor';
 fileProcessorRegistry.register(myFileTypeMetadata, processMyFileType);
 ```
 
-## Processor Interface
+## Processor interface
 
 ### FileProcessorParams
 
@@ -237,7 +237,7 @@ export interface FileProcessorParams {
 export type FileProcessor = (params: FileProcessorParams) => Promise<void>;
 ```
 
-### Processor Metadata
+### Processor metadata
 
 ```typescript
 export interface ProcessorMetadata {
@@ -258,9 +258,9 @@ export interface ProcessorMetadata {
 }
 ```
 
-## File Reading Strategies
+## File reading strategies
 
-### Binary Files (Images, Documents)
+### Binary files (images, documents)
 
 ```typescript
 async function processBinaryFile(file: File): Promise<ArrayBuffer> {
@@ -276,7 +276,7 @@ async function processBinaryFile(file: File): Promise<ArrayBuffer> {
 }
 ```
 
-### Text Files
+### Text files
 
 ```typescript
 async function processTextFile(file: File): Promise<string> {
@@ -295,7 +295,7 @@ async function processTextFile(file: File): Promise<string> {
 }
 ```
 
-### Stream Processing (Large Files)
+### Stream processing (large files)
 
 ```typescript
 async function processLargeFile(file: File): Promise<void> {
@@ -316,7 +316,7 @@ async function processLargeFile(file: File): Promise<void> {
 }
 ```
 
-## Available Utility Functions
+## Available utility functions
 
 ### From `utils.ts`
 
@@ -335,9 +335,9 @@ const uniqueName = generateUniqueName(`${fileType}_${file.name}`, existingNames)
 updateFormValues(form, updatedValues, setFormState, setAllFileData);
 ```
 
-## Integration with File Upload
+## Integration with file upload
 
-### Automatic Processor Selection
+### Automatic processor selection
 
 File processors are automatically selected based on file extension:
 
@@ -368,7 +368,7 @@ switch (fileExtension) {
 }
 ```
 
-### Registry Integration
+### Registry integration
 
 The processor registry enables automatic discovery:
 
@@ -381,9 +381,9 @@ const supportedTypes = fileProcessorRegistry.getSupportedExperimentTypes();
 const processorInfo = fileProcessorRegistry.getMetadata('MyFileTypeProcessor');
 ```
 
-## Error Handling
+## Error handling
 
-### File Validation
+### File validation
 
 ```typescript
 async function validateFile(file: File): Promise<void> {
@@ -407,7 +407,7 @@ async function validateFile(file: File): Promise<void> {
 }
 ```
 
-### Processing Errors
+### Processing errors
 
 ```typescript
 export async function processMyFileType(params: FileProcessorParams): Promise<void> {
@@ -438,9 +438,9 @@ export async function processMyFileType(params: FileProcessorParams): Promise<vo
 }
 ```
 
-## Best Practices
+## Best practices
 
-### 1. Memory Management
+### 1. memory management
 
 ```typescript
 // For large files, process in chunks
@@ -461,7 +461,7 @@ async function processLargeImage(file: File): Promise<Blob> {
 }
 ```
 
-### 2. File Type Detection
+### 2. file type detection
 
 ```typescript
 function detectFileType(file: File): string {
@@ -478,7 +478,7 @@ function detectFileType(file: File): string {
 }
 ```
 
-### 3. Progressive Processing
+### 3. progressive processing
 
 ```typescript
 async function processFileWithProgress(file: File, onProgress?: (progress: number) => void): Promise<any> {
@@ -503,14 +503,14 @@ async function processFileWithProgress(file: File, onProgress?: (progress: numbe
 }
 ```
 
-## Available File Processors
+## Available file processors
 
 - **Image Processor**: JPEG, PNG, GIF, BMP, WebP, SVG - creates thumbnails and extracts dimensions
 - **TIFF Processor**: TIFF files with specialized scientific imaging support
 - **Document Processor**: PDF, DOC, TXT - handles document files for protocols
 - **Lossless Image Processor**: RAW and lossless formats preserving quality
 
-## Testing Your Processor
+## Testing your processor
 
 ```typescript
 // Test file processing

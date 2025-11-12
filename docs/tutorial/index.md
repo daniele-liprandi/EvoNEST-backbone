@@ -22,6 +22,7 @@ By the end of this tutorial, you will be able to:
 ## Who this guide is for
 
 This guide is designed for:
+
 - Researchers and lab technicians new to EvoNEST
 - Users with minimal command-line experience
 - Labs setting up EvoNEST for the first time
@@ -34,23 +35,25 @@ You don't need programming experience for this guide. We'll guide you through ev
 
 **Total duration:** Approximately 3-4 hours
 
-| Module | Topic | Duration |
-|--------|-------|----------|
-| 1 | [Preparation](/tutorial/01-preparation) | 20-30 min |
-| 2 | [Installation](/tutorial/02-installation) | 30 min |
-| 3 | [First launch](/tutorial/03-first-launch) | 20 min |
-| 4 | [Configuration](/tutorial/04-configuration) | 30 min |
-| 5 | [Data entry and management](/tutorial/05-data-entry) | 45 min |
-| 6 | [Backup & Maintenance](/tutorial/06-backup-maintenance) | 30-45 min |
+| Module | Topic                                                   | Duration  |
+| ------ | ------------------------------------------------------- | --------- |
+| 1      | [Preparation](/tutorial/01-preparation)                 | 20-30 min |
+| 2      | [Installation](/tutorial/02-installation)               | 30 min    |
+| 3      | [First launch](/tutorial/03-first-launch)               | 20 min    |
+| 4      | [Configuration](/tutorial/04-configuration)             | 30 min    |
+| 5      | [Data entry and management](/tutorial/05-data-entry)    | 45 min    |
+| 6      | [Backup & Maintenance](/tutorial/06-backup-maintenance) | 30-45 min |
 
 ## Guide modules
 
 ### Module 1: Preparation
+
 **[Start here → Preparation guide](/tutorial/01-preparation)**
 
 Get your computer ready for EvoNEST installation. Install required software (Docker Desktop) and verify system requirements.
 
 **What you'll do:**
+
 - Check system requirements
 - Install Docker Desktop
 - Download tutorial materials
@@ -58,11 +61,13 @@ Get your computer ready for EvoNEST installation. Install required software (Doc
 ---
 
 ### Module 2: Installation
+
 **[Installation guide →](/tutorial/02-installation)**
 
 Set up EvoNEST on your computer using Docker. This module walks through cloning the repository and starting the development environment.
 
 **What you'll do:**
+
 - Clone the EvoNEST repository
 - Configure environment files
 - Start EvoNEST with Docker
@@ -70,11 +75,13 @@ Set up EvoNEST on your computer using Docker. This module walks through cloning 
 ---
 
 ### Module 3: First launch
+
 **[First launch guide →](/tutorial/03-first-launch)**
 
 Launch EvoNEST for the first time, log in, and verify everything is working correctly.
 
 **What you'll do:**
+
 - Access the EvoNEST web interface
 - Log in with default credentials
 - Verify the installation
@@ -83,11 +90,13 @@ Launch EvoNEST for the first time, log in, and verify everything is working corr
 ---
 
 ### Module 4: Configuration
+
 **[Configuration guide →](/tutorial/04-configuration)**
 
 Customize EvoNEST for your laboratory. Set up sample types, trait types, equipment, and lab-specific settings.
 
 **What you'll do:**
+
 - Configure sample and subsample types
 - Define trait types with units
 - Set up sample ID generation rules
@@ -96,11 +105,13 @@ Customize EvoNEST for your laboratory. Set up sample types, trait types, equipme
 ---
 
 ### Module 5: Data entry and management
+
 **[Data entry guide →](/tutorial/05-data-entry)**
 
 Learn the core workflows for managing research data in EvoNEST through hands-on exercises.
 
 **What you'll do:**
+
 - Create biological samples
 - Record trait measurements
 - Manage experiments
@@ -110,11 +121,13 @@ Learn the core workflows for managing research data in EvoNEST through hands-on 
 ---
 
 ### Module 6: Backup & Maintenance
+
 **[Backup & Maintenance guide →](/tutorial/06-backup-maintenance)**
 
 Learn how to protect your data with EvoNEST's automated backup system and perform maintenance tasks.
 
 **What you'll do:**
+
 - Understand the automated backup system
 - Check backup status and logs
 - Download backups to your computer
@@ -129,11 +142,13 @@ This module applies to production deployments. The development environment does 
 ---
 
 ### Troubleshooting
+
 **[Troubleshooting guide →](/tutorial/troubleshooting)**
 
 Reference guide for common issues and solutions. Consult this when you encounter problems.
 
 **What's covered:**
+
 - Docker and container issues
 - Database connection problems
 - File upload errors
@@ -157,12 +172,14 @@ Each module follows this structure:
 Before starting the guide, ensure you have:
 
 - **A computer with:**
+
   - Windows 10/11, macOS 10.15+, or Linux
   - 8GB+ RAM (16GB recommended)
   - 20GB+ free disk space
   - Administrator/sudo privileges
 
 - **Internet connection** for:
+
   - Downloading Docker Desktop
   - Cloning the repository
   - Accessing documentation
@@ -201,4 +218,3 @@ Once you complete this tutorial, you'll have EvoNEST installed and know the basi
 ## Ready to begin?
 
 Let's get started! Head to **[Module 1: Preparation](/tutorial/01-preparation)** to begin setting up your environment.
-

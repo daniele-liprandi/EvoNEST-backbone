@@ -1,19 +1,19 @@
 # Component Development Guide
 
-## Modular Sample Card System
+## Modular sample card system
 
 The sample detail page (`src/app/(nest)/sample/[id]/page.js`) uses a modular card system that allows developers to add new card components without modifying the main page file. Both universal cards and type specific cards can be developed. This guide shows you exactly how to create and integrate new cards.
 
-### Quick Start
+### Quick start
 
 1. **Copy the template**: `src/components/sample-cards/TemplateCard.js`
 2. **Rename and customize** your card
 3. **Register in** `src/components/sample-cards/registry.js`
 4. **Done!** Your card automatically appears
 
-### Detailed Guide
+### Detailed guide
 
-#### 1. Card Component Structure
+#### 1. Card component structure
 
 All sample cards follow this pattern:
 
@@ -42,7 +42,7 @@ MyCard.supportedTypes = ['plant', 'animal'];
 MyCard.position = 'main'; // or 'sidebar'
 ```
 
-#### 2. Creating a New Card
+#### 2. Creating a new card
 
 **Step 1:** Copy the template
 ```bash
@@ -92,9 +92,9 @@ export const SAMPLE_CARDS = {
 
 That's it! Your card will automatically appear for samples of type `my-sample-type`.
 
-### Card Features
+### Card features
 
-#### Props Available to Cards
+#### Props available to cards
 
 - `sample` - Current sample data (required)
 - `handleChange` - Function to update sample fields (required)  
@@ -103,7 +103,7 @@ That's it! Your card will automatically appear for samples of type `my-sample-ty
 - `usersData` - All users (for dropdowns)
 - `handleStatusIncrementSample` - Increment counters
 
-#### Card Positioning
+#### Card positioning
 
 ```javascript
 MyCard.position = 'main';    // Left column (main content)
@@ -111,7 +111,7 @@ MyCard.position = 'sidebar'; // Right column
 MyCard.position = 'full';    // Full width
 ```
 
-#### Conditional Rendering
+#### Conditional rendering
 
 ```javascript
 MyCard.shouldRender = (sample) => {
@@ -119,7 +119,7 @@ MyCard.shouldRender = (sample) => {
 };
 ```
 
-#### Card Dependencies
+#### Card dependencies
 
 ```javascript
 MyCard.dependencies = ['usersData', 'handleStatusIncrementSample'];
@@ -127,7 +127,7 @@ MyCard.dependencies = ['usersData', 'handleStatusIncrementSample'];
 
 ### Examples
 
-#### Simple Input Card
+#### Simple input card
 ```javascript
 export function SimpleCard({ sample, handleChange }) {
   if (!sample || typeof handleChange !== 'function') {
@@ -156,7 +156,7 @@ SimpleCard.supportedTypes = ['any-type'];
 SimpleCard.position = 'main';
 ```
 
-#### Action Card with Button
+#### Action card with button
 ```javascript
 export function ActionCard({ sample, handleStatusIncrementSample, setSample }) {
   if (!sample) return <Skeleton className="h-[200px] w-full" />;
@@ -194,7 +194,7 @@ ActionCard.position = 'sidebar';
 ActionCard.dependencies = ['handleStatusIncrementSample', 'setSample'];
 ```
 
-### File Structure
+### File structure
 
 ```
 src/components/sample-cards/
@@ -207,7 +207,7 @@ src/components/sample-cards/
 └── YourNewCard.js       # Your custom cards
 ```
 
-### Best Practices
+### Best practices
 
 1. **Always include guard clauses** for prop validation
 2. **Use Skeleton** for loading states
@@ -216,7 +216,7 @@ src/components/sample-cards/
 5. **Handle missing data gracefully**
 6. **Use semantic HTML** and proper labels
 
-### Migration from Existing Code
+### Migration from existing code
 
 To convert existing inline cards to the modular system:
 

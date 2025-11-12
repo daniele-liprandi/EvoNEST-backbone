@@ -58,7 +58,7 @@ EvoNEST (Evolutionary, ecological and biological Nexus of Experiments, Samples, 
   </a>
 </div>
 
-### Our Mission
+### Our mission
 
 EvoNEST aims to **democratise access to biodiversity data**, **preserve data privacy and ownership**, and **increase the efficiency of laboratories** dealing with different types of organismal data. We help laboratories and researchers by centralising, annotating, and harmonising their data, making ecological, evolutionary and biological analysis easier and more transparent. As the scientific community and funding agencies increasingly require transparency and data preservation, EvoNEST provides a unified platform for data collection, storage, and organism maintenance. By aiding the digitisation of phenotypic data, we want EvoNEST to contribute to advancing our understanding of biodiversity and evolutionary processes. 
 
@@ -96,11 +96,11 @@ const members = [
 ]
 </script>
 
-## Our Team
+## Our team
 
 <VPTeamMembers size="small" :members />
 
-## Need Help?
+## Need help?
 
 - Browse the documentation sections above
 - Check our [FAQ](/user-docs/faq) for common questions

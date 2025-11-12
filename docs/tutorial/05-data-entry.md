@@ -2,55 +2,48 @@
 
 ::: tip Learning Objectives
 By the end of this module, you will have:
+
 - ✅ Created your first biological sample
 - ✅ Added subsamples (tissues/parts)
 - ✅ Recorded trait measurements
 - ✅ Uploaded files and images
-- ✅ Created an experiment
+- ✅ Created experiments with file uploads
 - ✅ Used the data explorer
-:::
+  :::
 
-**Estimated Time:** 45-60 minutes
-
----
+**Estimated Time:** 25-35 minutes
 
 ## Prerequisites
 
 Before starting this module, make sure you've completed [Module 4: Configuration](/tutorial/04-configuration) and have:
-- ✅ Sample types configured
+
+- ✅ Sample and subsample types configured
 - ✅ Trait types with units set up
 - ✅ EvoNEST running and logged in
 
----
-
 ## Overview
 
-Now for the fun part - adding real data to EvoNEST! In this hands-on module, you'll learn the complete workflow:
+Now for the practical part - adding real data to EvoNEST! In this hands-on module, you'll learn the complete workflow:
 
-1. Create a parent sample (whole specimen)
-2. Add subsamples (tissues or parts)
+1. Create a parent sample (an animal specimen)
+2. Add subsamples
 3. Record trait measurements
-4. Upload images and documents
-5. Organize data into an experiment
+4. Create experiments by uploading images
+5. Explore and manage your data
 
 We'll use a practical example you can adapt to your own research.
 
----
-
-## Exercise: Spider Silk Research Workflow
+## Exercise: Spider silk research workflow
 
 Let's work through a realistic example: documenting a spider specimen and measuring its silk properties.
 
-**Scenario:** You've collected a garden spider (*Araneus diadematus*) and want to:
+**Scenario:** You've collected a garden spider (_Araneus diadematus_) and want to:
+
 - Document the specimen
 - Extract silk samples
 - Measure silk diameter
-- Test mechanical properties
-- Organize everything in an experiment
 
----
-
-## Step 1: Create a Parent Sample
+## Step 1: Create a parent sample
 
 The parent sample represents the whole organism.
 
@@ -58,166 +51,140 @@ The parent sample represents the whole organism.
 
 1. **Click "Samples"** in the main navigation
 
-2. **Click "Add Sample"** or "Create Sample" button
-   - Usually at the top-right of the samples table
+2. **Click "Add New Sample"**
 
-3. **A form will appear** (might be a modal or new page)
+3. **A form will appear**
 
-### 1.2 Fill in Basic Information
+### 1.2 Fill in General tab
 
-Fill in the following fields:
+The form has multiple tabs. Start with the **General** tab:
 
-**Identification:**
-- **Sample Name:** Leave blank to auto-generate, or enter: `AranDiad01`
 - **Sample Type:** Select `animal` (or your custom type)
+- **Notes:** (optional) Add any general observations
 
-**Taxonomy:**
-- **Family:** `Araneidae`
+### 1.3 Fill in Details tab
+
+Click the **Details** tab:
+
+**Collection Information:**
+
+- **Responsible:** Select `admin` (your username)
+- **Location:** Insert any address you like, e.g., `Torino Botanical Garden, Italy`
+- **Latitude:** and **Longitude:** are going to get auto-filled using the address
+- **Collection Date:** Click calendar icon, select any past date, or leave it as today
+- **Parent Sample:** Leave blank (this is a parent sample)
+
+::: tip Location Helpers
+Use the "Use current location" button to auto-fill coordinates, or "Use lab location" to use configured lab coordinates.
+:::
+
+### 1.4 Fill in Animal tab
+
+Click the **Animal** tab for taxonomy:
+
 - **Genus:** `Araneus`
 - **Species:** `diadematus`
 
+The form validates taxonomy and auto-fills the family and nomenclature field.
+
+- **Sex:** `Female`
+
+
+### 1.6 Review auto-generated name
+
+At the bottom of the form, you'll see:
+
+- **Sample Name:** Auto-generated as `Aradia001` (based on genus + species)
+
 ::: tip Auto-Generated IDs
-If you set up ID generation in Module 4, leaving the name blank will auto-generate it from taxonomy: `AranDiad01`
+The name changes depending on what you set as naming rules in Module 4.
 :::
 
-### 1.3 Add Collection Metadata
+### 1.7 Submit the sample
 
-**Collection Information:**
-- **Collection Date:** Click calendar icon, select today's date
-- **Location:** `University Botanical Garden, Berlin`
-- **Latitude:** `52.5200` (optional)
-- **Longitude:** `13.4050` (optional)
-- **Collector/Responsible:** Select `admin` (your username)
+1. **Review** all tabs
 
-**Physical Location:**
-- **Box:** `A1` (where you store the specimen)
-- **Slot:** `001` (position in the box)
-
-### 1.4 Add Notes and Additional Info
-
-**Optional Fields:**
-- **Sex:** `F` (if known)
-- **Life Stage:** `adult`
-- **Notes:**
-  ```
-  Adult female garden spider collected from rose bush.
-  Specimen is alive and producing web. Will extract
-  dragline silk for mechanical testing.
-  ```
-
-### 1.5 Upload a Photo (Optional)
-
-If you have a photo:
-
-1. **Find the "Upload Image"** or "Add Photo" section
-
-2. **Click to browse** or drag-and-drop
-
-3. **Select** your specimen photo
-
-4. **Wait** for upload to complete (you'll see a thumbnail)
-
-::: details Supported Image Formats
-- JPEG/JPG
-- PNG
-- TIFF (for high-res scientific images)
-- Maximum size typically 10-50MB
-:::
-
-### 1.6 Save the Sample
-
-1. **Review** all fields
-
-2. **Click "Create Sample"** or "Save"
+2. **Click "Submit"** button at the bottom
 
 3. **Success!** You should see:
    - Confirmation message
    - The new sample in the samples table
-   - A sample ID (e.g., `AranDiad01`)
+   - A sample ID (e.g., `Aradia001`)
 
 ::: tip First Sample Created! 🎉
 Congratulations! You've created your first sample in EvoNEST.
 :::
 
----
-
-## Step 2: Create Subsamples
+## Step 2: Create subsamples
 
 Subsamples represent parts or derivatives of the parent sample.
 
 ### 2.1 Access Subsample Creation
 
 **Method 1: From Sample Detail Page**
-1. Click on your newly created sample (`AranDiad01`)
+
+1. Click on your newly created sample (`Aradia001`)
 2. Find "Add Subsample" button
 3. Click it
 
 **Method 2: From Samples List**
+
 1. Find your sample in the table
 2. Click the "+" or "Add Subsample" action
 3. Form opens
 
-### 2.2 Create First Subsample - Dragline Silk
+### 2.2 Create first subsample - dragline silk
 
-Fill in the subsample form:
+The subsample form also has tabs. Fill them in order:
 
-**Identification:**
-- **Name:** Leave blank to auto-generate as `AranDiad01_01`
-- **Subsample Type:** Select `silk` or `dragline` (from your configured types)
-- **Parent Sample:** Should auto-fill as `AranDiad01`
+**General tab:**
 
-**Inherit from Parent:**
-Most fields will copy from the parent:
-- Family, Genus, Species (auto-filled)
-- Location (auto-filled)
-- Responsible (auto-filled)
+- **Type:** Select `silk` (from your configured types)
 
-**Subsample-Specific Info:**
-- **Date:** Today (sample extraction date)
-- **Box/Slot:** `A1` / `001a`
-- **Notes:**
-  ```
-  Dragline silk collected using forced silking method.
-  Approximately 50 meters collected on cardboard frame.
-  ```
+**Details tab:**
 
-**Save** the subsample.
+- **Responsible:** `admin` (auto-filled)
+- **Location:** Use any address, or lab location
+- **Date:** Leave it as today or edit it
+- **Parent Sample:** Select `Aradia001`
 
-### 2.3 Create Second Subsample - Capture Spiral Silk
+When you select the parent, taxonomy fields auto-fill.
 
-Let's add another subsample:
+**Subsample tab:**
 
-1. **Click "Add Subsample"** again
+- **Subsample Type:** write `dragline` (from your configured types)
+- **Include Subsample Shortened:** Check this to add subsample type code to the name
+- **Box:** `1`
+- **Slot:** `1`
 
-2. **Fill in:**
-   - **Name:** `AranDiad01_02` (or auto-generate)
-   - **Subsample Type:** `capture_spiral` or `silk`
-   - **Date:** Today
-   - **Box/Slot:** `A1` / `001b`
-   - **Notes:** `Capture spiral silk from orb web`
+The **Name** field at the bottom auto-generates as `Aradia001_dl001` (with dragline shortcode `dl`).
 
-3. **Save**
+**Click "Submit"** to save.
+
+### 2.3 Create second subsample  of the same type
+
+If you now press again `Submit`, you can create a second subsample of the same type. The name should auto-generate as `Aradia001_dl002`.
+
+3. **Click "Submit"**
 
 ::: tip Multiple Subsamples
 You can create as many subsamples as needed from one parent:
+
 - Different tissues (muscle, bone, organs)
 - Different silk types (dragline, capture spiral, egg sac)
 - Replicates (multiple extractions)
 - Time series (samples at different dates)
-:::
+  :::
 
-### Verify Subsamples
+### Verify subsamples
 
-1. **Go back to the parent sample detail page**
+1. **Click on the parent sample name (`Aradia001`)**
 
 2. **You should see:**
-   - List of associated subsamples
-   - Links to each subsample
-   - The hierarchical relationship
+   - A detailed page with all the sample info
+   - On the right, a list of associated subsamples
 
----
-
-## Step 3: Record Trait Measurements
+## Step 3: Record trait measurements
 
 Now let's add measurements for your silk samples.
 
@@ -227,201 +194,188 @@ Now let's add measurements for your silk samples.
 
 2. **Click "Add Trait"** or "Record Measurement"
 
-### 3.2 Record Fiber Diameter
+### 3.2 Record fibre diameter
 
-Let's measure the diameter of the dragline silk.
+The trait form is organized in tabs. Let's fill them:
 
-**Basic Information:**
-- **Trait Type:** Select `diameter` (or your measurement type)
-- **Sample:** Select `AranDiad01_01` (the dragline silk subsample)
-- **Date:** Today
-- **Responsible:** `admin`
+**General tab:**
 
-**Measurement Values:**
+- **Trait Type:** Select `diameter`
+- **Equipment:** Select `light_microscope` (or add custom equipment)
 
-You have two options:
+**Details tab:**
 
-**Option A: Single Measurement**
-- **Measurement:** `3.2`
-- **Unit:** Should show `μm` (from your configuration)
-- **Standard Deviation:** Leave blank if single measurement
+- **User:** `admin` (auto-filled)
+- **Date of measurement:** Today
 
-**Option B: Multiple Measurements (Recommended)**
-- **List Values:** Enter replicate measurements
+**Values tab:**
+
+- **Sample:** Select `Aradia001_dl001` (the dragline silk subsample)
+- **Detail of the sample measured:** `all` or `mid-section`
+- **Measurements:** Enter replicate values (separate them via comma):
   ```
   3.1, 3.3, 3.2, 3.4, 3.0
   ```
-- EvoNEST will calculate:
-  - **Mean:** 3.2 μm
-  - **Standard Deviation:** 0.15 μm
+- **Unit:** `μm` 
 
-**Additional Info:**
-- **Equipment:** Select `light_microscope` (from your equipment list)
-- **Detail/Method:**
-  ```
-  Measured using calibrated light microscope at 400x magnification.
-  Five replicate measurements from different locations on the fiber.
-  ```
-- **Notes:** `Measurements taken at 20°C, 50% humidity`
+EvoNEST automatically calculates:
+- **Mean:** 3.2 μm
+- **Standard Deviation:** 0.15 μm
 
-**Save** the trait.
+**Click "Submit"** to save.
 
-### 3.3 Record Tensile Strength
-
-Add another measurement:
+### 3.3 Record tensile strength
 
 1. **Click "Add Trait"** again
 
-2. **Fill in:**
+2. Fill in the tabs:
+
+   **General tab:**
    - **Trait Type:** `tensile_strength`
-   - **Sample:** `AranDiad01_01`
-   - **Measurement:** `1100` (or enter list values)
+   - **Equipment:** `t150_utm`
+   
+   **Details tab:**
+   - **Date:** Today
+   
+   **Values tab:**
+   - **Sample:** `Aradia001_dl001`
+   - **Detail:** `single fibre`
+   - **Measurements:** `1100` (or list: `1100, 1050, 1150`)
    - **Unit:** `MPa`
-   - **Equipment:** `instron_5944`
-   - **Notes:** `Gauge length 20mm, strain rate 1%/min`
 
-3. **Save**
+3. **Click "Submit"**
 
-### 3.4 Practice: Add More Traits
 
-Add measurements for your second subsample (`AranDiad01_02`):
+## Step 4: Create an experiment with images
 
-::: details Practice Measurements
-**For capture spiral silk:**
-- Diameter: ~2.5 μm (thinner than dragline)
-- Tensile strength: ~500 MPa (weaker than dragline)
-- Extensibility: ~50% (more stretchy)
+In EvoNEST, experiments are created by uploading files (images, documents, or data files) and linking them to samples.
+
+::: tip Experiments and Data Parsing
+**Advanced Feature:** EvoNEST can automatically parse data files (CSV, XLSX, instrument outputs) to extract trait measurements. When you upload structured data files, custom parsers can:
+- Automatically extract measurements
+- Create trait entries
+- Link data to samples
+- Generate statistics
+
+**In this tutorial**, we'll use simple image uploads to learn the basics. If you're interested in creating custom parsers for your instrument data, see the [Data Format Parser Development Guide](/developer-docs/data-format-parser-development) and [File Processor Development Guide](/developer-docs/file-processor-development) after completing the tutorial.
 :::
 
----
+### 4.1 Download practice images
 
-## Step 4: Upload Files and Images
+Let's use real images for this exercise:
 
-Attach documents, images, and data files to your samples or traits.
+1. **Download the spider specimen photo:**
+   - Right-click and save: [Araneus diadematus specimen](https://upload.wikimedia.org/wikipedia/commons/1/16/Araneus_diadematus_MHNT_Femelle_Fronton.jpg)
+   - Save as: `Aradia001_specimen.jpg`
 
-### 4.1 Upload to Sample
+2. **Download the silk microscopy image:**
+   - Right-click and save: [Spider silk SEM image](https://spider-silkome-db-bucket.s3.amazonaws.com/mechanical_properties/semx2000s/000/000/084/original/IDV6054_MCH627_S2K449.jpg?1585109565)
+   - Save as: `Aradia001_silk_SEM.jpg`
 
-1. **Go to your sample** (`AranDiad01`)
-
-2. **Find the "Files" or "Attachments" section**
-
-3. **Click "Upload File"** or drag-and-drop
-
-4. **Select a file:**
-   - Photo of the spider
-   - Field notes (PDF, DOCX)
-   - Data sheets (XLSX, CSV)
-
-5. **Add description:** `Field photo of specimen`
-
-6. **Upload**
-
-### 4.2 Upload to Trait
-
-You can also attach files to specific measurements:
-
-1. **Go to Traits** → Find your diameter measurement
-
-2. **Click to view/edit** the trait
-
-3. **Upload:**
-   - Microscope image
-   - Raw data file
-   - Analysis spreadsheet
-
-::: tip Supported File Types
-**Images:** JPEG, PNG, TIFF, BMP
-**Documents:** PDF, DOCX, TXT, MD
-**Data:** XLSX, CSV, JSON, YAML
-**Archives:** ZIP (for multiple files)
-:::
-
----
-
-## Step 5: Create an Experiment
-
-Organize your samples and traits into a research project.
-
-### 5.1 Navigate to Experiments
+### 4.2 Navigate to Experiments
 
 1. **Click "Experiments"** in the main navigation
 
-2. **Click "Create Experiment"** or "New Experiment"
+2. **Click "Add Experiment"** or "New Experiment"
 
-### 5.2 Fill in Experiment Details
+3. **The experiment form opens** with tabs
 
-**Basic Information:**
-- **Experiment Name:** `Garden Spider Silk Mechanics - Spring 2024`
-- **Experiment Type:** `biomechanics` (or your custom type)
-- **Date:** Today (start date)
-- **Responsible:** `admin`
+### 4.3 Upload specimen image as experiment
 
-**Description:**
-```
-Characterization of mechanical properties of dragline and capture
-spiral silk from Araneus diadematus. Investigating the relationship
-between silk diameter and tensile strength. Part of comparative
-study on spider silk evolution.
-```
+Let's create our first experiment - the specimen documentation.
 
-**Objectives:**
-```
-1. Measure fiber diameters using light microscopy
-2. Conduct tensile testing to determine strength and extensibility
-3. Compare dragline vs capture spiral properties
-4. Document specimen collection and silk extraction methods
-```
+**General tab:**
 
-### 5.3 Link Samples to Experiment
+1. **Responsible:** `admin` (auto-filled)
 
-**Add Samples:**
-1. **Find the "Samples" section** in the experiment form
+2. **Import file:** Click or drag-and-drop the `Aradia001_specimen.jpg` image
 
-2. **Click "Add Sample"** or select from dropdown
+3. **Experiment Type:** Select `image`
+   - EvoNEST automatically detects it's an image file
 
-3. **Select:**
-   - `AranDiad01` (parent sample)
-   - `AranDiad01_01` (dragline silk)
-   - `AranDiad01_02` (capture spiral silk)
+4. **Experiment Name:** `Aradia001 - Specimen Photo`
 
-4. All traits associated with these samples will be included
+5. **Optional notes:**
+   ```
+   Adult female Araneus diadematus specimen. 
+   Collected from University Botanical Garden.
+   ```
 
-### 5.4 Upload Protocol/Methods (Optional)
+**Details tab:**
 
-**Add Files:**
-1. **Find "Upload Document"** or "Attachments" section
+1. **Sample:** Select `Aradia001` (your parent sample)
+   - This links the image to the specimen
 
-2. **Upload:**
-   - Research protocol (PDF)
-   - Data collection sheets
-   - Equipment calibration records
-   - Ethics approval (if applicable)
+**Image tab** (appears when type is "image"):
 
-### 5.5 Save the Experiment
+- Shows preview of your uploaded image
+- **Sample Name:** Should show `Aradia001` (auto-linked)
 
-1. **Review** all information
+**Click "Submit"** - Your first experiment is created!
 
-2. **Click "Create Experiment"** or "Save"
+::: tip What Are Experiments?
+Experiments in EvoNEST store and organize research files:
 
-3. **Success!** Your experiment is created and linked to all relevant data
+**Basic file storage (this tutorial):**
+- Images (specimen photos, microscopy, etc.)
+- Documents (protocols, notes, reports)
+- Linked to samples for organization
 
----
+**Advanced data parsing (optional):**
+- Upload structured data files (CSV, XLSX, instrument outputs)
+- Automatic trait extraction via custom parsers
+- Measurements automatically linked to samples
+- Statistical analysis of parsed data
 
-## Step 6: Use the Data Explorer
+For simple documentation (images, PDFs), experiments work as file containers. For instrument data and measurements, you can develop custom parsers to automate trait extraction. See [Developer Documentation](/developer-docs/) to learn more.
+:::
+
+### 4.4 Create a second experiment - silk microscopy
+
+Now let's add the silk SEM image:
+
+1. **Click "Add Experiment"** again
+
+2. **General tab:**
+   - **Import file:** Upload `Aradia001_silk_SEM.jpg`
+   - **Experiment Type:** `image`
+   - **Experiment Name:** `Aradia001_dl001 - Silk SEM Microscopy`
+   - **Notes:** `SEM image of dragline silk at 2000x magnification`
+
+3. **Details tab:**
+   - **Sample:** Select `Aradia001_dl001` (the dragline silk subsample)
+
+4. **Click "Submit"**
+
+### 4.5 View your experiments
+
+1. **Go to "Experiments"** in the main navigation
+
+2. **You should see** your two image experiments listed
+
+3. **Click on an experiment** to view:
+   - The full image
+   - Linked sample information
+   - Upload date and responsible user
+   - Any notes you added
+
+## Step 5: Explore your data
 
 Learn to find and filter your data.
 
-### 6.1 Explore Samples
+### 5.1 Explore samples
 
-1. **Go to "Samples"**
+1. **Go to "Samples" → "Animal"**
 
-2. **Try the filters:**
+2. **Try the table filters:**
+
    - **Family:** Type `Araneidae` → See only spider family
    - **Type:** Select `animal` → Filter by sample type
    - **Date Range:** Select this month → Recent samples
    - **Responsible:** Select your name → Your samples only
 
 3. **Search:**
+
    - Type `Araneus` in search box
    - See matching samples
 
@@ -429,76 +383,44 @@ Learn to find and filter your data.
    - Click column headers to sort
    - Click again to reverse order
 
-### 6.2 Explore Traits
+### 5.2 Explore traits
 
-1. **Go to "Traits"**
+1. **Go to "Traits" → "Analysis"**
 
-2. **Filter by:**
-   - **Trait Type:** `diameter` → See only diameter measurements
-   - **Sample:** `AranDiad01_01` → Measurements for specific sample
-   - **Equipment:** `light_microscope` → Filter by measurement tool
-   - **Date Range:** This week
+2. **Select Trait "Fibre Diameter"**
 
 3. **View statistics:**
    - Min, max, mean, std dev (if configured)
 
-### 6.3 View Experiment Summary
-
-1. **Go to "Experiments"**
-
-2. **Click on your experiment**
-
-3. **You'll see:**
-   - All linked samples
-   - All associated traits
-   - Attached files
-   - Complete project overview
-
-::: tip Data Explorer Features
-**Advanced features to try:**
-- **Export data** - Download filtered results as CSV/Excel
-- **Bulk operations** - Select multiple items, apply actions
-- **Visualizations** - Plot measurements (if available)
-- **Print/PDF** - Generate reports
-:::
-
----
-
-## Step 7: Edit and Update Data
+## Step 6: Edit and update data
 
 Learn to modify existing entries.
 
-### Edit a Sample
+### Edit a sample
 
-1. **Go to Samples** → Find `AranDiad01`
+1. **Go to the Animal table or the General table of Samples** → Find `Aradia001`
 
-2. **Click the sample name** or "Edit" button
+2. **Click the sample name** to open the sample page
 
-3. **Make changes:**
+3. **Make changes** in the relevant tabs:
+
    - Update notes
-   - Add more photos
-   - Correct typos
-   - Add missing information
-
-4. **Save**
+   - Set the life stage of the animal
+   - Correct taxonomy in Animal tab
 
 5. **Check logbook:**
    - EvoNEST tracks all changes
    - View change history in the logbook section
 
-### Edit a Trait
+### Edit a trait
 
-1. **Go to Traits** → Find a measurement
+1. **In the same page, click the button "See Sample Traits"**
 
-2. **Edit:**
-   - Correct values
-   - Add more replicates
-   - Update equipment used
-
-3. **Save**
+3. **Make changes** directly in the table:
 
 ::: warning Data Integrity
 EvoNEST maintains a **logbook** (change history) for all edits:
+
 - Who made the change
 - When it was changed
 - What was changed
@@ -506,99 +428,68 @@ EvoNEST maintains a **logbook** (change history) for all edits:
 This ensures transparency and traceability of your data.
 :::
 
----
-
-## Practice Exercises
+## Practice exercises
 
 Now it's your turn! Practice by adding more data:
 
-### Exercise 1: Add Another Specimen
+### Exercise 1: Add another specimen
 
 Create a second spider sample:
-- Different species (e.g., *Latrodectus hesperus*)
+
+- Different species (e.g., _Latrodectus hesperus_)
 - With subsamples
 - With measurements
-- In the same experiment
+- Upload a specimen photo as an experiment
 
-### Exercise 2: Time Series Data
+### Exercise 2: Time series data
 
 Add measurements over time:
+
 - Day 1: Initial diameter measurement
 - Day 7: After conditioning
 - Day 14: After stress testing
 
 (Use same sample, different dates)
 
-### Exercise 3: Replicates
+### Exercise 3: Multiple images
 
-For one subsample, add:
-- 5 diameter measurements (replicates)
-- 5 tensile strength measurements
-- Calculate mean and std dev
+For one subsample, upload:
 
----
+- Light microscopy image (experiment)
+- SEM image (experiment)
+- Field photo (experiment)
+- Link all to the same sample
 
-## Checkpoint: Data Entry Complete?
+## Checkpoint: Data entry complete?
 
 Before moving to the next module, verify:
 
 - [ ] Created at least one parent sample
 - [ ] Added at least one subsample
 - [ ] Recorded at least 2 trait measurements
-- [ ] Uploaded at least one file/image
-- [ ] Created an experiment linking samples and traits
+- [ ] Uploaded at least 2 images as experiments
+- [ ] Linked experiments to the correct samples
 - [ ] Used filters to explore data
 - [ ] Edited an entry and checked the logbook
-- [ ] Understand the sample → subsample → trait hierarchy
+- [ ] Understand the sample → subsample → trait → experiment hierarchy
 
-::: tip Data Entry Skills Achieved!
+::: tip Data entry skills achieved!
 You now have the core skills to use EvoNEST for your research data management!
+
+**Ready for advanced features?** If you work with instrument data files (tensile testers, spectroscopy, chromatography, etc.), you can create custom parsers to automatically extract measurements from data files. See:
+- [Data Format Parser Development](/developer-docs/data-format-parser-development) - Parse structured data files
+- [File Processor Development](/developer-docs/file-processor-development) - Handle custom file formats
+- [Developer Documentation](/developer-docs/) - Technical guides and API reference
 :::
 
----
-
-## Best Practices for Data Entry
-
-### Consistency is Key
-
-- **Use standard taxonomic names** - Check against databases (GBIF, WoRMS)
-- **Consistent units** - Always use the same units for each trait type
-- **Detailed notes** - Future you will thank past you
-- **Regular backups** - Learn more in [Module 6: Backup & Maintenance](/tutorial/06-backup-maintenance)
-
-### Metadata Matters
-
-Always record:
-- **When** - Dates for collection, measurements, analysis
-- **Where** - Location, equipment, lab conditions
-- **Who** - Responsible person, collector, measurer
-- **How** - Methods, equipment settings, protocols
-
-### File Organization
-
-- **Name files descriptively** - `AranDiad01_microscope_400x.jpg`
-- **Include scale bars** in images
-- **Document units** in spreadsheets
-- **Use version control** for protocols
-
-### Quality Control
-
-- **Enter replicates** - Multiple measurements improve accuracy
-- **Check for typos** - Review before saving
-- **Verify units** - Double-check mm vs μm, g vs kg
-- **Use logbook** - Document why you made changes
-
----
-
-## Next Steps
+## Next steps
 
 Congratulations on completing the data entry module! You now know how to manage research data in EvoNEST.
 
-### Continue Learning
+### Continue learning
 
 - **[Module 6: Backup & Maintenance](/tutorial/06-backup-maintenance)** - Protect your data with automated backups
 - **[Troubleshooting](/tutorial/troubleshooting)** - Fix common problems
 - **[User Documentation](/user-docs/)** - Explore advanced features
 - **[Data Import Guide](/user-docs/data-import)** - Import existing data
 - **[Data Analysis Guide](/user-docs/data-analysis)** - Analyze your data
-

@@ -2,7 +2,7 @@
 
 This directory contains the source files for the EvoNEST documentation website, built with [VitePress](https://vitepress.dev/).
 
-## Local Development with Docker
+## Local development with Docker
 
 ### Prerequisites
 
@@ -23,7 +23,7 @@ docker-compose up
 
 The documentation will be available at `http://localhost:5173`
 
-### Alternative: One-time setup
+### Alternative: one-time setup
 ```bash
 # Build the image
 docker-compose build
@@ -32,7 +32,7 @@ docker-compose build
 docker-compose up docs
 ```
 
-## Building for Production
+## Building for production
 
 ```bash
 # Build the documentation
@@ -41,7 +41,7 @@ docker-compose --profile build run --rm docs-build
 # The built files will be in .vitepress/dist/
 ```
 
-## Alternative Node.js Setup (if you have Node.js installed)
+## Alternative Node.js setup (if you have Node.js installed)
 
 ```bash
 npm install
@@ -50,7 +50,7 @@ npm run docs:build    # Production build
 npm run docs:preview  # Preview build
 ```
 
-## Documentation Structure
+## Documentation structure
 
 ```
 docs/
@@ -63,14 +63,14 @@ docs/
 └── index.md             # Homepage
 ```
 
-## Contributing to Documentation
+## Contributing to documentation
 
 1. Create a new branch for your changes
 2. Make your edits to the relevant markdown files
 3. Test locally with `npm run docs:dev`
 4. Submit a pull request
 
-### Writing Guidelines
+### Writing guidelines
 
 - Use clear, concise language
 - Include code examples where appropriate

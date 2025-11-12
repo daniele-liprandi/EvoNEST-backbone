@@ -4,9 +4,9 @@
 
 EvoNEST uses a simple admin-controlled user management system. Only administrators can create new user accounts and manage database access.
 
-## Getting Started
+## Getting started
 
-### Default Admin Account
+### Default admin account
 
 When you first start EvoNEST, a default admin account is automatically created:
 
@@ -15,7 +15,7 @@ When you first start EvoNEST, a default admin account is automatically created:
 - **Role**: Administrator
 - **Database Access**: `admin`
 
-### Creating New Users
+### Creating new users
 
 Only administrators can create new users:
 
@@ -30,7 +30,7 @@ Only administrators can create new users:
    - **Databases**: Select which databases the user can access
 5. Click **Submit**
 
-### Managing Database Access
+### Managing database access
 
 Administrators can change a user's database access:
 
@@ -40,7 +40,7 @@ Administrators can change a user's database access:
 4. Select/deselect databases as needed
 5. Click **Update Databases**
 
-### Managing Databases
+### Managing databases
 
 Administrators can add new databases to the system:
 
@@ -49,13 +49,13 @@ Administrators can add new databases to the system:
 3. Enter a new database name
 4. Click **Add**
 
-## Current Limitations
+## Current limitations
 
 - Users cannot self-register
 - Users cannot change their own database access
 - Role permissions are basic placeholders
 - Password changes must be done by administrators
 
-## For Non-Admin Users
+## For non-admin users
 
 If you need a user account or database access changes, contact your system administrator.

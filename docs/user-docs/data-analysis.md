@@ -2,11 +2,11 @@
 
 EvoNEST provides two tools for analyzing trait data: a statistical analysis dashboard and a visual data explorer. Both work with existing trait measurements in your database.
 
-## Trait Analysis Dashboard
+## Trait analysis dashboard
 
 The analysis dashboard calculates basic statistics (mean, standard deviation, min, max, median, count) for trait measurements. You can group results by species, sample types, or other categories.
 
-### Getting Started
+### Getting started
 
 1. Navigate to **Traits > Analysis** in the main menu
 2. Select a trait type from the dropdown (e.g., "stressAtBreak", "diameter")
@@ -14,7 +14,7 @@ The analysis dashboard calculates basic statistics (mean, standard deviation, mi
 4. Apply filters if needed
 5. Results appear automatically in a table below
 
-### Core Functionality
+### Core functionality
 
 **Select Trait Type:**
 
@@ -52,7 +52,7 @@ The analysis dashboard calculates basic statistics (mean, standard deviation, mi
 - Processing time and record counts shown at bottom
 - Results update automatically when you change settings
 
-### Analysis Limitations
+### Analysis limitations
 
 - No data export functionality
 - Cannot save analysis configurations
@@ -61,7 +61,7 @@ The analysis dashboard calculates basic statistics (mean, standard deviation, mi
 - Filter options depend entirely on existing data in database
 - No visualization charts in analysis dashboard
 
-## Trait Explorer (Visual Analysis)
+## Trait explorer (visual analysis)
 
 The explorer provides interactive data visualization using Graphic Walker. You can create charts, scatter plots, and other visualizations from your trait data.
 
@@ -72,7 +72,7 @@ The explorer provides interactive data visualization using Graphic Walker. You c
 3. Use the drag-and-drop interface to create visualizations
 4. Graphic Walker interface will appear with your trait data
 
-### Visual Analysis Features
+### Visual analysis features
 
 **Available Data Fields:**
 
@@ -102,7 +102,7 @@ The explorer provides interactive data visualization using Graphic Walker. You c
 - Box plots
 - Tables
 
-### Explorer Limitations
+### Explorer limitations
 
 - No ability to save or share visualizations
 - Cannot export charts as images
@@ -129,4 +129,3 @@ The explorer provides interactive data visualization using Graphic Walker. You c
 
 - Both tools require existing trait measurements in the database
 - Sample information must be properly linked to trait records
-- Missing taxonomic data will show as "Unknown" in groupings

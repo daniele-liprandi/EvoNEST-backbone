@@ -2,7 +2,7 @@
 
 This guide walks you through replacing the default credentials authentication with Google OAuth, providing a secure and user-friendly login experience.
 
-## Why Use Google OAuth?
+## Why use google OAuth?
 
 **Benefits:**
 - ✅ No password management needed
@@ -30,14 +30,14 @@ Before starting:
 
 ---
 
-## Step 1: Create Google OAuth Credentials
+## Step 1: create Google OAuth credentials
 
-### 1.1 Go to Google Cloud Console
+### 1.1 go to Google Cloud Console
 
 1. Visit: [https://console.cloud.google.com](https://console.cloud.google.com)
 2. Sign in with your Google account
 
-### 1.2 Create a New Project
+### 1.2 create a new project
 
 1. Click the project dropdown at the top
 2. Click **"New Project"**
@@ -47,14 +47,14 @@ Before starting:
 4. Click **"Create"**
 5. Wait for project creation (30 seconds)
 
-### 1.3 Enable Google+ API
+### 1.3 enable Google+ API
 
 1. In the left sidebar, go to **"APIs & Services"** → **"Library"**
 2. Search for: `Google+ API`
 3. Click on **"Google+ API"**
 4. Click **"Enable"**
 
-### 1.4 Configure OAuth Consent Screen
+### 1.4 configure OAuth consent screen
 
 1. Go to **"APIs & Services"** → **"OAuth consent screen"**
 
@@ -87,7 +87,7 @@ Before starting:
 
 8. Review and click **"Back to Dashboard"**
 
-### 1.5 Create OAuth Credentials
+### 1.5 Create OAuth credentials
 
 1. Go to **"APIs & Services"** → **"Credentials"**
 
@@ -117,7 +117,7 @@ Never commit these credentials to git. Store them securely in environment variab
 
 ---
 
-## Step 2: Update Environment Variables
+## Step 2: Update environment variables
 
 Add Google OAuth credentials to your environment files.
 
@@ -163,15 +163,15 @@ It's recommended to create separate OAuth credentials for production and develop
 
 ---
 
-## Step 3: Update NextAuth Configuration
+## Step 3: Update NextAuth configuration
 
 Now we'll modify the NextAuth options to use Google OAuth.
 
-### 3.1 Open the Options File
+### 3.1 Open the options file
 
 Open: `src/app/api/auth/[...nextauth]/options.ts`
 
-### 3.2 Import Google Provider
+### 3.2 Import Google provider
 
 At the top of the file, add the Google provider import:
 
@@ -182,7 +182,7 @@ import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { DefaultSession, DefaultUser, NextAuthOptions }  from "next-auth";
 ```
 
-### 3.3 Add Google Provider to Providers Array
+### 3.3 Add Google provider to providers array
 
 Replace the `providers` array with:
 
@@ -268,7 +268,7 @@ providers: [
 Once Google OAuth is working, you can remove the `CredentialsProvider` block entirely for better security.
 :::
 
-### 3.4 Update Callbacks
+### 3.4 Update callbacks
 
 Add a `signIn` callback to create/update user records in your database:
 
@@ -326,11 +326,11 @@ callbacks: {
 
 ---
 
-## Step 4: Update Docker Configuration (Optional)
+## Step 4: Update Docker configuration (optional)
 
 If you need to pass environment variables to Docker:
 
-### 4.1 Update `docker-compose.dev.yml`
+### 4.1 Update `Docker-compose.dev.yml`
 
 ```yaml{7-8}
 services:
@@ -360,7 +360,7 @@ Or if not using Docker:
 npm run dev
 ```
 
-### 5.2 Test the Login
+### 5.2 Test the login
 
 1. Go to: [http://localhost:3005](http://localhost:3005)
 
@@ -378,7 +378,7 @@ npm run dev
 
 7. You should be redirected back to EvoNEST, logged in!
 
-### 5.3 Verify User Was Created
+### 5.3 Verify user was created
 
 1. Check the database using Mongo Express: [http://localhost:8081](http://localhost:8081)
 
@@ -391,11 +391,11 @@ npm run dev
 
 ---
 
-## Step 6: Customize User Roles (Optional)
+## Step 6: Customize user roles (optional)
 
 By default, new Google users get the `user` role. You might want to customize this.
 
-### Option A: Admin Approval System
+### Option A: Admin approval system
 
 1. Set initial role to `pending`:
    ```typescript
@@ -406,7 +406,7 @@ By default, new Google users get the `user` role. You might want to customize th
 
 3. Update roles manually in database
 
-### Option B: Domain-Based Auto-Approval
+### Option B: Domain-based auto-approval
 
 Allow users from your organization's domain automatically:
 
@@ -454,7 +454,7 @@ async signIn({ user, account, profile }) {
 
 ## Troubleshooting
 
-### Problem: "Redirect URI mismatch" error
+### Problem: "redirect uRI mismatch" error
 
 **Cause:** The redirect URI in your Google Console doesn't match exactly.
 
@@ -465,7 +465,7 @@ async signIn({ user, account, profile }) {
 4. Add the exact URI shown in the error message
 5. Save and try again
 
-### Problem: "Access blocked: EvoNEST has not completed Google verification"
+### Problem: "access blocked: EvoNEST has not completed google verification"
 
 **Cause:** Your app is in testing mode and user isn't added as test user.
 
@@ -473,7 +473,7 @@ async signIn({ user, account, profile }) {
 - Add user as test user in OAuth consent screen, OR
 - Publish your app (requires verification for production)
 
-### Problem: User created but can't access features
+### Problem: user created but can't access features
 
 **Cause:** User might not have correct databases assigned.
 
@@ -484,7 +484,7 @@ async signIn({ user, account, profile }) {
 4. Update `activeDatabase`: `"admin"`
 5. User needs to log out and back in
 
-### Problem: Google sign-in button doesn't appear
+### Problem: google sign-in button doesn't appear
 
 **Solutions:**
 1. Check environment variables are set:
@@ -504,7 +504,7 @@ async signIn({ user, account, profile }) {
 
 ---
 
-## Security Best Practices
+## Security best practices
 
 1. **Never commit credentials**
    - Add `.env.local` to `.gitignore`
@@ -532,9 +532,9 @@ async signIn({ user, account, profile }) {
 
 ---
 
-## Production Deployment
+## Production deployment
 
-### Additional Steps for Production
+### Additional steps for production
 
 1. **Create production OAuth credentials**
    - Separate client ID/secret for production
@@ -562,7 +562,7 @@ async signIn({ user, account, profile }) {
 
 ---
 
-## Next Steps
+## Next steps
 
 - **[Set up EU-Compliant Auth](/user-docs/auth-eu-compliant)** - For GDPR compliance
 - **[User Management](/user-docs/user-account)** - Managing user roles and permissions
@@ -570,7 +570,7 @@ async signIn({ user, account, profile }) {
 
 ---
 
-## Complete Code Example
+## Complete code example
 
 Here's the complete `options.ts` file with Google OAuth:
 

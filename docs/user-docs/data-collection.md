@@ -6,9 +6,9 @@ Learn how to collect and input your research data into EvoNEST.
 
 EvoNEST provides three main methods for collecting research data: manual entry forms, file uploads for experiments, and CSV bulk imports. This guide covers the actual workflows for entering sample, trait, and experiment data.
 
-## Data Entry Methods
+## Data entry methods
 
-### Sample Data Entry
+### Sample data entry
 
 Create sample records through forms with required taxonomic and metadata fields.
 
@@ -38,7 +38,7 @@ Create sample records through forms with required taxonomic and metadata fields.
 - **Location**: Geographic data with GPS lookup
 - **Notes**: Additional metadata
 
-### Trait Data Entry
+### Trait data entry
 
 Record measurement data with optional file attachments.
 
@@ -70,7 +70,7 @@ Record measurement data with optional file attachments.
 - **Automatic renaming**: Files renamed with sample name prefix
 - **File linking**: Images automatically linked to trait records
 
-### Experiment Data Entry
+### Experiment data entry
 
 Upload and process experimental data files from testing equipment.
 
@@ -102,7 +102,7 @@ Upload and process experimental data files from testing equipment.
 - Only basic file type detection implemented
 - We are happy to implement advanced data parsing of document if provided a template
 
-## Bulk Data Import
+## Bulk data import
 
 Import multiple samples from CSV files with intelligent field mapping.
 
@@ -134,7 +134,7 @@ Import multiple samples from CSV files with intelligent field mapping.
 - No custom field creation during import
 - Hierarchical imports require specific column formats
 
-## File Management
+## File management
 
 EvoNEST handles file storage and organization automatically.
 

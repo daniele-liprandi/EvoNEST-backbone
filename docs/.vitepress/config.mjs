@@ -99,11 +99,11 @@ export default defineConfig({
         }
       ],
 
-      '/developer-docs/': [
+      '/technical-docs/': [
         {
-          text: 'Developer Docs',
+          text: 'Technical Docs',
           items: [
-            { text: 'Overview', link: '/developer-docs/' },
+            { text: 'Overview', link: '/technical-docs/' },
           ]
         },
         {

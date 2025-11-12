@@ -6,11 +6,12 @@ By the end of this module, you will have:
 - ✅ Verified your system meets the requirements
 - ✅ Installed WSL2 (Windows users)
 - ✅ Installed Docker Desktop
+- ✅ Installed VS Code (code editor)
 - ✅ Installed Git
 - ✅ Prepared your workspace
   :::
 
-**Estimated time:** 20-30 minutes, 30-50 minutes on Windows
+**Estimated time:** 20-50 minutes, depending on your system and internet speed.
 
 ---
 
@@ -32,10 +33,10 @@ Before installing EvoNEST, verify your system meets these requirements:
 
 - [ ] Operating System
   - Windows 10/11 (64-bit) **or**
-  - macOS 10.15 (Catalina) or newer **or**
-  - Linux (Ubuntu 20.04+, Fedora, Debian)
+  - macOS 10.X or newer **or**
+  - Linux (Ubuntu, Fedora, Debian)
 - [ ] Hardware
-  - 8GB RAM minimum (16GB recommended)
+  - 4GB RAM minimum (16GB recommended)
   - 20GB free disk space
   - Dual-core processor (quad-core recommended)
 - [ ] Permissions
@@ -347,11 +348,84 @@ Let's make sure Docker is working correctly.
    - Watch for the icon to stop animating
 
 3. **Try the test command again**
-   :::
+
+**Linux users: If group permissions don't work**
+
+- If you're still getting permission errors after logging out and back in, try restarting your computer instead of just logging out and back in
+- You can use `sudo` before docker commands:
+
+```bash
+sudo docker run hello-world
+```
+
+:::
 
 ---
 
-## Step 5: Install Git
+## Step 5: Install a code editor (VS Code)
+
+We recommend installing Visual Studio Code (VS Code) as your code editor for working with EvoNEST.
+
+::: info Why VS Code?
+VS Code is a free, lightweight code editor with excellent support for JavaScript, TypeScript, and React. It has built-in Git integration and many helpful extensions for web development.
+:::
+
+### Check if VS Code is already installed
+
+Try running:
+
+```bash
+code --version
+```
+
+✅ If you see a version number, VS Code is already installed! Skip to [Step 6](#step-6-install-git).
+
+### Installing VS Code
+
+::: code-group
+
+```bash [Windows]
+# Download VS Code from:
+# https://code.visualstudio.com/
+
+# Run the installer with default settings
+# After installation, restart your terminal and verify:
+code --version
+```
+
+```bash [macOS]
+# Download VS Code from:
+# https://code.visualstudio.com/
+
+# Open the downloaded .zip file
+# Drag "Visual Studio Code" to Applications folder
+# Verify installation:
+code --version
+```
+
+```bash [Linux]
+# Ubuntu/Debian - Download .deb package from:
+# https://code.visualstudio.com/
+# Then install:
+sudo apt install ./code_*.deb
+
+# Or use snap:
+sudo snap install --classic code
+
+# Fedora - Download .rpm package from:
+# https://code.visualstudio.com/
+# Then install:
+sudo dnf install ./code-*.rpm
+
+# Verify installation
+code --version
+```
+
+:::
+
+---
+
+## Step 6: Install Git
 
 Git is used to download (clone) the EvoNEST code repository.
 
@@ -363,7 +437,7 @@ Open your terminal and run:
 git --version
 ```
 
-✅ If you see a version number (e.g., `git version 2.40.0`), Git is already installed! Skip to [Step 6](#step-6-create-a-workspace-folder).
+✅ If you see a version number (e.g., `git version 2.40.0`), Git is already installed! Skip to [Step 7](#step-7-create-a-workspace-folder).
 
 ### Installing Git
 
@@ -407,7 +481,7 @@ git --version
 
 ---
 
-## Step 6: Create a workspace folder
+## Step 7: Create a workspace folder
 
 Let's create a dedicated folder for your EvoNEST installation.
 
@@ -472,13 +546,14 @@ Keep your terminal window open - you'll use it in the next module for installati
 
 ---
 
-## Checkpoint: Are you ready?
+## Checkpoint: are you ready?
 
 Before moving to the next module, verify you have:
 
 - [ ] **Windows users only:** WSL2 installed (`wsl --status` shows "Default Version: 2")
 - [ ] Docker Desktop installed and running
 - [ ] Docker tested successfully (`docker run hello-world` worked)
+- [ ] VS Code installed (`code --version` shows a version number)
 - [ ] Git installed (`git --version` shows a version number)
 - [ ] Created a workspace folder (e.g., `Documents/EvoNEST`)
 - [ ] Terminal/command prompt open in your workspace folder

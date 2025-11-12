@@ -12,4 +12,4 @@ When tables are filtered by any value, the filtering is kept during export. This
 
 ## Table format
 
-All tables in evonest are in long format. While we do not have yet a long to wide format converter, we advice using R or Python to quickly transform them if needed.
+All tables in evonest are in long format. While we do not have yet a long to wide format converter, we advise using R or Python to quickly transform them if needed.
