@@ -635,7 +635,7 @@ Gather this information:
 1. **Documentation:**
 
    - [User documentation](/user-docs/)
-   - [Developer Docs](/developer-docs/)
+   - [Technical Docs](/technical-docs/)
    - [FAQ](/user-docs/faq)
 
 2. **GitHub Issues:**

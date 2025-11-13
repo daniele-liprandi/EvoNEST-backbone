@@ -18,7 +18,7 @@ hero:
       link: /user-docs/
     - theme: alt
       text: Technical docs
-      link: /developer-docs/
+      link: /technical-docs/
 
 features:
   - icon: 🗄️
@@ -40,7 +40,7 @@ features:
 
 ## Welcome to EvoNEST Documentation
 
-This documentation site provides guides for both users and developers of the EvoNEST platform. Whether you're a [researcher looking to install EvoNEST for their lab](/tutorial), a [user of an existing NEST](/user-docs), or a [developer wanting to contribute](/developer-docs), you'll find the resources you need here.
+This documentation site provides guides for both users and developers of the EvoNEST platform. Whether you're a [researcher looking to install EvoNEST for their lab](/tutorial), a [user of an existing NEST](/user-docs), or a [developer wanting to contribute](/technical-docs), you'll find the resources you need here.
 
 ## About EvoNEST
 

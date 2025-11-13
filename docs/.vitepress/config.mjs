@@ -114,7 +114,10 @@ export default defineConfig({
       "/technical-docs/": [
         {
           text: "Technical Docs",
-          items: [{ text: "Overview", link: "/technical-docs/" }],
+          items: [
+            { text: "Overview", link: "/technical-docs/" },
+            { text: "Quick Start Installation", link: "/technical-docs/installation" },
+          ],
         },
         {
           text: "Authentication Setup",

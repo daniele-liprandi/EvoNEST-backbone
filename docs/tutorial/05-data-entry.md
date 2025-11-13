@@ -257,7 +257,7 @@ In EvoNEST, experiments are created by uploading files (images, documents, or da
 - Link data to samples
 - Generate statistics
 
-**In this tutorial**, we'll use simple image uploads to learn the basics. If you're interested in creating custom parsers for your instrument data, see the [Data Format Parser Development Guide](/developer-docs/data-format-parser-development) and [File Processor Development Guide](/developer-docs/file-processor-development) after completing the tutorial.
+**In this tutorial**, we'll use simple image uploads to learn the basics. If you're interested in creating custom parsers for your instrument data, see the [Data Format Parser Development Guide](/technical-docs/data-format-parser-development) and [File Processor Development Guide](/technical-docs/file-processor-development) after completing the tutorial.
 :::
 
 ### 4.1 Download practice images
@@ -327,7 +327,7 @@ Experiments in EvoNEST store and organize research files:
 - Measurements automatically linked to samples
 - Statistical analysis of parsed data
 
-For simple documentation (images, PDFs), experiments work as file containers. For instrument data and measurements, you can develop custom parsers to automate trait extraction. See [Developer Documentation](/developer-docs/) to learn more.
+For simple documentation (images, PDFs), experiments work as file containers. For instrument data and measurements, you can develop custom parsers to automate trait extraction. See [Technical Documentation](/technical-docs/) to learn more.
 :::
 
 ### 4.4 Create a second experiment - silk microscopy
@@ -477,9 +477,9 @@ Before moving to the next module, verify:
 You now have the core skills to use EvoNEST for your research data management!
 
 **Ready for advanced features?** If you work with instrument data files (tensile testers, spectroscopy, chromatography, etc.), you can create custom parsers to automatically extract measurements from data files. See:
-- [Data Format Parser Development](/developer-docs/data-format-parser-development) - Parse structured data files
-- [File Processor Development](/developer-docs/file-processor-development) - Handle custom file formats
-- [Developer Documentation](/developer-docs/) - Technical guides and API reference
+- [Data Format Parser Development](/technical-docs/data-format-parser-development) - Parse structured data files
+- [File Processor Development](/technical-docs/file-processor-development) - Handle custom file formats
+- [Technical Documentation](/technical-docs/) - Technical guides and API reference
 :::
 
 ## Next steps

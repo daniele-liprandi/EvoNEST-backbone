@@ -1,6 +1,6 @@
 # Sample Management
 
-EvoNEST provides tools for organizing, viewing, and maintaining samples in your database. The system handles different sample types (animals, subsamples, plants, etc.) with type-specific features for each. Creating ad-hoc cards for your own samples is easy: you can get more information by contacting the EvoNEST team or you can just do it yourself by visiting the [Developer documentation](/developer-docs/index).
+EvoNEST provides tools for organizing, viewing, and maintaining samples in your database. The system handles different sample types (animals, subsamples, plants, etc.) with type-specific features for each. Creating ad-hoc cards for your own samples is easy: you can get more information by contacting the EvoNEST team or you can just do it yourself by visiting the [Technical documentation](/technical-docs/index).
 
 ## Getting started
 

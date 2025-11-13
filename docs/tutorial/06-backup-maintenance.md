@@ -114,13 +114,13 @@ If you don't see the backup container:
 1. Check if you're using the production docker-compose file:
 
    ```bash
-   docker-compose -f docker-compose.yml ps
+   docker compose -f docker-compose.yml ps
    ```
 
 2. If the container is stopped, start it:
 
    ```bash
-   docker-compose -f docker-compose.yml up -d backup
+   docker compose -f docker-compose.yml up -d backup
    ```
 
 3. Check logs for errors:
@@ -574,7 +574,7 @@ backup:
 **3. Restart the backup container:**
 
 ```bash
-docker-compose up -d backup
+docker compose up -d backup
 ```
 
 ### 4. Test your backups
@@ -602,7 +602,7 @@ Many people never test their backups until they need them. Don't be one of them!
 1. Check if you're using production docker-compose:
 
    ```bash
-   docker-compose -f docker-compose.yml up -d
+   docker compose -f docker-compose.yml up -d
    ```
 
 2. Check Docker logs:

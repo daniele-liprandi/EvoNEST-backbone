@@ -3,7 +3,7 @@
 ::: tip Complete beginner's course
 This is a **complete step-by-step guide** from installation to first data entry, designed for **non-technical users**.
 
-**Technical user?** If you already know how to use Docker, and are a confident developer, see the [Technical documentation](/developer-docs/installation).
+**Technical user?** If you already know how to use Docker, and are a confident developer, see the [Technical documentation](/technical-docs/installation).
 :::
 
 Welcome to the EvoNEST tutorial! This comprehensive guide will walk you through installing, configuring, and using EvoNEST for research data management - no technical experience required.

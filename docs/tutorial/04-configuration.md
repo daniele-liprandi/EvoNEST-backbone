@@ -69,7 +69,7 @@ In the current version of EvoNEST, NEST users and login authentication users are
 - **NEST users**: Database-level accounts for attribution and audit trails (name, email, role, institution)
 - **Login users**: Separate authentication credentials that allow access to EvoNEST
 
-Creating a NEST user does NOT automatically create login credentials. For information on setting up login authentication methods, see the relative section in the [Technical Documentation](https://daniele-liprandi.github.io/EvoNEST-backbone/developer-docs/).
+Creating a NEST user does NOT automatically create login credentials. For information on setting up login authentication methods, see the relative section in the [Technical Documentation](https://daniele-liprandi.github.io/EvoNEST-backbone/technical-docs/).
 :::
 
 **To create a new NEST user:**

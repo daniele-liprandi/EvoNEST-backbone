@@ -80,7 +80,7 @@ After the tutorial, you should:
 2. Create individual user accounts
 3. Disable or change the default admin account
 
-See the [Developer documentation](/developer-docs) for details.
+See the [Technical documentation](/technical-docs/) for details.
 :::
 
 ### Wait for page compilation
