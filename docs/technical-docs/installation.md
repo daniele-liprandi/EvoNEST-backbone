@@ -19,8 +19,8 @@ Before deploying EvoNEST to production, it's recommended to test the application
 #### 1. Clone the repository
 
 ```bash
-git clone https://git.uni-greifswald.de/liprandid/EvoNext.git
-cd EvoNext
+git clone https://github.com/daniele-liprandi/EvoNEST-backbone.git
+cd EvoNEST-backbone
 ```
 
 #### 2. Set up environment files
@@ -38,20 +38,30 @@ NEXTAUTH_SECRET=your-secret-key
 ```
 
 
-Go to the file `docker-compose.dev.yml` and set up the `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` variables to secure your MongoDB instance. 
+The repository includes a `docker-compose.dev.yml` file with default MongoDB credentials (`root:pass`). For security, you should change these credentials.
 
-```bash
-# Make sure to also set your MongoDB connection string in the .env file
-MONGO_URL=mongodb://your_username:your_secure_password@mongo:27017
+**Optional but recommended:** Update the MongoDB credentials in `docker-compose.dev.yml`:
+
+```yaml
+# Find the mongo_dev service and update:
+MONGO_INITDB_ROOT_USERNAME: root
+MONGO_INITDB_ROOT_PASSWORD: pass  # Change this to a secure password
 ```
 
-Finally, create a new file called `.env.development` containing
+Then create a new file called `.env.development` with matching credentials:
 
 ```txt
 NEXTAUTH_URL=http://localhost:3005
-MONGODB_URI=mongodb://your_username:your_secure_password@mongo:27019
+MONGODB_URI=mongodb://root:pass@mongo_dev:27017
 STORAGE_PATH='/usr/evonest/file_storage_dev'
 ```
+
+::: warning Security Note
+If you change the MongoDB password in `docker-compose.dev.yml`, make sure to update it in **three places**:
+1. `mongo_dev` service: `MONGO_INITDB_ROOT_PASSWORD`
+2. `mongo-express` service: `ME_CONFIG_MONGODB_ADMINPASSWORD` and `ME_CONFIG_MONGODB_URL`
+3. `.env.development`: `MONGODB_URI`
+:::
 
 
 #### 3. Start the development environment
@@ -59,7 +69,7 @@ STORAGE_PATH='/usr/evonest/file_storage_dev'
 Make sure that your docker instance is running and execute
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 ```
 
 This will start:
@@ -76,19 +86,35 @@ Open your browser and navigate to `http://localhost:3005`
 
 If you haven't already, make sure to complete [Step 1](#1-clone-the-repository) and [Step 2](#2-set-up-environment-files) before proceeding.
 
+The production setup also uses default credentials (`root:pass`) that you should change for security.
 
-Finally, create the production environment file `.env.production`
+**Optional but recommended:** Update the MongoDB credentials in `docker-compose.yml`:
+
+```yaml
+# Find the mongo service and update:
+MONGO_INITDB_ROOT_USERNAME: root
+MONGO_INITDB_ROOT_PASSWORD: pass  # Change this to a secure password
+```
+
+Then create the production environment file `.env.production` with matching credentials:
 
 ```txt
 NEXTAUTH_URL=http://localhost:3000
-MONGODB_URI=mongodb://your_username:your_secure_password@mongo:27017
+MONGODB_URI=mongodb://root:pass@mongo:27017
 STORAGE_PATH='/usr/evonest/file_storage'
 ```
+
+::: warning Security Note
+If you change the MongoDB password in `docker-compose.yml`, make sure to update it in **two places**:
+1. `mongo` service: `MONGO_INITDB_ROOT_PASSWORD`
+2. `backup` service: `MONGO_URI`
+3. `.env.production`: `MONGODB_URI`
+:::
 
 To start the production setup, make sure that your docker instance is running and execute
 
 ```bash
-docker-compose -f docker-compose.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 
@@ -123,7 +149,7 @@ To ensure everything is working:
 Now that you have EvoNEST running:
 
 1. **Configure your NEST**: See the [NEST setup guide](/user-docs/nest-setup) to configure your laboratory's instance
-2. **Add users**: Follow the [User management guide](/user-docs/user-management) to add team members
+2. **Manage users**: Learn about [user accounts](/user-docs/user-account) to add team members
 3. **Learn the features**: Explore the [User documentation](/user-docs/) for:
    - Sample management
    - Data collection
@@ -135,8 +161,8 @@ Now that you have EvoNEST running:
 
 If you encounter issues:
 
-- **Check the logs**: `docker-compose logs -f`
-- **View container status**: `docker-compose ps`
+- **Check the logs**: `docker compose logs -f`
+- **View container status**: `docker compose ps`
 - **Troubleshooting**: See the [Workshop troubleshooting guide](/tutorial/troubleshooting)
 - **Report issues**: Visit our [GitHub repository](https://github.com/daniele-liprandi/EvoNEST-backbone/issues)
 
@@ -144,6 +170,6 @@ If you encounter issues:
 
 Need to customize EvoNEST?
 
-- **[Developer documentation](/developer-docs/)** - Authentication setup, component development, parsers
+- **[Technical documentation](/technical-docs/)** - Authentication setup, component development, parsers
 - **[GitHub repository](https://github.com/daniele-liprandi/EvoNEST-backbone)** - Report issues and contribute
 - **Testing**: Run tests with `npm run test` or `npm run nxtest`
