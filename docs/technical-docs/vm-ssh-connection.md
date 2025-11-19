@@ -90,11 +90,15 @@ Replace:
 
 ### 3. Connect to the VM
 
+::: info Institutional networks
+If you are not on campus, you may need to connect via VPN before accessing the VM. Check with your institution for VPN setup instructions.
+:::
+
 **Option 1: Using the Remote icon**
 
 Click the blue/green icon in the bottom-left corner of the VS Code window (looks like "><"), then select "Connect to Host" and choose your configured host.
 
-**Option 1: Using the command palette**
+**Option 2: Using the command palette**
 
 1. Press **F1** to open the command palette
 2. Type "Remote-SSH: Connect to Host" and select it
@@ -102,21 +106,3 @@ Click the blue/green icon in the bottom-left corner of the VS Code window (looks
 4. A new VS Code window will open connected to your VM
 
 You can now browse files, edit code, and use the integrated terminal on your remote server. From now on, you can simply open the ssh from the "Open Recent" menu.
-
-## Troubleshooting
-
-### Connection timeout
-- Verify the hostname/IP address is correct
-- Check if you're on the right network (some VMs require VPN access)
-- Confirm firewall settings allow SSH connections
-
-### Permission denied
-- For key-based auth: Ensure your public key has been added to the server
-- For password auth: Verify your credentials
-- Check that your user account has the correct permissions
-
-### Key not recognized
-- Verify the `IdentityFile` path in your SSH config is correct
-- Ensure the private key file has the correct permissions (600 on Linux/macOS)
-
-For additional troubleshooting, consult your institution's IT support or documentation.
