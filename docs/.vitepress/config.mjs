@@ -117,6 +117,7 @@ export default defineConfig({
           items: [
             { text: "Overview", link: "/technical-docs/" },
             { text: "Quick Start Installation", link: "/technical-docs/installation" },
+            { text: "SSH access", link: "/technical-docs/vm-ssh-connection" }
           ],
         },
         {

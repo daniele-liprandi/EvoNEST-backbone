@@ -15,6 +15,7 @@ Welcome to the EvoNEST technical documentation. This section covers installation
 Get EvoNEST running quickly with our technical installation guide:
 
 - **[Quick Installation](./installation.md)** – Docker-based installation for technical users
+- **[Connecting to Virtual Machines via SSH](./vm-ssh-connection.md)** – General guide for accessing institutional VMs (not EvoNEST-specific)
 
 **After installation:** See the [User documentation](/user-docs/nest-setup) to configure your NEST and add users.
 
