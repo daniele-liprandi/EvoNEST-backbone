@@ -19,6 +19,7 @@ const glob = require('glob');
 const apiFiles = [
   './src/app/api/**/route.js',
   './src/app/api/**/route.ts',
+  './src/app/api/**/route.tsx',
 ];
 
 // Get all matching files
@@ -35,7 +36,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'EvoNEST API',
-      version: '1.1.0',
+      version: '2.0.0',
       description: `
 # EvoNEST General Documentation
 

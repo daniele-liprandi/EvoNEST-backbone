@@ -41,7 +41,7 @@ import { get_database_user, get_name_authuser } from "@/app/api/utils/get_databa
  *           description: MongoDB ObjectId
  *         type:
  *           type: string
- *           enum: [sampletypes, traittypes, equipmenttypes, samplesubtypes, silkcategories, siprefixes]
+ *           enum: [sampletypes, traittypes, equipmenttypes, samplesubtypes, silkcategories, siprefixes, baseunits]
  *           description: Configuration type
  *         data:
  *           type: array
@@ -84,7 +84,7 @@ async function getConfig(client, type = null) {
  *         name: type
  *         schema:
  *           type: string
- *           enum: [sampletypes, traittypes, equipmenttypes, samplesubtypes, silkcategories, siprefixes]
+ *           enum: [sampletypes, traittypes, equipmenttypes, samplesubtypes, silkcategories, siprefixes, baseunits]
  *         description: Specific configuration type to retrieve
  *     responses:
  *       200:

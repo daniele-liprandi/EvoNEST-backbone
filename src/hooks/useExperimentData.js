@@ -6,18 +6,16 @@ export const useExperimentsData = (
     prependPath, 
     includeRawData = false, 
     type,
-    options
+    options,
+    includeTraitsData = false
 ) => {
     // Construct URL with optional query parameters
-    const url = `${prependPath}/api/experiments${
-        includeRawData || type ? '?' : ''
-    }${
-        includeRawData ? 'includeRawData=true' : ''
-    }${
-        includeRawData && type ? '&' : ''
-    }${
-        type ? `type=${type}` : ''
-    }`;
+    const params = new URLSearchParams();
+    if (includeRawData) params.append('includeRawData', 'true');
+    if (includeTraitsData) params.append('includeTraitsData', 'true');
+    if (type) params.append('type', type);
+    
+    const url = `${prependPath}/api/experiments${params.toString() ? '?' + params.toString() : ''}`;
     
     const { data, error, isValidating } = useSWR(url, fetcher, options);
     

@@ -13,8 +13,18 @@ import { baseColumns, typeColumns } from '../columns';
 import { getSampleNamebyId } from '@/hooks/sampleHooks';
 import { getUserNameById } from "@/hooks/userHooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SmartVaul } from '@/components/forms/smart-vaul';
-import { handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample } from '@/utils/handlers/sampleHandlers';
+import { handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
 import { usePreloadData } from '@/hooks/usePreloadData';
 
 function capitalizeFirstLetter(val) {
@@ -64,12 +74,36 @@ export default function TypePage() {
             </Card>
             :
             <Card>
-                <CardHeader>
-                    <div>
+                <CardHeader className="flex flex-row items-center">
+                    <div className="grid gap-2">
                         <CardTitle> {typeLabel} </CardTitle>
                         <CardDescription> Here you can find your samples of the selected type and access more informations about them</CardDescription>
                     </div>
-                    <SmartVaul formType='samples' users={usersData} samples={samplesData} page={type || ""} size="sm" className="ml-auto gap-1" />
+                    <div className="ml-auto flex gap-2 items-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-1"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Export (with related)
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleExportAllSamplesRelated('json')}>
+                                    JSON
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleExportAllSamplesRelated('csv')}>
+                                    CSV (flattened)
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <SmartVaul formType='samples' users={usersData} samples={samplesData} page={type || ""} size="sm" className="gap-1" />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <DataTable

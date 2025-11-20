@@ -20,7 +20,7 @@ describe('Silktype Standardization Migration', () => {
         // Get reference to test database
         db = client.db('test');
         samplesCollection = db.collection("samples");
-    });
+    }, 300000); // 5 minute timeout for MongoDB download
 
     beforeEach(async () => {
         // Clear the collection and insert test data

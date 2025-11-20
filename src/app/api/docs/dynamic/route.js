@@ -27,7 +27,7 @@ export async function GET() {
         openapi: "3.0.0",
         info: {
           title: "EvoNEST API",
-          version: "1.1.0",
+          version: "2.0.0",
           description: `
 # EvoNEST General Documentation
 
@@ -69,7 +69,7 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
             url:
               process.env.NODE_ENV === "development"
                 ? "http://localhost:3005"
-                : "http://localhost:3000",
+                : process.env.NEXTAUTH_URL || "http://localhost:3002",
             description:
               process.env.NODE_ENV === "development"
                 ? "Development server"
@@ -127,7 +127,7 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
         ],
       },
       // Automatically scan all API routes
-      apis: ["./src/app/api/**/route.js", "./src/app/api/**/route.ts"],
+      apis: ["./src/app/api/**/route.js", "./src/app/api/**/route.ts", "./src/app/api/**/route.tsx"],
     };
 
     // Generate OpenAPI specification

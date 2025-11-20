@@ -20,7 +20,7 @@ export function DataFormatPreview({
 
   return (
     <div className="space-y-1">
-      {allFileData.map((fileInfo, index) => (
+      {allFileData.slice(0, 3).map((fileInfo, index) => (
         <div key={index} className="border rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -140,6 +140,11 @@ export function DataFormatPreview({
           )}
         </div>
       ))}
+      {allFileData.length > 3 && (
+        <div className="text-sm text-gray-500 text-center py-2">
+          ... and {allFileData.length - 3} more file{allFileData.length - 3 !== 1 ? 's' : ''}
+        </div>
+      )}
     </div>
   );
 }

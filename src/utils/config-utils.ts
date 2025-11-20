@@ -4,7 +4,7 @@
  */
 export async function checkConfigExists(): Promise<boolean> {
   try {
-    const configTypes = ['sampletypes', 'traittypes', 'samplesubtypes', 'equipmenttypes']
+    const configTypes = ['sampletypes', 'traittypes', 'samplesubtypes', 'equipmenttypes', 'silktypes', 'siprefixes', 'baseunits']
     
     for (const configType of configTypes) {
       const response = await fetch(`/api/config/types?type=${configType}`)

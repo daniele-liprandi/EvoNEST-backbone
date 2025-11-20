@@ -266,6 +266,29 @@ import { get_name_authuser } from "../utils/get_database_user";
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
+/**
+ * Fetches the complete chain of parent samples from a given sample up to the root
+ * @param {Object} db - Database connection
+ * @param {string|ObjectId} sampleId - Starting sample ID
+ * @returns {Array} Array of samples from child to root
+ */
+async function getSampleChain(db, sampleId) {
+    const samples = db.collection("samples");
+    const chain = [];
+    let currentId = sampleId;
+    
+    while (currentId) {
+        // Convert to ObjectId only if it's a string
+        const queryId = typeof currentId === 'string' ? new ObjectId(currentId) : currentId;
+        const sample = await samples.findOne({ _id: queryId });
+        if (!sample) break;
+        chain.push(sample);
+        currentId = sample.parentId;
+    }
+    
+    return chain;
+}
+
 function parseNFibres(nfibres) {
   if (!nfibres) return { error: "Missing nfibres value" };
 
@@ -316,7 +339,8 @@ async function getTraits(
   client,
   includeSampleFeatures,
   type = "",
-  trait_id = null
+  trait_id = null,
+  includeRelated = false
 ) {
   const dbname = await get_database_user();
   const db = client.db(dbname);
@@ -340,6 +364,23 @@ async function getTraits(
       trait.genus = sample?.genus || "";
       trait.species = sample?.species || "";
     });
+  }
+
+  // Include related sample data if requested
+  if (includeRelated) {
+    for (const trait of traitsData) {
+      if (trait.sampleId) {
+        // Get complete sample chain (from child to root)
+        const sampleChain = await getSampleChain(db, trait.sampleId);
+        trait.sampleChain = sampleChain;
+        
+        // Add direct sample info at top level for convenience
+        if (sampleChain.length > 0) {
+          const directSample = sampleChain[0];
+          trait.sample = directSample;
+        }
+      }
+    }
   }
 
   // TODO This is an optional module and should be moved to a separate module
@@ -407,6 +448,7 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const includeSampleFeatures =
     searchParams.get("includeSampleFeatures") === "true";
+  const includeRelated = searchParams.get("related") === "true";
 
   //get the type from the URL
   const type = searchParams.get("type");
@@ -437,7 +479,7 @@ export async function GET(req) {
   }
 
   // Access the database and the 'users' collection
-  let traits = await getTraits(client, includeSampleFeatures, type);
+  let traits = await getTraits(client, includeSampleFeatures, type, null, includeRelated);
 
   // Retrieve all users and return them as a JSON response
   return NextResponse.json(traits);

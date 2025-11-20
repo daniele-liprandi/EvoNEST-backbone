@@ -152,22 +152,22 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                     // Extract the properly structured experiment data from parsers
                     experimentData = { ...fileValues.dataFields.experimentData };
                     
-                    // Override critical fields from the form - these always take precedence
+                    // Override critical fields from the form
                     experimentData.responsible = formValues.responsible;
-                    experimentData.sampleId = formValues.sampleId; // Form selection overrides parsed specimen
+                    
+                    // For multiple files, use individual file's sampleId if parsed, otherwise use form selection
+                    if (allFileData.length > 1) {
+                        experimentData.sampleId = fileValues.sampleId || formValues.sampleId;
+                        experimentData.name = fileValues.name || formValues.name;
+                    } else {
+                        // For single file, form selection takes precedence
+                        experimentData.sampleId = formValues.sampleId;
+                        experimentData.name = formValues.name;
+                    }
                     
                     // Override other form fields if they have values
                     if (formValues.notes) experimentData.notes = formValues.notes;
                     if (formValues.filepath) experimentData.filepath = formValues.filepath;
-                    
-                    // For multiple files, use individual file names but keep form sampleId
-                    if (allFileData.length > 1 && fileValues.name) {
-                        experimentData.name = fileValues.name;
-                        // Note: We don't override sampleId here - form selection takes precedence
-                    } else {
-                        // For single file, use form name
-                        experimentData.name = formValues.name;
-                    }
                     
                     // Ensure experiment type matches form selection
                     experimentData.type = formValues.type;
@@ -385,9 +385,23 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                 <InfoHover text='When uploading multiple files at once, the "SpecimenName" inside each file needs to be identical to a sample name.' />
               </Label>
               {defaultFileList && (
-                <Label className="p-1" htmlFor="file">
-                  File(s) selected: {defaultFileList.length} files.
-                </Label>
+                <div className="space-y-1">
+                  <Label className="p-1" htmlFor="file">
+                    File(s) selected: {defaultFileList.length} files
+                  </Label>
+                  {allFileData.length > 0 && (
+                    <div className="text-xs text-gray-600 space-y-1 ml-2">
+                      {allFileData.slice(0, 3).map((fileInfo, index) => (
+                        <div key={index}>
+                          • {fileInfo.filename} {fileInfo.sampleName && `(${fileInfo.sampleName})`}
+                        </div>
+                      ))}
+                      {allFileData.length > 3 && (
+                        <div className="text-gray-500">... and {allFileData.length - 3} more</div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
               {!defaultFileList && (
                 <Input
@@ -530,33 +544,62 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
 
             </TabsContent>
             <TabsContent value="Details" className="space-y-4">
-              <FormField
-                control={form.control}
-                name="sampleId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Sample{" "}
-                      <InfoHover text="Select the sample this experiment is associated with" />
-                    </FormLabel>
-                    <FormControl>
-                      <ComboFormBox
-                        control={form.control}
-                        setValue={form.setValue}
-                        name="sampleId"
-                        options={samples.map(
-                          (sample: { _id: any; name: any }) => ({
-                            value: sample._id,
-                            label: sample.name,
-                          })
-                        )}
-                        fieldlabel=""
-                        description=""
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              {/* Sample selection - only show dropdown for single file, show list for multiple */}
+              {allFileData.length <= 1 ? (
+                <FormField
+                  control={form.control}
+                  name="sampleId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Sample{" "}
+                        <InfoHover text="Select the sample this experiment is associated with" />
+                      </FormLabel>
+                      <FormControl>
+                        <ComboFormBox
+                          control={form.control}
+                          setValue={form.setValue}
+                          name="sampleId"
+                          options={samples.map(
+                            (sample: { _id: any; name: any }) => ({
+                              value: sample._id,
+                              label: sample.name,
+                            })
+                          )}
+                          fieldlabel=""
+                          description=""
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <FormLabel>
+                    Specimens (Auto-detected from files)
+                    <InfoHover text="Each file will be assigned to its parsed specimen name. Make sure the SpecimenName in the file matches an existing sample." />
+                  </FormLabel>
+                  <div className="border rounded-md p-3 bg-gray-50 space-y-2">
+                    {allFileData.map((fileInfo, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm">
+                        <span className="font-medium text-gray-700">{fileInfo.filename}</span>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          fileInfo.sampleId 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {fileInfo.sampleName || 'No specimen detected'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {allFileData.some(f => !f.sampleId) && (
+                    <div className="text-xs text-amber-600 mt-2">
+                      Some files do not have a matching sample. Please ensure specimen names in files match existing sample names.
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Parser Preview in Details tab */}
               {selectedType && checkParserSupport(selectedType) && (
@@ -702,7 +745,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
           </Tabs>
           <Button
             type="submit"
-            disabled={!form.formState.isValid || allFileData.length === 0}
+            disabled={allFileData.length === 0}
           >
             Submit
           </Button>

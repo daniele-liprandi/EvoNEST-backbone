@@ -2,27 +2,26 @@
   "openapi": "3.0.0",
   "info": {
     "title": "EvoNEST API",
-    "version": "1.0.0",
-    "description": "\n# EvoNEST API Documentation\n\nThe EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.\n\n## Features\n\n- **Samples Management**: Create, update, and retrieve biological samples with taxonomic information\n- **Traits Measurement**: Record and analyze trait measurements with statistical calculations\n- **Experiments**: Manage measurements, documents and raw data\n- **File Storage**: Upload and manage research files with metadata\n- **User Management**: Handle user accounts and permissions\n- **Utilities**: Geocoding, species image search, and data processing tools\n\n## Authentication\n\nMost endpoints require proper authentication and database access permissions.\n\n## Data Format\n\nAll endpoints return JSON data unless otherwise specified. Dates are in ISO 8601 format.\n      ",
+    "version": "2.0.0",
+    "description": "\n# EvoNEST General Documentation\n\n**The EvoNEST User documentation and the EvoNEST Developer Docs are found here**: https://daniele-liprandi.github.io/EvoNEST-backbone/\n\n# EvoNEST API Documentation\n\nThe EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.\n\n## Features\n\n- **Samples Management**: Create, update, and retrieve biological samples with taxonomic information\n- **Traits Measurement**: Record and analyze trait measurements with statistical calculations\n- **Experiments**: Manage measurements, documents and raw data\n- **File Storage**: Upload and manage research files with metadata\n- **User Management**: Handle user accounts and permissions\n- **Utilities**: Geocoding, species image search, and data processing tools\n\n## Authentication\n\nMost endpoints require proper authentication and database access permissions.\n\n## Data Format\n\nAll endpoints return JSON data unless otherwise specified. Dates are in ISO 8601 format.\n      ",
     "contact": {
       "name": "Daniele Liprandi",
-      "email": "daniele.liprandi@uni-greifswald.de",
-      "url": "https://evonest.zoologie.uni-greifswald.de"
+      "email": "daniele.liprandi@gmail.com",
+      "url": "https://github.com/daniele-liprandi/EvoNEST-backbone"
     },
     "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
+      "name": "GNU Affero General Public License v3.0",
+      "url": "https://opensource.org/licenses/AGPL-3.0"
     },
-    "termsOfService": "https://evonest.zoologie.uni-greifswald.de/terms",
-    "generatedAt": "2025-07-15T16:38:30.716Z",
+    "generatedAt": "2025-11-20T11:27:00.271Z",
     "x-generator": "swagger-jsdoc (static build)",
     "x-source": "JSDoc comments in API route files",
     "x-build-context": "GitHub Actions"
   },
   "servers": [
     {
-      "url": "https://evonest.zoologie.uni-greifswald.de",
-      "description": "Production server"
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
     }
   ],
   "tags": [
@@ -1152,7 +1151,8 @@
               "equipmenttypes",
               "samplesubtypes",
               "silkcategories",
-              "siprefixes"
+              "siprefixes",
+              "baseunits"
             ],
             "description": "Configuration type"
           },
@@ -1206,11 +1206,16 @@
             "enum": [
               "auto",
               "WSC",
-              "GNR"
+              "GNames"
             ],
             "default": "auto",
-            "description": "Data source for name checking (WSC = World Spider Catalog, GNR = Global Names Resolver)",
+            "description": "Data source for name checking (WSC = World Spider Catalog, GNames = Global Names Verifier)",
             "example": "auto"
+          },
+          "family": {
+            "type": "string",
+            "description": "Optional family name to provide taxonomic context (used with GNames)",
+            "example": "Pholcidae"
           }
         }
       },
@@ -1221,6 +1226,16 @@
             "type": "string",
             "description": "Standardized scientific name",
             "example": "Araneus diadematus"
+          },
+          "kingdom": {
+            "type": "string",
+            "description": "Taxonomic kingdom",
+            "example": "Animalia"
+          },
+          "phylum": {
+            "type": "string",
+            "description": "Taxonomic phylum",
+            "example": "Arthropoda"
           },
           "class": {
             "type": "string",
@@ -1668,6 +1683,281 @@
         }
       }
     },
+    "/api/user/database": {
+      "get": {
+        "summary": "Get user's database access information",
+        "description": "Retrieve list of databases the user has access to and their currently active database",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Database information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "databases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "List of databases user has access to"
+                    },
+                    "activeDatabase": {
+                      "type": "string",
+                      "description": "Currently active database for the user"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Set active database for user",
+        "description": "Switch the user's active database to a different one they have access to",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "database"
+                ],
+                "properties": {
+                  "database": {
+                    "type": "string",
+                    "description": "Name of the database to set as active"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Active database updated successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Database not authorized for user"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/user/api-keys": {
+      "get": {
+        "summary": "List all API keys for authenticated user",
+        "description": "Retrieve all API keys associated with the current user account, showing only key previews for security",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of API keys retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "keyPreview": {
+                        "type": "string"
+                      },
+                      "isActive": {
+                        "type": "boolean"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "expiresAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "lastUsedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "usageCount": {
+                        "type": "number"
+                      },
+                      "databases": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Generate a new API key",
+        "description": "Create a new API key for the authenticated user with specified name and expiration",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name/description for the API key"
+                  },
+                  "expiresInDays": {
+                    "type": "number",
+                    "description": "Number of days until key expires (optional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "API key generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "apiKey": {
+                      "type": "string"
+                    },
+                    "keyInfo": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Revoke an API key",
+        "description": "Delete/revoke an existing API key",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "keyId": {
+                    "type": "string",
+                    "description": "ID or preview of the key to revoke"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "API key revoked successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "API key not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/traits": {
       "get": {
         "summary": "Retrieve trait measurements",
@@ -1693,6 +1983,15 @@
             },
             "description": "Filter traits by specific type",
             "example": "silk_diameter"
+          },
+          {
+            "in": "query",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Retrieve a specific trait by its ID",
+            "example": "507f1f77bcf86cd799439011"
           }
         ],
         "responses": {
@@ -1810,6 +2109,361 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/traits/ext": {
+      "get": {
+        "summary": "Export traits data with API key authentication",
+        "description": "Export all trait measurements from a database using API key authentication. Supports filtering and inclusion of sample features and related data.",
+        "tags": [
+          "Traits"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "database",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Database name to export from"
+          },
+          {
+            "in": "query",
+            "name": "apiKey",
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key for authentication (can also use Authorization header)"
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string",
+              "default": "json"
+            },
+            "description": "Export format (only JSON supported)"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter traits by type"
+          },
+          {
+            "in": "query",
+            "name": "includeSampleFeatures",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include associated sample information"
+          },
+          {
+            "in": "query",
+            "name": "includeRelated",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include related sample chain data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Traits exported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key"
+          },
+          "404": {
+            "description": "No traits found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/traits/convert-units": {
+      "post": {
+        "summary": "Convert traits to their default units",
+        "description": "Converts trait measurements to their default units based on SI prefix conversion.\nCan convert specific traits by ID or all traits in the database.\nOnly converts traits where the current unit is compatible with the default unit\n(i.e., same base unit with different SI prefix).\n",
+        "tags": [
+          "Traits"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "traitIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional array of trait IDs to convert. If not provided, converts all traits.",
+                    "example": [
+                      "507f1f77bcf86cd799439011",
+                      "507f1f77bcf86cd799439012"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully converted traits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "totalTraits": {
+                      "type": "number",
+                      "description": "Total number of traits processed",
+                      "example": 150
+                    },
+                    "converted": {
+                      "type": "number",
+                      "description": "Number of traits successfully converted",
+                      "example": 45
+                    },
+                    "skipped": {
+                      "type": "number",
+                      "description": "Number of traits skipped (already in default unit or incompatible)",
+                      "example": 105
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "traitId": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "converted": {
+                            "type": "boolean"
+                          },
+                          "oldValue": {
+                            "type": "number"
+                          },
+                          "oldUnit": {
+                            "type": "string"
+                          },
+                          "newValue": {
+                            "type": "number"
+                          },
+                          "newUnit": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Database or conversion error"
+          }
+        }
+      }
+    },
+    "/api/traits/convert-units/preview": {
+      "post": {
+        "summary": "Preview trait unit conversions without applying changes",
+        "description": "Analyzes which traits would be converted and returns preview data\nwithout modifying the database. Shows the first 10 conversions that would be applied.\n",
+        "tags": [
+          "Traits"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "traitIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional array of trait IDs to preview. If not provided, previews all traits."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully generated preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalTraits": {
+                      "type": "number"
+                    },
+                    "willConvert": {
+                      "type": "number"
+                    },
+                    "willSkip": {
+                      "type": "number"
+                    },
+                    "preview": {
+                      "type": "array",
+                      "description": "First 10 conversions that will be applied",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/traits/analysis": {
+      "post": {
+        "summary": "Perform statistical analysis on trait data",
+        "description": "Analyze trait measurements with statistical calculations (mean, stddev, min, max, median) grouped by various sample features",
+        "tags": [
+          "Traits"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "traitType"
+                ],
+                "properties": {
+                  "traitType": {
+                    "type": "string",
+                    "description": "Type of trait to analyze (e.g., stressAtBreak, diameter, toughness)"
+                  },
+                  "groupBy": {
+                    "type": "string",
+                    "default": "all",
+                    "description": "Field to group results by (e.g., species, sex, sampleType)"
+                  },
+                  "filters": {
+                    "type": "object",
+                    "description": "Optional filters to apply to the data"
+                  },
+                  "unitConversion": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether to apply unit conversions"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Analysis completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "group": {
+                            "type": "string"
+                          },
+                          "statistics": {
+                            "type": "object",
+                            "properties": {
+                              "mean": {
+                                "type": "number"
+                              },
+                              "stddev": {
+                                "type": "number"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "median": {
+                                "type": "number"
+                              },
+                              "count": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "processingTime": {
+                      "type": "number",
+                      "description": "Time taken for analysis in milliseconds"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Missing or invalid parameters"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -2251,6 +2905,94 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/samples/ext": {
+      "get": {
+        "summary": "Export samples data with API key authentication",
+        "description": "Export all samples from a database using API key authentication. Supports various filtering and relationship inclusion options.",
+        "tags": [
+          "Samples"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "database",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Database name to export from"
+          },
+          {
+            "in": "query",
+            "name": "apiKey",
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key for authentication (can also use Authorization header)"
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string",
+              "default": "json"
+            },
+            "description": "Export format (only JSON supported)"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "animal",
+                "silk",
+                "other"
+              ]
+            },
+            "description": "Filter samples by type"
+          },
+          {
+            "in": "query",
+            "name": "includeRelated",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include parent sample data chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Samples exported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key"
+          },
+          "404": {
+            "description": "No samples found"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -3111,16 +3853,161 @@
         }
       }
     },
-    "/api/experiment-parsers": {
+    "/api/experiments/ext": {
       "get": {
-        "summary": "Get available experiment parsers",
-        "description": "Returns a list of experiment types that have parsers available for automatic trait generation",
+        "summary": "Export experiments data with API key authentication",
+        "description": "Export all experiments from a database using API key authentication. Supports filtering and inclusion of raw data and related samples.",
         "tags": [
-          "Experiment Parsers"
+          "Experiments"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "database",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Database name to export from"
+          },
+          {
+            "in": "query",
+            "name": "apiKey",
+            "schema": {
+              "type": "string"
+            },
+            "description": "API key for authentication (can also use Authorization header)"
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string",
+              "default": "json"
+            },
+            "description": "Export format (only JSON supported)"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter experiments by type"
+          },
+          {
+            "in": "query",
+            "name": "includeRawData",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include raw experimental data"
+          },
+          {
+            "in": "query",
+            "name": "includeOriginalData",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include original unprocessed data"
+          },
+          {
+            "in": "query",
+            "name": "includeRelated",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include related sample data chain"
+          }
         ],
         "responses": {
           "200": {
-            "description": "List of available parsers"
+            "description": "Experiments exported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key"
+          },
+          "404": {
+            "description": "No experiments found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/experiments/export": {
+      "get": {
+        "summary": "Export tensile test experimental data",
+        "description": "Export tensile test experiment data in JSON format with session-based authentication",
+        "tags": [
+          "Experiments"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "type": "string",
+              "default": "json"
+            },
+            "description": "Export format (only JSON supported)"
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "default": "tensile_test"
+            },
+            "description": "Experiment type filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Experiments exported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid format requested"
+          },
+          "404": {
+            "description": "No experiments found"
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }
@@ -3341,7 +4228,8 @@
                 "equipmenttypes",
                 "samplesubtypes",
                 "silkcategories",
-                "siprefixes"
+                "siprefixes",
+                "baseunits"
               ]
             },
             "description": "Specific configuration type to retrieve"
@@ -3446,13 +4334,13 @@
     "/api/config/types/seed": {
       "post": {
         "summary": "Seed database with default configurations",
-        "description": "Initialize the config collection with default type configurations",
+        "description": "Replace existing configurations with defaults or create them if they don't exist",
         "tags": [
           "Configuration"
         ],
         "responses": {
           "200": {
-            "description": "Database seeded successfully"
+            "description": "Database set to defaults successfully"
           },
           "500": {
             "description": "Server error"
@@ -3488,7 +4376,7 @@
       },
       "post": {
         "summary": "Validate and correct taxonomic names",
-        "description": "Validates and corrects scientific names using various taxonomic databases.\nSupports two methods:\n- **correctName**: Returns the corrected/standardized name\n- **fullTaxaInfo**: Returns complete taxonomic hierarchy information\n\nData sources:\n- **WSC**: World Spider Catalog (spider-specific)\n- **GNR**: Global Names Resolver (general taxa)\n- **auto**: Tries WSC first, falls back to GNR\n",
+        "description": "Validates and corrects scientific names using various taxonomic databases.\nSupports two methods:\n- **correctName**: Returns the corrected/standardized name\n- **fullTaxaInfo**: Returns complete taxonomic hierarchy information\n\nData sources:\n- **WSC**: World Spider Catalog (spider-specific)\n- **GNames**: Global Names Verifier (general taxa) - uses data sources 1, 12, 13 (Catalogue of Life, Encyclopedia of Life, GBIF)\n- **auto**: Tries WSC first, falls back to GNames\n",
         "tags": [
           "Utilities"
         ],
@@ -3511,9 +4399,10 @@
                 "fullTaxaInfo": {
                   "summary": "Get complete taxonomic information",
                   "value": {
-                    "taxa": "Araneus diadematus",
+                    "taxa": "Pholcus phalangioides",
                     "method": "fullTaxaInfo",
-                    "source": "GNR"
+                    "source": "GNames",
+                    "family": "Pholcidae"
                   }
                 }
               }

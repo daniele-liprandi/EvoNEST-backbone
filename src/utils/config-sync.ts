@@ -8,6 +8,7 @@ import {
   samplesubtypes as defaultSampleSubtypes,
   silkcategories as defaultSilkCategories,
   SIprefixes as defaultSIprefixes,
+  baseunits as defaultBaseUnits,
   LabelType
 } from '@/utils/types'
 
@@ -53,6 +54,13 @@ export function getSilkCategoriesSync(): LabelType[] {
 }
 
 /**
+ * Get base units with database fallback
+ */
+export function getBaseUnitsSync(): LabelType[] {
+  return configCache.baseunits || defaultBaseUnits
+}
+
+/**
  * Load configuration from API into cache
  * Call this on app initialization or when you know config might have changed
  */
@@ -65,7 +73,7 @@ export async function loadConfigCache(): Promise<void> {
   }
 
   try {
-    const configTypes = ['sampletypes', 'traittypes', 'equipmenttypes', 'samplesubtypes', 'silkcategories', 'siprefixes']
+    const configTypes = ['sampletypes', 'traittypes', 'equipmenttypes', 'samplesubtypes', 'silkcategories', 'siprefixes', 'baseunits']
     const newCache: Record<string, any> = {}
 
     for (const configType of configTypes) {
@@ -99,7 +107,8 @@ export async function loadConfigCache(): Promise<void> {
       equipmenttypes: defaultEquipmentTypes,
       samplesubtypes: defaultSampleSubtypes,
       silkcategories: defaultSilkCategories,
-      siprefixes: defaultSIprefixes
+      siprefixes: defaultSIprefixes,
+      baseunits: defaultBaseUnits
     }
     cacheTimestamp = now
   }
@@ -113,6 +122,7 @@ function getDefaultForType(type: string) {
     case 'samplesubtypes': return defaultSampleSubtypes
     case 'silkcategories': return defaultSilkCategories
     case 'siprefixes': return defaultSIprefixes
+    case 'baseunits': return defaultBaseUnits
     default: return []
   }
 }
