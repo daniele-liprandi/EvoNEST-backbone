@@ -79,6 +79,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
             <li>• Equipment types (Microscopes, PCR machines, etc.)</li>
             <li>• Sample subtypes (Whole blood, Serum, Muscle, etc.)</li>
             <li>• SI unit prefixes</li>
+            <li>• Base units (meter, Pascal, Newton, etc.)</li>
           </ul>
         </div>
 

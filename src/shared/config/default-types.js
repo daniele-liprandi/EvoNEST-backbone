@@ -112,6 +112,30 @@ export const DEFAULT_CONFIGS = {
     { label: "Atto", value: "a", power: -18 },
     { label: "Zepto", value: "z", power: -21 },
     { label: "Yocto", value: "y", power: -24 }
+  ],
+  baseunits: [
+    { value: "m", label: "Meter", description: "SI unit of length", category: "length" },
+    { value: "g", label: "Gram", description: "SI unit of mass", category: "mass" },
+    { value: "s", label: "Second", description: "SI unit of time", category: "time" },
+    { value: "A", label: "Ampere", description: "SI unit of electric current", category: "electric current" },
+    { value: "K", label: "Kelvin", description: "SI unit of temperature", category: "temperature" },
+    { value: "mol", label: "Mole", description: "SI unit of amount of substance", category: "amount" },
+    { value: "cd", label: "Candela", description: "SI unit of luminous intensity", category: "luminous intensity" },
+    { value: "Hz", label: "Hertz", description: "Unit of frequency", category: "frequency" },
+    { value: "N", label: "Newton", description: "Unit of force", category: "force" },
+    { value: "Pa", label: "Pascal", description: "Unit of pressure", category: "pressure" },
+    { value: "J", label: "Joule", description: "Unit of energy", category: "energy" },
+    { value: "W", label: "Watt", description: "Unit of power", category: "power" },
+    { value: "C", label: "Coulomb", description: "Unit of electric charge", category: "electric charge" },
+    { value: "V", label: "Volt", description: "Unit of voltage", category: "voltage" },
+    { value: "F", label: "Farad", description: "Unit of capacitance", category: "capacitance" },
+    { value: "Ω", label: "Ohm", description: "Unit of resistance", category: "resistance" },
+    { value: "S", label: "Siemens", description: "Unit of conductance", category: "conductance" },
+    { value: "Wb", label: "Weber", description: "Unit of magnetic flux", category: "magnetic flux" },
+    { value: "T", label: "Tesla", description: "Unit of magnetic field", category: "magnetic field" },
+    { value: "H", label: "Henry", description: "Unit of inductance", category: "inductance" },
+    { value: "L", label: "Liter", description: "Unit of volume", category: "volume" },
+    { value: "l", label: "Liter (lowercase)", description: "Unit of volume", category: "volume" }
   ]
 };
 
@@ -122,3 +146,4 @@ export const equipmenttypes = DEFAULT_CONFIGS.equipmenttypes;
 export const samplesubtypes = DEFAULT_CONFIGS.samplesubtypes;
 export const silkcategories = DEFAULT_CONFIGS.silkcategories;
 export const siprefixes = DEFAULT_CONFIGS.siprefixes;
+export const baseunits = DEFAULT_CONFIGS.baseunits;

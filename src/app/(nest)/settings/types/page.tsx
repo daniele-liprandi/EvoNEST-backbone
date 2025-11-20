@@ -35,6 +35,7 @@ import {
   traittypes,
   equipmenttypes,
   samplesubtypes,
+  baseunits,
 } from "@/utils/types";
 import { ConfigSetup } from "@/components/config-setup";
 import { checkConfigExists } from "@/utils/config-utils";
@@ -222,7 +223,7 @@ const TypeTable = ({
     <CardHeader>
       <CardTitle className="flex justify-between items-center">
         {title}
-        <AddItemForm configType={configType} onSuccess={onRefresh} />
+        <ItemForm configType={configType} onSuccess={onRefresh} />
       </CardTitle>
       {description && <CardDescription>{description}</CardDescription>}
     </CardHeader>
@@ -297,6 +298,7 @@ export default function TypesPage() {
     traittypes: traittypes,
     samplesubtypes: samplesubtypes,
     equipmenttypes: equipmenttypes,
+    baseunits: baseunits,
   });
   const [loading, setLoading] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
@@ -319,6 +321,7 @@ export default function TypesPage() {
         "traittypes",
         "samplesubtypes",
         "equipmenttypes",
+        "baseunits",
       ];
 
       for (const configType of configTypes) {
@@ -444,11 +447,29 @@ export default function TypesPage() {
           />
 
           <TypeTable
+            title="Trait Types"
+            description="Different types of measurements and traits that can be recorded"
+            data={configs.traittypes}
+            showColumns={['label', 'value', 'unit', 'description']}
+            configType="traittypes"
+            onRefresh={refreshConfig}
+          />
+
+          <TypeTable
             title="Equipment Types"
             description="Different types of equipment used for measurements"
             data={configs.equipmenttypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="equipmenttypes"
+            onRefresh={refreshConfig}
+          />
+
+          <TypeTable
+            title="Base Units"
+            description="Base units that can be used with SI prefixes for measurements"
+            data={configs.baseunits}
+            showColumns={["label", "value", "category", "description"]}
+            configType="baseunits"
             onRefresh={refreshConfig}
           />
         </>
