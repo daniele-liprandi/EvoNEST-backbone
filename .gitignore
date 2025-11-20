@@ -53,6 +53,9 @@ import/*/*.json
 # Docker tar
 *.tar
 
+# Downloaded backups
+downloaded_backups/*.tar.gz
+
 # Documentation
 docs/node_modules/
 docs/.vitepress/dist/
