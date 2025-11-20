@@ -69,7 +69,7 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
             url:
               process.env.NODE_ENV === "development"
                 ? "http://localhost:3005"
-                : "http://localhost:3000",
+                : process.env.NEXTAUTH_URL || "http://localhost:3002",
             description:
               process.env.NODE_ENV === "development"
                 ? "Development server"

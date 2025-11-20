@@ -223,7 +223,7 @@ const TypeTable = ({
     <CardHeader>
       <CardTitle className="flex justify-between items-center">
         {title}
-        <ItemForm configType={configType} onSuccess={onRefresh} />
+        <AddItemForm configType={configType} onSuccess={onRefresh} />
       </CardTitle>
       {description && <CardDescription>{description}</CardDescription>}
     </CardHeader>
