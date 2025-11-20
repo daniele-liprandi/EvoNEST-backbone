@@ -29,34 +29,49 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
         this.requiredFields = ['force', 'displacement', 'time'];
         this.generatedTraits = [
             {
-                name: 'max_force',
+                name: 'modulus',
+                unit: 'Pa',
+                description: 'Young\'s modulus (elasticity modulus) of the material'
+            },
+            {
+                name: 'stressAtBreak',
+                unit: 'Pa',
+                description: 'Stress at which the specimen breaks'
+            },
+            {
+                name: 'strainAtBreak',
+                unit: 'mm/mm',
+                description: 'Strain at which the specimen breaks'
+            },
+            {
+                name: 'offsetYieldStress',
+                unit: 'Pa',
+                description: 'Stress at yield point using offset method'
+            },
+            {
+                name: 'offsetYieldStrain',
+                unit: 'Pa',
+                description: 'Strain at yield point using offset method'
+            },
+            {
+                name: 'toughness',
+                unit: 'Pa',
+                description: 'Material toughness (energy absorption capacity)'
+            },
+            {
+                name: 'specimenDiameter',
+                unit: 'um',
+                description: 'Equivalent diameter of the test specimen'
+            },
+            {
+                name: 'strainRate',
+                unit: '1/s',
+                description: 'Rate of strain applied during the test'
+            },
+            {
+                name: 'loadAtBreak',
                 unit: 'N',
-                description: 'Maximum force recorded during tensile test'
-            },
-            {
-                name: 'max_displacement',
-                unit: 'mm',
-                description: 'Maximum displacement recorded during tensile test'
-            },
-            {
-                name: 'test_duration',
-                unit: 'seconds',
-                description: 'Total duration of the tensile test'
-            },
-            {
-                name: 'sample_frequency',
-                unit: 'Hz',
-                description: 'Data sampling frequency during the test'
-            },
-            {
-                name: 'ultimate_tensile_strength',
-                unit: 'MPa',
-                description: 'Ultimate tensile strength calculated from force and area'
-            },
-            {
-                name: 'youngs_modulus',
-                unit: 'GPa',
-                description: 'Young\'s modulus calculated from stress-strain curve'
+                description: 'Calculated force at break (stress × cross-sectional area)'
             }
         ];
     }
@@ -87,6 +102,9 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             const textFields = this.extractTextFields(content);
             const channelData = this.extractChannelData(content);
             
+            // Convert trait keys to camelCase for storage
+            const camelCaseTraits = this.convertTraitKeysToCamelCase(extractedTraits);
+            
             // Create experiment data structure
             const experimentData = this.createExperimentData({
                 name: `TensileTest_${metadata?.filename?.replace(/\.[^/.]+$/, '') || 'unknown'}`,
@@ -95,7 +113,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
                 sampleId: textFields?.SpecimenName || '', // Will need to be mapped to actual sample
                 notes: `Tensile test data with ${Object.keys(extractedTraits).length} traits and ${Object.keys(channelData).length} channels`,
                 data: {
-                    traits: extractedTraits,
+                    traits: camelCaseTraits,
                     textFields: textFields,
                     channelData: channelData,
                     summary: this.generateChannelSummary(channelData),
@@ -138,42 +156,76 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
     convertTraitsToAPIFormat(extractedTraits, sampleId, date) {
         const traits = [];
         
-        // Define trait type mappings
+        // Define trait type mappings - updated to match actual file variables
         const traitTypeMap = {
-            'YoungsModulus': 'youngs_modulus',
-            'UltimateStress': 'ultimate_stress',
-            'YieldStress': 'yield_stress',
-            'StrainAtBreak': 'strain_at_break',
-            'StressAtBreak': 'stress_at_break'
+            'Modulus': 'modulus',
+            'StressAtBreak': 'stressAtBreak',
+            'StrainAtBreak': 'strainAtBreak',
+            'OffsetYieldStress': 'offsetYieldStress',
+            'OffsetYieldStrain': 'offsetYieldStrain',
+            'Toughness': 'toughness',
+            'SpecimenDiameter': 'specimenDiameter',
+            'StrainRate': 'strainRate',
+            'LoadAtBreak': 'loadAtBreak'
         };
 
-        // Define unit mappings
+        // Define output unit mappings - pressure values are already converted to Pa
         const unitMap = {
-            'YoungsModulus': 'Pa',
-            'UltimateStress': 'Pa',
-            'YieldStress': 'Pa',
-            'StrainAtBreak': '',
-            'StressAtBreak': 'Pa'
+            'Modulus': 'Pa',
+            'StressAtBreak': 'Pa',
+            'StrainAtBreak': 'mm/mm',
+            'OffsetYieldStress': 'Pa',
+            'OffsetYieldStrain': 'Pa',
+            'Toughness': 'Pa',
+            'SpecimenDiameter': 'um',
+            'StrainRate': '1/s',
+            'LoadAtBreak': 'N'
         };
 
         Object.entries(extractedTraits).forEach(([traitName, value]) => {
             if (value !== null && value !== undefined && !isNaN(value)) {
+                // Values are already converted in readTrait(), just use them directly
                 traits.push({
                     method: "create",
-                    type: traitTypeMap[traitName] || traitName.toLowerCase(),
+                    type: traitTypeMap[traitName] || traitName,
                     sampleId: sampleId,
                     responsible: "", // Will be filled by the UI
                     date: date,
                     measurement: value,
                     unit: unitMap[traitName] || "",
-                    equipment: "EVOMECT150",
-                    detail: "Tensile test measurement",
-                    notes: `Extracted from EVOMECT150 file: ${traitName}`
+                    equipment: "UTM T150",
+                    detail: "",
+                    notes: ``
                 });
             }
         });
 
         return traits;
+    }
+
+    /**
+     * Convert trait keys from PascalCase to camelCase
+     */
+    convertTraitKeysToCamelCase(extractedTraits) {
+        const traitTypeMap = {
+            'Modulus': 'modulus',
+            'StressAtBreak': 'stressAtBreak',
+            'StrainAtBreak': 'strainAtBreak',
+            'OffsetYieldStress': 'offsetYieldStress',
+            'OffsetYieldStrain': 'offsetYieldStrain',
+            'Toughness': 'toughness',
+            'SpecimenDiameter': 'specimenDiameter',
+            'StrainRate': 'strainRate',
+            'LoadAtBreak': 'loadAtBreak'
+        };
+
+        const camelCaseTraits = {};
+        Object.entries(extractedTraits).forEach(([key, value]) => {
+            const camelKey = traitTypeMap[key] || key;
+            camelCaseTraits[camelKey] = value;
+        });
+
+        return camelCaseTraits;
     }
 
     /**
@@ -213,14 +265,16 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
      * Replaces the old read_trait function
      */
     extractTraits(content) {
-        // Define the trait names (you'll need to import or define these)
+        // Updated trait names to match actual file variables (lines 6-17)
         const traitNames = [
-            'YoungsModulus',
-            'UltimateStress', 
-            'YieldStress',
-            'StrainAtBreak',
-            'StressAtBreak',
-            // Add more trait names as needed
+            'Modulus',              // Line 16: Modulus 9.581 GPa
+            'StressAtBreak',        // Line 12: StressAtBreak 1126.972 MPa
+            'StrainAtBreak',        // Line 11: StrainAtBreak 0.322 mm/mm
+            'OffsetYieldStress',    // Line 15: OffsetYieldStress 279.674 MPa
+            'OffsetYieldStrain',    // Line 14: OffsetYieldStrain 0.292 MPa
+            'Toughness',            // Line 13: Toughness 218.498 MPa
+            'SpecimenDiameter',     // Line 8: SpecimenDiameter 0.991 um
+            'StrainRate'            // Line 9: StrainRate 1.000e-02 1/s
         ];
 
         const traits = {};
@@ -236,6 +290,30 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             }
         }
 
+        // Calculate LoadAtBreak if we have both StressAtBreak and SpecimenDiameter
+        // Formula: Force = Stress × Area
+        // Area = π × (diameter/2)²
+        // Units: StressAtBreak is already converted to Pa, Diameter is in um
+        // Result will be in N (Newtons)
+        if (traits.StressAtBreak && traits.SpecimenDiameter) {
+            const stressAtBreak = traits.StressAtBreak; // Pa
+            const diameter = traits.SpecimenDiameter;   // um
+            
+            // Calculate area: π × (d/2)² in um²
+            const radius = diameter / 2;
+            const areaInUm2 = Math.PI * radius * radius; // um²
+            
+            // Convert area from um² to m²
+            // 1 um² = 1e-12 m²
+            const areaInM2 = areaInUm2 * 1e-12;
+            
+            // Force = Stress × Area
+            // Stress is in Pa (N/m²), Area is in m²
+            const forceInN = stressAtBreak * areaInM2; // N
+            
+            traits.LoadAtBreak = forceInN;
+        }
+
         return traits;
     }
 
@@ -244,25 +322,31 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
      * Replaces the old read_text function
      */
     extractTextFields(content) {
-        // Define the text field names (you'll need to import or define these)
+        // Text field names from the file
         const textNames = [
-            'SpecimenName',
-            'TestMethod',
-            'Operator',
-            // Add more text field names as needed
+            'SpecimenName',                       // Line 7: SpecimenName B_4_IS
+            'TestMethod',                         // Line 3: TestMethod,Standard Greifswald Tensile Silk Testing.msm
+            'TimeAtBeginningOfTheExperiment'      // Line 10: TimeAtBeginningOfTheExperiment 10:39:12 AM
         ];
 
         const textFields = {};
 
-        for (const textName of textNames) {
-            try {
-                const value = this.readText(content, textName);
-                if (value !== null) {
-                    textFields[textName] = value;
-                }
-            } catch (error) {
-                console.warn(`Failed to extract text field ${textName}:`, error.message);
-            }
+        // Special handling for SpecimenName - just extract the value after the name
+        const specimenMatch = content.match(/SpecimenName\s+([^\r\n]+)/);
+        if (specimenMatch) {
+            textFields.SpecimenName = specimenMatch[1].trim();
+        }
+
+        // Special handling for TestMethod - it's in CSV format on line 3
+        const testMethodMatch = content.match(/TestMethod,(.+)/);
+        if (testMethodMatch) {
+            textFields.TestMethod = testMethodMatch[1].trim();
+        }
+
+        // Special handling for TimeAtBeginningOfTheExperiment
+        const timeMatch = content.match(/TimeAtBeginningOfTheExperiment\s+(.+)/);
+        if (timeMatch) {
+            textFields.TimeAtBeginningOfTheExperiment = timeMatch[1].trim();
         }
 
         return textFields;
@@ -319,7 +403,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
 
     /**
      * Read a trait value from the text content
-     * Direct port of the old read_trait function
+     * Updated to handle multiple unit types from the file and convert to standard units
      */
     readTrait(text, trait) {
         try {
@@ -328,25 +412,55 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
 
             const startPos = position + trait.length;
             const output = text.substr(startPos, 50); // Read reasonable chunk
-            const outputSplit = output.split(/\r| /);
+            const outputSplit = output.split(/\r| |\n/);
             
-            if (outputSplit.length < 3) return null;
+            // Filter out empty strings
+            const parts = outputSplit.filter(s => s.trim() !== '');
+            
+            if (parts.length < 2) return null;
 
-            const unit = outputSplit[2];
-            const rawValue = parseFloat(outputSplit[1]);
+            const rawValue = parseFloat(parts[0]);
             
             if (isNaN(rawValue)) return null;
 
-            // Apply unit conversion (you'll need to implement extractPowerFromPrefixBeforeText)
-            const power = this.extractPowerFromPrefixBeforeText(unit, "Pa");
-            const value = rawValue * Math.pow(10, power);
+            // Unit is in the second part (if it exists)
+            const unit = parts[1] || '';
             
-            return value;
+            // Apply unit conversion based on what's in the file
+            const conversionFactor = this.getConversionFactor(unit);
+            const convertedValue = rawValue * conversionFactor;
+            
+            return convertedValue;
 
         } catch (error) {
             console.warn(`Error reading trait ${trait}:`, error.message);
             return null;
         }
+    }
+
+    /**
+     * Get conversion factor based on the unit in the file
+     * Converts pressure units to Pa, keeps other units unchanged
+     */
+    getConversionFactor(unit) {
+        if (!unit) return 1;
+        
+        const unitLower = unit.toLowerCase();
+        
+        // Pressure unit conversions to Pa
+        if (unitLower === 'gpa') return 1e9;   // GigaPascal to Pascal
+        if (unitLower === 'mpa') return 1e6;   // MegaPascal to Pascal
+        if (unitLower === 'kpa') return 1e3;   // KiloPascal to Pascal
+        if (unitLower === 'pa') return 1;      // Already in Pascal
+        
+        // Other units - no conversion needed
+        if (unitLower === 'um' || unitLower === 'μm') return 1;  // micrometers
+        if (unitLower === 'mm' || unitLower === 'mm/mm') return 1;  // millimeters or strain
+        if (unitLower === '1/s' || unitLower === 's^-1') return 1;  // per second
+        if (unitLower === 'mn') return 1;  // milliNewtons
+        
+        // Default: no conversion
+        return 1;
     }
 
     /**
