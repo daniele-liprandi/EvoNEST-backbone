@@ -59,7 +59,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
                 description: 'Material toughness (energy absorption capacity)'
             },
             {
-                name: 'specimenDiameter',
+                name: 'equivalentDiameter',
                 unit: 'um',
                 description: 'Equivalent diameter of the test specimen'
             },
@@ -164,7 +164,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             'OffsetYieldStress': 'offsetYieldStress',
             'OffsetYieldStrain': 'offsetYieldStrain',
             'Toughness': 'toughness',
-            'SpecimenDiameter': 'specimenDiameter',
+            'SpecimenDiameter': 'equivalentDiameter',
             'StrainRate': 'strainRate',
             'LoadAtBreak': 'loadAtBreak'
         };
@@ -214,7 +214,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             'OffsetYieldStress': 'offsetYieldStress',
             'OffsetYieldStrain': 'offsetYieldStrain',
             'Toughness': 'toughness',
-            'SpecimenDiameter': 'specimenDiameter',
+            'SpecimenDiameter': 'equivalentDiameter',
             'StrainRate': 'strainRate',
             'LoadAtBreak': 'loadAtBreak'
         };

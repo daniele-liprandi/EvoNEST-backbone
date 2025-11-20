@@ -216,14 +216,7 @@ export function ProfileFormSamples({
     defaultValues: {
       nomenclature: "",
       name: "",
-      type:
-        page === "subsample"
-          ? "subsample"
-          : page === "animal"
-          ? "animal"
-          : page === "artificial"
-          ? "artificial"
-          : "",
+      type: page,
       sex: "unknown",
       date: new Date(),
       responsible: getUserIdByName(user?.name, users),
@@ -486,7 +479,7 @@ export function ProfileFormSamples({
     [samples, idGeneration, settingsLoading]
   );
 
-  const generateIDanimal = useCallback(
+  const generateNameAnimal = useCallback(
     (form: any, parentname?: string) => {
       const values = form.getValues();
       const genus = values.genus || "";
@@ -528,7 +521,7 @@ export function ProfileFormSamples({
     [samples, idGeneration, settingsLoading, generateBaseID]
   );
 
-  const generateIDsubsample = useCallback(
+  const generateNameSubsample = useCallback(
     (form: any, parentname?: string) => {
       const values = form.getValues();
 
@@ -604,13 +597,13 @@ export function ProfileFormSamples({
         form.setValue("genus", parent.genus);
         form.setValue("species", parent.species);
         form.setValue("nomenclature", `${parent.genus} ${parent.species}`);
-        const id = generateIDsubsample(form, parent.name);
+        const id = generateNameSubsample(form, parent.name);
         form.setValue("name", id);
       } else {
         toast.error("Parent sample not found");
       }
     }
-  }, [selectedParentId, form, samples, generateIDsubsample]);
+  }, [selectedParentId, form, samples, generateNameSubsample]);
 
   useEffect(() => {
     if (selectedGenus && selectedSpecies) {
@@ -624,7 +617,7 @@ export function ProfileFormSamples({
         (sample: { _id: any }) => sample._id === selectedParentId
       );
       if (parent) {
-        const id = generateIDsubsample(form, parent.name);
+        const id = generateNameSubsample(form, parent.name);
         form.setValue("name", id);
       } else {
         toast.error("Please select a parent animal sample first");
@@ -636,7 +629,7 @@ export function ProfileFormSamples({
     includeSubsampleShortened,
     form,
     samples,
-    generateIDsubsample,
+    generateNameSubsample,
   ]);
 
   useEffect(() => {
@@ -651,10 +644,10 @@ export function ProfileFormSamples({
   
   useEffect(() => {
     if (selectedType && selectedGenus && selectedSpecies) {
-      const id = generateIDanimal(form);
+      const id = generateNameAnimal(form);
       form.setValue("name", id);
     }
-  }, [samples, selectedType, selectedGenus, selectedSpecies, form, generateIDanimal]);
+  }, [samples, selectedType, selectedGenus, selectedSpecies, form, generateNameAnimal]);
 
   return (
     <Form {...form}>
@@ -866,7 +859,7 @@ export function ProfileFormSamples({
                 form.setValue("nomenclature", `${values.genus} ${values.species}`);
                 
                 // Generate ID when taxonomic data changes
-                const id = generateIDanimal(form);
+                const id = generateNameAnimal(form);
                 form.setValue("name", id);
               }}
               onValidated={(correctedValues: { family: string; genus: string; species: string | undefined; }, source: any, fullName: string) => {
@@ -877,7 +870,7 @@ export function ProfileFormSamples({
                 form.setValue("nomenclature", fullName);
                 
                 // Generate ID with corrected values
-                const id = generateIDanimal(form);
+                const id = generateNameAnimal(form);
                 form.setValue("name", id);
               }}
               source="auto"
@@ -932,7 +925,7 @@ export function ProfileFormSamples({
                   (sample: { _id: any }) => sample._id === form.watch("parentId")
                 );
                 if (parent) {
-                  const id = generateIDsubsample(form, parent.name);
+                  const id = generateNameSubsample(form, parent.name);
                   form.setValue("name", id);
                 }
               }}
@@ -948,7 +941,7 @@ export function ProfileFormSamples({
                   (sample: { _id: any }) => sample._id === form.watch("parentId")
                 );
                 if (parent) {
-                  const id = generateIDsubsample(form, parent.name);
+                  const id = generateNameSubsample(form, parent.name);
                   form.setValue("name", id);
                 }
               }}
@@ -988,7 +981,7 @@ export function ProfileFormSamples({
                                 sample._id === selectedParentId
                             );
                             if (parent) {
-                              const id = generateIDsubsample(form, parent.name);
+                              const id = generateNameSubsample(form, parent.name);
                               form.setValue("name", id);
                             }
                           }
