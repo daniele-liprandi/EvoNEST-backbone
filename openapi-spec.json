@@ -3,7 +3,7 @@
   "info": {
     "title": "EvoNEST API",
     "version": "2.0.0",
-    "description": "\n# EvoNEST General Documentation\n\n**The EvoNEST User Guide and the EvoNEST Developer Guide are found here**: https://daniele-liprandi.github.io/EvoNEST-backbone/\n\n# EvoNEST API Documentation\n\nThe EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.\n\n## Features\n\n- **Samples Management**: Create, update, and retrieve biological samples with taxonomic information\n- **Traits Measurement**: Record and analyze trait measurements with statistical calculations\n- **Experiments**: Manage measurements, documents and raw data\n- **File Storage**: Upload and manage research files with metadata\n- **User Management**: Handle user accounts and permissions\n- **Utilities**: Geocoding, species image search, and data processing tools\n\n## Authentication\n\nMost endpoints require proper authentication and database access permissions.\n\n## Data Format\n\nAll endpoints return JSON data unless otherwise specified. Dates are in ISO 8601 format.\n      ",
+    "description": "\n# EvoNEST General Documentation\n\n**The EvoNEST User documentation and the EvoNEST Developer Docs are found here**: https://daniele-liprandi.github.io/EvoNEST-backbone/\n\n# EvoNEST API Documentation\n\nThe EvoNEST API allows users to interact with the MongoDB databases generated in their NEST, plus it gives access to utility functions useful in ecological, evolutionary and biological research.\n\n## Features\n\n- **Samples Management**: Create, update, and retrieve biological samples with taxonomic information\n- **Traits Measurement**: Record and analyze trait measurements with statistical calculations\n- **Experiments**: Manage measurements, documents and raw data\n- **File Storage**: Upload and manage research files with metadata\n- **User Management**: Handle user accounts and permissions\n- **Utilities**: Geocoding, species image search, and data processing tools\n\n## Authentication\n\nMost endpoints require proper authentication and database access permissions.\n\n## Data Format\n\nAll endpoints return JSON data unless otherwise specified. Dates are in ISO 8601 format.\n      ",
     "contact": {
       "name": "Daniele Liprandi",
       "email": "daniele.liprandi@gmail.com",
@@ -13,7 +13,7 @@
       "name": "GNU Affero General Public License v3.0",
       "url": "https://opensource.org/licenses/AGPL-3.0"
     },
-    "generatedAt": "2025-11-20T10:09:05.954Z",
+    "generatedAt": "2025-11-20T11:21:09.796Z",
     "x-generator": "swagger-jsdoc (static build)",
     "x-source": "JSDoc comments in API route files",
     "x-build-context": "GitHub Actions"
@@ -1151,7 +1151,8 @@
               "equipmenttypes",
               "samplesubtypes",
               "silkcategories",
-              "siprefixes"
+              "siprefixes",
+              "baseunits"
             ],
             "description": "Configuration type"
           },
@@ -1334,85 +1335,6 @@
     }
   ],
   "paths": {
-    "/api/wsc": {
-      "get": {
-        "summary": "Get World Spider Catalog data",
-        "description": "Retrieve all stored World Spider Catalog (WSC) species data from the database",
-        "tags": [
-          "Utilities"
-        ],
-        "responses": {
-          "200": {
-            "description": "WSC data retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server error - Database connection failed"
-          }
-        }
-      },
-      "post": {
-        "summary": "Download and update WSC data",
-        "description": "Download the latest World Spider Catalog data from NMBE and update the local database",
-        "tags": [
-          "Utilities"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "string",
-                    "enum": [
-                      "download"
-                    ],
-                    "description": "Action to perform (download latest WSC data)"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "WSC data downloaded and updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "recordsImported": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "WSC data file not found on remote server"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
     "/api/users": {
       "get": {
         "summary": "Retrieve all users",
@@ -2539,41 +2461,6 @@
           },
           "400": {
             "description": "Bad request - Missing or invalid parameters"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/shows": {
-      "get": {
-        "summary": "Get shows data (legacy Auth0 endpoint)",
-        "description": "Legacy endpoint using Auth0 authentication to retrieve shows data",
-        "tags": [
-          "Utilities"
-        ],
-        "security": [
-          {
-            "Auth0": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Shows data retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "500": {
             "description": "Server error"
@@ -4341,7 +4228,8 @@
                 "equipmenttypes",
                 "samplesubtypes",
                 "silkcategories",
-                "siprefixes"
+                "siprefixes",
+                "baseunits"
               ]
             },
             "description": "Specific configuration type to retrieve"
@@ -4609,34 +4497,6 @@
           },
           "500": {
             "description": "Database connection error"
-          }
-        }
-      }
-    },
-    "/api/auth/config": {
-      "get": {
-        "summary": "Get authentication configuration",
-        "description": "Returns the current authentication configuration including available login methods",
-        "tags": [
-          "Authentication"
-        ],
-        "responses": {
-          "200": {
-            "description": "Authentication configuration retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "credentialsEnabled": {
-                      "type": "boolean",
-                      "description": "Whether credentials login is available",
-                      "example": true
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }
