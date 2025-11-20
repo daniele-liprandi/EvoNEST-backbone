@@ -1,18 +1,58 @@
 /**
- * API endpoint for exporting samples data using API key authentication
- * GET /api/samples/export
- * 
- * Query parameters:
- * - database: (required) Database name to export from
- * - apiKey: (optional) API key for authentication (can also use Authorization header)
- * - format: 'json' (default: 'json')
- * - type: Filter samples by type (animal, silk, other)
- * - includeRelated: Include parent sample data (true/false)
- * 
- * Authentication:
- * - API key via Authorization header: "Bearer <api-key>"
- * - API key via X-API-Key header: "<api-key>"
- * - API key via query parameter: ?apiKey=<api-key>
+ * @swagger
+ * /api/samples/ext:
+ *   get:
+ *     summary: Export samples data with API key authentication
+ *     description: Export all samples from a database using API key authentication. Supports various filtering and relationship inclusion options.
+ *     tags:
+ *       - Samples
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: database
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Database name to export from
+ *       - in: query
+ *         name: apiKey
+ *         schema:
+ *           type: string
+ *         description: API key for authentication (can also use Authorization header)
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           default: json
+ *         description: Export format (only JSON supported)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [animal, silk, other]
+ *         description: Filter samples by type
+ *       - in: query
+ *         name: includeRelated
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include parent sample data chain
+ *     responses:
+ *       200:
+ *         description: Samples exported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Unauthorized - Invalid or missing API key
+ *       404:
+ *         description: No samples found
+ *       500:
+ *         description: Server error
  */
 
 import { NextResponse } from 'next/server';

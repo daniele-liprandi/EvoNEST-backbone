@@ -1,9 +1,118 @@
 /**
- * API endpoint for managing API keys
- * 
- * GET /api/user/api-keys - List all API keys for the authenticated user
- * POST /api/user/api-keys - Generate a new API key
- * DELETE /api/user/api-keys - Revoke an API key
+ * @swagger
+ * /api/user/api-keys:
+ *   get:
+ *     summary: List all API keys for authenticated user
+ *     description: Retrieve all API keys associated with the current user account, showing only key previews for security
+ *     tags:
+ *       - Users
+ *     security:
+ *       - SessionAuth: []
+ *     responses:
+ *       200:
+ *         description: List of API keys retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   keyPreview:
+ *                     type: string
+ *                   isActive:
+ *                     type: boolean
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   expiresAt:
+ *                     type: string
+ *                     format: date-time
+ *                   lastUsedAt:
+ *                     type: string
+ *                     format: date-time
+ *                   usageCount:
+ *                     type: number
+ *                   databases:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ *   post:
+ *     summary: Generate a new API key
+ *     description: Create a new API key for the authenticated user with specified name and expiration
+ *     tags:
+ *       - Users
+ *     security:
+ *       - SessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name/description for the API key
+ *               expiresInDays:
+ *                 type: number
+ *                 description: Number of days until key expires (optional)
+ *     responses:
+ *       200:
+ *         description: API key generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 apiKey:
+ *                   type: string
+ *                 keyInfo:
+ *                   type: object
+ *       400:
+ *         description: Bad request - Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ *   delete:
+ *     summary: Revoke an API key
+ *     description: Delete/revoke an existing API key
+ *     tags:
+ *       - Users
+ *     security:
+ *       - SessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keyId:
+ *                 type: string
+ *                 description: ID or preview of the key to revoke
+ *     responses:
+ *       200:
+ *         description: API key revoked successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: API key not found
+ *       500:
+ *         description: Server error
  */
 
 import { NextResponse } from 'next/server';

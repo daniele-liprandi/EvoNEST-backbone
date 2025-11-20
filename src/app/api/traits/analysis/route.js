@@ -1,3 +1,75 @@
+/**
+ * @swagger
+ * /api/traits/analysis:
+ *   post:
+ *     summary: Perform statistical analysis on trait data
+ *     description: Analyze trait measurements with statistical calculations (mean, stddev, min, max, median) grouped by various sample features
+ *     tags:
+ *       - Traits
+ *     security:
+ *       - SessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - traitType
+ *             properties:
+ *               traitType:
+ *                 type: string
+ *                 description: Type of trait to analyze (e.g., stressAtBreak, diameter, toughness)
+ *               groupBy:
+ *                 type: string
+ *                 default: all
+ *                 description: Field to group results by (e.g., species, sex, sampleType)
+ *               filters:
+ *                 type: object
+ *                 description: Optional filters to apply to the data
+ *               unitConversion:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Whether to apply unit conversions
+ *     responses:
+ *       200:
+ *         description: Analysis completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       group:
+ *                         type: string
+ *                       statistics:
+ *                         type: object
+ *                         properties:
+ *                           mean:
+ *                             type: number
+ *                           stddev:
+ *                             type: number
+ *                           min:
+ *                             type: number
+ *                           max:
+ *                             type: number
+ *                           median:
+ *                             type: number
+ *                           count:
+ *                             type: number
+ *                 processingTime:
+ *                   type: number
+ *                   description: Time taken for analysis in milliseconds
+ *       400:
+ *         description: Bad request - Missing or invalid parameters
+ *       500:
+ *         description: Server error
+ */
+
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { NextResponse } from "next/server";
 import { get_database_user } from "../../utils/get_database_user";

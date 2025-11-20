@@ -1,10 +1,41 @@
 /**
- * API endpoint for exporting tensile test experimental data
- * GET /api/experiments/export
- * 
- * Query parameters:
- * - format: 'json' (default: 'json')
- * - type: experiment type filter (default: 'tensile_test')
+ * @swagger
+ * /api/experiments/export:
+ *   get:
+ *     summary: Export tensile test experimental data
+ *     description: Export tensile test experiment data in JSON format with session-based authentication
+ *     tags:
+ *       - Experiments
+ *     security:
+ *       - SessionAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           default: json
+ *         description: Export format (only JSON supported)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           default: tensile_test
+ *         description: Experiment type filter
+ *     responses:
+ *       200:
+ *         description: Experiments exported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       400:
+ *         description: Bad request - Invalid format requested
+ *       404:
+ *         description: No experiments found
+ *       500:
+ *         description: Server error
  */
 
 import { NextResponse } from 'next/server';

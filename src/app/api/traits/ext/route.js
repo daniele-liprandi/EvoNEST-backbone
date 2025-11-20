@@ -1,19 +1,63 @@
 /**
- * API endpoint for exporting traits data using API key authentication
- * GET /api/traits/export
- * 
- * Query parameters:
- * - database: (required) Database name to export from
- * - apiKey: (optional) API key for authentication (can also use Authorization header)
- * - format: 'json' (default: 'json')
- * - type: Filter traits by type
- * - includeSampleFeatures: Include associated sample information (true/false)
- * - includeRelated: Include related sample chain data (true/false)
- * 
- * Authentication:
- * - API key via Authorization header: "Bearer <api-key>"
- * - API key via X-API-Key header: "<api-key>"
- * - API key via query parameter: ?apiKey=<api-key>
+ * @swagger
+ * /api/traits/ext:
+ *   get:
+ *     summary: Export traits data with API key authentication
+ *     description: Export all trait measurements from a database using API key authentication. Supports filtering and inclusion of sample features and related data.
+ *     tags:
+ *       - Traits
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: database
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Database name to export from
+ *       - in: query
+ *         name: apiKey
+ *         schema:
+ *           type: string
+ *         description: API key for authentication (can also use Authorization header)
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           default: json
+ *         description: Export format (only JSON supported)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter traits by type
+ *       - in: query
+ *         name: includeSampleFeatures
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include associated sample information
+ *       - in: query
+ *         name: includeRelated
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include related sample chain data
+ *     responses:
+ *       200:
+ *         description: Traits exported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Unauthorized - Invalid or missing API key
+ *       404:
+ *         description: No traits found
+ *       500:
+ *         description: Server error
  */
 
 import { NextResponse } from 'next/server';

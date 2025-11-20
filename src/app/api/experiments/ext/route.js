@@ -1,20 +1,69 @@
 /**
- * API endpoint for exporting all experiments data using API key authentication
- * GET /api/experiments/ext
- * 
- * Query parameters:
- * - database: (required) Database name to export from
- * - apiKey: (optional) API key for authentication (can also use Authorization header)
- * - format: 'json' (default: 'json')
- * - type: Filter experiments by type
- * - includeRawData: Include raw experimental data (true/false)
- * - includeOriginalData: Include original unprocessed data (true/false)
- * - includeRelated: Include related sample data (true/false)
- * 
- * Authentication:
- * - API key via Authorization header: "Bearer <api-key>"
- * - API key via X-API-Key header: "<api-key>"
- * - API key via query parameter: ?apiKey=<api-key>
+ * @swagger
+ * /api/experiments/ext:
+ *   get:
+ *     summary: Export experiments data with API key authentication
+ *     description: Export all experiments from a database using API key authentication. Supports filtering and inclusion of raw data and related samples.
+ *     tags:
+ *       - Experiments
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: database
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Database name to export from
+ *       - in: query
+ *         name: apiKey
+ *         schema:
+ *           type: string
+ *         description: API key for authentication (can also use Authorization header)
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           default: json
+ *         description: Export format (only JSON supported)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter experiments by type
+ *       - in: query
+ *         name: includeRawData
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include raw experimental data
+ *       - in: query
+ *         name: includeOriginalData
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include original unprocessed data
+ *       - in: query
+ *         name: includeRelated
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include related sample data chain
+ *     responses:
+ *       200:
+ *         description: Experiments exported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Unauthorized - Invalid or missing API key
+ *       404:
+ *         description: No experiments found
+ *       500:
+ *         description: Server error
  */
 
 import { NextResponse } from 'next/server';

@@ -1,3 +1,55 @@
+/**
+ * @swagger
+ * /api/files/{fileId}:
+ *   get:
+ *     summary: Download a file by ID
+ *     description: Stream and download a file from storage using its MongoDB document ID
+ *     tags:
+ *       - Files
+ *     security:
+ *       - SessionAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: fileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the file to download
+ *     responses:
+ *       200:
+ *         description: File retrieved successfully
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Server error
+ *   delete:
+ *     summary: Delete a file by ID
+ *     description: Remove a file from storage and its metadata from the database
+ *     tags:
+ *       - Files
+ *     security:
+ *       - SessionAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: fileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: MongoDB ObjectId of the file to delete
+ *     responses:
+ *       200:
+ *         description: File deleted successfully
+ *       404:
+ *         description: File not found
+ *       500:
+ *         description: Server error
+ */
+
 import { NextResponse } from "next/server";
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { get_database_user } from "@/app/api/utils/get_database_user";
