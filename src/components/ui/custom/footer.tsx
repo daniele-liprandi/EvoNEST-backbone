@@ -96,6 +96,27 @@ export function Footer() {
         </div>
       </div>
       
+     {/* Citation Button */}
+      <div className="flex justify-center border-t border-neutral-200 py-4 dark:border-neutral-700">
+        <a
+          href="https://doi.org/10.7717/peerj-cs.3186"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-x-3 rounded-md bg-[#1e88e5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1565c0] focus:outline-none focus:ring-2 focus:ring-[#1e88e5] focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
+        >
+          <svg
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+          </svg>
+          <span className="font-semibold">PeerJ</span>
+          <span className="font-mono opacity-90">10.7717/peerj-cs.3186</span>
+        </a>
+      </div>
+
       {/* Third line - Funding acknowledgment */}
       <div className="flex flex-col gap-y-2 border-t border-neutral-200 pt-4 dark:border-neutral-700">
         <p className="text-center text-[13px]/normal text-neutral-500 dark:text-neutral-400">

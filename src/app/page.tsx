@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ModeToggle } from "@/components/ui/custom/mode-toggle";
 import { EvoNestLogo } from "@/components/ui/custom/evonest-logo";
+import { FeatureResources } from "@/components/landing/feature-resources";
 import herodark from "@/images/hero-dark.png";
 import herolight from "@/images/hero-light.png";
 
@@ -97,6 +98,11 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Resources section */}
+          <div className="mt-16">
+            <FeatureResources />
           </div>
         </div>
       </div>
