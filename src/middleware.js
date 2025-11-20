@@ -23,6 +23,6 @@ export default withAuth(
 export const config = {
   matcher: [
     // Protect all routes except auth-related ones, the root page, public directory, SVG files, and notifications API
-    '/((?!auth|api/auth|api/notifications|_next/static|_next/image|favicon.ico|.*\\.svg|$|public/).*)',
+    '/((?!auth|api/auth|api/notifications|api/samples/ext|api/traits/ext|api/experiments/ext|_next/static|_next/image|favicon.ico|.*\\.svg|$|public/).*)',
   ],
 };

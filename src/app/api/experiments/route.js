@@ -239,19 +239,60 @@ import fs from 'fs/promises';
 
 // TODO Add instructions on how to use this to generate traits
 
+/**
+ * Fetches the complete chain of parent samples from a given sample up to the root
+ * @param {Object} db - Database connection
+ * @param {string|ObjectId} sampleId - Starting sample ID
+ * @returns {Array} Array of samples from child to root
+ */
+async function getSampleChain(db, sampleId) {
+    const samples = db.collection("samples");
+    const chain = [];
+    let currentId = sampleId;
+    
+    while (currentId) {
+        // Convert to ObjectId only if it's a string
+        const queryId = typeof currentId === 'string' ? new ObjectId(currentId) : currentId;
+        const sample = await samples.findOne({ _id: queryId });
+        if (!sample) break;
+        chain.push(sample);
+        currentId = sample.parentId;
+    }
+    
+    return chain;
+}
 
-async function getExperiments(client, includeRawData = false, type = "", includeOriginalData = false) {
+async function getExperiments(client, includeRawData = false, type = "", includeOriginalData = false, includeRelated = false, includeTraitsData = false) {
     const dbname = await get_database_user();
     const db = client.db(dbname);
 
     const query = type ? { type: type } : {};
     
-    // Performance optimization: exclude heavy data fields by default
-    // Usage: GET /api/experiments (fast, no rawdata)
-    //        GET /api/experiments?includeRawData=true (includes processed data)
-    //        GET /api/experiments?includeRawData=true&includeOriginalData=true (includes original unprocessed data)
-    const projection = includeRawData ? {} : { data: 0, originalData: 0, metadata: 0 };
-    const experiments = await db.collection("experiments").find(query, { projection }).toArray();
+    // Build projection based on what data is requested
+    let projection = {};
+    if (includeRawData) {
+        // Include everything
+        projection = {};
+    } else if (includeTraitsData) {
+        // Include only data.traits and data.textFields, exclude channelData and rawdata
+        projection = { 
+            rawdata: 0,
+            originalData: 0,
+            metadata: 0,
+            'data.channelData': 0,
+            'data.summary': 0
+        };
+    } else {
+        // Exclude all data fields
+        projection = { 
+            rawdata: 0, 
+            data: 0, 
+            originalData: 0, 
+            metadata: 0
+        };
+    }
+    
+    let experiments = await db.collection("experiments").find(query, { projection }).toArray();
 
     if (includeRawData && includeOriginalData) {
         // Add flag to indicate which data is being returned
@@ -270,6 +311,29 @@ async function getExperiments(client, includeRawData = false, type = "", include
         });
     }
 
+    // Include related sample data and traits if requested
+    if (includeRelated) {
+        const traits = db.collection("traits");
+        
+        for (const experiment of experiments) {
+            if (experiment.sampleId) {
+                // Get complete sample chain (from child to root)
+                const sampleChain = await getSampleChain(db, experiment.sampleId);
+                experiment.sampleChain = sampleChain;
+                
+                // Add direct sample info at top level for convenience
+                if (sampleChain.length > 0) {
+                    const directSample = sampleChain[0];
+                    experiment.sample = directSample;
+                }
+                
+                // Get all traits for this experiment's sample only (not parent samples)
+                const sampleTraits = await traits.find({ sampleId: experiment.sampleId }).toArray();
+                experiment.traits = sampleTraits;
+            }
+        }
+    }
+
     return experiments;
 }
 
@@ -279,6 +343,8 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const includeRawData = searchParams.get('includeRawData') === 'true';
         const includeOriginalData = searchParams.get('includeOriginalData') === 'true';
+        const includeRelated = searchParams.get('related') === 'true';
+        const includeTraitsData = searchParams.get('includeTraitsData') === 'true';
         const type = searchParams.get('type');
 
         const client = await get_or_create_client();
@@ -289,7 +355,7 @@ export async function GET(req) {
             });
         }
 
-        const experiments = await getExperiments(client, includeRawData, type, includeOriginalData);
+        const experiments = await getExperiments(client, includeRawData, type, includeOriginalData, includeRelated, includeTraitsData);
         return NextResponse.json(experiments);
     } catch (error) {
         console.error("Error fetching experiments:", error);
@@ -354,7 +420,7 @@ export async function POST(req) {
                 delete experimentData.traits;
             }
 
-            console.log(`Processing structured experiment data with ${embeddedTraits.length} embedded traits`);
+            
             
         } else {
             // Legacy format: create basic experiment structure
@@ -379,7 +445,7 @@ export async function POST(req) {
                 metadata: data.metadata,
             };
 
-            console.log("Processing legacy experiment data format");
+            
         }
 
         // Insert the experiment
@@ -423,7 +489,7 @@ export async function POST(req) {
 
             try {
                 const traitResult = await traits.insertMany(traitsToInsert);
-                console.log(`Successfully created ${traitResult.insertedCount} traits for experiment ${data.name}`);
+                
                 
                 // Update experiment logbook with trait creation info
                 await experiments.updateOne(

@@ -355,7 +355,7 @@ export async function POST(req) {
         // Execute aggregation
         const aggregationResults = await traits.aggregate(pipeline).toArray();
         
-        console.log(`Aggregation returned ${aggregationResults.length} groups for trait type '${traitType}'`);
+        
 
         // Process results and calculate statistics
         const results = aggregationResults.map(group => {

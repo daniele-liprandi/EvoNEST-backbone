@@ -12,10 +12,20 @@ import { mutate } from "swr";
 import { baseColumns } from './columns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait } from '@/utils/handlers/traitHandlers';
+import { handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait, handleExportAllTraitsRelated } from '@/utils/handlers/traitHandlers';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { useTraitData } from '@/hooks/useTraitData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Download } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function TraitsPage() {
     // Add debugging to SWR config
@@ -94,14 +104,38 @@ export default function TraitsPage() {
                             {isValidating && " (Refreshing...)"}
                         </CardDescription>
                     </div>
-                    <SmartVaul 
-                        formType='traits' 
-                        users={usersData} 
-                        samples={samplesData} 
-                        traits={traitsData} 
-                        size="sm" 
-                        className="ml-auto gap-1" 
-                    />
+                    <div className="ml-auto flex gap-2 items-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-1"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    Export (with related)
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Export Format</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleExportAllTraitsRelated('json')}>
+                                    JSON
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleExportAllTraitsRelated('csv')}>
+                                    CSV (flattened)
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <SmartVaul 
+                            formType='traits' 
+                            users={usersData} 
+                            samples={samplesData} 
+                            traits={traitsData} 
+                            size="sm" 
+                            className="gap-1" 
+                        />
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <DataTable 

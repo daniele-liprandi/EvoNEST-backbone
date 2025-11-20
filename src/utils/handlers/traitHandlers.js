@@ -100,3 +100,54 @@ export const handleTraitDataDownload = async (trait) => {
     a.click();
     document.body.removeChild(a);
 }
+
+/**
+ * Export all traits with related sample chain data
+ */
+export const handleExportAllTraitsRelated = async (format = 'json') => {
+    try {
+        toast.message(`Preparing ${format.toUpperCase()} export with related data...`);
+
+        const params = new URLSearchParams({
+            related: 'true'
+        });
+        
+        const response = await fetch(`${prepend_path}/api/traits?${params}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Export failed');
+        }
+
+        const data = await response.json();
+        let blob;
+        let filename;
+
+        if (format === 'csv') {
+            // Dynamically import the CSV exporter
+            const { exportTraitsToCSV } = await import('@/utils/exporters/csv-exporter');
+            const csvContent = exportTraitsToCSV(data);
+            blob = new Blob([csvContent], { type: 'text/csv' });
+            filename = `traits_related_${new Date().toISOString().split('T')[0]}.csv`;
+        } else {
+            blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            filename = `traits_related_${new Date().toISOString().split('T')[0]}.json`;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast.success(`Export completed: ${filename}`);
+    } catch (error) {
+        console.error('Export failed:', error);
+        toast.error(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+};
