@@ -1,7 +1,7 @@
 import { cn, prepend_path } from "@/lib/utils";
 import Marquee from "@/components/magicui/marquee";
 import { useFilesData } from "@/hooks/useFilesData";
-import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, AwaitedReactNode, Key } from "react";
+import { ReactNode, Key } from "react";
 import { Skeleton } from "../skeleton";
 
 export function FilesMarquee() {
@@ -26,7 +26,7 @@ export function FilesMarquee() {
             pauseOnHover
             className="absolute top-10 [--duration:20s] [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] w-auto"
         >
-            {files.map((file: { name: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, idx: Key | null | undefined) => (
+            {files.map((file: { name: ReactNode }, idx: Key | null | undefined) => (
                 <figure
                     key={idx}
                     className={cn(

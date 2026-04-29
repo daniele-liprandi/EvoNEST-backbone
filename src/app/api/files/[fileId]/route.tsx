@@ -58,10 +58,8 @@ import { createReadStream } from "fs";
 import { stat, unlink } from "fs/promises";
 import mime from "mime-types";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { fileId: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ fileId: string }> }) {
+  const params = await props.params;
   try {
     // Connect to MongoDB
     const client = await get_or_create_client();
@@ -114,10 +112,8 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { fileId: string } }
-) {
+export async function DELETE(request: Request, props: { params: Promise<{ fileId: string }> }) {
+  const params = await props.params;
   try {
     // Connect to MongoDB
     const client = await get_or_create_client();
