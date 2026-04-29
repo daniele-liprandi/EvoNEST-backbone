@@ -1,5 +1,6 @@
 "use client"
 
+import type { JSX } from 'react';
 import ercEuLogo from "@/images/LOGO_ERC-FLAG_FP.png";
 import uniLogo from "@/images/UniGrignet2018-RGB.png";
 import evomecLogoLight from "@/images/Evomec_Logo_light.png";
