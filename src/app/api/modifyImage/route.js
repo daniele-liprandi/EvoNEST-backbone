@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createCanvas, loadImage } from 'canvas';
+import sharp from 'sharp';
 import https from 'https';
 
 /**
@@ -89,41 +89,38 @@ const downloadImage = (url) => {
   });
 };
 
-const addLabelsToImage = async (imageBuffer, labelWidth, labels) => {
-  const image = await loadImage(imageBuffer);
-  const lw = Number(labelWidth);
-  const canvas = createCanvas(image.width + lw, image.height);
-  const ctx = canvas.getContext('2d');
-
-  // Draw the original image
-  ctx.drawImage(image, 0, 0);
-
-  // Draw the label area
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(image.width, 0, lw, image.height);
-
-  // Draw the label text
-  ctx.fillStyle = '#000000';
-  ctx.textAlign = 'center';
-  ctx.font = '30px Arial';
-
-  // Calculate vertical positions for the labels
-  const totalLabels = labels.length;
-  const lineHeight = 50; // Adjust as needed
-  const startY = (image.height - (lineHeight * totalLabels)) / 2 + lineHeight / 2;
-
-  labels.forEach((label, index) => {
-    // if a label is longer than 12 characters, cut the label to 12 characters by cutting off the middle
-    if (label.length > 12) {
-      label = label.slice(0, 5) + '...' + label.slice(-6);
-    }
-    ctx.fillText(label, image.width + lw / 2, startY + index * lineHeight);
-  });
-
-  // Return the modified image as a buffer
-  return canvas.toBuffer('image/png');
+const truncateLabel = (label) => {
+  if (label.length > 12) {
+    return label.slice(0, 5) + '...' + label.slice(-6);
+  }
+  return label;
 };
 
+const addLabelsToImage = async (imageBuffer, labelWidth, labels) => {
+  const lw = Number(labelWidth);
+  const { width, height } = await sharp(imageBuffer).metadata();
+
+  const truncatedLabels = labels.map(truncateLabel);
+  const lineHeight = 50;
+  const startY = (height - lineHeight * truncatedLabels.length) / 2 + lineHeight / 2;
+
+  const textElements = truncatedLabels
+    .map((label, i) =>
+      `<text x="${lw / 2}" y="${startY + i * lineHeight}" font-family="Arial" font-size="30" text-anchor="middle" fill="#000000">${label}</text>`
+    )
+    .join('');
+
+  const svgLabel = `<svg width="${lw}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${lw}" height="${height}" fill="#ffffff"/>
+    ${textElements}
+  </svg>`;
+
+  return sharp(imageBuffer)
+    .extend({ right: lw, background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .composite([{ input: Buffer.from(svgLabel), left: width, top: 0 }])
+    .png()
+    .toBuffer();
+};
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -134,27 +131,17 @@ export async function GET(request) {
   const label3 = searchParams.get('label3') || '';
   const labels = [label1, label2, label3].filter(Boolean);
 
-  const completeurl = `${qrcodeurl}`;
-
   try {
-    // Download the QR code image
-    const imageBuffer = await downloadImage(completeurl);
-
-    // Add labels to the image
+    const imageBuffer = await downloadImage(qrcodeurl);
     const modifiedImageBuffer = await addLabelsToImage(imageBuffer, labelWidth, labels);
 
-    // Return the modified image
     return new NextResponse(modifiedImageBuffer, {
-      headers: {
-        'Content-Type': 'image/png',
-      },
+      headers: { 'Content-Type': 'image/png' },
     });
   } catch (error) {
     return new NextResponse(JSON.stringify({ error: 'Failed to process image' }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
