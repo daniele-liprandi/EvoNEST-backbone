@@ -60,3 +60,6 @@ downloaded_backups/*.tar.gz
 docs/node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+
+# Internal docs
+.internal_docs/
