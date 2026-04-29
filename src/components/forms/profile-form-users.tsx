@@ -26,8 +26,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 //See form on shadcn/ui and see zod forms
 const formSchema = z.object({
     name: z.string().min(2, { message: "Name needs to be longer than 2 characters" }),
-    role: z.enum(["admin", "researcher", "student", "viewer"], { 
-        required_error: "Please select a role" 
+    role: z.enum(["admin", "researcher", "student", "viewer"], {
+        error: "Please select a role"
     }),
     email: z.string().email({ message: "Please enter a valid email address" }),
     institution: z.string().optional(),
