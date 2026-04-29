@@ -117,7 +117,6 @@
     "@types/react-plotly.js": "^2.6.3",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/utif": "^3.0.5",
-    "autoprefixer": "^10.0.1",
     "babel-jest": "^29.7.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
