@@ -253,7 +253,7 @@ export async function POST(req) {
 
     if (method === 'correctName') {
         if (source == 'WSC') {
-            const wsctaxa = data.taxa.split(','); // wsc requires an array right now // FIXME Daniele
+            const wsctaxa = data.taxa.split(','); // WSC expects an array of taxa
             try {
                 const wscData = await getWSCData();
                 const checkedNames = await spytraxCheckTaxa(wsctaxa, wscData);

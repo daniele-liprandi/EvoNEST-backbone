@@ -53,9 +53,7 @@ export const authOptions: NextAuthOptions = {
                     
                     const user = result.value;
                     
-                    // HACK to handle the case where upsert doesn't return the document
-                    // This can happen if the user was created but not returned by findOneAndUpdate
-
+                    // findOneAndUpdate can return null on the initial insert path
 
                     if (!user) {
                         // Fallback to find the user if upsert didn't return the document

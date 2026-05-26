@@ -128,7 +128,7 @@ export async function GET() {
       return NextResponse.json(cachedNotifications)
     }
 
-    // HACK IT DOESN"T WORK WTHHHHH Fetch notifications from external source
+    // Fetch notifications from the external source
     const NOTIFICATIONS_URL = "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
     
     if (!NOTIFICATIONS_URL) {

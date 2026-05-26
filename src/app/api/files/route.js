@@ -176,7 +176,7 @@ export async function POST(req) {
                 `Uploaded file ${filename} of type ${type} and id ${fileId}`
             ];
 
-            // HACK I generated the demo data with a string id instead of a ObjectId
+            // Demo data can store entry ids as strings or ObjectIds
             const updateResult = await entryCollection.updateOne(
                 { _id: entryId },
                 {
