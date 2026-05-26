@@ -35,6 +35,8 @@ services:
   mongo-express:
     image: mongo-express
     container_name: mongo_express
+    profiles:
+      - mongo-tools
     env_file:
       - .env.development
       - .env.local
