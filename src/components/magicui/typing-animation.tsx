@@ -16,22 +16,24 @@ export default function TypingAnimation({
   className,
 }: TypingAnimationProps) {
   const [displayedText, setDisplayedText] = useState<string>("");
-  const [i, setI] = useState<number>(0);
 
   useEffect(() => {
-    const typingEffect = setInterval(() => {
-      if (i < text.length) {
-        setDisplayedText(text.substring(0, i + 1));
-        setI(i + 1);
-      } else {
-        clearInterval(typingEffect);
+    setDisplayedText("");
+    let index = 0;
+
+    const typingEffect = window.setInterval(() => {
+      index += 1;
+      setDisplayedText(text.substring(0, index));
+
+      if (index >= text.length) {
+        window.clearInterval(typingEffect);
       }
     }, duration);
 
     return () => {
-      clearInterval(typingEffect);
+      window.clearInterval(typingEffect);
     };
-  }, [duration, i]);
+  }, [text, duration]);
 
   return (
     <h1
