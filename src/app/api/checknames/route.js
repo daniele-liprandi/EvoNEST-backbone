@@ -259,8 +259,8 @@ export async function POST(req) {
                 const checkedNames = await spytraxCheckTaxa(wsctaxa, wscData);
                 return new NextResponse(JSON.stringify({ status: 'success', data: checkedNames[0].best_match }), { status: 200 });
             } catch (error) {
-                console.log(error);
-                return new NextResponse(JSON.stringify({ error: { error } }), { status: 500 });
+                console.error("WSC name check failed:", error);
+                return new NextResponse(JSON.stringify({ error: 'Failed to check names with WSC' }), { status: 500 });
             }
         }
         if (source == 'GNames') {

@@ -144,8 +144,9 @@ export async function POST(req) {
       return NextResponse.json({ message: "Not found" }, { status: 404 });
     }
   } catch (error) {
+    console.error("Geocoding request failed:", error);
     return NextResponse.json(
-      { message: "Internal server error" + error },
+      { message: "Internal server error" },
       { status: 500 }
     );
   }
