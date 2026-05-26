@@ -93,7 +93,6 @@ export function DataTable({
     getSortedRowModel: getSortedRowModel(),
     autoResetPageIndex: false, //turn off auto reset of pageIndex
     onPaginationChange: setPagination,
-    onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
