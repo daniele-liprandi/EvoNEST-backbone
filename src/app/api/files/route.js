@@ -57,7 +57,12 @@ export async function POST(req) {
         }
 
         // Parse metadata and validate
-        const metadata = JSON.parse(metadataStr || '{}');
+        let metadata = {};
+        try {
+            metadata = JSON.parse(metadataStr || '{}');
+        } catch (error) {
+            return NextResponse.json({ error: "Invalid metadata JSON" }, { status: 400 });
+        }
         const { entryType, entryId, deferredLink } = metadata;
 
         // Only validate entryType/entryId if not deferred
