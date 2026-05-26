@@ -6,7 +6,8 @@ const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27019";
 const mongodb_client = new MongoClient(uri);
 
 // This variable will hold the instance of the connected client
-var client = null;
+let client = null;
+let clientPromise = null;
 
 // Function to get or create a MongoDB client
 // The mongodb_client.connect() method is an asynchronous operation. 
@@ -18,16 +19,32 @@ async function get_or_create_client() {
     if (client != null) {
         return client;
     }
+
+    if (clientPromise != null) {
+        return clientPromise;
+    }
+
+    clientPromise = mongodb_client.connect()
+        .then(async (connectedClient) => {
+            client = connectedClient;
+
+            // Ensure default admin exists after connection is established
+            await ensureDefaultAdmin(client);
+
+            return client;
+        })
+        .catch((e) => {
+            console.error(e);
+            clientPromise = null;
+            return null;
+        });
+
     try {
-        client = await mongodb_client.connect();
-
-        // Ensure default admin exists after connection is established
-        await ensureDefaultAdmin(client);
-
-        return client;
-    } catch (e) {
-        console.error(e);
-        return null;
+        return await clientPromise;
+    } finally {
+        if (client != null) {
+            clientPromise = null;
+        }
     }
 }
 
