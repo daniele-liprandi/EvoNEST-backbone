@@ -26,6 +26,10 @@ export const useUserDetails = (samplesData, prependPath) => {
                         return acc;
                     }, {});
                     setUserDetails(userDetailsObj);
+                })
+                .catch((error) => {
+                    console.error("Failed to resolve user details:", error);
+                    setUserDetails({});
                 });
         }
     }, [samplesData]);
