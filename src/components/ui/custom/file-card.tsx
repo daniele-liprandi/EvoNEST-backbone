@@ -18,7 +18,7 @@ export function FilesMarquee() {
         return ;
     }
 
-    const randomfiles = filesData.sort(() => Math.random() - 0.5);
+    const randomfiles = [...filesData].sort(() => Math.random() - 0.5);
     const files = randomfiles.slice(0, 10);
 
     return (

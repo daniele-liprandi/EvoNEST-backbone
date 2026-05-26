@@ -23,7 +23,7 @@ export const ComboFormBox = ({
   const [open, setOpen] = useState(false);
 
   const sortedOptions = useMemo(() => {
-    const sorted = options.sort((a, b) => a.label.localeCompare(b.label));
+    const sorted = [...options].sort((a, b) => a.label.localeCompare(b.label));
     if (others_enabled) {
       sorted.push({ label: "Other", value: "other" });
     }
