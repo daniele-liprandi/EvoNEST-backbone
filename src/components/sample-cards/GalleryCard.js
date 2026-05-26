@@ -15,6 +15,13 @@ export function GalleryCard({ sample, setSample }) {
   const [deletingImage, setDeletingImage] = useState(null);
   const imagesPerPage = 4;
 
+  const handleImageKeyDown = (event, fileId) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setSelectedImage(fileId);
+    }
+  };
+
   // Guard clause for required props
   if (!sample) {
     return <Skeleton className="h-[200px] w-full" />;
@@ -72,6 +79,10 @@ export function GalleryCard({ sample, setSample }) {
                 alt="Sample image"
                 className="rounded-lg object-cover aspect-square w-full cursor-pointer"
                 onClick={() => setSelectedImage(fileId)}
+                onKeyDown={(event) => handleImageKeyDown(event, fileId)}
+                tabIndex={0}
+                role="button"
+                aria-label={`Open image ${fileId} in full screen`}
               />
               <AlertDialog>
                 <AlertDialogTrigger>
