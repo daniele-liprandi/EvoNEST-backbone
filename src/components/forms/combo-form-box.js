@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormDescription, FormMessage, FormControl } from "@/components/ui/form";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -37,10 +37,16 @@ export const ComboFormBox = ({
     );
   }, [inputValue, sortedOptions]);
 
-  const debouncedSetInputValue = useCallback(
-    debounce((value) => setInputValue(value), 100),
+  const debouncedSetInputValue = useMemo(
+    () => debounce((value) => setInputValue(value), 100),
     []
   );
+
+  useEffect(() => {
+    return () => {
+      debouncedSetInputValue.cancel();
+    };
+  }, [debouncedSetInputValue]);
 
   const handleOptionSelect = (selectedValue, selectedLabel, currentFieldValue) => {
     if (selectedValue === "other") {

@@ -590,7 +590,7 @@ export function ProfileFormSamples({
 
       return (id + formatNumber(count)) as string;
     },
-    [samples, idGeneration, settingsLoading, generateBaseID, samplesubtypes]
+    [samples, idGeneration, settingsLoading, samplesubtypes]
   );
 
   useEffect(() => {

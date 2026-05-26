@@ -305,6 +305,7 @@ const MyDocument: React.FC<MyDocumentProps> = ({ qrCodes, size, format }) => {
               <Image
                 src={{ uri: qrCode.url, method: 'GET', headers: {}, body: '' }} // Use object format for src
                 style={styles.barcodeImage}
+                alt={`QR code for ${qrCode.label}`}
               // Add cache={false} if images seem stale, but can slow down generation
               // cache={false}
               />

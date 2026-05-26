@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -86,7 +86,7 @@ export default function MainSettingsPage() {
     },
   });
 
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/settings");
@@ -135,7 +135,7 @@ export default function MainSettingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -213,7 +213,7 @@ export default function MainSettingsPage() {
 
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [fetchSettings]);
 
   return (
     <div className="container mx-auto py-8 max-w-4xl">
