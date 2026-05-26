@@ -66,6 +66,7 @@ const Particles: React.FC<ParticlesProps> = ({
   const mousePosition = MousePosition();
   const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const canvasSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
+  const animationFrameRef = useRef<number | null>(null);
   const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1;
 
   useEffect(() => {
@@ -78,6 +79,9 @@ const Particles: React.FC<ParticlesProps> = ({
 
     return () => {
       window.removeEventListener("resize", initCanvas);
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, [color]);
 
@@ -257,7 +261,7 @@ const Particles: React.FC<ParticlesProps> = ({
         // update the circle position
       }
     });
-    window.requestAnimationFrame(animate);
+    animationFrameRef.current = window.requestAnimationFrame(animate);
   };
 
   return (
