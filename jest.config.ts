@@ -11,19 +11,14 @@ const createJestConfig = nextJest({
 const config: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
+  testMatch: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
+  verbose: true,
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  testTimeout: 10000,
   // Add more setup options before each test is run
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
 }
-
-module.exports = {
-    testEnvironment: 'node',
-    testMatch: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
-    verbose: true,
-    moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-    },
-    // Increasing timeout since MongoDB Memory Server might take longer to start
-    testTimeout: 10000
-};
 
 export default createJestConfig(config)
