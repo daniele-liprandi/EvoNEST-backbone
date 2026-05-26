@@ -1,4 +1,5 @@
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
+import crypto from "crypto";
 
 /**
  * Validates an API key and retrieves the associated database
@@ -89,12 +90,12 @@ export function extractApiKey(req) {
  * @returns {string} Generated API key
  */
 export function generateApiKey(length = 32) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "evo_";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+  const safeLength = Math.max(16, length);
+  const token = crypto
+    .randomBytes(Math.ceil((safeLength * 3) / 4))
+    .toString("base64url")
+    .slice(0, safeLength);
+  return `evo_${token}`;
 }
 
 /**
