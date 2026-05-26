@@ -22,14 +22,7 @@ export default function AnalysisPage() {
                                 </CardHeader>
                             </Card>
                         </Link>
-                        <Link href="/samples/analysis/walker">
-                            <Card className="p-4">
-                                <CardHeader>
-                                    <CardTitle>Graph Generator</CardTitle>
-                                    <CardDescription>Click here to access the interactive graph and table generator.</CardDescription>
-                                </CardHeader>
-                            </Card>
-                        </Link>
+                        {/* PLOT GENERATOR HERE */}
                         <Accordion type="single" collapsible className='w-full' defaultValue="item-1">
                             <AccordionItem value="item-1" className='w-full' >
                                 <AccordionTrigger >
