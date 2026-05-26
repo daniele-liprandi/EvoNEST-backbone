@@ -7,6 +7,13 @@ import { ObjectId } from "mongodb";
 
 const STORAGE_PATH = process.env.STORAGE_PATH 
 
+function toSafeFilename(name) {
+    return String(name || "download")
+        .replace(/[\r\n"\\;]/g, "_")
+        .replace(/[^\w\-. ]/g, "_")
+        .slice(0, 255);
+}
+
 /**
  * @swagger
  * /api/download:
@@ -116,7 +123,8 @@ export async function GET(req) {
 
         // Set the appropriate headers for file download
         const headers = new Headers();
-        headers.set('Content-Disposition', `attachment; filename="${fileDoc.name}"`);
+        const safeFilename = encodeURIComponent(toSafeFilename(fileDoc.name));
+        headers.set('Content-Disposition', `attachment; filename="${safeFilename}"`);
         headers.set('Content-Type', 'application/octet-stream');
 
         // Return the file as a stream
