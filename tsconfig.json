@@ -29,7 +29,7 @@
     "target": "ES2017"
   },
   "include": [
-    "src/*",
+    "src/**/*",
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "postcss.config.cjs",
