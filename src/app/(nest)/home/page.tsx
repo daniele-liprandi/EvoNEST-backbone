@@ -47,12 +47,6 @@ export default function Home() {
   const { configExists, loading } = useConfigCheck()
 
   useEffect(() => {
-    if (traitsData && samplesData && usersData && experimentsData) {
-
-    }
-  }, [traitsData, samplesData, usersData, experimentsData]);
-
-  useEffect(() => {
     if (session) {
       console.log("session", session);
       setAuthuser(session.user);
