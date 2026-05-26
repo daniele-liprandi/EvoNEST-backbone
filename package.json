@@ -54,7 +54,7 @@
     "date-fns": "^4.3.0",
     "effect": "^3.21.2",
     "embla-carousel-react": "^8.0.1",
-    "framer-motion": "^11.18.2",
+    "framer-motion": "^12.40.0",
     "javascript-time-ago": "^2.5.10",
     "js-levenshtein": "^1.1.6",
     "js-yaml": "^4.1.0",
