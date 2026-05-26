@@ -80,7 +80,7 @@
     "react-plotly.js": "^2.6.0",
     "react-resizable-panels": "^2.0.16",
     "react-time-ago": "^7.3.3",
-    "recharts": "^2.12.7",
+    "recharts": "^3.8.1",
     "redoc": "^2.5.0",
     "sharp": "^0.33.5",
     "simple-statistics": "^7.8.3",
