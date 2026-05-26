@@ -302,6 +302,7 @@ const MyDocument: React.FC<MyDocumentProps> = ({ qrCodes, size, format }) => {
         <View style={styles.labelContainer} wrap>
           {qrCodes.map((qrCode, index) => (
             <View key={index} style={styles.label} wrap={false}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
               <Image
                 src={{ uri: qrCode.url, method: 'GET', headers: {}, body: '' }} // Use object format for src
                 style={styles.barcodeImage}
