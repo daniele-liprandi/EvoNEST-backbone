@@ -11,7 +11,6 @@ services:
       - .env.development
       - .env.local
     environment:
-      MONGODB_URI: "mongodb://root:pass@mongo_dev:27017"
       CHOKIDAR_USEPOLLING: true
       WATCHPACK_POLLING: true
     volumes:
@@ -29,23 +28,18 @@ services:
       - "27019:27017"
     container_name: evonest_mongodb_dev
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pass
+    env_file:
+      - .env.development
+      - .env.local
     # No volumes - data will be ephemeral and reset on container restart
   mongo-express:
     image: mongo-express
     container_name: mongo_express
     env_file:
       - .env.development
+      - .env.local
     ports:
       - "127.0.0.1:8081:8081"  # Bind to localhost only
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: pass
-      ME_CONFIG_MONGODB_URL: mongodb://root:pass@mongo_dev:27017/
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: pass
     external_links:
       - evonest_mongodb_dev:mongo
   

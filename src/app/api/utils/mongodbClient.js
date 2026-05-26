@@ -1,8 +1,9 @@
 import { MongoClient } from "mongodb";
 import { ensureDefaultAdmin } from "./initialiseDb";
+import { requireEnv } from "./env";
 
 // Setup the MongoDB URI and initialize the MongoClient
-const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27019";
+const uri = requireEnv("MONGODB_URI");
 const mongodb_client = new MongoClient(uri);
 
 // This variable will hold the instance of the connected client

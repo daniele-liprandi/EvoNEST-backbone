@@ -26,9 +26,9 @@ services:
       - "27017:27017"
     container_name: evonest_mongodb
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pass
+    env_file:
+      - .env.production
+      - .env.local
     volumes:
       - mongo_data:/data/db
 
@@ -40,10 +40,12 @@ services:
     restart: unless-stopped
     depends_on:
       - mongo
+    env_file:
+      - .env.production
+      - .env.local
     volumes:
       - mongo_backups:/backups
     environment:
-      MONGO_URI: "mongodb://root:pass@mongo:27017"
       DAILY_RETENTION: "7"
       WEEKLY_RETENTION: "4"
       MONTHLY_RETENTION: "12"
