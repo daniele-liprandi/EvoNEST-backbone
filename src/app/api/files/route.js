@@ -3,13 +3,14 @@ import path from "path";
 import { writeFile } from "fs/promises";
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { get_database_user } from "@/app/api/utils/get_database_user";
+import { requireEnv } from "@/app/api/utils/env";
 import { ObjectId } from "mongodb";
 import fs from "fs";
 
 export const dynamic = 'force-dynamic';
 
 // Define the storage path for uploaded files
-const STORAGE_PATH = process.env.STORAGE_PATH;
+const STORAGE_PATH = requireEnv("STORAGE_PATH");
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set([
     "image/jpeg",
