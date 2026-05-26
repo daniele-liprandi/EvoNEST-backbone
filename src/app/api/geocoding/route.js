@@ -1,5 +1,21 @@
 import { NextResponse } from "next/server";
 
+const REQUEST_TIMEOUT_MS = 8000;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 /**
  * @swagger
  * components:
@@ -97,7 +113,7 @@ export async function POST(req) {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
       location
     )}`;
-    const response = await fetch(url);
+    const response = await fetchWithTimeout(url);
     const data = await response.json();
 
     if (data && data.length > 0) {

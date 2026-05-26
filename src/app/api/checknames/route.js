@@ -2,6 +2,22 @@ import { get_or_create_client } from '../utils/mongodbClient';
 import { spytraxCheckTaxa } from '@/utils/spytrax';
 import { NextResponse } from "next/server";
 
+const REQUEST_TIMEOUT_MS = 10000;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        return await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 /**
  * @swagger
  * components:
@@ -261,7 +277,7 @@ export async function POST(req) {
             
             const GNRurl = 'https://verifier.globalnames.org/api/v1/verifications';
             try {
-                const GNRresponse = await fetch(GNRurl, {
+                const GNRresponse = await fetchWithTimeout(GNRurl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -309,7 +325,7 @@ export async function POST(req) {
                 
                 const GNRurl = 'https://verifier.globalnames.org/api/v1/verifications';
                try {
-                    const GNRresponse = await fetch(GNRurl, {
+                    const GNRresponse = await fetchWithTimeout(GNRurl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -362,7 +378,7 @@ export async function POST(req) {
             
             const GNRurl = 'https://verifier.globalnames.org/api/v1/verifications';
             try {
-                const GNRresponse = await fetch(GNRurl, {
+                const GNRresponse = await fetchWithTimeout(GNRurl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
