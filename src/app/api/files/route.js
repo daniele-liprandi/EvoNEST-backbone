@@ -10,6 +10,26 @@ export const dynamic = 'force-dynamic';
 
 // Define the storage path for uploaded files
 const STORAGE_PATH = process.env.STORAGE_PATH;
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "text/plain",
+    "text/csv",
+    "application/json",
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel"
+]);
+
+function sanitizeFilename(filename) {
+    return filename
+        .replace(/[^a-zA-Z0-9._-]/g, "_")
+        .replace(/_+/g, "_")
+        .slice(0, 255);
+}
 
 /**
  * GET handler for retrieving files
@@ -56,6 +76,18 @@ export async function POST(req) {
             return NextResponse.json({ error: "No files received." }, { status: 400 });
         }
 
+        if (typeof file.size !== "number" || file.size <= 0) {
+            return NextResponse.json({ error: "Invalid file payload." }, { status: 400 });
+        }
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            return NextResponse.json({ error: "File too large. Maximum allowed size is 20 MB." }, { status: 413 });
+        }
+
+        if (!ALLOWED_MIME_TYPES.has(file.type)) {
+            return NextResponse.json({ error: `Unsupported file type: ${file.type || "unknown"}` }, { status: 400 });
+        }
+
         // Parse metadata and validate
         let metadata = {};
         try {
@@ -83,7 +115,7 @@ export async function POST(req) {
 
         // Generate new ObjectId and prepare filename
         const fileId = new ObjectId();
-        const filename = file.name.replaceAll(" ", "_");
+        const filename = sanitizeFilename(file.name || "uploaded_file");
         type = type?.replaceAll(" ", "_") || 'unknown';
 
         // Construct the file path
