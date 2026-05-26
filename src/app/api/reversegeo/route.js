@@ -1,5 +1,32 @@
 import { NextResponse } from "next/server";
 
+const REQUEST_TIMEOUT_MS = 8000;
+const NOMINATIM_MIN_INTERVAL_MS = 1000;
+let lastNominatimRequestAt = 0;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        return await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        });
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+async function enforceNominatimRateLimit() {
+    const now = Date.now();
+    const elapsed = now - lastNominatimRequestAt;
+    if (elapsed < NOMINATIM_MIN_INTERVAL_MS) {
+        await new Promise((resolve) => setTimeout(resolve, NOMINATIM_MIN_INTERVAL_MS - elapsed));
+    }
+    lastNominatimRequestAt = Date.now();
+}
+
 /**
  * @swagger
  * components:
@@ -134,13 +161,21 @@ export async function POST(req) {
     console.log(lat, lon);
 
     try {
+        await enforceNominatimRateLimit();
         const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url, {
+            headers: {
+                "User-Agent": "EvoNEST-backbone/1.0 (research platform)",
+            },
+        });
         const data = await response.json();
         console.log(data);
 
         if (data && data.address) {
-            return NextResponse.json({ location: data.address });
+            return NextResponse.json({
+                location: data.address,
+                attribution: "Reverse geocoding by Nominatim (OpenStreetMap)",
+            });
         } else {
             return NextResponse.json({ message: "Not found" }, { status: 404 });
         }

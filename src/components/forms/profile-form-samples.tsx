@@ -356,6 +356,9 @@ export function ProfileFormSamples({
     if (response.ok) {
       const geodata = await response.json();
       toast.message(JSON.stringify(geodata.coordinates));
+      if (geodata.attribution) {
+        toast.info(geodata.attribution);
+      }
       return geodata.coordinates;
     } else {
       toast.error("Error fetching coordinates");
@@ -402,6 +405,9 @@ export function ProfileFormSamples({
         const geodata = await response.json();
         // Displaying information as a message; adjust based on your UI framework's capabilities
         toast.message(JSON.stringify(geodata));
+        if (geodata.attribution) {
+          toast.info(geodata.attribution);
+        }
         return geodata;
       } else {
         // It's helpful to log or handle specific response status codes

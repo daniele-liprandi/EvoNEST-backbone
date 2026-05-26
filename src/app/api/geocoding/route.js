@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 
 const REQUEST_TIMEOUT_MS = 8000;
+const NOMINATIM_MIN_INTERVAL_MS = 1000;
+let lastNominatimRequestAt = 0;
+
+async function enforceNominatimRateLimit() {
+  const now = Date.now();
+  const elapsed = now - lastNominatimRequestAt;
+  if (elapsed < NOMINATIM_MIN_INTERVAL_MS) {
+    await new Promise((resolve) =>
+      setTimeout(resolve, NOMINATIM_MIN_INTERVAL_MS - elapsed)
+    );
+  }
+  lastNominatimRequestAt = Date.now();
+}
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -110,15 +123,23 @@ export async function POST(req) {
   const { location } = body;
 
   try {
+    await enforceNominatimRateLimit();
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
       location
     )}`;
-    const response = await fetchWithTimeout(url);
+    const response = await fetchWithTimeout(url, {
+      headers: {
+        "User-Agent": "EvoNEST-backbone/1.0 (research platform)",
+      },
+    });
     const data = await response.json();
 
     if (data && data.length > 0) {
       // Return the first result's coordinates
-      return NextResponse.json({ coordinates: data[0] });
+      return NextResponse.json({
+        coordinates: data[0],
+        attribution: "Geocoding by Nominatim (OpenStreetMap)",
+      });
     } else {
       return NextResponse.json({ message: "Not found" }, { status: 404 });
     }
