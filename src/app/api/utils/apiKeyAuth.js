@@ -57,7 +57,7 @@ export async function validateApiKey(apiKey, database) {
 }
 
 /**
- * Extracts API key from request headers or query parameters
+ * Extracts API key from request headers
  * @param {Request} req - The Next.js request object
  * @returns {string|null} The API key if found, null otherwise
  */
@@ -72,13 +72,6 @@ export function extractApiKey(req) {
   const apiKeyHeader = req.headers.get("x-api-key");
   if (apiKeyHeader) {
     return apiKeyHeader;
-  }
-
-  // Check query parameter
-  const url = new URL(req.url);
-  const queryApiKey = url.searchParams.get("apiKey");
-  if (queryApiKey) {
-    return queryApiKey;
   }
 
   return null;
@@ -112,7 +105,7 @@ export async function authenticateExportRequest(req) {
     return { 
       valid: false, 
       database: null, 
-      error: "API key is required. Provide it via 'Authorization: Bearer <key>' header, 'X-API-Key' header, or '?apiKey=<key>' query parameter." 
+      error: "API key is required. Provide it via 'Authorization: Bearer <key>' header or 'X-API-Key' header." 
     };
   }
 
