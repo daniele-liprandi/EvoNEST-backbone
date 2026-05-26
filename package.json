@@ -47,6 +47,7 @@
     "@ts-morph/common": "^0.26.1",
     "@yudiel/react-qr-scanner": "^2.1.0",
     "axios": "^1.7.3",
+    "canvas": "^3.2.3",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
