@@ -326,6 +326,7 @@ import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user, check_user_role } from "../utils/get_database_user";
+import { isObjectIdString } from "../utils/objectId";
 
 async function getUsers(client) {
     const db = client.db("usersdb");
@@ -368,6 +369,11 @@ export async function GET(req) {
 export async function POST(req) {
     const data = await req.json();
     const client = await get_or_create_client();
+
+    const methodsRequiringId = new Set(["update", "setfield", "incrementfield", "change_databases"]);
+    if (methodsRequiringId.has(data.method) && !isObjectIdString(data.id)) {
+        return new NextResponse(JSON.stringify({ error: "Invalid user ID" }), { status: 400 });
+    }
 
     if (client == null) {
         return new NextResponse(JSON.stringify({ error: "Failed to connect to database" }), { status: 500 });
@@ -547,6 +553,10 @@ export async function DELETE(req) {
 
         // Parse the request body to get the sample ID
         const { id } = await req.json();
+
+        if (!isObjectIdString(id)) {
+            return new NextResponse(JSON.stringify({ error: "Invalid user ID" }), { status: 400 });
+        }
 
         // Ensure the database client is connected
         const client = await get_or_create_client();

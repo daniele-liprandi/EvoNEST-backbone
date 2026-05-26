@@ -2,6 +2,7 @@ import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user, get_name_authuser } from "@/app/api/utils/get_database_user";
+import { isObjectIdString } from "@/app/api/utils/objectId";
 
 /**
  * @swagger
@@ -509,6 +510,10 @@ export async function DELETE(req) {
     try {
         // Parse the request body to get the sample ID
         let { id } = await req.json();
+
+        if (!isObjectIdString(id)) {
+            return new NextResponse(JSON.stringify({ error: "Invalid sample ID" }), { status: 400 });
+        }
 
         // Ensure the database client is connected
         const client = await get_or_create_client();

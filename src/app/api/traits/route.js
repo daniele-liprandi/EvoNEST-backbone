@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user } from "../utils/get_database_user";
 import { get_name_authuser } from "../utils/get_database_user";
+import { isObjectIdString } from "../utils/objectId";
 
 /**
  * @swagger
@@ -490,6 +491,14 @@ export async function POST(req) {
   const client = await get_or_create_client();
   const authuser = await get_name_authuser();
 
+  if (["update", "setfield", "incrementfield"].includes(data.method) && !isObjectIdString(data.id)) {
+    return new NextResponse(JSON.stringify({ error: "Invalid trait ID" }), { status: 400 });
+  }
+
+  if (data.method === "update" && !isObjectIdString(data.sampleId)) {
+    return new NextResponse(JSON.stringify({ error: "Invalid sample ID" }), { status: 400 });
+  }
+
   if (client == null) {
     return new NextResponse(
       JSON.stringify({ error: "Failed to connect to database" }),
@@ -938,6 +947,12 @@ export async function DELETE(req) {
   try {
     // Parse the request body to get the trait ID
     const { id } = await req.json();
+
+    if (!isObjectIdString(id)) {
+      return new NextResponse(JSON.stringify({ error: "Invalid trait ID" }), {
+        status: 400,
+      });
+    }
 
     // Ensure the database client is connected
     const client = await get_or_create_client();
