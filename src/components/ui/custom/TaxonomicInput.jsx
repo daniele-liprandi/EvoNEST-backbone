@@ -85,7 +85,7 @@ export const TaxonomicInput = ({
       toast.error('Failed to validate name');
       console.error('Validation error:', error);
     }
-  }, [validateName, validationMode, source, autoCorrect, onChange, onCorrected, name, lastValidatedValue]);
+  }, [validateName, validationMode, source, autoCorrect, onChange, onCorrected, onValidated, name, lastValidatedValue]);
 
   const handleBlur = useCallback(async (e) => {
     const inputValue = e.target.value;

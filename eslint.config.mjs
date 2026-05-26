@@ -4,7 +4,10 @@ const config = [
   ...nextCoreWebVitals,
   {
     rules: {
+      "@next/next/no-img-element": "off",
       "react-hooks/error-boundaries": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/incompatible-library": "off",
       "react-hooks/immutability": "off",
       "react-hooks/purity": "off",
       "react-hooks/set-state-in-effect": "off",

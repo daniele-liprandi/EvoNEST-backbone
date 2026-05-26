@@ -121,9 +121,6 @@ export default function TraitAnalysisPage() {
   const [nfibresActive, setNFibresActive] = useState<boolean>(true);
 
   // Debounced analysis function to prevent excessive API calls
-  const [analysisTimer, setAnalysisTimer] = useState<NodeJS.Timeout | null>(
-    null
-  );
   const performAnalysis = useCallback(() => {
     const filters: AnalysisFilters = {};
 
@@ -155,15 +152,9 @@ export default function TraitAnalysisPage() {
 
   // Debounced effect to prevent rapid API calls
   useEffect(() => {
-    if (analysisTimer) {
-      clearTimeout(analysisTimer);
-    }
-
     const timer = setTimeout(() => {
       performAnalysis();
     }, 300); // 300ms debounce
-
-    setAnalysisTimer(timer);
 
     return () => {
       if (timer) clearTimeout(timer);

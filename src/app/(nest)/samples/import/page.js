@@ -269,7 +269,7 @@ const ImportPage = () => {
             const errors = validateData(data, fieldMappings, specialMappings);
             setValidationErrors(errors);
         }
-    }, [fieldMappings, specialMappings, data, customFields]);
+    }, [fieldMappings, specialMappings, data, customFields, validateData]);
 
     const getFuzzyMatches = useCallback((csvField) => {
         const matches = standardFields.map(stdField => ({
@@ -497,7 +497,7 @@ const ImportPage = () => {
             ),
             // ... rest of the column definition remains the same
         }));
-    }, [data, fieldMappings, cellErrors, customFields, standardFields, fieldTypes]);
+    }, [data, fieldMappings, specialMappings, cellErrors, customFields, standardFields, fieldTypes, validateData]);
 
 
     // Parse CSV string to JSON
@@ -594,7 +594,7 @@ const ImportPage = () => {
     };
 
     // Modified validateData to accept current mappings and special mappings
-    const validateData = (records, currentMappings, currentSpecialMappings = {}) => {
+    const validateData = useCallback((records, currentMappings, currentSpecialMappings = {}) => {
         const errors = [];
         const cellErrorMap = {};
 
@@ -679,7 +679,7 @@ const ImportPage = () => {
 
         setCellErrors(cellErrorMap);
         return errors;
-    };
+    }, [customFields, usersData]);
 
     // Handle file upload
     const handleFileUpload = (event) => {

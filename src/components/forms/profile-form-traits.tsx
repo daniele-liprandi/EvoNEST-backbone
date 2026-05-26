@@ -82,7 +82,7 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
         const selectedTypeFeatures = traittypes.find((traittype) => traittype.value === selectedType);
         setSelectedTypeFeatures(selectedTypeFeatures);
         form.setValue('unit', selectedTypeFeatures?.unit);
-    }, [selectedType, form]);
+    }, [selectedType, traittypes, form]);
         
 
     const getSampleNameById = (sampleId: string, samples: any[]) => {
