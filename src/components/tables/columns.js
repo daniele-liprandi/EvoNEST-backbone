@@ -673,11 +673,15 @@ export const imageColumn = (imagefield) => ({
 
     // Handle different data types
     let imageData;
+    const imageAlt = rowdata?.name
+      ? `Image associated with ${rowdata.name}`
+      : "Image associated with this record";
+
     if (typeof base64Data === 'string') {
       imageData = base64Data;
     } else if (base64Data instanceof Blob) {
       // If it's a Blob, we need to convert it to a data URL
-      return <BlobImage blob={base64Data} />;
+      return <BlobImage blob={base64Data} imageAlt={imageAlt} />;
     } else if (typeof base64Data === 'object' && base64Data.type === 'Buffer') {
       // If it's a Buffer object from Node.js
       imageData = Buffer.from(base64Data).toString('base64');
@@ -686,12 +690,12 @@ export const imageColumn = (imagefield) => ({
       return null;
     }
 
-    return <ImageDisplay base64Data={imageData} />;
+    return <ImageDisplay base64Data={imageData} imageAlt={imageAlt} />;
   }
 });
 
 // Separate component to handle Blob data
-const BlobImage = ({ blob }) => {
+const BlobImage = ({ blob, imageAlt }) => {
   const [imageSrc, setImageSrc] = React.useState(null);
 
   React.useEffect(() => {
@@ -708,11 +712,11 @@ const BlobImage = ({ blob }) => {
 
   if (!imageSrc) return null;
 
-  return <ImageDisplay base64Data={imageSrc} />;
+  return <ImageDisplay base64Data={imageSrc} imageAlt={imageAlt} />;
 };
 
 // Update ImageDisplay component
-const ImageDisplay = ({ base64Data }) => {
+const ImageDisplay = ({ base64Data, imageAlt }) => {
   if (!base64Data) {
     return null;
   }
@@ -724,7 +728,7 @@ const ImageDisplay = ({ base64Data }) => {
   return (
     <img
       src={imageSrc}
-      alt="Experiment Image"
+      alt={imageAlt}
       className="h-12 rounded-lg"
       onError={(e) => {
         console.error("Error loading image:", e);

@@ -35,7 +35,7 @@ export const ImageGBIFSearch = ({ GNRdata }) => {
             {imageUrl && imageUrl != '' &&
                 (
                     <div className='space-y-3 text-muted-foreground text-xs'>
-                        <img className='max-h-80' src={imageData.imageUrl} alt={query} />
+                        <img className='max-h-80' src={imageData.imageUrl} alt={`GBIF image result for ${query}`} />
                         <div className='flex space-x-1'>
                             <span>Image Rights Holder: {imageData.rightsHolder}</span>
                             <Separator orientation="vertical" />
