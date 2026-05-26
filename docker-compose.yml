@@ -21,7 +21,7 @@ services:
       - mongo
 
   mongo:
-    image: mongo:5.0
+    image: mongo:7.0
     ports:
       - "27017:27017"
     container_name: evonest_mongodb

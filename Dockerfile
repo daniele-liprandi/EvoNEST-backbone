@@ -24,8 +24,8 @@ RUN apk add --no-cache \
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (this will update package-lock.json if needed)
-RUN npm install
+# Install dependencies with the lockfile and relaxed peer resolution
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .

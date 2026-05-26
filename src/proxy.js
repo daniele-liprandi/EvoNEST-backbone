@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     // If user is authenticated, allow the request
     if (req.nextauth.token) {
       return NextResponse.next();
@@ -10,7 +10,7 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ req, token }) => {
+      authorized: ({ token }) => {
         // Implement any custom authorization logic here
         // For now, just check if we have a token
         return !!token;
@@ -23,6 +23,6 @@ export default withAuth(
 export const config = {
   matcher: [
     // Protect all routes except auth-related ones, the root page, public directory, SVG files, and notifications API
-    '/((?!auth|api/auth|api/notifications|api/samples/ext|api/traits/ext|api/experiments/ext|_next/static|_next/image|favicon.ico|.*\\.svg|$|public/).*)',
+    '/((?!auth|api/auth|api/notifications|api/samples/ext|api/traits/ext|api/experiments/ext|_next/static|_next/image|favicon.ico|.*\.svg|$|public/).*)',
   ],
 };

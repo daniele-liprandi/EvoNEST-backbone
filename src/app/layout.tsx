@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/themeprovider";
 import { Toaster } from "@/components/ui/sonner"
-import { NavBar } from "@/components/nest/navbar";
 import { Providers } from "./providers";
 import { Fira_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -31,11 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Providers>
-        <body className={cn(
-          "min-h-screen bg-background flex flex-col",
-          fira_sans.variable)
-        }>
+      <body className={cn(
+        "min-h-screen bg-background flex flex-col",
+        fira_sans.variable)
+      }>
+        <Providers>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -50,8 +49,8 @@ export default function RootLayout({
               <Footer />
             </SWRProvider>
           </ThemeProvider>
-        </body>
-      </Providers>
+        </Providers>
+      </body>
     </html>
   );
 }

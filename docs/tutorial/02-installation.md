@@ -277,7 +277,7 @@ Now we need to match the MongoDB credentials in the Docker configuration.
 
    ```yaml{8,9}
    mongo_dev:
-     image: mongo:5.0
+   image: mongo:7.0
      ports:
        - "27019:27017"
      container_name: evonest_mongodb_dev

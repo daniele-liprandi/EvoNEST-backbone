@@ -1,7 +1,7 @@
 import { get_or_create_client } from '@/app/api/utils/mongodbClient'
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/app/api/auth/[...nextauth]/options'
 import { get_database_user, get_name_authuser } from '@/app/api/utils/get_database_user'
 
 /**

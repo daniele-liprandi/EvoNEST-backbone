@@ -354,7 +354,7 @@ The production configuration in `docker-compose.yml` also needs to match your Mo
 
    ```yaml{7,8}
    mongo:
-     image: mongo:5.0
+    image: mongo:7.0
      ports:
        - "27017:27017"
      container_name: evonest_mongodb
