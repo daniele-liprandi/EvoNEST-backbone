@@ -43,23 +43,37 @@ export function useConfigTypes(): UseConfigTypesResult {
     
     try {
       const configTypes = ['sampletypes', 'traittypes', 'equipmenttypes', 'samplesubtypes', 'silkcategories', 'siprefixes']
-      const newConfigs = { ...configs }
-
-      for (const configType of configTypes) {
-        try {
-          const response = await fetch(`/api/config/types?type=${configType}`)
-          if (response.ok) {
-            const config = await response.json()
-            if (config && config.data && config.data.length > 0) {
-              newConfigs[configType as keyof typeof newConfigs] = config.data
-            }
-            // If no data or API fails, keep the default values
-          }
-        } catch (configError) {
-          console.warn(`Using default ${configType}:`, configError)
-          // Keep default values on error
-        }
+      const newConfigs = {
+        sampletypes: defaultSampleTypes,
+        traittypes: defaultTraitTypes,
+        equipmenttypes: defaultEquipmentTypes,
+        samplesubtypes: defaultSampleSubtypes,
+        silkcategories: defaultSilkCategories,
+        siprefixes: defaultSIprefixes
       }
+
+      const results = await Promise.allSettled(
+        configTypes.map(async (configType) => {
+          const response = await fetch(`/api/config/types?type=${configType}`)
+          if (!response.ok) {
+            throw new Error(`Failed to fetch ${configType}`)
+          }
+          const config = await response.json()
+          return { configType, config }
+        })
+      )
+
+      results.forEach((result, index) => {
+        const configType = configTypes[index]
+        if (result.status === 'fulfilled') {
+          const { config } = result.value
+          if (config && config.data && config.data.length > 0) {
+            newConfigs[configType as keyof typeof newConfigs] = config.data
+          }
+        } else {
+          console.warn(`Using default ${configType}:`, result.reason)
+        }
+      })
 
       setConfigs(newConfigs)
     } catch (err) {
