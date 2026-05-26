@@ -88,11 +88,6 @@ const traitsProps = {
       href: "/traits/analysis",
       description: "Trait analysis and statistics",
     },
-    {
-      title: "Graph generator",
-      href: "/traits/walker",
-      description: "Graph generator for EDA",
-    },
   ],
   href: "/traits",
 };
