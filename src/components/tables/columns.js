@@ -698,6 +698,12 @@ const BlobImage = ({ blob }) => {
     const reader = new FileReader();
     reader.onload = (e) => setImageSrc(e.target.result);
     reader.readAsDataURL(blob);
+
+    return () => {
+      if (reader.readyState === FileReader.LOADING) {
+        reader.abort();
+      }
+    };
   }, [blob]);
 
   if (!imageSrc) return null;
