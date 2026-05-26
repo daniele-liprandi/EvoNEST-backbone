@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CheckCircle2, Settings, Database } from "lucide-react"
+import { toast } from "sonner"
 
 interface ConfigSetupProps {
   onComplete: () => void
@@ -41,17 +42,18 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
         const result = await response.json()
         console.log('Seed result:', result)
         setSeeded(true)
+        toast.success('Configuration initialised successfully')
         // Wait a moment for the user to see the success state
         setTimeout(() => {
           onComplete()
         }, 1500)
       } else {
         console.error('Failed to seed database')
-        alert('Failed to initialize configuration. Please try again.')
+        toast.error('Failed to initialize configuration. Please try again.')
       }
     } catch (error) {
       console.error('Error seeding database:', error)
-      alert('Error initializing configuration. Please try again.')
+      toast.error('Error initializing configuration. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -11,6 +11,17 @@ import UserAuthenticationControl from '@/components/nest/authui/UserAuthenticati
 import Link from 'next/link';
 import { Copy, Eye, EyeOff, Trash2, Plus, Key } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 interface ApiKey {
     id: string;
@@ -33,6 +44,7 @@ const UserPage: React.FC = () => {
     const [generatedKey, setGeneratedKey] = useState<string | null>(null);
     const [showGeneratedKey, setShowGeneratedKey] = useState<boolean>(false);
     const [apiKeysLoading, setApiKeysLoading] = useState<boolean>(false);
+    const [pendingRevokeKeyId, setPendingRevokeKeyId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -98,21 +110,17 @@ const UserPage: React.FC = () => {
                 await fetchApiKeys();
             } else {
                 const error = await response.json();
-                alert(`Failed to generate API key: ${error.error}`);
+                toast.error(`Failed to generate API key: ${error.error}`);
             }
         } catch (err) {
             console.error('Failed to generate API key:', err);
-            alert('Failed to generate API key');
+            toast.error('Failed to generate API key');
         } finally {
             setApiKeysLoading(false);
         }
     };
 
     const revokeApiKey = async (keyId: string) => {
-        if (!confirm('Are you sure you want to revoke this API key? This action cannot be undone.')) {
-            return;
-        }
-
         setApiKeysLoading(true);
         
         try {
@@ -126,21 +134,23 @@ const UserPage: React.FC = () => {
 
             if (response.ok) {
                 await fetchApiKeys();
+                toast.success('API key revoked successfully');
             } else {
                 const error = await response.json();
-                alert(`Failed to revoke API key: ${error.error}`);
+                toast.error(`Failed to revoke API key: ${error.error}`);
             }
         } catch (err) {
             console.error('Failed to revoke API key:', err);
-            alert('Failed to revoke API key');
+            toast.error('Failed to revoke API key');
         } finally {
+            setPendingRevokeKeyId(null);
             setApiKeysLoading(false);
         }
     };
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        alert('API key copied to clipboard!');
+        toast.success('API key copied to clipboard');
     };
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -338,7 +348,7 @@ const UserPage: React.FC = () => {
                                                                 <Button
                                                                     size="sm"
                                                                     variant="destructive"
-                                                                    onClick={() => revokeApiKey(key.id)}
+                                                                    onClick={() => setPendingRevokeKeyId(key.id)}
                                                                     disabled={apiKeysLoading}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
@@ -351,6 +361,30 @@ const UserPage: React.FC = () => {
                                         </div>
                                     </CardContent>
                                 </Card>
+
+                                <AlertDialog open={!!pendingRevokeKeyId} onOpenChange={(open) => !open && setPendingRevokeKeyId(null)}>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Revoke API key</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to revoke this API key? This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel disabled={apiKeysLoading}>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                disabled={apiKeysLoading || !pendingRevokeKeyId}
+                                                onClick={() => {
+                                                    if (pendingRevokeKeyId) {
+                                                        revokeApiKey(pendingRevokeKeyId);
+                                                    }
+                                                }}
+                                            >
+                                                {apiKeysLoading ? 'Revoking...' : 'Revoke'}
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </div>
                         </div>
                     </div>
