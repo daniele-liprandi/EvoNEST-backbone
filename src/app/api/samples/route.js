@@ -395,6 +395,18 @@ export async function POST(req) {
     if (data.method === "setfield") {
 
         let field = data.field;
+        const protectedFields = new Set([
+            "_id",
+            "createdDate",
+            "recentChangeDate",
+            "logbook",
+            "filesId"
+        ]);
+
+        if (protectedFields.has(field)) {
+            return new NextResponse(JSON.stringify({ error: `Field '${field}' cannot be updated with setfield` }), { status: 403 });
+        }
+
         const updateData = {
             [field]: data.value,
             recentChangeDate: new Date().toISOString()

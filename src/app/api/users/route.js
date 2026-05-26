@@ -408,6 +408,23 @@ export async function POST(req) {
     // Check if the request is to update a sample
     if (data.method === "setfield") {
         let field = data.field
+        const protectedFields = new Set([
+            "_id",
+            "role",
+            "databases",
+            "activeDatabase",
+            "auth0id",
+            "apiKeys",
+            "isActive",
+            "createdDate",
+            "recentChangeDate",
+            "logbook"
+        ]);
+
+        if (protectedFields.has(field)) {
+            return new NextResponse(JSON.stringify({ error: `Field '${field}' cannot be updated with setfield` }), { status: 403 });
+        }
+
         const updateData = {
             // Add other fields that you want to update
             [field]: data.value,
