@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import {
   PiBugBeetleBold,
   PiButterflyDuotone,
+  PiBellBold,
   PiDatabaseBold,
   PiHouseBold,
   PiRulerBold,
@@ -46,6 +47,8 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DeveloperNewsCard } from "@/components/developer-cards/developer-news";
 
 import {
   Select,
@@ -428,6 +431,18 @@ export function NavBar() {
             </Button>
           </>
         )}
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <PiBellBold className="h-5 w-5" />
+              <span className="sr-only">Developer news</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-80 p-0">
+            <DeveloperNewsCard />
+          </PopoverContent>
+        </Popover>
 
         <ModeToggle setTheme={setTheme} />
 
