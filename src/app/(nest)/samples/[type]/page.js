@@ -2,18 +2,23 @@
 
 "use client" // Enables client-side rendering in Next.js
 
+import Link from 'next/link';
+import { Suspense, useMemo } from 'react';
 import { usePathname } from 'next/navigation'
-import { useEffect, useMemo } from 'react';
+import { X } from 'lucide-react';
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
+import { NlFilterBar } from '@/components/nest/NlFilterBar';
 import { DataTable } from '@/components/tables/data-table';
 import { prepend_path } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { baseColumns, typeColumns } from '../columns';
 import { getSampleNamebyId } from '@/hooks/sampleHooks';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { getUserNameById } from "@/hooks/userHooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import {
     DropdownMenu,
@@ -25,15 +30,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
-import { usePreloadData } from '@/hooks/usePreloadData';
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
 
-export default function TypePage() {
-    const type = usePathname().split('/').pop();
+function TypePageContent() {
+    const pathname = usePathname();
+    const type = pathname.split('/').pop();
     const typeLabel = capitalizeFirstLetter(type);
+    const { filters, filterData, hasFilters, buildUrlWithoutFilter } = useUrlFilters();
     const { samplesData, samplesError } = useSampleData(prepend_path);
     const { usersData, usersError } = useUserData(prepend_path);
 
@@ -47,14 +53,30 @@ export default function TypePage() {
 
     // Use useMemo for transformed data
     const dataTableData = useMemo(() => {
-        return filteredData.map(sample => ({
-            ...sample,
-            parentName: getSampleNamebyId(sample.parentId, samplesData),
-            responsibleName: getUserNameById(sample.responsible, usersData)
-        }));
-    }, [filteredData, samplesData, usersData]);
+        if (!samplesData || !usersData) return [];
+        return filterData(
+            filteredData.map(sample => ({
+                ...sample,
+                parentName: getSampleNamebyId(sample.parentId, samplesData),
+                responsibleName: getUserNameById(sample.responsible, usersData)
+            }))
+        );
+    }, [filteredData, samplesData, usersData, filterData]);
+
+    const filterColumns = useMemo(
+        () => (dataTableData.length ? Object.keys(dataTableData[0]) : []),
+        [dataTableData]
+    );
 
     if (samplesError) {
+        return <div>Error loading data</div>;
+    }
+
+    if (!samplesData || !usersData) {
+        return <Skeleton className="h-[500px] w-[1000px] rounded-xl" />;
+    }
+
+    if (usersError) {
         return <div>Error loading data</div>;
     }
 
@@ -106,6 +128,25 @@ export default function TypePage() {
                     </div>
                 </CardHeader>
                 <CardContent>
+                    <NlFilterBar columns={filterColumns} />
+
+                    {hasFilters && (
+                        <div className="flex flex-wrap gap-2 items-center mb-3 text-sm">
+                            <span className="text-muted-foreground">Filtered by:</span>
+                            {filters.map(({ key, values }) => (
+                                <Badge key={key} variant="secondary" className="gap-1 pr-1">
+                                    {key}: {values.join(', ')}
+                                    <Link href={buildUrlWithoutFilter(key, pathname)}>
+                                        <X className="h-3 w-3 cursor-pointer" />
+                                    </Link>
+                                </Badge>
+                            ))}
+                            <Link href={pathname}>
+                                <Button variant="ghost" size="sm" className="h-6 text-xs">Clear all</Button>
+                            </Link>
+                        </div>
+                    )}
+
                     <DataTable
                         onStatusChange={handleStatusChangeSample}
                         onDelete={handleDeleteSample}
@@ -115,5 +156,13 @@ export default function TypePage() {
                         data={dataTableData} />
                 </CardContent>
             </Card>
+    );
+}
+
+export default function TypePage() {
+    return (
+        <Suspense fallback={<Skeleton className="h-[500px] w-[1000px] rounded-xl" />}>
+            <TypePageContent />
+        </Suspense>
     );
 }

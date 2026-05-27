@@ -1,13 +1,22 @@
 "use client"
 
+import Link from "next/link";
+import { Suspense, useMemo } from "react";
+import { usePathname } from "next/navigation";
+import { X } from "lucide-react";
+
+import { NlFilterBar } from "@/components/nest/NlFilterBar";
 import { SmartVaul } from "@/components/forms/smart-vaul";
 
 import { dateColumn, logbookColumn, responsibleColumn, sampleColumn, selectColumn, typeColumn } from "@/components/tables/columns";
 import { DataTable } from '@/components/tables/data-table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getSampleNamebyId } from "@/hooks/sampleHooks";
 import { useExperimentsData } from '@/hooks/useExperimentData';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
@@ -78,7 +87,9 @@ const baseColumns = [
 ];
 
 
-export default function ExperimentPage() {
+function ExperimentPageContent() {
+  const pathname = usePathname();
+  const { filters, filterData, hasFilters, buildUrlWithoutFilter } = useUrlFilters();
 
   const { samplesData, samplesError } = useSampleData(prepend_path, {
     revalidateIfStale: false, // Don't revalidate on mount if we have data
@@ -91,6 +102,26 @@ export default function ExperimentPage() {
 });
   const { usersData, usersError } = useUserData(prepend_path);
 
+  const dataTableData = useMemo(() => {
+    if (!samplesData || !experimentsData || !usersData) {
+      return [];
+    }
+
+    return filterData(
+      experimentsData.map((experiment: any) => ({
+        ...experiment,
+        sampleName: getSampleNamebyId(experiment.sampleId, samplesData),
+        responsibleName: getUserNameById(experiment.responsible, usersData),
+        actions: null,
+      }))
+    );
+  }, [samplesData, experimentsData, usersData, filterData]);
+
+  const filterColumns = useMemo(
+    () => (dataTableData.length ? Object.keys(dataTableData[0]) : []),
+    [dataTableData]
+  );
+
 
   if (!samplesData || !experimentsData || !usersData) {
     return (<p className="text-lg text-center">Loading...</p>);
@@ -98,18 +129,6 @@ export default function ExperimentPage() {
   if (samplesError || experimentsError || usersError) {
     return (<p className="text-lg text-center">An error occurred while fetching the data.</p>);
   }
-
-
-  const dataTableData = experimentsData?.map((experiment: any) => {
-    const scaledExperiment = experiment;
-
-    return {
-      ...scaledExperiment,
-      sampleName: getSampleNamebyId(experiment.sampleId, samplesData),
-      responsibleName: getUserNameById(experiment.responsible, usersData),
-      actions: null, // This will be handled by the actions column
-    };
-  }) || [];
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -125,6 +144,25 @@ export default function ExperimentPage() {
             <SmartVaul formType='experiments' users={usersData} samples={samplesData} experiments={experimentsData} size="sm" className="ml-auto gap-1" />
           </CardHeader>
           <CardContent>
+            <NlFilterBar columns={filterColumns} />
+
+            {hasFilters && (
+              <div className="flex flex-wrap gap-2 items-center mb-3 text-sm">
+                <span className="text-muted-foreground">Filtered by:</span>
+                {filters.map(({ key, values }) => (
+                  <Badge key={key} variant="secondary" className="gap-1 pr-1">
+                    {key}: {values.join(", ")}
+                    <Link href={buildUrlWithoutFilter(key, pathname)}>
+                      <X className="h-3 w-3 cursor-pointer" />
+                    </Link>
+                  </Badge>
+                ))}
+                <Link href={pathname}>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs">Clear all</Button>
+                </Link>
+              </div>
+            )}
+
             <DataTable columns={baseColumns} data={dataTableData} onDelete={handleDeleteExperiment} onEdit={null} onStatusChange={handleStatusChangeExperiment} onIncrement={handleStatusIncrementExperiment}
             ></DataTable>
           </CardContent>
@@ -132,4 +170,12 @@ export default function ExperimentPage() {
       </div>
     </div >
   )
+}
+
+export default function ExperimentPage() {
+  return (
+    <Suspense fallback={<Skeleton className="w-full h-[500px] rounded-xl" />}>
+      <ExperimentPageContent />
+    </Suspense>
+  );
 }

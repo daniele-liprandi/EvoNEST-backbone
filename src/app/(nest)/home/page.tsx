@@ -8,6 +8,7 @@ import {
   CardTitle
 } from "@/components/ui/card"
 
+import { NlGlobalSearchCard } from "@/components/nest/NlGlobalSearchCard"
 import { DeveloperNewsCard } from "@/components/developer-cards/developer-news"
 import { CardSamples } from "@/components/nest/dashboard/card-samples"
 import { DemoDescription } from "@/components/nest/dashboard/demo-description"
@@ -147,6 +148,9 @@ export default function Home() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        <div className="lg:hidden">
+          <NlGlobalSearchCard />
+        </div>
         {isThisADemo &&
           <div className="grid grid-cols-1">
             <DemoDescription />
@@ -232,6 +236,9 @@ export default function Home() {
                 }
               </CardContent>
             </Card>
+          </div>
+          <div className="hidden lg:block h-full">
+            <NlGlobalSearchCard className="h-full" />
           </div>
           <DeveloperNewsCard />
         </div>
