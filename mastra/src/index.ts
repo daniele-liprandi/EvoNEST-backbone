@@ -1,6 +1,6 @@
 import express from 'express'
-import { evonestAgent } from './agent'
-import { AgentResponseSchema } from './types'
+import { evonestAgent } from './agent.js'
+import { AgentResponseSchema } from './types.js'
 
 const app = express()
 app.use(express.json())

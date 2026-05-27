@@ -1,12 +1,36 @@
 import { Agent } from '@mastra/core/agent'
-import { anthropic } from '@ai-sdk/anthropic'
-import { querySamples } from './tools/querySamples'
-import { queryTraits } from './tools/queryTraits'
-import { createSamples } from './tools/createSamples'
-import { createTraits } from './tools/createTraits'
-import { checkTaxonomicName } from './tools/checkTaxonomicName'
-import { generateTreemap } from './tools/generateTreemap'
-import { getSchema } from './tools/getSchema'
+import { createOpenAI } from '@ai-sdk/openai'
+import { querySamples } from './tools/querySamples.js'
+import { queryTraits } from './tools/queryTraits.js'
+import { createSamples } from './tools/createSamples.js'
+import { createTraits } from './tools/createTraits.js'
+import { checkTaxonomicName } from './tools/checkTaxonomicName.js'
+import { generateTreemap } from './tools/generateTreemap.js'
+import { getSchema } from './tools/getSchema.js'
+
+const LLM_BASE_URL = process.env.LLM_BASE_URL
+const LLM_AUTH_TOKEN = process.env.LLM_AUTH_TOKEN
+const LLM_MODEL = process.env.LLM_MODEL
+
+if (!LLM_BASE_URL) {
+  throw new Error('LLM_BASE_URL is required')
+}
+if (!LLM_AUTH_TOKEN) {
+  throw new Error('LLM_AUTH_TOKEN is required')
+}
+if (!LLM_MODEL) {
+  throw new Error('LLM_MODEL is required')
+}
+
+function normalizeBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/$/, '')
+  return /\/v1$/.test(trimmed) ? trimmed : `${trimmed}/v1`
+}
+
+const llm = createOpenAI({
+  baseURL: normalizeBaseUrl(LLM_BASE_URL),
+  apiKey: LLM_AUTH_TOKEN,
+})
 
 const SYSTEM_PROMPT = `You are the EvoNEST research assistant - a conversational interface for a biodiversity specimen database used by biology labs. EvoNEST stores samples (animal specimens, silk samples, preserved specimens, plants, etc.), traits (measurements such as diameter, weight, tensile strength), and experiments.
 
@@ -36,7 +60,7 @@ export const evonestAgent = new Agent({
   id: 'evonestAgent',
   name: 'evonestAgent',
   instructions: SYSTEM_PROMPT,
-  model: anthropic('claude-sonnet-4-20250514'),
+  model: llm(LLM_MODEL),
   tools: {
     querySamples,
     queryTraits,

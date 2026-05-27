@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
-import { getDb } from '../db/client'
-import { buildFilterUrl } from './querySamples'
+import { getDb } from '../db/client.js'
+import { buildFilterUrl } from './querySamples.js'
 
 const FiltersSchema = z.record(z.string(), z.string()).describe(
   'Field filters. Supports *, comma-separated OR, and _gte/_lte date suffixes.'

@@ -13,6 +13,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: true
       WATCHPACK_POLLING: true
+      MASTRA_URL: http://mastra_dev:4111
     volumes:
       - ./:/usr/evonest:cached
       - evonestdev_node_modules:/usr/evonest/node_modules

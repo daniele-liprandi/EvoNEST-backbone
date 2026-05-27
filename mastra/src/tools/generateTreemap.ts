@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
-import { getDb } from '../db/client'
+import { getDb } from '../db/client.js'
 
 export const generateTreemap = createTool({
   id: 'generateTreemap',

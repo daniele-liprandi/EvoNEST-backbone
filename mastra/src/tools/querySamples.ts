@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
-import { getDb } from '../db/client'
+import { getDb } from '../db/client.js'
 
 const FiltersSchema = z.record(z.string(), z.string()).describe(
   'Field filters. Use * for wildcards (e.g. "Ara*"), comma-separate for OR (e.g. "silk,animal"), append _gte/_lte for date ranges (e.g. date_gte: "2024-01-01").'

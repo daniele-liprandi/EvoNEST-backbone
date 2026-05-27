@@ -24,7 +24,7 @@ export const createTraits = createTool({
   }),
   execute: async ({ records }) => {
     const warnings: string[] = []
-    const stagedRecords = records.map((r) => {
+    const stagedRecords = records.map((r: z.infer<typeof TraitRecordSchema>) => {
       const rec = { ...r }
       if (rec.date && !rec.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const parsed = new Date(rec.date)
