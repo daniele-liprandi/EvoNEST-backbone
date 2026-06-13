@@ -2,6 +2,7 @@ import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
 import { Effect, Ref } from 'effect'
 import { getDb } from '../db/client.js'
+import { serviceAuthHeader } from '../lib/serviceHeaders.js'
 
 const baseUrl = process.env.NEXTJS_BASE_URL ?? 'http://node:3000'
 const TAXONOMY_TIMEOUT_MS = 10000
@@ -13,6 +14,8 @@ const SampleRecordInputSchema = z.object({
   species: z.string().optional(),
   family: z.string().optional(),
   location: z.string().optional(),
+  lat: z.number().optional(),
+  lon: z.number().optional(),
   date: z.string().optional().describe('ISO date string YYYY-MM-DD'),
   sex: z.enum(['male', 'female', 'unknown']).optional(),
   box: z.string().optional(),
@@ -165,6 +168,27 @@ const processRecord = (
       yield* Ref.update(warningsRef, ws => [
         ...ws, `No date for record ${index + 1} — defaulted to today.`,
       ])
+    }
+
+    // Geocoding: resolve lat/lon from location string when coordinates are missing
+    if (rec.location && (rec.lat == null || rec.lon == null)) {
+      try {
+        const geoRes = await fetch(`${baseUrl}/api/geocoding`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...serviceAuthHeader() },
+          body: JSON.stringify({ location: rec.location }),
+        })
+        if (geoRes.ok) {
+          const geoData = await geoRes.json()
+          const coords = geoData.coordinates
+          if (coords?.lat != null && coords?.lon != null) {
+            rec.lat = parseFloat(coords.lat)
+            rec.lon = parseFloat(coords.lon)
+          }
+        }
+      } catch {
+        // geocoding is best-effort; silently skip on network error
+      }
     }
 
     // Taxonomy verification (silent on network failure; only warn on name correction)

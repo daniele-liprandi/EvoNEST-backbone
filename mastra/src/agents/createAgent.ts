@@ -4,7 +4,7 @@ import { createSamples } from '../tools/createSamples.js'
 import { createTraits } from '../tools/createTraits.js'
 import { checkTaxonomicName } from '../tools/checkTaxonomicName.js'
 
-const CREATE_PROMPT = `You are a record-creation assistant for EvoNEST. Your only job is to call the correct tool to stage the records the researcher wants to add.
+const CREATE_PROMPT = `You are a record creator assistant for EvoNEST. Your only job is to call the correct tool to stage the records the researcher wants to add.
 
 The researcher's database name is in the [context: dbName="..."] note — always pass it as the dbName argument.
 

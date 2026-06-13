@@ -36,7 +36,7 @@ export const queryTraits = createTool({
   id: 'queryTraits',
   description: 'Query the traits collection. Returns up to 50 matching records and the total count.',
   inputSchema: z.object({
-    filters: FiltersSchema.default({}),
+    params: FiltersSchema.default({}),
     dbName: z.string().describe('The user database name'),
   }),
   outputSchema: z.object({
@@ -44,10 +44,11 @@ export const queryTraits = createTool({
     totalCount: z.number(),
     filterUrl: z.string(),
   }),
-  execute: async ({ filters = {}, dbName }) => {
+  execute: async ({ params = {}, dbName }) => {
+    console.log('[queryTraits] params:', JSON.stringify(params), 'dbName:', dbName)
     const db = await getDb(dbName)
     const collection = db.collection('traits')
-    const mongoFilter = buildMongoFilter(filters)
+    const mongoFilter = buildMongoFilter(params)
     const [data, totalCount] = await Promise.all([
       collection.find(mongoFilter).limit(50).toArray(),
       collection.countDocuments(mongoFilter),
@@ -56,6 +57,7 @@ export const queryTraits = createTool({
       ...doc,
       _id: doc._id?.toString(),
     }))
-    return { data: serialized, totalCount, filterUrl: buildFilterUrl('traits', filters) }
+    console.log('[queryTraits] totalCount:', totalCount, 'filterUrl:', buildFilterUrl('traits', params))
+    return { data: serialized, totalCount, filterUrl: buildFilterUrl('traits', params) }
   },
 })

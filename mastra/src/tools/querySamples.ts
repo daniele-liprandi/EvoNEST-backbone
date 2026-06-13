@@ -41,7 +41,7 @@ export const querySamples = createTool({
   id: 'querySamples',
   description: 'Query the samples collection. Returns up to 50 matching records and the total count.',
   inputSchema: z.object({
-    filters: FiltersSchema.default({}),
+    params: FiltersSchema.default({}),
     dbName: z.string().describe('The user database name (provided in system context)'),
   }),
   outputSchema: z.object({
@@ -49,10 +49,11 @@ export const querySamples = createTool({
     totalCount: z.number(),
     filterUrl: z.string(),
   }),
-  execute: async ({ filters = {}, dbName }) => {
+  execute: async ({ params = {}, dbName }) => {
+    console.log('[querySamples] params:', JSON.stringify(params), 'dbName:', dbName)
     const db = await getDb(dbName)
     const collection = db.collection('samples')
-    const mongoFilter = buildMongoFilter(filters)
+    const mongoFilter = buildMongoFilter(params)
     const [data, totalCount] = await Promise.all([
       collection.find(mongoFilter).limit(50).toArray(),
       collection.countDocuments(mongoFilter),
@@ -62,6 +63,7 @@ export const querySamples = createTool({
       _id: doc._id?.toString(),
       date: doc.date instanceof Date ? doc.date.toISOString().slice(0, 10) : doc.date,
     }))
-    return { data: serialized, totalCount, filterUrl: buildFilterUrl('samples', filters) }
+    console.log('[querySamples] totalCount:', totalCount, 'filterUrl:', buildFilterUrl('samples', params))
+    return { data: serialized, totalCount, filterUrl: buildFilterUrl('samples', params) }
   },
 })

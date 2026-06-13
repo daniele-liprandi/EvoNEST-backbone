@@ -1,7 +1,6 @@
 import express from 'express'
 import { evonestAgent } from './agent.js'
 import { createAgent } from './agents/createAgent.js'
-import { AgentResponseSchema } from './types.js'
 
 const app = express()
 app.use(express.json())
@@ -68,6 +67,58 @@ function findCreateToolResult(result: any): { toolName: string; records: any[]; 
   return null
 }
 
+function findQueryToolResult(result: any): { toolName: string; entity: 'samples' | 'traits'; data: any[]; totalCount: number; filterUrl: string } | null {
+  const targets = ['queryData', 'querySamples', 'queryTraits']
+
+  function fromResult(toolName: string, toolResult: any) {
+    if (
+      targets.includes(toolName)
+      && Array.isArray(toolResult?.data)
+      && typeof toolResult?.totalCount === 'number'
+      && typeof toolResult?.filterUrl === 'string'
+    ) {
+      const entity: 'samples' | 'traits' =
+        toolResult.entity ?? (toolName === 'queryTraits' ? 'traits' : 'samples')
+      return { toolName, entity, data: toolResult.data, totalCount: toolResult.totalCount, filterUrl: toolResult.filterUrl }
+    }
+    return null
+  }
+
+  for (const tr of result.toolResults ?? []) {
+    const found = fromResult(tr.payload?.toolName ?? tr.toolName, tr.payload?.result ?? tr.result)
+    if (found) return found
+  }
+
+  for (const step of result.steps ?? []) {
+    for (const tr of step.toolResults ?? []) {
+      const found = fromResult(tr.payload?.toolName ?? tr.toolName, tr.payload?.result ?? tr.result)
+      if (found) return found
+    }
+  }
+
+  for (const msg of result.response?.messages ?? []) {
+    if (msg.role === 'tool' && Array.isArray(msg.content)) {
+      for (const part of msg.content) {
+        if (part.type === 'tool-result') {
+          const found = fromResult(part.toolName, part.result)
+          if (found) return found
+        }
+      }
+    }
+  }
+
+  for (const msg of result.response?.messages ?? []) {
+    for (const part of msg?.content?.parts ?? []) {
+      if (part?.type === 'tool-invocation' && part.toolInvocation?.state === 'result') {
+        const found = fromResult(part.toolInvocation.toolName, part.toolInvocation.result)
+        if (found) return found
+      }
+    }
+  }
+
+  return null
+}
+
 app.post('/chat', async (req, res) => {
   const { message, threadId, dbName } = req.body as {
     message: string
@@ -109,12 +160,32 @@ app.post('/chat', async (req, res) => {
       return res.json({ blocks })
     }
 
-    // Query path: use structured output agent
-    const result = await evonestAgent.generate(contextualMessage, {
-      structuredOutput: { schema: AgentResponseSchema },
-    })
-    const parsed = AgentResponseSchema.parse(result.object)
-    return res.json({ blocks: parsed.blocks })
+    // Query path: model writes a plain-text summary; table is built server-side from real tool output
+    const result = await evonestAgent.generate(contextualMessage)
+    const summary = typeof result.text === 'string' ? result.text.trim() : ''
+
+    const queryToolResult = findQueryToolResult(result)
+    if (!queryToolResult) {
+      console.warn('[query] findQueryToolResult returned null — result keys:', Object.keys(result),
+        '| steps:', result.steps?.length,
+        '| toolResults:', result.toolResults?.length)
+      return res.json({
+        blocks: [{ type: 'text', content: summary || 'No results found.' }],
+      })
+    }
+
+    const blocks: any[] = [
+      { type: 'text', content: summary || `Found ${queryToolResult.totalCount} matching records.` },
+      {
+        type: 'table',
+        entity: queryToolResult.entity,
+        data: queryToolResult.data,
+        totalCount: queryToolResult.totalCount,
+        filterUrl: queryToolResult.filterUrl,
+      },
+    ]
+
+    return res.json({ blocks })
   } catch (err: any) {
     console.error('Agent error:', err)
     return res.status(500).json({
