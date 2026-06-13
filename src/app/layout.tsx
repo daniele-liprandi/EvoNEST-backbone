@@ -36,9 +36,9 @@ export default function RootLayout({
       }>
         <Providers>
           <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
+            attribute="data-theme"
+            defaultTheme="evonest"
+            enableSystem={false}
             disableTransitionOnChange
           >
             <SWRProvider>

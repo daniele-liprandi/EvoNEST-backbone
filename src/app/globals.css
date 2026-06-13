@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *, [data-theme=dark], [data-theme=dark] *));
 
 @theme {
   --color-border: hsl(var(--border));
@@ -16,30 +16,30 @@
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-green: hsl(var(--green));
-  --color-green-foreground: hsl(var(--green-foreground));
-  --color-red: hsl(var(--red));
-  --color-red-foreground: hsl(var(--red-foreground));
-  --color-blue: hsl(var(--blue));
-  --color-blue-foreground: hsl(var(--blue-foreground));
-  --color-purple: hsl(var(--purple));
-  --color-purple-foreground: hsl(var(--purple-foreground));
-  --color-pink: hsl(var(--pink));
-  --color-pink-foreground: hsl(var(--pink-foreground));
-  --color-orange: hsl(var(--orange));
-  --color-orange-foreground: hsl(var(--orange-foreground));
-  --color-teal: hsl(var(--teal));
-  --color-teal-foreground: hsl(var(--teal-foreground));
-  --color-yellow: hsl(var(--yellow));
-  --color-yellow-foreground: hsl(var(--yellow-foreground));
-  --color-gray: hsl(var(--gray));
-  --color-gray-foreground: hsl(var(--gray-foreground));
-  --color-black: hsl(var(--black));
-  --color-black-foreground: hsl(var(--black-foreground));
-  --color-brown: hsl(var(--brown));
-  --color-brown-foreground: hsl(var(--brown-foreground));
-  --color-cyan: hsl(var(--cyan));
-  --color-cyan-foreground: hsl(var(--cyan-foreground));
+  --color-green: var(--green);
+  --color-green-foreground: var(--green-foreground);
+  --color-red: var(--red);
+  --color-red-foreground: var(--red-foreground);
+  --color-blue: var(--blue);
+  --color-blue-foreground: var(--blue-foreground);
+  --color-purple: var(--purple);
+  --color-purple-foreground: var(--purple-foreground);
+  --color-pink: var(--pink);
+  --color-pink-foreground: var(--pink-foreground);
+  --color-orange: var(--orange);
+  --color-orange-foreground: var(--orange-foreground);
+  --color-teal: var(--teal);
+  --color-teal-foreground: var(--teal-foreground);
+  --color-yellow: var(--yellow);
+  --color-yellow-foreground: var(--yellow-foreground);
+  --color-gray: var(--gray);
+  --color-gray-foreground: var(--gray-foreground);
+  --color-black: var(--black);
+  --color-black-foreground: var(--black-foreground);
+  --color-brown: var(--brown);
+  --color-brown-foreground: var(--brown-foreground);
+  --color-cyan: var(--cyan);
+  --color-cyan-foreground: var(--cyan-foreground);
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-popover: hsl(var(--popover));
@@ -144,6 +144,7 @@
   }
 
   :root {
+    /* Semantic surface + text — HSL channels (used as hsl(var(--X))) */
     --background: 34 35% 99%;
     --foreground: 34 63% 2%;
     --card: 34 35% 99%;
@@ -160,39 +161,68 @@
     --destructive-foreground: 6 82% 98%;
     --muted: 154 6% 86%;
     --muted-foreground: 154 7% 29%;
-    --green: 120 100% 50%;
-    --green-foreground: 0 0% 0%;
-    --red: 0 100% 50%;
-    --red-foreground: 0 0% 0%;
-    --blue: 240 100% 50%;
-    --blue-foreground: 0 0% 100%;
-    --teal: 180 100% 50%;
-    --teal-foreground: 0 0% 0%;
-    --purple: 300 100% 50%;
-    --purple-foreground: 0 0% 0%;
-    --pink: 330 100% 50%;
-    --pink-foreground: 0 0% 0%;
-    --orange: 30 100% 50%;
-    --orange-foreground: 0 0% 0%;
-    --brown: 30 100% 50%;
-    --brown-foreground: 0 0% 0%;
-    --black: 0 0% 0%;
-    --black-foreground: 0 0% 100%;
-    --cyan: 180 100% 50%;
-    --cyan-foreground: 0 0% 0%;
     --border: 34 9% 93%;
     --input: 34 9% 93%;
     --ring: 34 100% 42%;
     --radius: 0.5rem;
+
+    /* Categorical palette — oklch for perceptual balance (full color values, not HSL channels) */
+    --green: oklch(0.74 0.16 150);   --green-foreground: oklch(0.15 0 0);
+    --teal: oklch(0.66 0.10 195);    --teal-foreground: oklch(0.15 0 0);
+    --cyan: oklch(0.80 0.10 220);    --cyan-foreground: oklch(0.15 0 0);
+    --blue: oklch(0.56 0.15 250);    --blue-foreground: oklch(0.98 0 0);
+    --purple: oklch(0.52 0.17 300);  --purple-foreground: oklch(0.98 0 0);
+    --pink: oklch(0.68 0.19 352);    --pink-foreground: oklch(0.15 0 0);
+    --red: oklch(0.57 0.20 27);      --red-foreground: oklch(0.98 0 0);
+    --orange: oklch(0.72 0.17 58);   --orange-foreground: oklch(0.15 0 0);
+    --yellow: oklch(0.86 0.15 95);   --yellow-foreground: oklch(0.15 0 0);
+    --brown: oklch(0.50 0.08 55);    --brown-foreground: oklch(0.98 0 0);
+    --gray: oklch(0.68 0.012 60);    --gray-foreground: oklch(0.98 0 0);
+    --black: oklch(0.30 0.006 60);   --black-foreground: oklch(0.98 0 0);
   }
 
-  .dark {
-    --background: 34 51% 2%;
-    --foreground: 34 13% 99%;
-    --card: 34 51% 2%;
-    --card-foreground: 34 13% 99%;
-    --popover: 34 51% 2%;
-    --popover-foreground: 34 13% 99%;
+  /* ── Sepia — warm parchment, field-notebook tone ─────────────────── */
+  [data-theme="sepia"] {
+    --background: 38 38% 92%;
+    --foreground: 28 34% 14%;
+    --card: 42 55% 97%;
+    --card-foreground: 28 34% 14%;
+    --popover: 42 55% 97%;
+    --popover-foreground: 28 34% 14%;
+    --muted: 38 30% 86%;
+    --muted-foreground: 30 18% 36%;
+    --border: 36 27% 81%;
+    --input: 36 27% 81%;
+  }
+
+  /* ── Edge — square corners, ink borders, hard offset shadows ─────── */
+  [data-theme="edge"] {
+    --background: 40 33% 96%;
+    --foreground: 30 22% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 30 22% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 22% 9%;
+    --muted: 40 20% 91%;
+    --muted-foreground: 30 10% 30%;
+    --border: 30 22% 9%;
+    --input: 30 22% 14%;
+    --radius: 0;
+    --shadow-xs: 2px 2px 0 0 hsl(30 22% 9%);
+    --shadow-sm: 3px 3px 0 0 hsl(30 22% 9%);
+    --shadow: 3px 3px 0 0 hsl(30 22% 9%);
+    --shadow-md: 4px 4px 0 0 hsl(30 22% 9%);
+    --shadow-lg: 5px 5px 0 0 hsl(30 22% 9%);
+  }
+
+  /* ── Dark — warm near-black ──────────────────────────────────────── */
+  [data-theme="dark"], .dark {
+    --background: 34 30% 4%;
+    --foreground: 34 13% 96%;
+    --card: 34 22% 7%;
+    --card-foreground: 34 13% 96%;
+    --popover: 34 22% 7%;
+    --popover-foreground: 34 13% 96%;
     --primary: 34 100% 42%;
     --primary-foreground: 34 100% 2%;
     --secondary: 154 100% 42%;
@@ -201,31 +231,24 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 6 82% 53%;
     --destructive-foreground: 0 0% 100%;
-    --muted: 154 6% 14%;
-    --muted-foreground: 154 7% 71%;
-    --green: 120 100% 30%;
-    --green-foreground: 0 0% 100%;
-    --red: 0 100% 30%;
-    --red-foreground: 0 0% 100%;
-    --blue: 240 100% 30%;
-    --blue-foreground: 0 0% 100%;
-    --teal: 180 100% 30%;
-    --teal-foreground: 0 0% 100%;
-    --purple: 300 100% 30%;
-    --purple-foreground: 0 0% 100%;
-    --pink: 330 100% 30%;
-    --pink-foreground: 0 0% 100%;
-    --orange: 30 100% 30%;
-    --orange-foreground: 0 0% 100%;
-    --brown: 30 100% 30%;
-    --brown-foreground: 0 0% 100%;
-    --black: 0 0% 100%;
-    --black-foreground: 0 0% 0%;
-    --cyan: 180 100% 30%;
-    --cyan-foreground: 0 0% 100%;
-    --border: 34 9% 14%;
-    --input: 34 9% 14%;
+    --muted: 34 12% 15%;
+    --muted-foreground: 34 8% 64%;
+    --border: 34 12% 17%;
+    --input: 34 12% 17%;
     --ring: 34 100% 42%;
+
+    --green: oklch(0.74 0.16 150);   --green-foreground: oklch(0.15 0 0);
+    --teal: oklch(0.70 0.11 195);    --teal-foreground: oklch(0.15 0 0);
+    --cyan: oklch(0.80 0.10 220);    --cyan-foreground: oklch(0.15 0 0);
+    --blue: oklch(0.66 0.15 250);    --blue-foreground: oklch(0.98 0 0);
+    --purple: oklch(0.62 0.17 300);  --purple-foreground: oklch(0.98 0 0);
+    --pink: oklch(0.70 0.18 352);    --pink-foreground: oklch(0.15 0 0);
+    --red: oklch(0.65 0.19 27);      --red-foreground: oklch(0.98 0 0);
+    --orange: oklch(0.74 0.16 58);   --orange-foreground: oklch(0.15 0 0);
+    --yellow: oklch(0.86 0.15 95);   --yellow-foreground: oklch(0.15 0 0);
+    --brown: oklch(0.58 0.09 55);    --brown-foreground: oklch(0.98 0 0);
+    --gray: oklch(0.72 0.012 60);    --gray-foreground: oklch(0.15 0 0);
+    --black: oklch(0.86 0.006 60);   --black-foreground: oklch(0.15 0 0);
   }
 }
 

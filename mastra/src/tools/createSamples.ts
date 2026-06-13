@@ -172,23 +172,25 @@ const processRecord = (
 
     // Geocoding: resolve lat/lon from location string when coordinates are missing
     if (rec.location && (rec.lat == null || rec.lon == null)) {
-      try {
-        const geoRes = await fetch(`${baseUrl}/api/geocoding`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...serviceAuthHeader() },
-          body: JSON.stringify({ location: rec.location }),
-        })
-        if (geoRes.ok) {
-          const geoData = await geoRes.json()
-          const coords = geoData.coordinates
-          if (coords?.lat != null && coords?.lon != null) {
-            rec.lat = parseFloat(coords.lat)
-            rec.lon = parseFloat(coords.lon)
+      yield* Effect.promise(async () => {
+        try {
+          const geoRes = await fetch(`${baseUrl}/api/geocoding`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...serviceAuthHeader() },
+            body: JSON.stringify({ location: rec.location }),
+          })
+          if (geoRes.ok) {
+            const geoData = await geoRes.json()
+            const coords = geoData.coordinates
+            if (coords?.lat != null && coords?.lon != null) {
+              rec.lat = parseFloat(coords.lat)
+              rec.lon = parseFloat(coords.lon)
+            }
           }
+        } catch {
+          // geocoding is best-effort; silently skip on network error
         }
-      } catch {
-        // geocoding is best-effort; silently skip on network error
-      }
+      })
     }
 
     // Taxonomy verification (silent on network failure; only warn on name correction)

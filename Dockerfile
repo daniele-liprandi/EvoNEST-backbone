@@ -30,6 +30,11 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
+# Stub env vars required at module-load time during next build.
+# These are NOT the real values — runtime values come from docker-compose.
+ENV MONGODB_URI=mongodb://placeholder:27017 \
+    STORAGE_PATH=/tmp/placeholder
+
 # Build the application
 RUN npm run build
 

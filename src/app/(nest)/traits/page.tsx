@@ -24,7 +24,6 @@ import { handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait,
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { useTraitData } from '@/hooks/useTraitData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Download, ArrowLeftRight } from 'lucide-react';
 import { ReloadIcon } from "@radix-ui/react-icons";
 import {
