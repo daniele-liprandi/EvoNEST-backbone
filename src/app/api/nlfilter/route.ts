@@ -1,9 +1,17 @@
 import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { isServiceRequest } from "@/app/api/utils/verifyServiceKey";
 
 interface RouteInfo {
   label: string;
   path: string;
   columns: string[];
+}
+
+function normalizeBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.replace(/\/$/, "");
+  return /\/v1$/.test(trimmed) ? trimmed : `${trimmed}/v1`;
 }
 
 const dateNotes = (today: string, yesterday: string, sevenDaysAgo: string) => `
@@ -82,6 +90,13 @@ If no filters apply, use empty params: {"route":"/samples/general","params":{}}
 Do not include any other text, markdown, or code fences.`;
 
 export async function POST(request: NextRequest) {
+  if (!isServiceRequest(request)) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   try {
     const body = await request.json();
     const query = body?.query;
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
     }
 
     const baseUrl = process.env.LLM_BASE_URL;
-    const token = process.env.LLM_TOKEN;
+    const token = process.env.LLM_AUTH_TOKEN;
     const model = process.env.LLM_MODEL;
 
     if (!baseUrl || !token || !model) {
@@ -112,7 +127,7 @@ export async function POST(request: NextRequest) {
       ? GLOBAL_SYSTEM_PROMPT(routes as RouteInfo[], today, yesterday, sevenDaysAgo)
       : PAGE_SYSTEM_PROMPT(columns ?? [], today, yesterday, sevenDaysAgo);
 
-    const llmResponse = await fetch(`${baseUrl}/v1/chat/completions`, {
+    const llmResponse = await fetch(`${normalizeBaseUrl(baseUrl)}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Collection } from "mongodb";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { get_database_user } from "@/app/api/utils/get_database_user";
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
+import { isServiceRequest } from "@/app/api/utils/verifyServiceKey";
 
 const EXCLUDE_FIELDS = new Set([
   "_id",
@@ -39,9 +41,22 @@ async function liveColumns(
   return Array.from(keys).filter((key) => !EXCLUDE_FIELDS.has(key));
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const dbName = await get_database_user();
+    const dbNameParam = request.nextUrl.searchParams.get('dbName')
+    let dbName: string
+    if (isServiceRequest(request)) {
+      if (!dbNameParam) {
+        return NextResponse.json({ error: 'dbName is required for service requests' }, { status: 400 })
+      }
+      dbName = dbNameParam
+    } else {
+      const session = await getServerSession(authOptions)
+      if (!session?.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      dbName = dbNameParam ?? await get_database_user()
+    }
     const client = await get_or_create_client();
     const db = client.db(dbName);
 
