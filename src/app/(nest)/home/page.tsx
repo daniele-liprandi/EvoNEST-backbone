@@ -16,9 +16,11 @@ import { useConfigCheck } from '@/hooks/useConfigCheck'
 import { ConfigSetup } from '@/components/config-setup'
 import { CardSamples } from '@/components/nest/dashboard/card-samples'
 import { DemoDescription } from '@/components/nest/dashboard/demo-description'
+import { getUserIdByName } from '@/hooks/userHooks'
 import { CommandBar } from '@/components/nest/ai/CommandBar'
 import { ConversationCanvas, ConversationMessage } from '@/components/nest/ai/ConversationCanvas'
 import { toast } from 'sonner'
+import { mutate } from 'swr'
 
 function getOrCreateThreadId(): string {
   if (typeof window === 'undefined') return crypto.randomUUID()
@@ -71,20 +73,65 @@ export default function Home() {
   }, [])
 
   const handleConfirm = useCallback(async (entity: string, records: Record<string, any>[]) => {
+    if (!records.length) {
+      toast.error('No records to save.')
+      return
+    }
+
     try {
       const endpoint = entity === 'traits' ? `${prepend_path}/api/traits` : `${prepend_path}/api/samples`
-      await Promise.all(records.map((record) =>
-        fetch(endpoint, {
+
+      const responsible = getUserIdByName(session?.user?.name, usersData ?? [])
+      const payloads = records.map((record) => {
+        if (entity === 'traits') {
+          const sampleId = record.sampleId
+            ?? samplesData?.find((s: any) => s.name === record.sampleName)?._id
+          return {
+            ...record,
+            method: 'create',
+            sampleId,
+            responsible: record.responsible ?? responsible,
+          }
+        }
+
+        return {
+          ...record,
+          responsible: record.responsible ?? responsible,
+        }
+      })
+
+      const results = await Promise.all(payloads.map(async (payload, index) => {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(record),
+          body: JSON.stringify(payload),
         })
-      ))
+
+        let body: any = null
+        try {
+          body = await response.json()
+        } catch {
+          body = null
+        }
+
+        return { index, response, body }
+      }))
+
+      const failed = results.filter(({ response }) => !response.ok)
+      if (failed.length) {
+        const first = failed[0]
+        const reason = first.body?.error ?? first.response.statusText
+        throw new Error(`${failed.length}/${records.length} records failed to save: ${reason}`)
+      }
+
+      await mutate(`${prepend_path}/api/samples`)
+      await mutate(`${prepend_path}/api/traits`)
       toast.success(`${records.length} ${entity} saved successfully`)
-    } catch {
-      toast.error('Failed to save records. Please try again.')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save records. Please try again.'
+      toast.error(message)
     }
-  }, [])
+  }, [samplesData, session?.user?.name, usersData])
 
   const handleFix = useCallback(() => {
     document.querySelector<HTMLInputElement>('input[placeholder*="Ask anything"]')?.focus()
@@ -117,15 +164,16 @@ export default function Home() {
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6">
         {isDemo && <DemoDescription />}
 
-        <CommandBar onSend={handleSend} loading={aiLoading} />
-
         <div className="flex gap-4 min-h-[400px]">
-          <ConversationCanvas
-            messages={messages}
-            samplesData={samplesData ?? []}
-            onConfirm={handleConfirm}
-            onFix={handleFix}
-          />
+          <div className="flex flex-col flex-1 gap-2">
+            <CommandBar onSend={handleSend} loading={aiLoading} />
+            <ConversationCanvas
+              messages={messages}
+              samplesData={samplesData ?? []}
+              onConfirm={handleConfirm}
+              onFix={handleFix}
+            />
+          </div>
           <div className="hidden lg:block w-72 shrink-0">
             {samplesData ? (
               <CardSamples data={samplesData} />

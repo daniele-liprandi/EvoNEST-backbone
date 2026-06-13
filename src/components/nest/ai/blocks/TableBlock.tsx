@@ -42,14 +42,14 @@ export function TableBlock({ block }: { block: TableBlockType }) {
           </tbody>
         </table>
       </div>
-      {showViewAll && (
-        <Link
-          href={filterUrl}
-          className="text-xs text-primary underline-offset-2 hover:underline"
-        >
-          View all {totalCount} results in {entity} table →
-        </Link>
-      )}
+      <Link
+        href={filterUrl}
+        className="text-xs text-primary underline-offset-2 hover:underline"
+      >
+        {showViewAll
+          ? `View all ${totalCount} results in ${entity} table →`
+          : `Open in ${entity} table →`}
+      </Link>
     </div>
   )
 }

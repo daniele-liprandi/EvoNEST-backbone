@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useRef } from 'react'
 import { MessageBlock } from '@/lib/ai-types'
 import { TextBlock } from './blocks/TextBlock'
 import { TableBlock } from './blocks/TableBlock'
@@ -44,12 +43,6 @@ function BlockRenderer({
 }
 
 export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, confirmingIndex }: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
   if (messages.length === 0) {
     return (
       <div className="relative rounded-lg overflow-hidden min-h-[300px] flex-1">
@@ -66,7 +59,7 @@ export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, co
 
   return (
     <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-      {messages.map((msg, msgIdx) => (
+      {[...messages].reverse().map((msg, msgIdx) => (
         <div key={msgIdx}>
           {msg.role === 'user' ? (
             <div className="flex justify-end">
@@ -93,7 +86,6 @@ export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, co
           )}
         </div>
       ))}
-      <div ref={bottomRef} />
     </div>
   )
 }
