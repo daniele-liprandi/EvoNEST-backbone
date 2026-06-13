@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+const FlatValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
+const FlatRecordSchema = z.record(z.string(), FlatValueSchema).refine(
+  (record) => Object.keys(record).length > 0,
+  { message: 'Record must contain at least one field' }
+)
+
 export const TextBlockSchema = z.object({
   type: z.literal('text'),
   content: z.string(),
@@ -24,7 +30,7 @@ export const ChartBlockSchema = z.object({
 export const ReadbackBlockSchema = z.object({
   type: z.literal('readback'),
   entity: z.enum(['samples', 'traits']),
-  records: z.array(z.record(z.string(), z.any())),
+  records: z.array(FlatRecordSchema).min(1),
   pendingCreate: z.literal(true),
 })
 
