@@ -106,6 +106,7 @@ export default defineConfig({
             { text: "Data Collection", link: "/user-docs/data-collection" },
             { text: "Data Analysis", link: "/user-docs/data-analysis" },
             { text: "Data Export", link: "/user-docs/data-export" },
+            { text: "External API", link: "/user-docs/external-api" },
             { text: "FAQ", link: "/user-docs/faq" },
           ],
         },

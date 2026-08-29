@@ -13,3 +13,7 @@ When tables are filtered by any value, the filtering is kept during export. This
 ## Table format
 
 All tables in evonest are in long format. While we do not have yet a long to wide format converter, we advise using R or Python to quickly transform them if needed.
+
+## Programmatic access
+
+To pull data from a script instead of the browser, use the [External API](/user-docs/external-api). It is read-only and authenticated with a personal API key.
