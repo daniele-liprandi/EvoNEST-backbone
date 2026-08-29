@@ -22,6 +22,7 @@ import { mutate } from "swr"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useDatabases } from "@/hooks/useDatabases"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
 
 //See form on shadcn/ui and see zod forms
 const formSchema = z.object({
@@ -53,23 +54,24 @@ export function ProfileFormUsers({}) {
     // Only allow admin users to access this form
     if (!isAdmin) {
         return (
-            <div className="p-4 text-center text-red-600">
-                <p>Only administrators can create new users.</p>
-            </div>
+            <p className="p-4 text-center text-sm text-muted-foreground">
+                Only administrators can create new users.
+            </p>
         );
-    }// 2. Define a submit handler.
+    }
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const method = 'create';
         const endpoint = `${prepend_path}/api/users`;
-        console.log(values)
-        
+
         try {
             const response = await fetch(endpoint, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     method: method,
-                    name: values.name,                    role: values.role,
+                    name: values.name,
+                    role: values.role,
                     email: values.email,
                     institution: values.institution,
                     databases: values.databases, // Already an array
@@ -98,7 +100,7 @@ export function ProfileFormUsers({}) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                     control={form.control}
                     name="name"
@@ -124,7 +126,8 @@ export function ProfileFormUsers({}) {
                             <FormMessage />
                         </FormItem>
                     )}
-                />                <FormField
+                />
+                <FormField
                     control={form.control}
                     name="role"
                     render={({ field }) => (
@@ -159,7 +162,8 @@ export function ProfileFormUsers({}) {
                             <FormMessage />
                         </FormItem>
                     )}
-                />                <FormField
+                />
+                <FormField
                     control={form.control}
                     name="databases"
                     render={() => (
@@ -171,10 +175,11 @@ export function ProfileFormUsers({}) {
                                 </FormDescription>
                             </div>
                             {isDatabasesLoading ? (
-                                <div>Loading databases...</div>
+                                <Skeleton className="h-9 w-full" />
                             ) : databasesError ? (
-                                <div className="text-red-500">Error loading databases</div>                            ) : databases.length === 0 ? (
-                                <div className="text-muted-foreground">No databases available</div>
+                                <p className="text-sm text-destructive">Could not load databases</p>
+                            ) : databases.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No databases available</p>
                             ) : (
                                 databases.map((database: string) => (
                                     <FormField
