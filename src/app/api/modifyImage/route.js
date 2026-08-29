@@ -1,6 +1,30 @@
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
-import https from 'https';
+
+// The QR image is fetched from an external service. Restrict it to the known
+// providers so the parameter cannot be pointed at internal hosts (SSRF).
+const ALLOWED_IMAGE_HOSTS = new Set([
+  'barcodeapi.org',
+  'api.qrserver.com',
+]);
+
+const DOWNLOAD_TIMEOUT_MS = 8000;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MIN_LABEL_WIDTH = 100;
+const MAX_LABEL_WIDTH = 1000;
+
+function parseAllowedUrl(raw) {
+  let url;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:' || !ALLOWED_IMAGE_HOSTS.has(url.hostname)) {
+    return null;
+  }
+  return url;
+}
 
 /**
  * @swagger
@@ -78,16 +102,35 @@ import https from 'https';
  *                   example: "Failed to process image"
  */
 
-const downloadImage = (url) => {
-  return new Promise((resolve, reject) => {
-    https.get(url, (response) => {
-      const data = [];
-      response.on('data', (chunk) => data.push(chunk));
-      response.on('end', () => resolve(Buffer.concat(data)));
-      response.on('error', (err) => reject(err));
-    });
-  });
+const downloadImage = async (url) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DOWNLOAD_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal, redirect: 'error' });
+    if (!response.ok) {
+      throw new Error(`image host returned ${response.status}`);
+    }
+    if (!(response.headers.get('content-type') || '').startsWith('image/')) {
+      throw new Error('response is not an image');
+    }
+    const declared = Number(response.headers.get('content-length'));
+    if (Number.isFinite(declared) && declared > MAX_IMAGE_BYTES) {
+      throw new Error('image exceeds size limit');
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.byteLength > MAX_IMAGE_BYTES) {
+      throw new Error('image exceeds size limit');
+    }
+    return buffer;
+  } finally {
+    clearTimeout(timeout);
+  }
 };
+
+const escapeXml = (value) =>
+  String(value).replace(/[<>&"']/g, (c) =>
+    ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c])
+  );
 
 const truncateLabel = (label) => {
   if (label.length > 12) {
@@ -106,7 +149,7 @@ const addLabelsToImage = async (imageBuffer, labelWidth, labels) => {
 
   const textElements = truncatedLabels
     .map((label, i) =>
-      `<text x="${lw / 2}" y="${startY + i * lineHeight}" font-family="Arial" font-size="30" text-anchor="middle" fill="#000000">${label}</text>`
+      `<text x="${lw / 2}" y="${startY + i * lineHeight}" font-family="Arial" font-size="30" text-anchor="middle" fill="#000000">${escapeXml(label)}</text>`
     )
     .join('');
 
@@ -125,14 +168,23 @@ const addLabelsToImage = async (imageBuffer, labelWidth, labels) => {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const qrcodeurl = searchParams.get('qrcodeurl');
-  const labelWidth = searchParams.get('labelwidth') || 400;
+  const rawLabelWidth = Number(searchParams.get('labelwidth')) || 400;
+  const labelWidth = Math.min(MAX_LABEL_WIDTH, Math.max(MIN_LABEL_WIDTH, rawLabelWidth));
   const label1 = searchParams.get('label1') || '';
   const label2 = searchParams.get('label2') || '';
   const label3 = searchParams.get('label3') || '';
   const labels = [label1, label2, label3].filter(Boolean);
 
+  const imageUrl = parseAllowedUrl(qrcodeurl);
+  if (!imageUrl) {
+    return NextResponse.json(
+      { error: 'qrcodeurl must be an https URL on an allowed image host' },
+      { status: 400 }
+    );
+  }
+
   try {
-    const imageBuffer = await downloadImage(qrcodeurl);
+    const imageBuffer = await downloadImage(imageUrl);
     const modifiedImageBuffer = await addLabelsToImage(imageBuffer, labelWidth, labels);
 
     return new NextResponse(modifiedImageBuffer, {
