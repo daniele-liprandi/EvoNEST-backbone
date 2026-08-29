@@ -131,6 +131,12 @@ export default defineConfig({
           ],
         },
         {
+          text: "Conventions",
+          items: [
+            { text: "Effect conventions", link: "/technical-docs/effect-conventions" },
+          ],
+        },
+        {
           text: "Customization",
           items: [
             {

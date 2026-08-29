@@ -50,6 +50,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^4.3.0",
+    "effect": "^3.22.1",
     "embla-carousel-react": "^8.0.1",
     "framer-motion": "^12.40.0",
     "javascript-time-ago": "^2.5.10",
