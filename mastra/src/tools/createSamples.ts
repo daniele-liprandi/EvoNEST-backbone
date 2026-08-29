@@ -119,7 +119,7 @@ const fetchTaxonomy = (taxa: string, family: string | undefined): Effect.Effect<
       try {
         const response = await fetch(`${baseUrl}/api/checknames`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...serviceAuthHeader() },
           body: JSON.stringify({ taxa, method: 'fullTaxaInfo', source: 'GNames', family }),
           signal: controller.signal,
         })
