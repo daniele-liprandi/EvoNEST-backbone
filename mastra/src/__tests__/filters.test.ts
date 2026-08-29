@@ -51,4 +51,17 @@ describe('buildMongoFilter', () => {
     expect(filter.name.$regex).toBeInstanceOf(RegExp)
     expect(filter.name.$regex.source).toBe('^Ara.*$')
   })
+
+  it('builds a string date range that matches same-day timestamps', () => {
+    const filter = buildMongoFilter({ date_gte: '2024-03-15', date_lte: '2024-03-20' }) as {
+      date: { $gte: string; $lte: string }
+    }
+    expect(typeof filter.date.$gte).toBe('string')
+    expect(filter.date.$gte).toBe('2024-03-15')
+    // a stored timestamp on the last day still falls within the range
+    const stored = '2024-03-20T14:00:00.000Z'
+    expect(stored >= filter.date.$gte && stored <= filter.date.$lte).toBe(true)
+    // the day after does not
+    expect('2024-03-21' <= filter.date.$lte).toBe(false)
+  })
 })

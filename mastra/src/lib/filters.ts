@@ -41,17 +41,28 @@ export function sanitizeFilterParams(
   return { params: safe, rejected }
 }
 
-/** Turn URL-style filter params into a MongoDB filter document. */
+// Sorts after any real ISO timestamp, so an upper bound of "2024-03-20"
+// still matches the stored value "2024-03-20T14:00:00Z".
+const DAY_END = String.fromCharCode(0xffff)
+
+/**
+ * Turn URL-style filter params into a MongoDB filter document.
+ *
+ * Date fields are stored as ISO strings, and the UI (useUrlFilters) compares
+ * them lexicographically on the YYYY-MM-DD prefix. The _gte / _lte branches
+ * mirror that with string bounds rather than Date objects, which never
+ * matched a string field.
+ */
 export function buildMongoFilter(params: Record<string, string>): Record<string, unknown> {
   const mongo: Record<string, any> = {}
   for (const [key, value] of Object.entries(params)) {
     if (!value) continue
     if (key.endsWith('_gte')) {
       const field = key.slice(0, -4)
-      mongo[field] = { ...mongo[field], $gte: new Date(value) }
+      mongo[field] = { ...mongo[field], $gte: value.slice(0, 10) }
     } else if (key.endsWith('_lte')) {
       const field = key.slice(0, -4)
-      mongo[field] = { ...mongo[field], $lte: new Date(value) }
+      mongo[field] = { ...mongo[field], $lte: value.slice(0, 10) + DAY_END }
     } else if (value.includes('*')) {
       const pattern = '^' + value
         .split('*')
