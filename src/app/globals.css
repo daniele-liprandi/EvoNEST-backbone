@@ -47,6 +47,8 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
   --radius-xl: calc(var(--radius) + 4px);
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -205,6 +207,15 @@
     --black: oklch(0.30 0.006 60);   --black-foreground: oklch(0.98 0 0);
   }
 
+  /* ── EvoNEST — the signature. Rounded like the logo, weighted headings,
+        a warm orange focus ring. Surfaces come from :root above. ─────── */
+  [data-theme="evonest"] {
+    --radius: 0.75rem;
+    --heading-weight: 700;
+    --heading-tracking: -0.02em;
+    --ring: 34 100% 42%;
+  }
+
   /* ── Sepia — warm parchment, field-notebook tone ─────────────────── */
   [data-theme="sepia"] {
     --background: 38 38% 92%;
@@ -233,6 +244,7 @@
     --input: 30 22% 14%;
     --radius: 0;
     --heading-weight: 700;
+    --heading-tracking: 0;
     --elevation-2xs: 2px 2px 0 0 hsl(30 22% 9%);
     --elevation-xs:  2px 2px 0 0 hsl(30 22% 9%);
     --elevation-sm:  3px 3px 0 0 hsl(30 22% 9%);
@@ -300,8 +312,9 @@
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-fira_sans), sans-serif;
+  font-family: var(--font-sans);
   font-weight: var(--heading-weight, 600);
+  letter-spacing: var(--heading-tracking, -0.01em);
 }
 
 
