@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import {
   PiBugBeetleBold,
@@ -32,8 +31,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { ModeToggle } from "../ui/custom/mode-toggle";
-import { Check } from "lucide-react";
+import { ThemeMenu } from "../ui/custom/theme-menu";
 import { EvoNestLogo } from "../ui/custom/evonest-logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -59,72 +57,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useConfigTypes } from "@/hooks/useConfigTypes";
-
-const THEME_LIST = [
-  { id: "evonest", label: "EvoNEST", note: "Warm paper", swatch: "#fffdfb", ink: "#d68500" },
-  { id: "sepia",   label: "Sepia",   note: "Parchment",  swatch: "#efe6d3", ink: "#d68500" },
-  { id: "edge",    label: "Edge",    note: "Square · hard shadow", swatch: "#ffffff", ink: "#1a1410" },
-  { id: "dark",    label: "Dark",    note: "Warm near-black",      swatch: "#161310", ink: "#d68500" },
-];
-
-function ThemeMenu() {
-  const { theme, setTheme } = useTheme();
-  const [open, setOpen] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
-
-  const cur = THEME_LIST.find((t) => t.id === theme) ?? THEME_LIST[0];
-
-  return (
-    <div ref={ref} className="relative">
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => setOpen((o) => !o)}
-        title={`Theme: ${cur.label}`}
-      >
-        <span
-          className="block h-4 w-4 rounded-full"
-          style={{ background: cur.swatch, boxShadow: `inset 0 0 0 1.5px ${cur.ink}` }}
-        />
-        <span className="sr-only">Theme</span>
-      </Button>
-      {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[200px] rounded-md border border-border bg-popover p-1 shadow-lg">
-          <p className="px-2 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">Theme</p>
-          {THEME_LIST.map((t) => (
-            <button
-              key={t.id}
-              className={cn(
-                "flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-                t.id === theme ? "text-primary" : "text-foreground"
-              )}
-              onClick={() => { setTheme(t.id); setOpen(false); }}
-            >
-              <span
-                className="h-4 w-4 shrink-0 rounded-full"
-                style={{ background: t.swatch, boxShadow: `inset 0 0 0 1.5px ${t.ink}` }}
-              />
-              <span className="flex flex-col leading-tight">
-                <b className="text-[13px] font-semibold">{t.label}</b>
-                <em className="text-[11px] not-italic text-muted-foreground">{t.note}</em>
-              </span>
-              {t.id === theme && <Check className="ml-auto h-3.5 w-3.5 text-primary" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 const usersProps = {
   label: "Users",
