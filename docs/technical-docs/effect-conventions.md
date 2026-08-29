@@ -75,33 +75,33 @@ Effect.gen(function* () {
 
 ## Writing a route
 
+Export the handler as an Effect, then a thin `GET`/`POST`/`DELETE` that runs it. The exported Effect is what tests drive.
+
 ```ts
 // src/app/api/traits/route.ts
 import { Effect, Schema } from "effect"
-import { NextResponse } from "next/server"
 import { runRoute, ok, decodeBody, ObjectIdFromHex, Auth, Mongo, attempt, requireFound } from "@/lib/effect"
 
 const DeleteBody = Schema.Struct({ id: ObjectIdFromHex })
 
-export function DELETE(request: Request) {
-  return runRoute(
-    Effect.gen(function* () {
-      const { id } = yield* decodeBody(DeleteBody)(request)
-      const auth = yield* Auth
-      const dbName = yield* auth.databaseName
-      const mongo = yield* Mongo
-      const traits = yield* mongo.collection(dbName, "traits")
+export const deleteTrait = (request: Request) =>
+  Effect.gen(function* () {
+    const { id } = yield* decodeBody(DeleteBody)(request)
+    const dbName = yield* Effect.flatMap(Auth, (a) => a.databaseName)
+    const traits = yield* Effect.flatMap(Mongo, (m) => m.collection(dbName, "traits"))
 
-      const result = yield* attempt(() => traits.deleteOne({ _id: id }), "traits.deleteOne")
-      yield* requireFound("Trait", id.toHexString())(result.deletedCount > 0 ? result : null)
+    const result = yield* attempt(() => traits.deleteOne({ _id: id }), "traits.deleteOne")
+    yield* requireFound("Trait", id.toHexString())(result.deletedCount > 0 ? result : null)
 
-      return yield* ok({ message: "Trait deleted" })
-    }),
-  )
-}
+    return yield* ok({ message: "Trait deleted" })
+  })
+
+export const DELETE = (request: Request) => runRoute(deleteTrait(request))
 ```
 
 The handler never touches a status code or a try/catch. Every failure path is a typed `Effect.fail`.
+
+`src/app/api/user/database/route.ts` is the live reference conversion.
 
 ## Testing
 
@@ -119,7 +119,7 @@ const res = await runRoute(
 expect(res.status).toBe(200)
 ```
 
-`testMongo()` stubs every method to reject; override only what the test hits. `testAuth({ sub, role })` and `testNoAuth` do the same for `Auth`.
+`testMongo()` stubs every method to reject; override only what the test hits. `testAuth({ sub, role })` and `testNoAuth` do the same for `Auth`. `src/__tests__/app.api.user.database.test.ts` is the reference.
 
 ## Migrating
 
