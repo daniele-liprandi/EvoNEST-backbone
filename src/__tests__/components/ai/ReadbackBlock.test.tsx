@@ -32,4 +32,19 @@ describe('ReadbackBlock', () => {
     fireEvent.click(screen.getByRole('button', { name: /fix/i }))
     expect(onFix).toHaveBeenCalled()
   })
+
+  test('disables both buttons and shows Saved once saved', () => {
+    const onConfirm = jest.fn()
+    render(<ReadbackBlock block={block} onConfirm={onConfirm} onFix={jest.fn()} saved />)
+    const confirm = screen.getByRole('button', { name: /saved/i })
+    expect(confirm).toBeDisabled()
+    fireEvent.click(confirm)
+    expect(onConfirm).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: /fix/i })).toBeDisabled()
+  })
+
+  test('disables Confirm while saving', () => {
+    render(<ReadbackBlock block={block} onConfirm={jest.fn()} onFix={jest.fn()} confirming />)
+    expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled()
+  })
 })

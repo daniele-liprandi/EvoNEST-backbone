@@ -8,6 +8,7 @@ interface Props {
   onConfirm: (records: Record<string, any>[]) => void
   onFix: () => void
   confirming?: boolean
+  saved?: boolean
 }
 
 function formatCellValue(value: unknown): string {
@@ -23,7 +24,7 @@ function formatCellValue(value: unknown): string {
   }
 }
 
-export function ReadbackBlock({ block, onConfirm, onFix, confirming }: Props) {
+export function ReadbackBlock({ block, onConfirm, onFix, confirming, saved }: Props) {
   const { records, entity } = block
 
   const columns = Array.from(new Set(
@@ -86,12 +87,12 @@ export function ReadbackBlock({ block, onConfirm, onFix, confirming }: Props) {
         <Button
           size="sm"
           onClick={() => onConfirm(records as Record<string, any>[])}
-          disabled={confirming || records.length === 0}
+          disabled={confirming || saved || records.length === 0}
           className="bg-green-700 hover:bg-green-600 text-white"
         >
-          {confirming ? 'Saving…' : 'Confirm and save'}
+          {saved ? 'Saved' : confirming ? 'Saving…' : 'Confirm and save'}
         </Button>
-        <Button size="sm" variant="outline" onClick={onFix}>
+        <Button size="sm" variant="outline" onClick={onFix} disabled={confirming || saved}>
           Fix
         </Button>
       </div>
