@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
 const REQUEST_TIMEOUT_MS = 8000;
 const NOMINATIM_MIN_INTERVAL_MS = 1000;
@@ -119,6 +121,17 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_M
  */
 
 export async function POST(req) {
+  const isService =
+    process.env.MASTRA_SERVICE_SECRET &&
+    req.headers.get("x-service-key") === process.env.MASTRA_SERVICE_SECRET;
+
+  if (!isService) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   const body = await req.json();
   const { location } = body;
 

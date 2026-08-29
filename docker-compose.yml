@@ -13,6 +13,7 @@ services:
       - .env.local
     environment:
       NODE_ENV: production
+      MASTRA_URL: http://mastra:4111
     volumes:
       - file_storage:/usr/evonest/file_storage
     ports:
@@ -49,6 +50,24 @@ services:
       DAILY_RETENTION: "7"
       WEEKLY_RETENTION: "4"
       MONTHLY_RETENTION: "12"
+
+  mastra:
+    build:
+      context: ./mastra
+      dockerfile: Dockerfile
+    container_name: evonest_mastra_prod
+    restart: unless-stopped
+    env_file:
+      - .env.production
+      - .env.local
+    environment:
+      NEXTJS_BASE_URL: http://node:3000
+      PORT: "4111"
+    ports:
+      - "4111:4111"
+    depends_on:
+      - mongo
+      - node
 
 
 volumes:

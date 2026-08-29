@@ -1,12 +1,20 @@
 "use client" // Enables client-side rendering in Next.js
 
+import Link from 'next/link';
+import { Suspense, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import { X } from 'lucide-react';
+
+import { NlFilterBar } from '@/components/nest/NlFilterBar';
 import { DataTable } from '@/components/tables/data-table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getParentIdbyId, getSampleNamebyId, getSampleSubtypebyId, getSampletypebyId } from '@/hooks/sampleHooks';
 import { getUserIdByName, getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { prepend_path } from "@/lib/utils";
-import { useMemo } from 'react';
 import { SetStateAction, useState, } from 'react';
 import { mutate } from "swr";
 import { baseColumns } from './columns';
@@ -16,7 +24,6 @@ import { handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait,
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { useTraitData } from '@/hooks/useTraitData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Download, ArrowLeftRight } from 'lucide-react';
 import { ReloadIcon } from "@radix-ui/react-icons";
 import {
@@ -39,7 +46,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-export default function TraitsPage() {
+function TraitsPageContent() {
+    const pathname = usePathname();
+    const { filters, filterData, hasFilters, buildUrlWithoutFilter } = useUrlFilters();
     const [showConversionDialog, setShowConversionDialog] = useState(false);
     const [conversionPreview, setConversionPreview] = useState<any>(null);
     const [isConverting, setIsConverting] = useState(false);
@@ -77,6 +86,31 @@ export default function TraitsPage() {
         return new Map(usersData.map((user: { _id: any; }) => [user._id, user]));
     }, [usersData]);
 
+    const dataTableData = useMemo(() => {
+        if (!traitsData || !samplesData || !usersData) {
+            return [];
+        }
+
+        const sortedTraits = [...traitsData].sort((a: { date: string | number | Date; }, b: { date: string | number | Date; }) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        return filterData(
+            sortedTraits.map((trait: { sampleId: any; responsible: any; }) => ({
+                ...trait,
+                sampleName: getSampleNamebyId(trait.sampleId, samplesData),
+                responsibleName: getUserNameById(trait.responsible, usersData),
+                sampleType: getSampletypebyId(trait.sampleId, samplesData),
+                sampleSubType: getSampleSubtypebyId(trait.sampleId, samplesData),
+                animalId: getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId,
+                animalName: getSampleNamebyId(getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId, samplesData),
+            }))
+        );
+    }, [traitsData, samplesData, usersData, filterData]);
+
+    const filterColumns = useMemo(
+        () => (dataTableData.length ? Object.keys(dataTableData[0]) : []),
+        [dataTableData]
+    );
+
     // Show loading states
     const isLoading = !traitsData || !samplesData || !usersData;
     const isError = traitsError || samplesError || usersError;
@@ -96,18 +130,6 @@ export default function TraitsPage() {
             </div>
         );
     }
-
-    const dataTableData = traitsData.sort((a: { date: string | number | Date; }, b: { date: string | number | Date; }) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .map((trait: { sampleId: any; responsible: any; }) => (
-            {
-                ...trait,
-                sampleName: getSampleNamebyId(trait.sampleId, samplesData),
-                responsibleName: getUserNameById(trait.responsible, usersData),
-                sampleType: getSampletypebyId(trait.sampleId, samplesData),
-                sampleSubType: getSampleSubtypebyId(trait.sampleId, samplesData),
-                animalId: getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId,
-                animalName: getSampleNamebyId(getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId, samplesData),
-            }));
 
     const handleConversionClick = async () => {
         try {
@@ -186,6 +208,25 @@ export default function TraitsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
+                    <NlFilterBar columns={filterColumns} />
+
+                    {hasFilters && (
+                        <div className="flex flex-wrap gap-2 items-center mb-3 text-sm">
+                            <span className="text-muted-foreground">Filtered by:</span>
+                            {filters.map(({ key, values }) => (
+                                <Badge key={key} variant="secondary" className="gap-1 pr-1">
+                                    {key}: {values.join(', ')}
+                                    <Link href={buildUrlWithoutFilter(key, pathname)}>
+                                        <X className="h-3 w-3 cursor-pointer" />
+                                    </Link>
+                                </Badge>
+                            ))}
+                            <Link href={pathname}>
+                                <Button variant="ghost" size="sm" className="h-6 text-xs">Clear all</Button>
+                            </Link>
+                        </div>
+                    )}
+
                     <DataTable 
                         columns={baseColumns} 
                         data={dataTableData} 
@@ -287,5 +328,13 @@ export default function TraitsPage() {
                 </AlertDialogContent>
             </AlertDialog>
         </div>
+    );
+}
+
+export default function TraitsPage() {
+    return (
+        <Suspense fallback={<Skeleton className="w-full h-[500px] rounded-xl" />}>
+            <TraitsPageContent />
+        </Suspense>
     );
 }

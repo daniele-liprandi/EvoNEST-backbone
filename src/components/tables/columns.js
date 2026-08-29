@@ -31,6 +31,10 @@ import { handleFileDownloads } from "@/utils/handlers/experimentHandlers";
 const SampleSexCell = ({ sample, onStatusChange }) => {
   const [value, setValue] = React.useState(sample.sex);
 
+  React.useEffect(() => {
+    setValue(sample.sex);
+  }, [sample.sex]);
+
   const handleStatusChange = (newValue) => {
     setValue(newValue);
     onStatusChange(sample._id, "sex", newValue);
@@ -436,6 +440,10 @@ export const lifestageColumn = () => (
 
       const [value, setValue] = React.useState(sample.lifestage);
 
+      React.useEffect(() => {
+        setValue(sample.lifestage);
+      }, [sample.lifestage]);
+
 
       return (
         <ToggleGroup type="single"
@@ -492,6 +500,10 @@ export const listToggleColumn = (key, label, possibleValues) => (
 
       const [value, setValue] = React.useState(object[key]);
 
+      React.useEffect(() => {
+        setValue(object[key]);
+      }, [object[key]]);
+
       return (
         <ToggleGroup type="single"
           value={value}
@@ -520,6 +532,10 @@ export const lifestatusColumn = () => (
       const { onStatusChange } = info.table.options.meta;
 
       const [value, setValue] = React.useState(sample.lifestatus);
+
+      React.useEffect(() => {
+        setValue(sample.lifestatus);
+      }, [sample.lifestatus]);
 
 
       return (
@@ -820,7 +836,7 @@ export const boxColumn = () => ({
     const { onStatusChange } = info.table.options.meta;
 
     // Use a local state to manage the input value
-    const [inputValue, setInputValue] = React.useState(sample.box);
+    const [inputValue, setInputValue] = React.useState(sample.box ?? '');
 
     // Handle input changes
     const handleChange = (e) => {
@@ -830,7 +846,7 @@ export const boxColumn = () => ({
     };
 
     return (
-      <Input className='flex max-w-20 min-w-12' type="number" value={inputValue} onChange={handleChange} />
+      <Input className='flex max-w-20 min-w-12' type="text" value={inputValue} onChange={handleChange} />
     );
   }
 });
@@ -844,7 +860,7 @@ export const slotColumn = () => ({
     const { onStatusChange } = info.table.options.meta;
 
     // Use a local state to manage the input value
-    const [inputValue, setInputValue] = React.useState(sample.slot);
+    const [inputValue, setInputValue] = React.useState(sample.slot ?? '');
 
     // Handle input changes
     const handleChange = (e) => {
@@ -854,7 +870,7 @@ export const slotColumn = () => ({
     };
 
     return (
-      <Input className='flex max-w-20 min-w-12' type="number" value={inputValue} onChange={handleChange} />
+      <Input className='flex max-w-20 min-w-12' type="text" value={inputValue} onChange={handleChange} />
     );
   }
 });

@@ -428,7 +428,7 @@ docker compose logs -f node
 **What you'll see:**
 
 ```txt
-evonest_backbone_prod  | > evonest@0.1.0 start
+evonest_backbone_prod  | > evonest@1.0.0 start
 evonest_backbone_prod  | > next start -p 3000
 evonest_backbone_prod  |
 evonest_backbone_prod  |  ▲ Next.js 14.2.4

@@ -83,6 +83,7 @@ export function DataTable({
     filterFns: {
       fuzzy: fuzzyFilter,
     },
+    getRowId: (row) => row._id ?? row.id,
     onColumnFiltersChange: setColumnFilters,
     globalFilterFn: fuzzyFilter,
     getCoreRowModel: getCoreRowModel(),

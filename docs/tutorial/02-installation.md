@@ -353,7 +353,7 @@ docker compose -f docker-compose.dev.yml logs -f
 **What you'll see:**
 
 ```txt
-evonest_backbone_dev  | > evonest@0.1.0 dev
+evonest_backbone_dev  | > evonest@1.0.0 dev
 evonest_backbone_dev  | > next dev -p 3005
 evonest_backbone_dev  |
 evonest_backbone_dev  |  ▲ Next.js 14.2.4

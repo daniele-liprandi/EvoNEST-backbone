@@ -13,6 +13,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: true
       WATCHPACK_POLLING: true
+      MASTRA_URL: http://mastra_dev:4111
     volumes:
       - ./:/usr/evonest:cached
       - evonestdev_node_modules:/usr/evonest/node_modules
@@ -32,6 +33,24 @@ services:
       - .env.development
       - .env.local
     # No volumes - data will be ephemeral and reset on container restart
+
+  mastra_dev:
+    build:
+      context: ./mastra
+      dockerfile: Dockerfile
+    container_name: evonest_mastra_dev
+    restart: unless-stopped
+    env_file:
+      - .env.development
+      - .env.local
+    environment:
+      NEXTJS_BASE_URL: http://node:3005
+      PORT: "4111"
+    ports:
+      - "4111:4111"
+    depends_on:
+      - mongo_dev
+
   mongo-express:
     image: mongo-express
     container_name: mongo_express
