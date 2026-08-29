@@ -63,8 +63,8 @@ services:
     environment:
       NEXTJS_BASE_URL: http://node:3000
       PORT: "4111"
-    ports:
-      - "4111:4111"
+    # No published port: the service is only reachable on the compose network,
+    # via the node service. See issue #54.
     depends_on:
       - mongo
       - node

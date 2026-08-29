@@ -25,10 +25,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Could not resolve user database' }, { status: 500 })
   }
 
+  const serviceKey = process.env.MASTRA_SERVICE_SECRET
+  if (!serviceKey) {
+    return NextResponse.json({ error: 'AI service is not configured' }, { status: 503 })
+  }
+
   try {
     const mastraRes = await fetch(`${MASTRA_URL}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-service-key': serviceKey },
       body: JSON.stringify({ message, threadId, dbName }),
     })
     const data = await mastraRes.json()

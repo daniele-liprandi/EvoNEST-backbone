@@ -2,10 +2,22 @@ import express from 'express'
 import { evonestAgent } from './agent.js'
 import { createAgent } from './agents/createAgent.js'
 
+const SERVICE_SECRET = process.env.MASTRA_SERVICE_SECRET
+if (!SERVICE_SECRET) throw new Error('MASTRA_SERVICE_SECRET is required')
+
 const app = express()
 app.use(express.json())
 
 app.get('/health', (_req, res) => res.json({ ok: true }))
+
+// Every route below requires the shared service key. The Next.js proxy at
+// /api/ai/chat is the only intended caller and attaches it on every request.
+app.use((req, res, next) => {
+  if (req.get('x-service-key') !== SERVICE_SECRET) {
+    return res.status(401).json({ error: 'unauthorized' })
+  }
+  next()
+})
 
 function classifyIntent(message: string): 'create' | 'query' {
   return /\b(add|create|insert|submit|save|upload|collect|collected|record|recorded|log|logged|register|registered|stage)\b/i.test(message)
