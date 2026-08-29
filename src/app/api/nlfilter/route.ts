@@ -136,7 +136,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model,
         temperature: 0,
-        max_tokens: 200,
+        // Headroom for reasoning models that emit <think> tokens before the
+        // JSON. The answer itself is small; a tight limit truncated it mid-object.
+        max_tokens: 800,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: query },
