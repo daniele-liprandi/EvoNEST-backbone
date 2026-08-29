@@ -73,7 +73,15 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, threadId: threadIdRef.current }),
       })
-      const { blocks } = await res.json()
+      const payload = await res.json().catch(() => null)
+      const blocks = Array.isArray(payload?.blocks) && payload.blocks.length
+        ? payload.blocks
+        : [{
+            type: 'text',
+            content: res.ok
+              ? 'No answer came back. Please try again.'
+              : 'The assistant is unavailable right now. Please try again.',
+          }]
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', blocks }])
     } catch {
       setMessages((prev) => [...prev, {
