@@ -57,13 +57,14 @@ Depend on `Mongo`, not on `get_or_create_client`. `runRoute` supplies `MongoLive
 ```ts
 Effect.gen(function* () {
   const mongo = yield* Mongo
-  const traits = yield* mongo.collection(dbName, "traits")
-  const result = yield* attempt(() => traits.deleteOne({ _id: id }), "traits.deleteOne")
-  // ...
+  const doc = yield* mongo.findOne(dbName, "traits", { _id: id })
+  yield* requireFound("Trait", id.toHexString())(doc)
+  yield* mongo.updateOne(dbName, "traits", { _id: id }, { $set: { note } })
 })
 ```
 
-- `attempt(op, context)` wraps a driver call, turning a rejection into `InternalError`.
+- `findOne`, `find`, `insertOne`, `updateOne`, `deleteOne` each run the driver call and turn a rejection into `InternalError`. Use these rather than the raw `collection`.
+- `collection(dbName, name)` is the escape hatch for operations the service does not wrap; pair it with `attempt(fn, label)`.
 - `requireFound(resource, id)` turns a `null` lookup into `NotFoundError`.
 
 ### Validation (`schema.ts`, `request.ts`)
@@ -104,18 +105,21 @@ The handler never touches a status code or a try/catch. Every failure path is a 
 
 ## Testing
 
-Run the handler's Effect, or the whole route, with stub layers.
+Run the exported Effect with stub layers.
 
 ```ts
-const traits = { deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }) }
-const TestMongo = Layer.succeed(Mongo, Mongo.of({
-  db: () => Effect.die("unused"),
-  collection: () => Effect.succeed(traits as any),
-}))
+const mongo = testMongo({
+  findOne: () => Effect.succeed({ _id: id }),
+  deleteOne: () => Effect.succeed({ deletedCount: 1 } as never),
+})
 
-const res = await runRoute(handler(request).pipe(Effect.provide(TestMongo)))
+const res = await runRoute(
+  deleteTrait(request).pipe(Effect.provide(Layer.merge(mongo, testAuth({ sub: "u1" })))),
+)
 expect(res.status).toBe(200)
 ```
+
+`testMongo()` stubs every method to reject; override only what the test hits. `testAuth({ sub, role })` and `testNoAuth` do the same for `Auth`.
 
 ## Migrating
 

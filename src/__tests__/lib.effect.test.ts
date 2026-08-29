@@ -17,11 +17,12 @@ import {
   Auth,
   testAuth,
   testNoAuth,
+  testMongo,
   requireFound,
 } from "@/lib/effect";
 import { NextResponse } from "next/server";
 
-const noMongo = Layer.succeed(Mongo, Mongo.of({ db: () => Effect.die("unused"), collection: () => Effect.die("unused") }));
+const noMongo = testMongo();
 
 beforeEach(() => jest.spyOn(console, "error").mockImplementation(() => {}));
 afterEach(() => jest.restoreAllMocks());
