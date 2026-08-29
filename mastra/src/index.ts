@@ -1,6 +1,7 @@
 import express from 'express'
 import { evonestAgent } from './agent.js'
 import { createAgent } from './agents/createAgent.js'
+import { findCreateToolResult, findQueryToolResult } from './lib/toolResults.js'
 
 const app = express()
 app.use(express.json())
@@ -11,112 +12,6 @@ function classifyIntent(message: string): 'create' | 'query' {
   return /\b(add|create|insert|submit|save|upload|collect|collected|record|recorded|log|logged|register|registered|stage)\b/i.test(message)
     ? 'create'
     : 'query'
-}
-
-function findCreateToolResult(result: any): { toolName: string; records: any[]; warnings: string[] } | null {
-  const targets = ['createSamples', 'createTraits']
-
-  function fromResult(toolName: string, toolResult: any) {
-    if (targets.includes(toolName) && Array.isArray(toolResult?.records)) {
-      return { toolName, records: toolResult.records, warnings: toolResult.warnings ?? [] }
-    }
-    return null
-  }
-
-  // 1. Mastra ToolResultChunk format: tr.payload.toolName / tr.payload.result
-  for (const tr of result.toolResults ?? []) {
-    const found = fromResult(tr.payload?.toolName ?? tr.toolName, tr.payload?.result ?? tr.result)
-    if (found) return found
-  }
-
-  // 2. Mastra steps — each step has toolResults: ToolResultChunk[]
-  for (const step of result.steps ?? []) {
-    for (const tr of step.toolResults ?? []) {
-      const found = fromResult(tr.payload?.toolName ?? tr.toolName, tr.payload?.result ?? tr.result)
-      if (found) return found
-    }
-  }
-
-  // 3. CoreToolMessage format (Vercel AI SDK response messages, role: 'tool')
-  for (const msg of result.response?.messages ?? []) {
-    if (msg.role === 'tool' && Array.isArray(msg.content)) {
-      for (const part of msg.content) {
-        if (part.type === 'tool-result') {
-          const found = fromResult(part.toolName, part.result)
-          if (found) return found
-        }
-      }
-    }
-  }
-
-  // 4. Mastra UI format — tool-invocation parts in assistant messages
-  for (const msg of result.response?.messages ?? []) {
-    for (const part of msg?.content?.parts ?? []) {
-      if (part?.type === 'tool-invocation' && part.toolInvocation?.state === 'result') {
-        const found = fromResult(part.toolInvocation.toolName, part.toolInvocation.result)
-        if (found) return found
-      }
-    }
-  }
-
-  console.error('[findCreateToolResult] not found — result keys:', Object.keys(result),
-    '| toolResults count:', result.toolResults?.length,
-    '| steps count:', result.steps?.length,
-    '| first toolResult sample:', JSON.stringify(result.toolResults?.[0])?.slice(0, 200))
-
-  return null
-}
-
-function findQueryToolResult(result: any): { toolName: string; entity: 'samples' | 'traits'; data: any[]; totalCount: number; filterUrl: string } | null {
-  const targets = ['queryData', 'querySamples', 'queryTraits']
-
-  function fromResult(toolName: string, toolResult: any) {
-    if (
-      targets.includes(toolName)
-      && Array.isArray(toolResult?.data)
-      && typeof toolResult?.totalCount === 'number'
-      && typeof toolResult?.filterUrl === 'string'
-    ) {
-      const entity: 'samples' | 'traits' =
-        toolResult.entity ?? (toolName === 'queryTraits' ? 'traits' : 'samples')
-      return { toolName, entity, data: toolResult.data, totalCount: toolResult.totalCount, filterUrl: toolResult.filterUrl }
-    }
-    return null
-  }
-
-  for (const tr of result.toolResults ?? []) {
-    const found = fromResult(tr.payload?.toolName ?? tr.toolName, tr.payload?.result ?? tr.result)
-    if (found) return found
-  }
-
-  for (const step of result.steps ?? []) {
-    for (const tr of step.toolResults ?? []) {
-      const found = fromResult(tr.payload?.toolName ?? tr.toolName, tr.payload?.result ?? tr.result)
-      if (found) return found
-    }
-  }
-
-  for (const msg of result.response?.messages ?? []) {
-    if (msg.role === 'tool' && Array.isArray(msg.content)) {
-      for (const part of msg.content) {
-        if (part.type === 'tool-result') {
-          const found = fromResult(part.toolName, part.result)
-          if (found) return found
-        }
-      }
-    }
-  }
-
-  for (const msg of result.response?.messages ?? []) {
-    for (const part of msg?.content?.parts ?? []) {
-      if (part?.type === 'tool-invocation' && part.toolInvocation?.state === 'result') {
-        const found = fromResult(part.toolInvocation.toolName, part.toolInvocation.result)
-        if (found) return found
-      }
-    }
-  }
-
-  return null
 }
 
 app.post('/chat', async (req, res) => {
@@ -137,6 +32,10 @@ app.post('/chat', async (req, res) => {
     if (intent === 'create') {
       const result = await createAgent.generate(contextualMessage)
       const toolResult = findCreateToolResult(result)
+      if (!toolResult) {
+        console.warn('[create] findCreateToolResult returned null — result keys:', Object.keys(result),
+          '| steps:', result.steps?.length, '| toolResults:', result.toolResults?.length)
+      }
       const summary = typeof result.text === 'string' ? result.text.trim() : ''
 
       const blocks: any[] = [
