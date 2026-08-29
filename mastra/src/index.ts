@@ -35,7 +35,10 @@ app.post('/chat', async (req, res) => {
   try {
     // One agent owns both tool sets and decides query vs create. The response
     // block is built from whichever tool actually ran, never from the model text.
-    const result = await evonestAgent.generate(contextualMessage)
+    // Memory is keyed by threadId (per browser session) and scoped to the database.
+    const result = await evonestAgent.generate(contextualMessage, {
+      memory: { thread: threadId, resource: dbName },
+    })
     const summary = typeof result.text === 'string' ? result.text.trim() : ''
 
     const created = findCreateToolResult(result)
