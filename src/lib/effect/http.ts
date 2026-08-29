@@ -8,29 +8,29 @@ import { Auth, AuthLive } from "./auth";
 const AppLive = Layer.provideMerge(AuthLive, MongoLive);
 
 interface ErrorBody {
-  readonly error: {
-    readonly code: string;
-    readonly message: string;
-    readonly issues?: ReadonlyArray<{ readonly path: string; readonly message: string }>;
-  };
+  /** Human-readable message. Flat, so existing `result.error` reads keep working. */
+  readonly error: string;
+  /** Stable machine code: `validation_error`, `unauthorized`, ... */
+  readonly code: string;
+  readonly issues?: ReadonlyArray<{ readonly path: string; readonly message: string }>;
 }
 
 const json = (body: ErrorBody, status: number) => NextResponse.json(body, { status });
 
-const INTERNAL: ErrorBody = { error: { code: "internal_error", message: "Internal server error" } };
+const INTERNAL: ErrorBody = { error: "Internal server error", code: "internal_error" };
 
 function errorResponse(error: ApiError): NextResponse {
   switch (error._tag) {
     case "ValidationError":
-      return json({ error: { code: "validation_error", message: error.message, issues: error.issues } }, 400);
+      return json({ error: error.message, code: "validation_error", issues: error.issues }, 400);
     case "UnauthorizedError":
-      return json({ error: { code: "unauthorized", message: error.message ?? "Unauthorized" } }, 401);
+      return json({ error: error.message ?? "Unauthorized", code: "unauthorized" }, 401);
     case "ForbiddenError":
-      return json({ error: { code: "forbidden", message: error.message ?? "Forbidden" } }, 403);
+      return json({ error: error.message ?? "Forbidden", code: "forbidden" }, 403);
     case "NotFoundError":
-      return json({ error: { code: "not_found", message: `${error.resource} not found` } }, 404);
+      return json({ error: `${error.resource} not found`, code: "not_found" }, 404);
     case "ConflictError":
-      return json({ error: { code: "conflict", message: error.message } }, 409);
+      return json({ error: error.message, code: "conflict" }, 409);
     case "InternalError":
       console.error("[api] internal error:", error.cause ?? error.message);
       return json(INTERNAL, 500);
@@ -41,9 +41,9 @@ function errorResponse(error: ApiError): NextResponse {
  * Run a route Effect and turn its outcome into a Response.
  *
  * A success value is returned as-is. A tagged {@link ApiError} is mapped to the
- * matching HTTP status and a `{ error: { code, message } }` body. Any defect
- * (a throw that was never modelled) is logged and returned as a bare 500, so
- * internals never reach the client.
+ * matching HTTP status and a `{ error, code }` body. Any defect (a throw that
+ * was never modelled) is logged and returned as a bare 500, so internals never
+ * reach the client.
  */
 export async function runRoute(
   effect: Effect.Effect<NextResponse, ApiError, Mongo | Auth>,

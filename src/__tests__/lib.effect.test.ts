@@ -43,7 +43,7 @@ describe("runRoute", () => {
     const res = await runRoute(Effect.fail(error).pipe(Effect.provide(noMongo)) as any);
     expect(res.status).toBe(status);
     const body = await res.json();
-    expect(body.error.code).toBe(code);
+    expect(body.code).toBe(code);
   });
 
   test("a defect becomes a bare 500 without leaking the message", async () => {
@@ -133,6 +133,6 @@ describe("Auth test layers", () => {
     const res = await runRoute(adminOnly.pipe(Effect.provide(testAuth({ sub: "u1", role: "user" }))));
     expect(res.status).toBe(403);
     const body = await res.json();
-    expect(body.error.code).toBe("forbidden");
+    expect(body.code).toBe("forbidden");
   });
 });

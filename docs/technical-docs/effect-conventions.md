@@ -34,7 +34,7 @@ Effect.fail(new ValidationError({ message: "measurement must be positive" }))
 | ConflictError | 409 | `conflict` |
 | InternalError / defect | 500 | `internal_error` |
 
-Error body shape: `{ "error": { "code": "...", "message": "...", "issues"?: [...] } }`.
+Error body shape: `{ "error": "message", "code": "not_found", "issues"?: [...] }`. `error` is kept flat so existing `result.error` reads on the client keep working; `code` is the stable machine-readable value.
 
 ### The auth service (`auth.ts`)
 
