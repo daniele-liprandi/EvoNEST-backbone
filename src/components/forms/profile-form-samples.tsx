@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "@radix-ui/react-icons";
+import { CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 
 import { ComboFormBox } from "@/components/forms/combo-form-box";
@@ -27,6 +27,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import {
   Popover,
   PopoverContent,
@@ -321,11 +323,7 @@ export function ProfileFormSamples({
         throw new Error("Network response was not ok");
       }
 
-      toast.success("Submitted!", {
-        description: (
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        ),
-      });
+      toast.success("Sample saved");
 
       mutate(`${prepend_path}/api/samples`);
     } catch (error) {
@@ -666,7 +664,7 @@ export function ProfileFormSamples({
               ? "details"
               : "general"
           }
-          className="w-auto"
+          className="w-full"
         >
           <TabsList>
             <TabsTrigger value="general">General</TabsTrigger>
@@ -697,19 +695,7 @@ export function ProfileFormSamples({
                 <FormItem>
                   <FormLabel>Optional notes</FormLabel>
                   <FormControl>
-                    <textarea
-                      {...field}
-                      placeholder=" "
-                      rows={3}
-                      style={{
-                        width: "100%",
-                        resize: "vertical",
-                        minHeight: "60px",
-                        padding: "8px 8px 8px 8px", // Top, Right, Bottom, Left padding
-                        boxSizing: "border-box",
-                        border: "1px solid #ccc",
-                      }}
-                    />
+                    <Textarea {...field} rows={3} />
                   </FormControl>
                 </FormItem>
               )}
@@ -738,10 +724,11 @@ export function ProfileFormSamples({
                     <Input
                       placeholder="City, State"
                       {...field}
-                      className="w-5/6"
+                     
                       onBlur={async () => {
                         if (!form.getValues().location) return;
-                        var coord = await fetchCoordinates(form.getValues());
+                        const coord = await fetchCoordinates(form.getValues());
+                        if (!coord) return;
                         form.setValue("lat", parseFloat(coord.lat));
                         form.setValue("lon", parseFloat(coord.lon));
                       }}
@@ -753,7 +740,7 @@ export function ProfileFormSamples({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 space-y-1">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="lat"
@@ -761,7 +748,7 @@ export function ProfileFormSamples({
                   <FormItem>
                     <FormLabel>Latitude</FormLabel>
                     <FormControl>
-                      <Input placeholder="0.0" {...field} className="w-5/6" />
+                      <Input placeholder="0.0" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -773,7 +760,7 @@ export function ProfileFormSamples({
                   <FormItem>
                     <FormLabel>Longitude</FormLabel>
                     <FormControl>
-                      <Input placeholder="0.0" {...field} className="w-5/6" />
+                      <Input placeholder="0.0" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -781,7 +768,7 @@ export function ProfileFormSamples({
               <Button
                 key="current_loc"
                 type="button"
-                className="w-2/3"
+                className="w-full"
                 onClick={checkNavigator}
               >
                 Current location
@@ -789,7 +776,7 @@ export function ProfileFormSamples({
               <Button
                 key="lab_loc"
                 type="button"
-                className="w-2/3"
+                className="w-full"
                 onClick={useLabLocation}
               >
                 Lab location
@@ -809,7 +796,7 @@ export function ProfileFormSamples({
                           variant={"outline"}
                           type="button"
                           className={cn(
-                            "w-[240px] pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -818,7 +805,7 @@ export function ProfileFormSamples({
                           ) : (
                             <span>Pick a date</span>
                           )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          <CalendarDays className="ml-auto size-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -961,7 +948,7 @@ export function ProfileFormSamples({
                 control={form.control}
                 name="subsampletype"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col w-4/6">
+                  <FormItem className="flex flex-1 flex-col">
                     <FormLabel>Subsample type</FormLabel>
                     <FormControl>
                       <Input type="text" {...field} />
@@ -974,7 +961,7 @@ export function ProfileFormSamples({
                 control={form.control}
                 name="includeSubsampleShortened"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 w-1/6">
+                  <FormItem className="flex shrink-0 flex-row items-center gap-2">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -994,14 +981,14 @@ export function ProfileFormSamples({
                         }}
                       />
                     </FormControl>
-                    <FormDescription className="text-sm mb-2 pb-2">
+                    <FormDescription>
                       In ID
                     </FormDescription>
                   </FormItem>
                 )}
               />
             </div>
-            <div className="grid grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="box"
@@ -1009,7 +996,7 @@ export function ProfileFormSamples({
                   <FormItem>
                     <FormLabel>Box</FormLabel>
                     <FormControl>
-                      <Input placeholder="Box" {...field} className="w-1/2" />
+                      <Input placeholder="Box" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -1021,7 +1008,7 @@ export function ProfileFormSamples({
                   <FormItem>
                     <FormLabel>Slot</FormLabel>
                     <FormControl>
-                      <Input placeholder="Slot" {...field} className="w-1/2" />
+                      <Input placeholder="Slot" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -1036,7 +1023,7 @@ export function ProfileFormSamples({
                 <FormItem>
                   <FormLabel>Fibre type</FormLabel>
                   <FormControl>
-                    <Input type="text" className="w-5/6" {...field} />
+                    <Input type="text" {...field} />
                   </FormControl>
                   <FormDescription>Type of artificial fibre</FormDescription>
                 </FormItem>
@@ -1048,19 +1035,14 @@ export function ProfileFormSamples({
           control={form.control}
           name="name"
           render={({ field }) => (
-            <div>
-              {/* Horizontal black line */}
-              <hr style={{ border: "1px solid black", margin: "10px 0" }} />
-
-              {/* Form field */}
+            <div className="space-y-4">
+              <Separator />
               <FormItem>
-                <FormLabel>Sample Name/ID</FormLabel>
+                <FormLabel>Sample name / ID</FormLabel>
                 <FormControl>
-                  <Input type="text" className="w-5/6" {...field} />
+                  <Input type="text" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Unique identifier for the sample
-                </FormDescription>
+                <FormDescription>Unique identifier for the sample</FormDescription>
               </FormItem>
             </div>
           )}
