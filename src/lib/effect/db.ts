@@ -50,6 +50,7 @@ export class Mongo extends Context.Tag("Mongo")<
       name: string,
       filter: Filter<Document>,
       update: UpdateFilter<Document> | Partial<Document>,
+      options?: { readonly arrayFilters?: Document[]; readonly upsert?: boolean },
     ) => Effect.Effect<UpdateResult, InternalError>;
 
     readonly deleteOne: (
@@ -107,9 +108,9 @@ export const makeMongo = (
         return cursor.toArray();
       }),
     insertOne: (dbName, name, doc) => op(dbName, name, `${name}.insertOne`, (c) => c.insertOne(doc)),
-    updateOne: (dbName, name, filter, update) =>
+    updateOne: (dbName, name, filter, update, options) =>
       op(dbName, name, `${name}.updateOne`, (c) =>
-        c.updateOne(filter, update as UpdateFilter<Document>),
+        c.updateOne(filter, update as UpdateFilter<Document>, options),
       ),
     deleteOne: (dbName, name, filter) =>
       op(dbName, name, `${name}.deleteOne`, (c) => c.deleteOne(filter)),

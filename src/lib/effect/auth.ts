@@ -50,6 +50,17 @@ export const currentDatabase = Effect.flatMap(Auth, (a) => a.databaseName);
 /** Require the current user to hold `role`, else `ForbiddenError`. */
 export const requireRole = (role: string) => Effect.flatMap(Auth, (a) => a.requireRole(role));
 
+/**
+ * Allow the request through if it carries the mastra service key, otherwise
+ * require a session. For routes the middleware does not protect that the
+ * service and the browser both call.
+ */
+export const sessionOrService = (request: Request) => {
+  const secret = process.env.MASTRA_SERVICE_SECRET;
+  if (secret && request.headers.get("x-service-key") === secret) return Effect.void;
+  return Effect.asVoid(currentSession);
+};
+
 const loadSession: Effect.Effect<SessionUser, UnauthorizedError> = attempt(
   () => getServerSession(authOptions),
   "getServerSession",
