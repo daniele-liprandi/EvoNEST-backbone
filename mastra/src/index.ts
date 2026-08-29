@@ -1,7 +1,7 @@
 import express from 'express'
 import { evonestAgent } from './agent.js'
 import { createAgent } from './agents/createAgent.js'
-import { findCreateToolResult, findQueryToolResult } from './lib/toolResults.js'
+import { findCreateToolResult, findQueryToolResult, findTreemapToolResult } from './lib/toolResults.js'
 
 const app = express()
 app.use(express.json())
@@ -62,6 +62,27 @@ app.post('/chat', async (req, res) => {
     // Query path: model writes a plain-text summary; table is built server-side from real tool output
     const result = await evonestAgent.generate(contextualMessage)
     const summary = typeof result.text === 'string' ? result.text.trim() : ''
+
+    const treemap = findTreemapToolResult(result)
+    if (treemap) {
+      return res.json({
+        blocks: [
+          { type: 'text', content: summary || treemap.title },
+          {
+            type: 'chart',
+            chartType: 'treemap',
+            title: treemap.title,
+            data: treemap.ids.map((id, i) => ({
+              id,
+              label: treemap.labels[i],
+              parent: treemap.parents[i],
+              value: treemap.values[i],
+            })),
+            config: { branchvalues: 'total' },
+          },
+        ],
+      })
+    }
 
     const queryToolResult = findQueryToolResult(result)
     if (!queryToolResult) {
