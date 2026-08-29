@@ -6,6 +6,7 @@ import type {
   Document,
   Filter,
   InsertOneResult,
+  MongoClient,
   OptionalUnlessRequiredId,
   UpdateFilter,
   UpdateResult,
@@ -59,37 +60,42 @@ export class Mongo extends Context.Tag("Mongo")<
   }
 >() {}
 
-const connect = () =>
-  Effect.tryPromise({
-    try: async () => {
-      const client = await get_or_create_client();
-      if (!client) throw new Error("database client is not connected");
-      return client;
-    },
-    catch: (cause) => new InternalError({ message: "database connection failed", cause }),
-  });
+/**
+ * Build a `Mongo` service from a client factory. The live layer uses the app's
+ * pooled client; integration tests pass a client bound to an in-memory server.
+ */
+export const makeMongo = (
+  getClient: () => Promise<MongoClient | null>,
+): Context.Tag.Service<Mongo> => {
+  const connect = () =>
+    Effect.tryPromise({
+      try: async () => {
+        const client = await getClient();
+        if (!client) throw new Error("database client is not connected");
+        return client;
+      },
+      catch: (cause) => new InternalError({ message: "database connection failed", cause }),
+    });
 
-const getCollection = (dbName: string, name: string) =>
-  connect().pipe(Effect.map((client) => client.db(dbName).collection(name)));
+  const getCollection = (dbName: string, name: string) =>
+    connect().pipe(Effect.map((client) => client.db(dbName).collection(name)));
 
-const op = <A>(
-  dbName: string,
-  name: string,
-  label: string,
-  run: (collection: Coll) => Promise<A>,
-): Effect.Effect<A, InternalError> =>
-  getCollection(dbName, name).pipe(
-    Effect.flatMap((collection) =>
-      Effect.tryPromise({
-        try: () => run(collection),
-        catch: (cause) => new InternalError({ message: `database operation failed: ${label}`, cause }),
-      }),
-    ),
-  );
+  const op = <A>(
+    dbName: string,
+    name: string,
+    label: string,
+    run: (collection: Coll) => Promise<A>,
+  ): Effect.Effect<A, InternalError> =>
+    getCollection(dbName, name).pipe(
+      Effect.flatMap((collection) =>
+        Effect.tryPromise({
+          try: () => run(collection),
+          catch: (cause) => new InternalError({ message: `database operation failed: ${label}`, cause }),
+        }),
+      ),
+    );
 
-export const MongoLive = Layer.succeed(
-  Mongo,
-  Mongo.of({
+  return Mongo.of({
     db: (name) => connect().pipe(Effect.map((client) => client.db(name))),
     collection: (dbName, name) => getCollection(dbName, name),
     findOne: (dbName, name, filter) => op(dbName, name, `${name}.findOne`, (c) => c.findOne(filter)),
@@ -107,8 +113,14 @@ export const MongoLive = Layer.succeed(
       ),
     deleteOne: (dbName, name, filter) =>
       op(dbName, name, `${name}.deleteOne`, (c) => c.deleteOne(filter)),
-  }),
-);
+  });
+};
+
+export const MongoLive = Layer.succeed(Mongo, makeMongo(get_or_create_client));
+
+/** A `Mongo` layer backed by an already-connected client (integration tests). */
+export const mongoLayer = (client: MongoClient) =>
+  Layer.succeed(Mongo, makeMongo(() => Promise.resolve(client)));
 
 /** Wrap a driver call, turning a rejection into an {@link InternalError}. */
 export const attempt = <A>(fn: () => Promise<A>, context: string): Effect.Effect<A, InternalError> =>
