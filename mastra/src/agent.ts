@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent'
 import { model } from './llm.js'
+import { memory } from './memory.js'
 import { queryData } from './tools/queryData.js'
 import { createSamples } from './tools/createSamples.js'
 import { createTraits } from './tools/createTraits.js'
@@ -35,6 +36,7 @@ export const evonestAgent = new Agent({
   name: 'evonestAgent',
   instructions: SYSTEM_PROMPT,
   model,
+  memory,
   tools: {
     queryData,
     createSamples,
