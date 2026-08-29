@@ -2,6 +2,7 @@ import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
 import { getDb } from '../db/client.js'
 import { serviceAuthHeader } from '../lib/serviceHeaders.js'
+import { buildFilterUrl, buildMongoFilter, sanitizeFilterParams } from '../lib/filters.js'
 
 const baseUrl = process.env.NEXTJS_BASE_URL ?? 'http://node:3000'
 
@@ -48,37 +49,6 @@ async function getFilterParams(query: string, columns: string[]): Promise<Record
   return params
 }
 
-function buildMongoFilter(params: Record<string, string>): Record<string, any> {
-  const mongo: Record<string, any> = {}
-  for (const [key, value] of Object.entries(params)) {
-    if (!value) continue
-    if (key.endsWith('_gte')) {
-      const field = key.slice(0, -4)
-      mongo[field] = { ...mongo[field], $gte: new Date(value) }
-    } else if (key.endsWith('_lte')) {
-      const field = key.slice(0, -4)
-      mongo[field] = { ...mongo[field], $lte: new Date(value) }
-    } else if (value.includes('*')) {
-      const pattern = '^' + value
-        .split('*')
-        .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
-        .join('.*') + '$'
-      mongo[key] = { $regex: new RegExp(pattern, 'i') }
-    } else if (value.includes(',')) {
-      mongo[key] = { $in: value.split(',').map((v) => v.trim()).filter(Boolean) }
-    } else {
-      mongo[key] = value
-    }
-  }
-  return mongo
-}
-
-function buildFilterUrl(entity: 'samples' | 'traits', params: Record<string, string>): string {
-  const path = entity === 'samples' ? '/samples/general' : '/traits'
-  const qs = new URLSearchParams(params).toString()
-  return qs ? `${path}?${qs}` : path
-}
-
 export const queryData = createTool({
   id: 'queryData',
   description: 'Find samples or traits matching a natural-language description. Converts the description to deterministic filter params, then queries the database. Use for any data lookup.',
@@ -101,7 +71,11 @@ export const queryData = createTool({
     const columns = await liveColumns(dbName, collectionName)
     console.log(`[queryData] columns (${columns.length}):`, columns.join(', '))
 
-    const params = await getFilterParams(query, columns)
+    const rawParams = await getFilterParams(query, columns)
+    const { params, rejected } = sanitizeFilterParams(rawParams, columns)
+    if (rejected.length) {
+      console.warn('[queryData] rejected filter keys:', rejected.join(', '))
+    }
     console.log('[queryData] params:', JSON.stringify(params))
 
     const db = await getDb(dbName)
