@@ -169,7 +169,7 @@ export default function Home() {
             <p className="font-mono text-[11px] uppercase tracking-[.08em] text-muted-foreground">
               {greeting()}, {firstName}
             </p>
-            <h1 className="font-[var(--font-fira_sans,sans-serif)] text-3xl md:text-4xl font-bold tracking-tight leading-tight text-balance m-0">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight text-balance m-0">
               What do you want to explore in the NEST?
             </h1>
             <div className="w-full">
