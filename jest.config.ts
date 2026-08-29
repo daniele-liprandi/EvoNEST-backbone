@@ -12,13 +12,17 @@ const config: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
   testMatch: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
+  // Never pick up compiled output (e.g. mastra/dist) or vendored deps.
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.next/'],
   verbose: true,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // The mongodb driver's ESM bson build breaks under jest's CJS runtime;
+    // force the CommonJS entry.
+    '^bson$': '<rootDir>/node_modules/bson/lib/bson.cjs',
   },
   testTimeout: 10000,
-  // Add more setup options before each test is run
-  // setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  setupFiles: ['<rootDir>/jest.setup.ts'],
 }
 
 export default createJestConfig(config)
