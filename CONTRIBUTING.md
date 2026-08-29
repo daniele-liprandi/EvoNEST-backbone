@@ -184,8 +184,8 @@ docs: update installation guide with troubleshooting steps
 
 ### JavaScript/TypeScript
 
-- Use ES6+ features
-- Follow existing code style in the project
+- New server code is TypeScript, not JavaScript
+- Server-side async, error handling, and validation use [Effect](https://effect.website); see the API routes section and `docs/technical-docs/effect-conventions.md`
 - Use meaningful variable and function names
 - Add JSDoc comments for functions and components
 - Avoid deeply nested code - prefer early returns
@@ -215,37 +215,39 @@ src/
 
 ### Database operations
 
-- Always use `get_database_user()` to get the user's active database
-- Handle MongoDB ObjectIds as strings in most contexts
+- Get the active database from the `Auth` service (`auth.databaseName`), not `get_database_user()` directly
+- Foreign keys are stored as `ObjectId`; decode incoming id strings with the `ObjectIdFromHex` schema
 - Include `logbook` entries for data modifications
 - Update `recentChangeDate` when modifying documents
 
 ### API routes
 
-Follow this pattern for API routes:
+New and migrated routes use [Effect](https://effect.website). Full contract in
+[`docs/technical-docs/effect-conventions.md`](docs/technical-docs/effect-conventions.md).
+The short version:
 
-```javascript
-import { get_database_user } from "@/app/api/utils/get_database_user";
-import { get_or_create_client } from "@/app/api/utils/mongodbClient";
+```typescript
+import { Effect, Schema } from "effect";
+import { runRoute, ok, decodeBody, Auth, Mongo, requireFound, ObjectIdFromHex } from "@/lib/effect";
 
-export async function GET(request) {
-    try {
-        const dbName = await get_database_user();
-        const client = await get_or_create_client();
-        const collection = client.db(dbName).collection("samples");
+const Body = Schema.Struct({ id: ObjectIdFromHex });
 
-        // Your logic here
+export const getSample = (request: Request) =>
+  Effect.gen(function* () {
+    const { id } = yield* decodeBody(Body)(request);
+    const dbName = yield* Effect.flatMap(Auth, (a) => a.databaseName);
+    const doc = yield* Effect.flatMap(Mongo, (m) => m.findOne(dbName, "samples", { _id: id }));
+    return yield* ok(yield* requireFound("Sample")(doc));
+  });
 
-        return Response.json({ success: true, data: result });
-    } catch (error) {
-        console.error("Error:", error);
-        return Response.json(
-            { success: false, error: error.message },
-            { status: 500 }
-        );
-    }
-}
+export const POST = (request: Request) => runRoute(getSample(request));
 ```
+
+- No `try/catch`, no manual status codes. Failures are typed `Effect.fail(new NotFoundError(...))` etc.; `runRoute` maps them to HTTP.
+- Never build a route schema with zod. `effect/Schema` only.
+- Export the handler Effect so tests can drive it with `testMongo` / `testAuth` layers.
+
+Legacy `.js` routes still use the old `try/catch` pattern; migrate a whole file when you touch it, and open it against the Effect epic (#78).
 
 ## Testing
 
@@ -268,34 +270,24 @@ npx jest src/path/to/test.test.js
 ### Writing tests
 
 - Write tests for new features and bug fixes
-- Use `mongodb-memory-server` for database testing
 - Test both success and error cases
 - Use descriptive test names
+- API route tests run the exported handler Effect with stub layers; no database server needed
+- `mongodb-memory-server` is still used for migration tests
 
-Example test structure:
+Example route test:
 
-```javascript
-const { MongoMemoryServer } = require('mongodb-memory-server');
-const { MongoClient } = require('mongodb');
+```typescript
+/** @jest-environment node */
+import { Effect, Layer } from "effect";
+import { runRoute, testMongo, testAuth } from "@/lib/effect";
+import { getSample } from "@/app/api/sample/route";
 
-describe('Feature Name', () => {
-    let mongoServer, client, db;
-
-    beforeAll(async () => {
-        mongoServer = await MongoMemoryServer.create();
-        const uri = mongoServer.getUri();
-        client = await MongoClient.connect(uri);
-        db = client.db('test');
-    });
-
-    afterAll(async () => {
-        await client.close();
-        await mongoServer.stop();
-    });
-
-    it('should perform expected behavior', async () => {
-        // Test implementation
-    });
+test("404 when the sample is missing", async () => {
+  const mongo = testMongo({ findOne: () => Effect.succeed(null) });
+  const req = new Request("http://x", { method: "POST", body: JSON.stringify({ id: "507f1f77bcf86cd799439011" }) });
+  const res = await runRoute(getSample(req).pipe(Effect.provide(Layer.merge(mongo, testAuth({ sub: "u1" })))));
+  expect(res.status).toBe(404);
 });
 ```
 
