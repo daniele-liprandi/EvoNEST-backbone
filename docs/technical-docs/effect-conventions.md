@@ -36,36 +36,31 @@ Effect.fail(new ValidationError({ message: "measurement must be positive" }))
 
 Error body shape: `{ "error": "message", "code": "not_found", "issues"?: [...] }`. `error` is kept flat so existing `result.error` reads on the client keep working; `code` is the stable machine-readable value.
 
-### The auth service (`auth.ts`)
+### Auth (`auth.ts`)
 
-Depend on `Auth`, not on `getServerSession` / `get_database_user` / `check_user_role`. `runRoute` supplies it.
-
-```ts
-Effect.gen(function* () {
-  const auth = yield* Auth
-  const dbName = yield* auth.databaseName      // 401 if no session
-  const user = yield* auth.requireRole("admin") // 401 or 403
-})
-```
-
-`session`, `currentUser`, `databaseName`, `requireRole(role)`. Tests use `testAuth({ sub, role, activeDatabase })` or `testNoAuth`.
-
-### The database service (`db.ts`)
-
-Depend on `Mongo`, not on `get_or_create_client`. `runRoute` supplies `MongoLive`.
+Never call `getServerSession` / `get_database_user` / `check_user_role`. Use these accessors; `runRoute` supplies the service.
 
 ```ts
-Effect.gen(function* () {
-  const mongo = yield* Mongo
-  const doc = yield* mongo.findOne(dbName, "traits", { _id: id })
-  yield* requireFound("Trait", id.toHexString())(doc)
-  yield* mongo.updateOne(dbName, "traits", { _id: id }, { $set: { note } })
-})
+const dbName = yield* currentDatabase       // 401 if no session
+const user = yield* currentUser             // the user record
+yield* requireRole("admin")                 // 401 or 403
 ```
 
-- `findOne`, `find`, `insertOne`, `updateOne`, `deleteOne` each run the driver call and turn a rejection into `InternalError`. Use these rather than the raw `collection`.
-- `collection(dbName, name)` is the escape hatch for operations the service does not wrap; pair it with `attempt(fn, label)`.
-- `requireFound(resource, id)` turns a `null` lookup into `NotFoundError`.
+Also `currentSession`. Tests use `testAuth({ sub, role, activeDatabase })` or `testNoAuth`.
+
+### Database (`db.ts`)
+
+Never call `get_or_create_client`. `const mongo = yield* Mongo`, then:
+
+```ts
+const doc = yield* mongo.findOne(dbName, "traits", { _id: id })
+yield* mongo.updateOne(dbName, "traits", { _id: id }, { $set: { note } })
+```
+
+- `findOne`, `find`, `insertOne`, `updateOne`, `deleteOne` run the driver call and map a rejection to `InternalError`.
+- `collection(dbName, name)` is the escape hatch (aggregation, `insertMany`, projections); pair it with `attempt(fn, label)`.
+- `requireFound(resource, id)` turns a `null` into `NotFoundError`.
+- `sampleChain(dbName, id)` (in `api/utils/sampleChain`) walks a sample's parent chain — use it, don't reimplement it.
 
 ### Validation (`schema.ts`, `request.ts`)
 
@@ -73,35 +68,53 @@ Effect.gen(function* () {
 
 > Schema library: `effect/Schema` everywhere. zod is being removed, including the mastra tool schemas (wrapped with `Schema.standardSchemaV1`). New code must not add zod.
 
-## Writing a route
+## The route template
+
+Every route file follows the same shape. Deviating from it is a review comment.
 
 ```ts
 // src/app/api/traits/route.ts
 import { Effect, Schema } from "effect"
-import { NextResponse } from "next/server"
-import { runRoute, ok, decodeBody, ObjectIdFromHex, Auth, Mongo, attempt, requireFound } from "@/lib/effect"
+import { ObjectId } from "mongodb"
+import { runRoute, ok, decodeBody, currentDatabase, Mongo, requireFound, ObjectIdFromHex } from "@/lib/effect"
+
+/**
+ * @swagger
+ * /api/traits: { ... minimal, accurate annotation ... }
+ */
 
 const DeleteBody = Schema.Struct({ id: ObjectIdFromHex })
 
-export function DELETE(request: Request) {
-  return runRoute(
-    Effect.gen(function* () {
-      const { id } = yield* decodeBody(DeleteBody)(request)
-      const auth = yield* Auth
-      const dbName = yield* auth.databaseName
-      const mongo = yield* Mongo
-      const traits = yield* mongo.collection(dbName, "traits")
+export const deleteTrait = (request: Request) =>
+  Effect.gen(function* () {
+    const dbName = yield* currentDatabase
+    const { id } = yield* decodeBody(DeleteBody)(request)
+    const mongo = yield* Mongo
 
-      const result = yield* attempt(() => traits.deleteOne({ _id: id }), "traits.deleteOne")
-      yield* requireFound("Trait", id.toHexString())(result.deletedCount > 0 ? result : null)
+    const result = yield* mongo.deleteOne(dbName, "traits", { _id: id })
+    yield* requireFound("Trait")(result.deletedCount > 0 ? result : null)
+    return yield* ok({ message: "Trait deleted" })
+  })
 
-      return yield* ok({ message: "Trait deleted" })
-    }),
-  )
-}
+export const DELETE = (request: Request) => runRoute(deleteTrait(request))
 ```
 
-The handler never touches a status code or a try/catch. Every failure path is a typed `Effect.fail`.
+Rules:
+
+- **One `Effect.gen` per operation**, `export`ed, named `<verb><Noun>` (`listTraits`, `createTrait`, `deleteTrait`). A method-dispatch POST is `handle<Noun>Post` calling those.
+- **Body inside the generator, in this order**: auth (`currentDatabase` / `currentUser` / `requireRole`), then input (`decodeBody` / `decodeSearchParams` / `new URL(request.url)`), then `const mongo = yield* Mongo`, then the work, then `return yield* ok(...)`.
+- Never `yield* Effect.flatMap(Auth, ...)` or `yield* Effect.flatMap(Mongo, ...)` inline — bind the service to a `const` first, or use an accessor.
+- The `GET` / `POST` / `DELETE` exports are one line: `runRoute(theEffect)`.
+- No `try/catch`, no status codes, no `NextResponse` except a genuine non-JSON body (file download). Every failure is a typed `Effect.fail(new NotFoundError(...))`.
+
+## Comments
+
+The code is the documentation. Do not write comments that restate it.
+
+- No section-divider banners (`// ─── GET ───`).
+- No "// fetch the user", "// validate the body" narration.
+- A comment earns its place only for a non-obvious *why* (a workaround, a spec quirk, an ordering constraint), and then it is one line.
+- Keep the `@swagger` annotation, but only the fields that are true and useful — it generates `openapi-spec.json`.
 
 ## Testing
 

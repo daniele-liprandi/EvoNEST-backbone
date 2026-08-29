@@ -38,6 +38,18 @@ export class Auth extends Context.Tag("Auth")<
   }
 >() {}
 
+/** The session for the current request. Fails with `UnauthorizedError`. */
+export const currentSession = Effect.flatMap(Auth, (a) => a.session);
+
+/** The current user's record. */
+export const currentUser = Effect.flatMap(Auth, (a) => a.currentUser);
+
+/** The current user's active database name. */
+export const currentDatabase = Effect.flatMap(Auth, (a) => a.databaseName);
+
+/** Require the current user to hold `role`, else `ForbiddenError`. */
+export const requireRole = (role: string) => Effect.flatMap(Auth, (a) => a.requireRole(role));
+
 const loadSession: Effect.Effect<SessionUser, UnauthorizedError> = attempt(
   () => getServerSession(authOptions),
   "getServerSession",
