@@ -1,397 +1,344 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useUserData } from '@/hooks/useUserData';
-import { prepend_path } from '@/lib/utils';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
-import UserAuthenticationControl from '@/components/nest/authui/UserAuthenticationControl';
-import Link from 'next/link';
-import { Copy, Eye, EyeOff, Trash2, Plus, Key } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Link from "next/link";
+import { Copy, Eye, EyeOff, Trash2, Plus, Key } from "lucide-react";
+import { toast } from "sonner";
+
+import { prepend_path } from "@/lib/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useApiKeys, type ApiKey } from "@/hooks/useApiKeys";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { toast } from 'sonner';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import UserAuthenticationControl from "@/components/nest/authui/UserAuthenticationControl";
 
-interface ApiKey {
-    id: string;
-    name: string;
-    keyPreview: string;
-    isActive: boolean;
-    createdAt: string;
-    expiresAt: string | null;
-    lastUsedAt: string | null;
-    usageCount: number;
-    databases: string[];
+const profileSchema = z.object({
+  email: z.string().email("Enter a valid email address"),
+});
+
+const newKeySchema = z.object({
+  name: z.string().trim().max(80).optional(),
+  expiresInDays: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : Number(v)),
+    z.number().int().positive().max(3650).optional()
+  ),
+});
+
+function ProfileCard() {
+  const { currentUser } = useCurrentUser();
+  const form = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    values: { email: currentUser?.email ?? "" },
+  });
+
+  const onSubmit = form.handleSubmit(async ({ email }) => {
+    try {
+      const res = await fetch(`${prepend_path}/api/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method: "setfield", field: "email", value: email }),
+      });
+      if (!res.ok) throw new Error("request failed");
+      toast.success("Profile updated");
+    } catch {
+      toast.error("Could not update the profile");
+    }
+  });
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>My profile</CardTitle>
+        <CardDescription>The email address linked to your NEST account.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" autoComplete="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex items-center justify-end gap-2">
+              <Button type="button" variant="outline" asChild>
+                <Link href="/api/auth/signout">Log out</Link>
+              </Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+        <UserAuthenticationControl />
+      </CardContent>
+    </Card>
+  );
 }
 
-const UserPage: React.FC = () => {
-    const [email, setEmail] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(true);
-    const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-    const [newKeyName, setNewKeyName] = useState<string>('');
-    const [newKeyExpiry, setNewKeyExpiry] = useState<string>('365');
-    const [generatedKey, setGeneratedKey] = useState<string | null>(null);
-    const [showGeneratedKey, setShowGeneratedKey] = useState<boolean>(false);
-    const [apiKeysLoading, setApiKeysLoading] = useState<boolean>(false);
-    const [pendingRevokeKeyId, setPendingRevokeKeyId] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch(`${prepend_path}/api/user`);
-                const data = await response.json();
-                if (data.email) {
-                    setEmail(data.email);
-                }
-            } catch (err) {
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUserData();
-        fetchApiKeys();
-        const interval = setInterval(fetchUserData, 300000); // 5 minutes
-
-        return () => clearInterval(interval);
-    }, [loading]);
-
-    const fetchApiKeys = async () => {
-        try {
-            const response = await fetch(`${prepend_path}/api/user/api-keys`);
-            console.log('Fetch API keys response status:', response.status);
-            if (response.ok) {
-                const data = await response.json();
-                console.log('API keys data received:', data);
-                setApiKeys(data.apiKeys || []);
-            } else {
-                const errorData = await response.json();
-                console.error('Failed to fetch API keys:', errorData);
-            }
-        } catch (err) {
-            console.error('Failed to fetch API keys:', err);
-        }
-    };
-
-    const generateApiKey = async () => {
-        setApiKeysLoading(true);
-        setGeneratedKey(null);
-        
-        try {
-            const response = await fetch(`${prepend_path}/api/user/api-keys`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: newKeyName || `API Key ${new Date().toLocaleDateString()}`,
-                    expiresInDays: newKeyExpiry ? parseInt(newKeyExpiry) : null,
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Generated API key response:', data);
-                setGeneratedKey(data.apiKey);
-                setShowGeneratedKey(true);
-                setNewKeyName('');
-                setNewKeyExpiry('365');
-                await fetchApiKeys();
-            } else {
-                const error = await response.json();
-                toast.error(`Failed to generate API key: ${error.error}`);
-            }
-        } catch (err) {
-            console.error('Failed to generate API key:', err);
-            toast.error('Failed to generate API key');
-        } finally {
-            setApiKeysLoading(false);
-        }
-    };
-
-    const revokeApiKey = async (keyId: string) => {
-        setApiKeysLoading(true);
-        
-        try {
-            const response = await fetch(`${prepend_path}/api/user/api-keys`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ keyId }),
-            });
-
-            if (response.ok) {
-                await fetchApiKeys();
-                toast.success('API key revoked successfully');
-            } else {
-                const error = await response.json();
-                toast.error(`Failed to revoke API key: ${error.error}`);
-            }
-        } catch (err) {
-            console.error('Failed to revoke API key:', err);
-            toast.error('Failed to revoke API key');
-        } finally {
-            setPendingRevokeKeyId(null);
-            setApiKeysLoading(false);
-        }
-    };
-
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast.success('API key copied to clipboard');
-    };
-
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${prepend_path}/api/user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ method: 'setfield', field: 'email', value: email }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update email');
-            }
-
-        } catch (err) {
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="flex min-h-screen w-full flex-col bg-muted/40">
-            <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-
-                <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                    <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
-                        {/* Logout button */}
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                asChild
-                                className="ml-auto"
-                            >
-                                <Link href={`/api/auth/signout`}>
-                                    Logout
-                                </Link>
-                            </Button>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1 lg:gap-8">
-                            <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-
-                                <Card className="w-full max-w-[600px]">
-                                    <CardHeader>
-                                        <CardTitle>My profile</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <form onSubmit={handleSubmit}>
-                                            <div className="grid w-full items-center gap-4">
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="email">Email</Label>
-                                                    <Input
-                                                        id="email"
-                                                        type="email"
-                                                        value={email}
-                                                        onChange={handleEmailChange}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </CardContent>
-                                    <CardFooter className="flex justify-between">
-                                        <Button onClick={handleSubmit} disabled={loading}>
-                                            {loading ? 'Updating...' : 'Update Email'}
-                                        </Button>
-                                    </CardFooter>
-                                    <UserAuthenticationControl />
-                                </Card>
-
-                                {/* API Keys Management */}
-                                <Card className="w-full max-w-[800px]">
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Key className="h-5 w-5" />
-                                            API Keys for Data Export
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Generate API keys to export data programmatically. Keys provide read-only access to all your databases.
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        {/* Generate New Key Section */}
-                                        <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
-                                            <h3 className="font-semibold text-sm">Generate New API Key</h3>
-                                            <div className="grid gap-4 sm:grid-cols-2">
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="keyName">Key Name</Label>
-                                                    <Input
-                                                        id="keyName"
-                                                        placeholder="e.g., Python Export Script"
-                                                        value={newKeyName}
-                                                        onChange={(e) => setNewKeyName(e.target.value)}
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col space-y-1.5">
-                                                    <Label htmlFor="keyExpiry">Expires In (days)</Label>
-                                                    <Input
-                                                        id="keyExpiry"
-                                                        type="number"
-                                                        placeholder="365"
-                                                        value={newKeyExpiry}
-                                                        onChange={(e) => setNewKeyExpiry(e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <Button 
-                                                onClick={generateApiKey} 
-                                                disabled={apiKeysLoading}
-                                                className="w-full sm:w-auto"
-                                            >
-                                                <Plus className="h-4 w-4 mr-2" />
-                                                {apiKeysLoading ? 'Generating...' : 'Generate API Key'}
-                                            </Button>
-                                        </div>
-
-                                        {/* Generated Key Display */}
-                                        {generatedKey && (
-                                            <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-                                                <AlertDescription>
-                                                    <div className="space-y-2">
-                                                        <p className="font-semibold text-sm">⚠️ Save this API key now! You won&apos;t see it again.</p>
-                                                        <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-900 rounded border">
-                                                            <code className="flex-1 text-xs break-all font-mono">
-                                                                {showGeneratedKey ? generatedKey : '••••••••••••••••••••••••••••••••'}
-                                                            </code>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => setShowGeneratedKey(!showGeneratedKey)}
-                                                            >
-                                                                {showGeneratedKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                onClick={() => copyToClipboard(generatedKey)}
-                                                            >
-                                                                <Copy className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            Use this key with: <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">Authorization: Bearer {'{key}'}</code>
-                                                        </p>
-                                                    </div>
-                                                </AlertDescription>
-                                            </Alert>
-                                        )}
-
-                                        {/* Existing Keys List */}
-                                        <div className="space-y-2">
-                                            <h3 className="font-semibold text-sm">Your API Keys ({apiKeys.filter(k => k.isActive).length} active)</h3>
-                                            {apiKeys.length === 0 ? (
-                                                <p className="text-sm text-muted-foreground">No API keys yet. Generate one above to get started.</p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {apiKeys.map((key) => (
-                                                        <div
-                                                            key={key.id}
-                                                            className={`flex items-center justify-between p-3 border rounded-lg ${
-                                                                !key.isActive ? 'opacity-50 bg-muted' : ''
-                                                            }`}
-                                                        >
-                                                            <div className="flex-1 space-y-1">
-                                                                <div className="flex items-center gap-2">
-                                                                    <p className="font-medium text-sm">{key.name}</p>
-                                                                    {!key.isActive && (
-                                                                        <span className="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">
-                                                                            Revoked
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <p className="text-xs text-muted-foreground font-mono">{key.keyPreview}</p>
-                                                                <div className="flex gap-4 text-xs text-muted-foreground">
-                                                                    <span>Created: {new Date(key.createdAt).toLocaleDateString()}</span>
-                                                                    {key.lastUsedAt && (
-                                                                        <span>Last used: {new Date(key.lastUsedAt).toLocaleDateString()}</span>
-                                                                    )}
-                                                                    <span>Uses: {key.usageCount}</span>
-                                                                    {key.expiresAt && (
-                                                                        <span>Expires: {new Date(key.expiresAt).toLocaleDateString()}</span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            {key.isActive && (
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="destructive"
-                                                                    onClick={() => setPendingRevokeKeyId(key.id)}
-                                                                    disabled={apiKeysLoading}
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                <AlertDialog open={!!pendingRevokeKeyId} onOpenChange={(open) => !open && setPendingRevokeKeyId(null)}>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Revoke API key</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure you want to revoke this API key? This action cannot be undone.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel disabled={apiKeysLoading}>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                disabled={apiKeysLoading || !pendingRevokeKeyId}
-                                                onClick={() => {
-                                                    if (pendingRevokeKeyId) {
-                                                        revokeApiKey(pendingRevokeKeyId);
-                                                    }
-                                                }}
-                                            >
-                                                {apiKeysLoading ? 'Revoking...' : 'Revoke'}
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
+function GeneratedKeyNotice({ value, onDone }: { value: string; onDone: () => void }) {
+  const [shown, setShown] = useState(false);
+  return (
+    <Alert className="border-primary/40 bg-primary/5">
+      <AlertDescription>
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-semibold">Save this key now. It is not shown again.</p>
+          <div className="flex items-center gap-2 rounded-md border bg-card p-2">
+            <code className="flex-1 break-all font-mono text-xs">
+              {shown ? value : "•".repeat(32)}
+            </code>
+            <Button size="icon-sm" variant="ghost" onClick={() => setShown((s) => !s)}>
+              {shown ? <EyeOff /> : <Eye />}
+            </Button>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              onClick={() => {
+                navigator.clipboard.writeText(value);
+                toast.success("Key copied");
+              }}
+            >
+              <Copy />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Send it as <code className="rounded bg-muted px-1">Authorization: Bearer &lt;key&gt;</code>
+          </p>
+          <Button size="sm" variant="outline" className="self-end" onClick={onDone}>
+            Done
+          </Button>
         </div>
-    );
-};
+      </AlertDescription>
+    </Alert>
+  );
+}
 
-export default UserPage;
+function KeyRow({
+  apiKey,
+  onRevoke,
+  busy,
+}: {
+  apiKey: ApiKey;
+  onRevoke: (id: string) => void;
+  busy: boolean;
+}) {
+  const meta = [
+    `Created ${new Date(apiKey.createdAt).toLocaleDateString()}`,
+    apiKey.lastUsedAt && `Last used ${new Date(apiKey.lastUsedAt).toLocaleDateString()}`,
+    `${apiKey.usageCount} uses`,
+    apiKey.expiresAt && `Expires ${new Date(apiKey.expiresAt).toLocaleDateString()}`,
+  ].filter(Boolean);
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="flex items-center gap-2">
+          <p className="truncate text-sm font-medium">{apiKey.name}</p>
+          {!apiKey.isActive && <Badge variant="outline">Revoked</Badge>}
+        </div>
+        <p className="font-mono text-xs text-muted-foreground">{apiKey.keyPreview}</p>
+        <p className="text-xs text-muted-foreground">{meta.join(" · ")}</p>
+      </div>
+      {apiKey.isActive && (
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          className="text-muted-foreground hover:text-destructive"
+          disabled={busy}
+          onClick={() => onRevoke(apiKey.id)}
+          aria-label={`Revoke ${apiKey.name}`}
+        >
+          <Trash2 />
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function ApiKeysCard() {
+  const { apiKeys, activeCount, refresh } = useApiKeys();
+  const [generated, setGenerated] = useState<string | null>(null);
+  const [pendingRevoke, setPendingRevoke] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const form = useForm<z.infer<typeof newKeySchema>>({
+    resolver: zodResolver(newKeySchema),
+    defaultValues: { name: "", expiresInDays: 365 },
+  });
+
+  const create = form.handleSubmit(async (values) => {
+    setBusy(true);
+    setGenerated(null);
+    try {
+      const res = await fetch(`${prepend_path}/api/user/api-keys`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "request failed");
+      setGenerated(data.apiKey);
+      form.reset({ name: "", expiresInDays: 365 });
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not create the key");
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  const revoke = async (id: string) => {
+    setBusy(true);
+    try {
+      const res = await fetch(`${prepend_path}/api/user/api-keys`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyId: id }),
+      });
+      if (!res.ok) throw new Error("request failed");
+      await refresh();
+      toast.success("Key revoked");
+    } catch {
+      toast.error("Could not revoke the key");
+    } finally {
+      setPendingRevoke(null);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <Key className="size-5" /> API keys
+        </CardTitle>
+        <CardDescription>
+          Read-only keys for exporting your data programmatically.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <Form {...form}>
+          <form onSubmit={create} className="space-y-4 rounded-md border bg-muted/40 p-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Python export script" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="expiresInDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Expires in (days)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min={1} {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <Button type="submit" disabled={busy} className="w-full sm:w-auto">
+              <Plus /> {busy ? "Generating..." : "Generate key"}
+            </Button>
+          </form>
+        </Form>
+
+        {generated && (
+          <GeneratedKeyNotice value={generated} onDone={() => setGenerated(null)} />
+        )}
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">
+            Your keys ({activeCount} active)
+          </h3>
+          {apiKeys.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No keys yet. Generate one above.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {apiKeys.map((key) => (
+                <KeyRow key={key.id} apiKey={key} onRevoke={setPendingRevoke} busy={busy} />
+              ))}
+            </div>
+          )}
+        </div>
+      </CardContent>
+
+      <AlertDialog
+        open={!!pendingRevoke}
+        onOpenChange={(open) => !open && setPendingRevoke(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke this API key?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anything using it stops working straight away. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy || !pendingRevoke}
+              onClick={() => pendingRevoke && revoke(pendingRevoke)}
+            >
+              {busy ? "Revoking..." : "Revoke"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
+  );
+}
+
+export default function UserPage() {
+  return (
+    <div className="min-h-screen bg-muted/40">
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+        <ProfileCard />
+        <ApiKeysCard />
+      </div>
+    </div>
+  );
+}
