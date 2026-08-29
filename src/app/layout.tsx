@@ -38,6 +38,7 @@ export default function RootLayout({
           <ThemeProvider
             attribute="data-theme"
             defaultTheme="evonest"
+            themes={["evonest", "sepia", "edge", "dark"]}
             enableSystem={false}
             disableTransitionOnChange
           >
