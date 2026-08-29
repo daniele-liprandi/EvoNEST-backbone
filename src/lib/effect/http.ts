@@ -1,7 +1,11 @@
-import { Cause, Effect, Exit } from "effect";
+import { Cause, Effect, Exit, Layer } from "effect";
 import { NextResponse } from "next/server";
 import type { ApiError } from "./errors";
 import { Mongo, MongoLive } from "./db";
+import { Auth, AuthLive } from "./auth";
+
+/** Services available to every route: the database and authentication. */
+const AppLive = Layer.provideMerge(AuthLive, MongoLive);
 
 interface ErrorBody {
   readonly error: {
@@ -42,9 +46,9 @@ function errorResponse(error: ApiError): NextResponse {
  * internals never reach the client.
  */
 export async function runRoute(
-  effect: Effect.Effect<NextResponse, ApiError, Mongo>,
+  effect: Effect.Effect<NextResponse, ApiError, Mongo | Auth>,
 ): Promise<NextResponse> {
-  const exit = await Effect.runPromiseExit(Effect.provide(effect, MongoLive));
+  const exit = await Effect.runPromiseExit(Effect.provide(effect, AppLive));
   return Exit.match(exit, {
     onSuccess: (response) => response,
     onFailure: (cause) => {

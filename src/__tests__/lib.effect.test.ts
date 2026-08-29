@@ -8,11 +8,15 @@ import {
   ValidationError,
   NotFoundError,
   UnauthorizedError,
+  ForbiddenError,
   InternalError,
   ObjectIdHex,
   ObjectIdFromHex,
   decodeBody,
   Mongo,
+  Auth,
+  testAuth,
+  testNoAuth,
   requireFound,
 } from "@/lib/effect";
 import { NextResponse } from "next/server";
@@ -98,5 +102,36 @@ describe("requireFound", () => {
   test("turns null into NotFoundError", async () => {
     const exit = await Effect.runPromiseExit(requireFound("Trait", "x")(null));
     expect(exit._tag).toBe("Failure");
+  });
+});
+
+describe("Auth test layers", () => {
+  const handler = Effect.gen(function* () {
+    const auth = yield* Auth;
+    const user = yield* auth.currentUser;
+    return yield* ok({ db: user.activeDatabase, role: user.role });
+  });
+
+  test("testAuth supplies a fixed user", async () => {
+    const res = await runRoute(handler.pipe(Effect.provide(testAuth({ sub: "u1", activeDatabase: "lab_a" }))));
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ db: "lab_a", role: null });
+  });
+
+  test("testNoAuth makes the route 401", async () => {
+    const res = await runRoute(handler.pipe(Effect.provide(testNoAuth)));
+    expect(res.status).toBe(401);
+  });
+
+  test("requireRole fails with 403 for the wrong role", async () => {
+    const adminOnly = Effect.gen(function* () {
+      const auth = yield* Auth;
+      yield* auth.requireRole("admin");
+      return yield* ok({ ok: true });
+    });
+    const res = await runRoute(adminOnly.pipe(Effect.provide(testAuth({ sub: "u1", role: "user" }))));
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.error.code).toBe("forbidden");
   });
 });

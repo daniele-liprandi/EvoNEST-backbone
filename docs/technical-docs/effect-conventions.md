@@ -36,6 +36,20 @@ Effect.fail(new ValidationError({ message: "measurement must be positive" }))
 
 Error body shape: `{ "error": { "code": "...", "message": "...", "issues"?: [...] } }`.
 
+### The auth service (`auth.ts`)
+
+Depend on `Auth`, not on `getServerSession` / `get_database_user` / `check_user_role`. `runRoute` supplies it.
+
+```ts
+Effect.gen(function* () {
+  const auth = yield* Auth
+  const dbName = yield* auth.databaseName      // 401 if no session
+  const user = yield* auth.requireRole("admin") // 401 or 403
+})
+```
+
+`session`, `currentUser`, `databaseName`, `requireRole(role)`. Tests use `testAuth({ sub, role, activeDatabase })` or `testNoAuth`.
+
 ### The database service (`db.ts`)
 
 Depend on `Mongo`, not on `get_or_create_client`. `runRoute` supplies `MongoLive`.
@@ -56,7 +70,7 @@ Effect.gen(function* () {
 
 `decodeBody(schema)(request)` and `decodeSearchParams(schema)(request)` parse and fail with `ValidationError` carrying per-field issues. `ObjectIdHex` and `ObjectIdFromHex` handle ids.
 
-> Schema library: for now `effect/Schema` in the effect lib, zod elsewhere. Whether to move every zod schema to `effect/Schema` is not yet decided; do not convert existing zod on sight.
+> Schema library: `effect/Schema` everywhere. zod is being removed, including the mastra tool schemas (wrapped with `Schema.standardSchemaV1`). New code must not add zod.
 
 ## Writing a route
 
@@ -64,7 +78,7 @@ Effect.gen(function* () {
 // src/app/api/traits/route.ts
 import { Effect, Schema } from "effect"
 import { NextResponse } from "next/server"
-import { runRoute, ok, decodeBody, ObjectIdFromHex, Mongo, attempt, requireFound } from "@/lib/effect"
+import { runRoute, ok, decodeBody, ObjectIdFromHex, Auth, Mongo, attempt, requireFound } from "@/lib/effect"
 
 const DeleteBody = Schema.Struct({ id: ObjectIdFromHex })
 
@@ -72,8 +86,10 @@ export function DELETE(request: Request) {
   return runRoute(
     Effect.gen(function* () {
       const { id } = yield* decodeBody(DeleteBody)(request)
+      const auth = yield* Auth
+      const dbName = yield* auth.databaseName
       const mongo = yield* Mongo
-      const traits = yield* mongo.collection("evonest", "traits")
+      const traits = yield* mongo.collection(dbName, "traits")
 
       const result = yield* attempt(() => traits.deleteOne({ _id: id }), "traits.deleteOne")
       yield* requireFound("Trait", id.toHexString())(result.deletedCount > 0 ? result : null)
