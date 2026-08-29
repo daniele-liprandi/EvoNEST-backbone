@@ -187,6 +187,10 @@ export async function POST(req) {
             );
 
             if (updateResult.matchedCount === 0) {
+                if (!ObjectId.isValid(entryId)) {
+                    await rollbackUpload(filePath, fileId, filesCollection);
+                    return NextResponse.json({ error: `${entryType} not found` }, { status: 404 });
+                }
                 const updateResultsWithObjectId = await entryCollection.updateOne(
                     { _id: new ObjectId(entryId) },
                     {
@@ -196,8 +200,7 @@ export async function POST(req) {
                     }
                 );
                 if (updateResultsWithObjectId.matchedCount === 0) {
-                    await fs.promises.unlink(filePath);
-                    await filesCollection.deleteOne({ _id: fileId });
+                    await rollbackUpload(filePath, fileId, filesCollection);
                     return NextResponse.json({ error: `${entryType} not found` }, { status: 404 });
                 }
             }
@@ -210,6 +213,24 @@ export async function POST(req) {
     }
 }
 
+
+/**
+ * Undo a partial upload: remove the written file and its document. Both steps
+ * are attempted independently so a failure in one still runs the other, and
+ * each failure is logged rather than thrown.
+ */
+export async function rollbackUpload(filePath, fileId, filesCollection) {
+    const [unlinkResult, deleteResult] = await Promise.allSettled([
+        fs.promises.unlink(filePath),
+        filesCollection.deleteOne({ _id: fileId }),
+    ]);
+    if (unlinkResult.status === "rejected") {
+        console.error(`Upload rollback: failed to remove file ${filePath}:`, unlinkResult.reason);
+    }
+    if (deleteResult.status === "rejected") {
+        console.error(`Upload rollback: failed to remove file document ${fileId}:`, deleteResult.reason);
+    }
+}
 
 /**
  * Ensures that the specified directory exists, creating it if necessary
