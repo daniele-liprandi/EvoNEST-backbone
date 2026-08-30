@@ -22,7 +22,8 @@ export default withAuth(
 // Specify which routes should be protected
 export const config = {
   matcher: [
-    // Protect all routes except auth-related ones, the root page, public directory, SVG files, and notifications API
-    '/((?!auth|api/auth|api/notifications|api/nlfilter|api/schema|api/geocoding|api/samples/ext|api/traits/ext|api/experiments/ext|_next/static|_next/image|favicon.ico|.*\.svg|$|public/).*)',
+    // Protect all routes except auth-related ones, the root page, the design
+    // gallery, public directory, SVG files, and notifications API
+    '/((?!auth|design|api/auth|api/notifications|api/nlfilter|api/schema|api/geocoding|api/samples/ext|api/traits/ext|api/experiments/ext|_next/static|_next/image|favicon.ico|.*\.svg|$|public/).*)',
   ],
 };
