@@ -2,10 +2,22 @@
 import Link from "next/link";
 import React from "react";
 
-import { ClipboardText, GenderFemale, GenderMale, Bug, Carrot, Egg, Shield, TestTube, X, ArrowClockwise, UploadSimple } from "@phosphor-icons/react";
+import { ClipboardText, GenderFemale, GenderMale, Bug, Carrot, Egg, Shield, TestTube, Trash, X, ArrowClockwise, UploadSimple } from "@phosphor-icons/react";
 
 import { SampleHoverCard } from "@/components/sample-hover-card";
 import { DataTableColumnHeader } from "@/components/tables/column-header";
+import { RowEditDialog } from "@/components/tables/row-edit-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -189,6 +201,53 @@ export const selectColumn = () => (
     enableHiding: false,
   }
 );
+
+/**
+ * Standard trailing column: an Edit dialog (when the page passes editFields and
+ * an onUpdateFields handler) and a Delete confirmation. Replaces the per-page
+ * hand-rolled "Actions" cells so every table row acts the same way.
+ */
+export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "name" }) => ({
+  id: "actions",
+  enableSorting: false,
+  enableHiding: false,
+  cell: function Cell(info) {
+    const row = info.row.original;
+    const { onDelete, onUpdateFields } = info.table.options.meta;
+    const label = row?.[titleField] || `this ${entityLabel}`;
+    return (
+      <div className="flex items-center gap-1">
+        {editFields.length > 0 && onUpdateFields ? (
+          <RowEditDialog
+            rows={[row]}
+            fields={editFields}
+            entityLabel={entityLabel}
+            onSubmit={(ids, changes) => onUpdateFields(ids[0], changes)}
+          />
+        ) : null}
+        {onDelete ? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label={`Delete ${entityLabel}`}>
+                <Trash className="size-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
+                <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(row._id)}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        ) : null}
+      </div>
+    );
+  },
+});
 
 export const nameColumn = () => (
   {

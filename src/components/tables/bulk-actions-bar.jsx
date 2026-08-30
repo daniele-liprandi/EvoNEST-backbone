@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Trash, X } from "@phosphor-icons/react";
+import { PencilSimple, Trash, X } from "@phosphor-icons/react";
 
+import { RowEditDialog } from "@/components/tables/row-edit-dialog";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -24,11 +25,20 @@ import {
  * @param {{
  *   table: any,
  *   onBulkDelete?: ((ids: string[]) => Promise<any> | any) | null,
+ *   onBulkUpdateFields?: ((ids: string[], changes: Record<string, any>) => Promise<any> | any) | null,
+ *   bulkEditFields?: any[],
  *   entityLabel?: string,
  *   children?: any,
  * }} props
  */
-export function BulkActionsBar({ table, onBulkDelete = null, entityLabel = "row", children = null }) {
+export function BulkActionsBar({
+  table,
+  onBulkDelete = null,
+  onBulkUpdateFields = null,
+  bulkEditFields = [],
+  entityLabel = "row",
+  children = null,
+}) {
   const [deleting, setDeleting] = useState(false);
   const selected = table.getFilteredSelectedRowModel().rows;
 
@@ -38,6 +48,7 @@ export function BulkActionsBar({ table, onBulkDelete = null, entityLabel = "row"
 
   const count = selected.length;
   const noun = count === 1 ? entityLabel : `${entityLabel}s`;
+  const canBulkEdit = onBulkUpdateFields && bulkEditFields.length > 0;
 
   async function confirmDelete() {
     setDeleting(true);
@@ -56,6 +67,19 @@ export function BulkActionsBar({ table, onBulkDelete = null, entityLabel = "row"
       </span>
       <div className="ml-auto flex items-center gap-2">
         {children}
+        {canBulkEdit ? (
+          <RowEditDialog
+            rows={selected.map((row) => row.original)}
+            fields={bulkEditFields}
+            entityLabel={entityLabel}
+            onSubmit={(ids, changes) => onBulkUpdateFields(ids, changes)}
+            trigger={
+              <Button variant="outline" size="sm">
+                <PencilSimple className="size-4" /> Edit
+              </Button>
+            }
+          />
+        ) : null}
         {onBulkDelete ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>

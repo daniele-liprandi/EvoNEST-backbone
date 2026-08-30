@@ -1,14 +1,13 @@
 "use client"
 
 import { Suspense, useMemo } from "react";
-import { Trash } from "@phosphor-icons/react";
 import { CellContext, Table as TanstackTable } from "@tanstack/react-table";
 
 import { SmartVaul } from "@/components/forms/smart-vaul";
-import { dateColumn, logbookColumn, responsibleColumn, sampleColumn, selectColumn, typeColumn } from "@/components/tables/columns";
+import { dateColumn, logbookColumn, responsibleColumn, rowActionsColumn, sampleColumn, selectColumn, typeColumn } from "@/components/tables/columns";
+import { experimentEditFields } from "@/components/tables/edit-fields";
 import { DataTable } from "@/components/tables/data-table";
 import { DataTableToolbar } from "@/components/tables/data-table-toolbar";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,16 +18,12 @@ import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from "@/hooks/useSampleData";
 import { useUserData } from "@/hooks/useUserData";
 import { prepend_path } from "@/lib/utils";
-import { handleBulkDeleteExperiments, handleDeleteExperiment, handleExperimentFileDownload, handleStatusChangeExperiment, handleStatusIncrementExperiment } from "@/utils/handlers/experimentHandlers";
+import { handleBulkDeleteExperiments, handleBulkUpdateExperimentFields, handleDeleteExperiment, handleExperimentFileDownload, handleStatusChangeExperiment, handleStatusIncrementExperiment, handleUpdateExperimentFields } from "@/utils/handlers/experimentHandlers";
 
 export interface Experiment {
   _id: string;
   name: string;
   [key: string]: any;
-}
-
-interface TableMeta {
-  onDelete: (id: string) => void;
 }
 
 const baseColumns = [
@@ -51,32 +46,7 @@ const baseColumns = [
       ) : null;
     },
   },
-  {
-    id: "actions",
-    cell: (info: CellContext<Experiment, unknown>) => {
-      const experiment = info.row.original;
-      const { onDelete } = info.table.options.meta as TableMeta;
-      return (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Delete experiment">
-              <Trash className="size-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete {experiment.name}?</AlertDialogTitle>
-              <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onDelete(experiment._id)}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      );
-    },
-  },
+  rowActionsColumn({ entityLabel: "experiment", editFields: experimentEditFields }),
 ];
 
 function ExperimentPageContent() {
@@ -132,7 +102,10 @@ function ExperimentPageContent() {
           onEdit={null}
           onStatusChange={handleStatusChangeExperiment}
           onIncrement={handleStatusIncrementExperiment}
+          onUpdateFields={handleUpdateExperimentFields}
           onBulkDelete={handleBulkDeleteExperiments}
+          onBulkUpdateFields={handleBulkUpdateExperimentFields}
+          bulkEditFields={experimentEditFields}
           bulkEntityLabel="experiment"
           renderToolbar={(table: TanstackTable<any>) => (
             <DataTableToolbar table={table} entity="experiments">
