@@ -1,7 +1,7 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export default function SignIn() {
     const router = useRouter();
     const [error, setError] = useState('');
+
+    // Local frontend-study builds set NEXT_PUBLIC_DEV_AUTOLOGIN to skip the form.
+    useEffect(() => {
+        if (process.env.NEXT_PUBLIC_DEV_AUTOLOGIN === 'true') {
+            signIn('credentials', { username: 'admin', password: 'pass', callbackUrl: '/home' });
+        }
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
