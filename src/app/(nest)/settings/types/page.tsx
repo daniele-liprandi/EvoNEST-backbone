@@ -46,7 +46,7 @@ interface LabelType {
   description?: string;
   unit?: string;
   shortened?: string;
-  [key: string]: string | number | undefined;
+  [key: string]: string | number | boolean | undefined;
 }
 
 interface TypeTableProps {

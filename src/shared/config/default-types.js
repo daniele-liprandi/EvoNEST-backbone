@@ -2,7 +2,9 @@
 
 export const DEFAULT_CONFIGS = {
   sampletypes: [
-    { label: "Animal", value: "animal", description: "Animal individual", shortened: "an" },
+    // husbandry: this type is a living organism kept in the collection, so its
+    // table shows the feeding / moulting / egg-sac / life-stage controls.
+    { label: "Animal", value: "animal", description: "Animal individual", shortened: "an", husbandry: true },
     { label: "Blood", value: "blood", description: "Blood sample", shortened: "bl" },
     { label: "DNA extract", value: "dna_extract", description: "DNA extract", shortened: "dna" },
     { label: "Tissue", value: "tissue", description: "Tissue sample", shortened: "ti" },

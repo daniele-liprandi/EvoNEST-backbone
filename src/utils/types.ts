@@ -18,6 +18,7 @@ export type LabelType = {
     shortened?: string,
     power?: number, // For SI prefixes
     category?: string, // For base units
+    husbandry?: boolean, // Sample type is a living organism kept in the collection
 };
 
 // Export the default configurations (these are used as fallbacks when the API is not available)

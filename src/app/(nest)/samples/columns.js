@@ -26,6 +26,23 @@ import { sampleEditFields } from "@/components/tables/edit-fields"
 
 const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
 
+// The feeding / moulting / egg-sac / life-stage controls. Only meaningful for a
+// sample type flagged `husbandry` in the config (a living organism kept in the
+// collection), so a plant or a tissue sample never gets a "Molted" button.
+const husbandryColumns = [
+  familyColumn(),
+  genusColumn(),
+  speciesColumn(),
+  sexButtonColumn(),
+  lifestageColumn(),
+  lifestatusColumn(),
+  hungryProgressbarColumn(),
+  fedButtonColumn(),
+  moltedButtonColumn(),
+  eggsacButtonColumn(),
+]
+
+// Generic table for any sample type.
 export const baseColumns = [
   selectColumn(),
   sampleNameColumn(),
@@ -35,25 +52,6 @@ export const baseColumns = [
   typeColumn(),
   parentColumn(),
   locationColumn(),
-  actions,
-]
-
-const animalColumns = [
-  selectColumn(),
-  sampleNameColumn(),
-  familyColumn(),
-  genusColumn(),
-  speciesColumn(),
-  recentChangeDateColumn(),
-  dateColumn(),
-  locationColumn(),
-  sexButtonColumn(),
-  lifestageColumn(),
-  lifestatusColumn(),
-  hungryProgressbarColumn(),
-  fedButtonColumn(),
-  moltedButtonColumn(),
-  eggsacButtonColumn(),
   actions,
 ]
 
@@ -70,8 +68,21 @@ const subsampleColumns = [
   actions,
 ]
 
-export const typeColumns = {
-  "animal": animalColumns,
-  "subsample": subsampleColumns,
-  // Add more types as needed
-};
+/**
+ * Column set for one sample type's table. `husbandry` types get the organism
+ * and husbandry controls; `subsample` gets the box/slot layout; everything else
+ * gets the generic set.
+ */
+export function buildSampleColumns({ type, husbandry = false } = {}) {
+  if (type === "subsample") return subsampleColumns
+  if (!husbandry) return baseColumns
+  return [
+    selectColumn(),
+    sampleNameColumn(),
+    recentChangeDateColumn(),
+    dateColumn(),
+    locationColumn(),
+    ...husbandryColumns,
+    actions,
+  ]
+}
