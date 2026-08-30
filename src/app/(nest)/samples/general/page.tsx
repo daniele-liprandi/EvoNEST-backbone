@@ -8,11 +8,10 @@ import { DataTableToolbar } from '@/components/tables/data-table-toolbar';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getSampleNamebyId } from '@/hooks/sampleHooks';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
-import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
+import { tableSwrConfig } from '@/hooks/swrConfig';
 import { prepend_path } from "@/lib/utils";
 import { handleBulkDeleteSamples, handleBulkUpdateSampleFields, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated, handleUpdateSampleFields } from '@/utils/handlers/sampleHandlers';
 import { sampleEditFields } from '@/components/tables/edit-fields';
@@ -21,15 +20,14 @@ import { baseColumns } from '../columns';
 function SamplesPageContent() {
     const { filterData } = useUrlFilters();
 
-    const { samplesData, samplesError } = useSampleData(prepend_path, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        keepPreviousData: true,
-    });
-    const { usersData, usersError } = useUserData(prepend_path);
+    const { samplesData, samplesError } = useSampleData(prepend_path, tableSwrConfig);
+    const { usersData, usersError } = useUserData(prepend_path, tableSwrConfig);
 
     const dataTableData = useMemo(() => {
         if (!samplesData || !usersData) return [];
+
+        const sampleName = new Map<string, string>(samplesData.map((s: any) => [s._id, s.name]));
+        const userName = new Map<string, string>(usersData.map((u: any) => [u._id, u.name]));
 
         const sorted = [...samplesData].sort(
             (a: { date: string | number | Date }, b: { date: string | number | Date }) =>
@@ -39,8 +37,8 @@ function SamplesPageContent() {
         return filterData(
             sorted.map((sample: { parentId: any; responsible: any }) => ({
                 ...sample,
-                parentName: getSampleNamebyId(sample.parentId, samplesData),
-                responsibleName: getUserNameById(sample.responsible, usersData),
+                parentName: sampleName.get(sample.parentId) ?? '',
+                responsibleName: userName.get(sample.responsible) ?? '',
             }))
         );
     }, [samplesData, usersData, filterData]);
