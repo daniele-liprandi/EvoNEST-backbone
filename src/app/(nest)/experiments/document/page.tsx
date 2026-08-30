@@ -1,122 +1,144 @@
 "use client"
 
-import { SmartVaul } from "@/components/forms/smart-vaul";
+import { Suspense, useMemo } from "react";
+import { Trash } from "@phosphor-icons/react";
+import { CellContext, Table as TanstackTable } from "@tanstack/react-table";
 
-import { dateColumn, imageColumn, responsibleColumn, sampleColumn, selectColumn } from "@/components/tables/columns";
-import { DataTable } from '@/components/tables/data-table';
+import { SmartVaul } from "@/components/forms/smart-vaul";
+import { dateColumn, responsibleColumn, sampleColumn } from "@/components/tables/columns";
+import { DataTable } from "@/components/tables/data-table";
+import { DataTableToolbar } from "@/components/tables/data-table-toolbar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getSampleNamebyId } from "@/hooks/sampleHooks";
-import { useExperimentsData } from '@/hooks/useExperimentData';
+import { useExperimentsData } from "@/hooks/useExperimentData";
+import { useUrlFilters } from "@/hooks/useUrlFilters";
 import { getUserNameById } from "@/hooks/userHooks";
-import { useSampleData } from '@/hooks/useSampleData';
-import { useUserData } from '@/hooks/useUserData';
+import { useSampleData } from "@/hooks/useSampleData";
+import { useUserData } from "@/hooks/useUserData";
 import { prepend_path } from "@/lib/utils";
 import { handleDeleteExperiment, handleExperimentFileDownload, handleStatusChangeExperiment, handleStatusIncrementExperiment } from "@/utils/handlers/experimentHandlers";
-import { CellContext } from '@tanstack/react-table';
-import { MdDelete } from "react-icons/md";
-import { Button } from "@/components/ui/button";
 
 export interface Experiment {
   _id: string;
   name: string;
-  [key: string]: any;  // Index signature for dynamic properties
-  // other fields...
+  [key: string]: any;
 }
+
 interface TableMeta {
   onDelete: (id: string) => void;
-  // other meta properties if any...
 }
 
 const baseColumns = [
-  selectColumn(),
   { accessorKey: "name", header: "Name" },
   sampleColumn("sampleId", "sampleName", "Sample"),
   responsibleColumn(),
   dateColumn(),
   {
     accessorKey: "fileId",
-    header: "Download",
+    header: "File",
     cell: (info: CellContext<Experiment, unknown>) => {
       const experiment = info.row.original;
-      return (
-        (experiment.fileId) &&
-        <Button onClick={() => handleExperimentFileDownload(experiment.fileId)}>Download</Button> 
-      );
+      return experiment.fileId ? (
+        <Button variant="outline" size="sm" onClick={() => handleExperimentFileDownload(experiment.fileId)}>
+          Download
+        </Button>
+      ) : null;
     },
   },
   {
-    accessorKey: "Actions",
+    id: "actions",
     cell: (info: CellContext<Experiment, unknown>) => {
       const experiment = info.row.original;
       const { onDelete } = info.table.options.meta as TableMeta;
       return (
-        <div>
-          <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete experiment {experiment._id}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(experiment._id)}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Delete document">
+              <Trash className="size-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete {experiment.name}?</AlertDialogTitle>
+              <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => onDelete(experiment._id)}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       );
     },
   },
 ];
 
-
-export default function ExperimentPage() {
+function DocumentsPageContent() {
+  const { filterData } = useUrlFilters();
 
   const { samplesData, samplesError } = useSampleData(prepend_path);
   const { experimentsData, experimentsError } = useExperimentsData(prepend_path, true);
   const { usersData, usersError } = useUserData(prepend_path);
 
+  const dataTableData = useMemo(() => {
+    if (!samplesData || !experimentsData || !usersData) {
+      return [];
+    }
+    return filterData(
+      experimentsData
+        .filter((experiment: any) => experiment.type === "document")
+        .map((experiment: any) => ({
+          ...experiment,
+          sampleName: getSampleNamebyId(experiment.sampleId, samplesData),
+          responsibleName: getUserNameById(experiment.responsible, usersData),
+        }))
+    );
+  }, [samplesData, experimentsData, usersData, filterData]);
+
+  if (samplesError || experimentsError || usersError) {
+    return <p className="p-6 text-sm text-destructive">Could not load documents.</p>;
+  }
 
   if (!samplesData || !experimentsData || !usersData) {
-    return (<p className="text-lg text-center">Loading...</p>);
-  }
-  if (samplesError || experimentsError || usersError) {
-    return (<p className="text-lg text-center">An error occurred while fetching the data.</p>);
+    return <Skeleton className="h-96 w-full rounded-xl" />;
   }
 
-  const dataTableData = experimentsData?.filter((experiment: any) => experiment.type === "document").map((experiment: any) => {
-    return {
-      ...experiment,
-      sampleName: getSampleNamebyId(experiment.sampleId, samplesData),
-      responsibleName: getUserNameById(experiment.responsible, usersData),
-      actions: null, // This will be handled by the actions column
-    };
-  }) || [];
+  const newButton = (
+    <SmartVaul formType="experiments" users={usersData} samples={samplesData} experiments={experimentsData} size="sm" />
+  );
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <div className="flex flex-col sm:gap-4 sm:py-2 sm:pl-5 sm:pr-5">
-        <Card >
-          <CardHeader className="flex flex-row items-center">
-            <div className="grid gap-2">
-              <CardTitle>Documents</CardTitle>
-              <CardDescription>
-                The collection of documents in the NEST.<br />
-                This page is in active development. Please report any bug or issues with this page to the EvoNEST team.
-              </CardDescription>
-            </div>
-            <SmartVaul formType='experiments' users={usersData} samples={samplesData} experiments={experimentsData} size="sm" className="ml-auto gap-1" />
-          </CardHeader>
-          <CardContent>
-            <DataTable columns={baseColumns} data={dataTableData} onDelete={handleDeleteExperiment} onEdit={null} onStatusChange={handleStatusChangeExperiment} onIncrement={handleStatusIncrementExperiment}
-            ></DataTable>
-          </CardContent>
-        </Card>
-      </div>
-    </div >
-  )
+    <Card>
+      <CardHeader>
+        <CardTitle>Documents</CardTitle>
+        <CardDescription>PDFs and docs attached to experiments.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <DataTable
+          columns={baseColumns}
+          data={dataTableData}
+          onDelete={handleDeleteExperiment}
+          onEdit={null}
+          onStatusChange={handleStatusChangeExperiment}
+          onIncrement={handleStatusIncrementExperiment}
+          renderToolbar={(table: TanstackTable<any>) => (
+            <DataTableToolbar table={table} entity="documents">
+              {newButton}
+            </DataTableToolbar>
+          )}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function DocumentsPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full rounded-xl" />}>
+      <DocumentsPageContent />
+    </Suspense>
+  );
 }

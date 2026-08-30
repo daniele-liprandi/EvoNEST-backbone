@@ -4,9 +4,7 @@ import { FilesMarquee } from "@/components/ui/custom/file-card"
 import { ProfileFormExperiments } from "@/components/forms/profile-form-experiments"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
+import { NavCard } from "@/components/nest/nav-card"
 import { Label } from "@/components/ui/label"
 import { useExperimentsData } from "@/hooks/useExperimentData"
 import { useSampleData } from "@/hooks/useSampleData"
@@ -14,7 +12,6 @@ import { useUserData } from "@/hooks/useUserData"
 import { useSession } from "next-auth/react"
 import { prepend_path } from "@/lib/utils"
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons"
-import Link from "next/link"
 import { useState } from "react"
 import { getUserByProviderId } from "@/hooks/userHooks"
 import { SmartVaul } from "@/components/forms/smart-vaul"
@@ -111,49 +108,22 @@ export default function ExperimentGeneralPage() {
         </div>
 
 
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-          <Link href="/experiments/general">
-            <Card className="p-6 lg:p-8 rounded-xl shadow-lg dark:shadow-orange-500/50">
-              <CardHeader>
-                <CardTitle>General</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                <div className="flex items-center gap-2 ">
-                  <span>
-                    Visit the general table containing all the experiments in the NEST.
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/experiments/media">
-            <Card className="p-6 lg:p-8 rounded-xl shadow-lg dark:shadow-orange-500/50">
-              <CardHeader>
-                <CardTitle>Media</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                <div className="flex items-center gap-2">
-                  <span>
-                    Navigate through the media in the NEST.
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/experiments/document">
-            <Card className="p-6 lg:p-8 rounded-xl shadow-lg dark:shadow-orange-500/50">
-              <CardHeader>
-                <CardTitle>Documents</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4">
-                <div className="flex items-center gap-2">
-                  <span>
-                    Navigate through the pdfs and docs in the NEST.
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+        <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
+          <NavCard
+            href="/experiments/general"
+            title="General"
+            description="Every experiment in the NEST, in one table."
+          />
+          <NavCard
+            href="/experiments/media"
+            title="Media"
+            description="Images and videos recorded in the NEST."
+          />
+          <NavCard
+            href="/experiments/document"
+            title="Documents"
+            description="PDFs and docs attached to experiments."
+          />
         </div>
       </div>
     </section>
