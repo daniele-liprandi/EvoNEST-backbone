@@ -54,7 +54,10 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
  *   onEdit?: Function | null,
  *   onStatusChange?: Function | null,
  *   onIncrement?: Function | null,
+ *   onUpdateFields?: ((id: string, changes: Record<string, any>) => Promise<any> | any) | null,
  *   onBulkDelete?: ((ids: string[]) => Promise<any> | any) | null,
+ *   onBulkUpdateFields?: ((ids: string[], changes: Record<string, any>) => Promise<any> | any) | null,
+ *   bulkEditFields?: any[],
  *   bulkEntityLabel?: string,
  *   renderToolbar?: ((table: any) => any) | null,
  *   renderBulkActions?: ((table: any) => any) | null,
@@ -67,7 +70,10 @@ export function DataTable({
   onEdit = null,
   onStatusChange = null,
   onIncrement = null,
+  onUpdateFields = null,
   onBulkDelete = null,
+  onBulkUpdateFields = null,
+  bulkEditFields = [],
   bulkEntityLabel = "row",
   renderToolbar = null,
   renderBulkActions = null,
@@ -89,6 +95,7 @@ export function DataTable({
       onEdit,
       onStatusChange,
       onIncrement,
+      onUpdateFields,
     },
     filterFns: {
       fuzzy: fuzzyFilter,
@@ -119,8 +126,14 @@ export function DataTable({
   return (
     <div className="flex flex-col gap-3">
       {renderToolbar?.(table)}
-      {(onBulkDelete || renderBulkActions) && (
-        <BulkActionsBar table={table} onBulkDelete={onBulkDelete} entityLabel={bulkEntityLabel}>
+      {(onBulkDelete || onBulkUpdateFields || renderBulkActions) && (
+        <BulkActionsBar
+          table={table}
+          onBulkDelete={onBulkDelete}
+          onBulkUpdateFields={onBulkUpdateFields}
+          bulkEditFields={bulkEditFields}
+          entityLabel={bulkEntityLabel}
+        >
           {renderBulkActions?.(table)}
         </BulkActionsBar>
       )}

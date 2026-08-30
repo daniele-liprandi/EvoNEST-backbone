@@ -1,18 +1,30 @@
-import { Trash, DotsThree } from "@phosphor-icons/react"
-
-import { Button } from "@/components/ui/button"
-
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  boxColumn,
+  dateColumn,
+  eggsacButtonColumn,
+  familyColumn,
+  fedButtonColumn,
+  genusColumn,
+  hungryProgressbarColumn,
+  lifestageColumn,
+  lifestatusColumn,
+  locationColumn,
+  moltedButtonColumn,
+  sampleNameColumn,
+  parentColumn,
+  recentChangeDateColumn,
+  responsibleColumn,
+  rowActionsColumn,
+  selectColumn,
+  sexButtonColumn,
+  slotColumn,
+  speciesColumn,
+  typeColumn,
+  sortableFilterableColumn,
+} from "@/components/tables/columns"
+import { sampleEditFields } from "@/components/tables/edit-fields"
 
-import { boxColumn, collectionColumn, dateColumn, eggsacButtonColumn, familyColumn, fedButtonColumn, genusColumn, hungryProgressbarColumn, latColumn, lifestageColumn, lifestatusColumn, locationColumn, lonColumn, moltedButtonColumn, sampleNameColumn, parentColumn, recentChangeDateColumn, responsibleColumn, selectColumn, sexButtonColumn, slotColumn, speciesColumn, typeColumn, sortableFilterableColumn } from "@/components/tables/columns"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
 
 export const baseColumns = [
   selectColumn(),
@@ -23,52 +35,7 @@ export const baseColumns = [
   typeColumn(),
   parentColumn(),
   locationColumn(),
-  {
-    accessorKey: "Actions",
-    cell: info => {
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
-      return (
-        <div >
-
-          <DropdownMenu>
-            <AlertDialog>
-              <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete sample {sample.name}?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(sample._id)}>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <DotsThree className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(sample.name)}
-              >
-                Copy Sample Name
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-      )
-    },
-  },
+  actions,
 ]
 
 const animalColumns = [
@@ -87,33 +54,7 @@ const animalColumns = [
   fedButtonColumn(),
   moltedButtonColumn(),
   eggsacButtonColumn(),
-  {
-    accessorKey: "Actions",
-    cell: info => {
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
-      return (
-        <div >
-          <AlertDialog>
-            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete sample {sample.name}?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(sample._id)}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      )
-    },
-  },
+  actions,
 ]
 
 const subsampleColumns = [
@@ -126,33 +67,7 @@ const subsampleColumns = [
   boxColumn(),
   slotColumn(),
   locationColumn(),
-  {
-    accessorKey: "Actions",
-    cell: info => {
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
-      return (
-        <div >
-          <AlertDialog>
-            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete sample {sample.name}?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(sample._id)}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      )
-    },
-  },
+  actions,
 ]
 
 export const typeColumns = {
@@ -160,4 +75,3 @@ export const typeColumns = {
   "subsample": subsampleColumns,
   // Add more types as needed
 };
-

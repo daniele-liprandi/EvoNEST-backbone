@@ -35,6 +35,53 @@ export const handleBulkDeleteExperiments = async (experimentIds: string[]) => {
   }
 };
 
+// One setfield request per field against a single experiment. Returns the names
+// of the fields that failed. No toast, no revalidation — the callers below own that.
+const setExperimentFields = async (experimentId: string, changes: Record<string, any>) => {
+  const entries = Object.entries(changes);
+  const results = await Promise.allSettled(
+    entries.map(([field, value]) =>
+      fetch(`${prepend_path}/api/experiments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'setfield', id: experimentId, field, value }),
+      }).then((res) => {
+        if (!res.ok) throw new Error(field);
+      })
+    )
+  );
+  const failed: string[] = [];
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') failed.push(entries[i][0]);
+  });
+  return failed;
+};
+
+// Write only the fields the caller passes (row edit dialog).
+export const handleUpdateExperimentFields = async (experimentId: string, changes: Record<string, any>) => {
+  if (Object.keys(changes).length === 0) return;
+  const failed = await setExperimentFields(experimentId, changes);
+  mutate(`${prepend_path}/api/experiments`);
+  if (failed.length) {
+    toast.error(`Could not update: ${failed.join(', ')}`);
+  } else {
+    toast.message('Experiment updated');
+  }
+};
+
+// Same change applied to many experiments (bulk edit).
+export const handleBulkUpdateExperimentFields = async (experimentIds: string[], changes: Record<string, any>) => {
+  if (Object.keys(changes).length === 0) return;
+  const perExperiment = await Promise.all(experimentIds.map((id) => setExperimentFields(id, changes)));
+  const failed = perExperiment.filter((f) => f.length > 0).length;
+  mutate(`${prepend_path}/api/experiments`);
+  if (failed) {
+    toast.error(`${failed} of ${experimentIds.length} experiments could not be updated`);
+  } else {
+    toast.message(`Updated ${experimentIds.length} experiments`);
+  }
+};
+
 // Create the core handler function
 const debouncedHandleStatusChangeExperiment = debounce(async (experimentId: any, field: string, value: string) => {
   const response = await fetch(`${prepend_path}/api/experiments`, {
