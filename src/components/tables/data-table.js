@@ -33,6 +33,8 @@ import {
 import { useState } from "react";
 import { CaretLeft, CaretRight, CaretDoubleLeft, CaretDoubleRight } from "@phosphor-icons/react";
 
+import { BulkActionsBar } from "@/components/tables/bulk-actions-bar";
+
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
 
@@ -52,7 +54,10 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
  *   onEdit?: Function | null,
  *   onStatusChange?: Function | null,
  *   onIncrement?: Function | null,
+ *   onBulkDelete?: ((ids: string[]) => Promise<any> | any) | null,
+ *   bulkEntityLabel?: string,
  *   renderToolbar?: ((table: any) => any) | null,
+ *   renderBulkActions?: ((table: any) => any) | null,
  * }} props
  */
 export function DataTable({
@@ -62,7 +67,10 @@ export function DataTable({
   onEdit = null,
   onStatusChange = null,
   onIncrement = null,
+  onBulkDelete = null,
+  bulkEntityLabel = "row",
   renderToolbar = null,
+  renderBulkActions = null,
 }) {
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
@@ -111,6 +119,11 @@ export function DataTable({
   return (
     <div className="flex flex-col gap-3">
       {renderToolbar?.(table)}
+      {(onBulkDelete || renderBulkActions) && (
+        <BulkActionsBar table={table} onBulkDelete={onBulkDelete} entityLabel={bulkEntityLabel}>
+          {renderBulkActions?.(table)}
+        </BulkActionsBar>
+      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader>

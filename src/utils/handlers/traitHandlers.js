@@ -16,6 +16,27 @@ export const handleDeleteTrait = async (traitId) => {
     mutate(`${prepend_path}/api/traits`);
 };
 
+export const handleBulkDeleteTraits = async (traitIds) => {
+    const results = await Promise.allSettled(
+        traitIds.map((id) =>
+            fetch(`${prepend_path}/api/traits`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            }).then((res) => {
+                if (!res.ok) throw new Error(id);
+            })
+        )
+    );
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    mutate(`${prepend_path}/api/traits`);
+    if (failed) {
+        toast.error(`${failed} of ${traitIds.length} traits could not be deleted`);
+    } else {
+        toast.message(`Deleted ${traitIds.length} traits`);
+    }
+};
+
 const debouncedHandleStatusChangeTrait = debounce(async (traitId, field, value, withmutate = false) => {
     await fetch(`${prepend_path}/api/traits`, {
         method: 'POST',

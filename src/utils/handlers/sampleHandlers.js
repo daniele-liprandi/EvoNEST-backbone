@@ -16,6 +16,27 @@ export const handleDeleteSample = async (sampleId) => {
     mutate(`${prepend_path}/api/samples`);
 };
 
+export const handleBulkDeleteSamples = async (sampleIds) => {
+    const results = await Promise.allSettled(
+        sampleIds.map((id) =>
+            fetch(`${prepend_path}/api/samples`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            }).then((res) => {
+                if (!res.ok) throw new Error(id);
+            })
+        )
+    );
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    mutate(`${prepend_path}/api/samples`);
+    if (failed) {
+        toast.error(`${failed} of ${sampleIds.length} samples could not be deleted`);
+    } else {
+        toast.message(`Deleted ${sampleIds.length} samples`);
+    }
+};
+
 const debouncedHandleStatusChangeSample = debounce(async (sampleId, field, value, customLogbookEntry, withmutate = false) => {
     await fetch(`${prepend_path}/api/samples`, {
         method: 'POST',
