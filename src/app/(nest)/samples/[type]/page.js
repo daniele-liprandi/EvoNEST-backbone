@@ -16,7 +16,7 @@ import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { getUserNameById } from "@/hooks/userHooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SmartVaul } from '@/components/forms/smart-vaul';
-import { handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
+import { handleBulkDeleteSamples, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -83,6 +83,8 @@ function TypePageContent() {
                         onDelete={handleDeleteSample}
                         onEdit={handleEditSample}
                         onIncrement={handleStatusIncrementSample}
+                        onBulkDelete={handleBulkDeleteSamples}
+                        bulkEntityLabel="sample"
                         columns={columns}
                         data={dataTableData}
                         renderToolbar={(table) => (

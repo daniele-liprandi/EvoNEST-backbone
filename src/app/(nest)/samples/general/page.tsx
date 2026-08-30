@@ -14,7 +14,7 @@ import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
 import { prepend_path } from "@/lib/utils";
-import { handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
+import { handleBulkDeleteSamples, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
 import { baseColumns } from '../columns';
 
 function SamplesPageContent() {
@@ -70,6 +70,8 @@ function SamplesPageContent() {
                     onEdit={handleEditSample}
                     onStatusChange={handleStatusChangeSample}
                     onIncrement={handleStatusIncrementSample}
+                    onBulkDelete={handleBulkDeleteSamples}
+                    bulkEntityLabel="sample"
                     renderToolbar={(table: TanstackTable<any>) => (
                         <DataTableToolbar table={table} entity="samples" onExportRelated={handleExportAllSamplesRelated}>
                             {newButton}
