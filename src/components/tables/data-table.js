@@ -32,12 +32,7 @@ import {
 
 import Papa from "papaparse";
 import { useState } from "react";
-import {
-  MdChevronLeft,
-  MdChevronRight,
-  MdKeyboardDoubleArrowLeft,
-  MdKeyboardDoubleArrowRight,
-} from "react-icons/md";
+import { CaretLeft, CaretRight, CaretDoubleLeft, CaretDoubleRight } from "@phosphor-icons/react";
 import * as XLSX from "xlsx";
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
@@ -273,7 +268,7 @@ export function DataTable({
           onClick={() => table.firstPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          <MdKeyboardDoubleArrowLeft />
+          <CaretDoubleLeft />
         </Button>
         <Button
           variant="outline"
@@ -281,7 +276,7 @@ export function DataTable({
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          <MdChevronLeft />
+          <CaretLeft />
         </Button>
         <Button
           variant="outline"
@@ -289,7 +284,7 @@ export function DataTable({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          <MdChevronRight />
+          <CaretRight />
         </Button>
         <Button
           variant="outline"
@@ -297,7 +292,7 @@ export function DataTable({
           onClick={() => table.lastPage()}
           disabled={!table.getCanNextPage()}
         >
-          <MdKeyboardDoubleArrowRight />
+          <CaretDoubleRight />
         </Button>
       </div>
       <div className="flex-1 text-sm text-muted-foreground">

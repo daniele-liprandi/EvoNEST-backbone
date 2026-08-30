@@ -1,4 +1,4 @@
-import { MdDelete } from "react-icons/md"
+import { Trash } from "@phosphor-icons/react"
 
 
 import { boxColumn, collectionColumn, eggsacButtonColumn, fedButtonColumn, genusColumn, hungryProgressbarColumn, latEditableColumn, lifestageColumn, lifestatusColumn, locationEditableColumn, lonEditableColumn, moltedButtonColumn, sampleNameColumn, parentColumn, recentChangeDateColumn, responsibleColumn, selectColumn, sexButtonColumn, silktypeColumn, slotColumn, speciesColumn, typeColumn, sortableFilterableColumn, editableColumn } from "@/components/tables/columns"
@@ -30,7 +30,7 @@ export const aliveColumns = [
       return (
         <div >
           <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
+            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete sample {sample.name}?
@@ -73,7 +73,7 @@ export const deadColumns = [
       return (
         <div >
           <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
+            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete sample {sample.name}?

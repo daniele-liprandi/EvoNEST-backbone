@@ -1,4 +1,4 @@
-import { MdDelete, MdMoreHoriz } from "react-icons/md"
+import { Trash, DotsThree } from "@phosphor-icons/react"
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
@@ -74,7 +74,7 @@ export const baseColumns = [
       return (
         <div >
           <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
+            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete trait {trait._id}?
