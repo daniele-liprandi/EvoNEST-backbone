@@ -1,4 +1,4 @@
-import { MdDelete, MdMoreHoriz } from "react-icons/md"
+import { Trash, DotsThree } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 
@@ -33,7 +33,7 @@ export const baseColumns = [
 
           <DropdownMenu>
             <AlertDialog>
-              <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
+              <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete sample {sample.name}?
@@ -51,7 +51,7 @@ export const baseColumns = [
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
-                <MdMoreHoriz className="h-4 w-4" />
+                <DotsThree className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -62,7 +62,6 @@ export const baseColumns = [
                 Copy Sample Name
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {/*<DropdownMenuItem>Action placeholder</DropdownMenuItem>*/}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -95,7 +94,7 @@ const animalColumns = [
       return (
         <div >
           <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
+            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete sample {sample.name}?
@@ -133,7 +132,7 @@ const subsampleColumns = [
       return (
         <div >
           <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
+            <AlertDialogTrigger><Trash className="h-4 w-4" /></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete sample {sample.name}?

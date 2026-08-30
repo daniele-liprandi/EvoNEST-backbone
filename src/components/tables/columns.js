@@ -2,9 +2,7 @@
 import Link from "next/link";
 import React from "react";
 
-import { ClipboardList } from "lucide-react"; // Using lucide for the icon
-import { MdFemale, MdMale } from "react-icons/md";
-import { PiBug, PiCarrotBold, PiEggBold, PiShieldBold, PiTestTube, PiXBold } from "react-icons/pi";
+import { ClipboardText, GenderFemale, GenderMale, Bug, Carrot, Egg, Shield, TestTube, X, ArrowClockwise, UploadSimple } from "@phosphor-icons/react";
 
 import { SampleHoverCard } from "@/components/sample-hover-card";
 import { DataTableColumnHeader } from "@/components/tables/column-header";
@@ -20,7 +18,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { prepend_path } from "@/lib/utils";
 import { uploadFiles } from '@/utils/handlers/fileHandlers';
-import { ReloadIcon, UploadIcon } from "@radix-ui/react-icons";
 import { useRef, useState } from 'react';
 import { toast } from "sonner";
 import { mutate } from 'swr';
@@ -46,16 +43,12 @@ const SampleSexCell = ({ sample, onStatusChange }) => {
       onValueChange={handleStatusChange}
       size="lg"
     >
-      <ToggleGroupItem value="female"><MdFemale /></ToggleGroupItem>
-      <ToggleGroupItem value="male"><MdMale /></ToggleGroupItem>
+      <ToggleGroupItem value="female"><GenderFemale /></ToggleGroupItem>
+      <ToggleGroupItem value="male"><GenderMale /></ToggleGroupItem>
       <ToggleGroupItem value="unknown">U</ToggleGroupItem>
     </ToggleGroup>
   );
 };
-
-/* ---------------------------------- 
-          General columns
- ------------------------------------*/
 
  export const editableColumn = (key, label) => (
   {
@@ -107,7 +100,7 @@ export const logbookColumn = (key, label) => ({
         return (
             <HoverCard>
                 <HoverCardTrigger asChild>
-                    <ClipboardList className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground" />
+                    <ClipboardText className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                     <ScrollArea className="h-72">
@@ -171,10 +164,6 @@ export const sortableFilterableNumericColumn = (key, label) => ({
   filterFn: "inNumberRange"
 });
 
-
-/* ---------------------------------- 
-          Specific columns
- ------------------------------------*/
 
 export const selectColumn = () => (
   {
@@ -456,7 +445,7 @@ export const lifestageColumn = () => (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestage", "egg")} value="egg"><PiEggBold /></ToggleGroupItem>
+                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestage", "egg")} value="egg"><Egg /></ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Egg</TooltipContent>
             </Tooltip>
@@ -549,19 +538,19 @@ export const lifestatusColumn = () => (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "alive")} value="alive"><PiBug /></ToggleGroupItem>
+                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "alive")} value="alive"><Bug /></ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Alive</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "preserved")} value="preserved"><PiTestTube /></ToggleGroupItem>
+                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "preserved")} value="preserved"><TestTube /></ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Preserved</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "nonpreserved")} value="nonpreserved"><PiXBold /></ToggleGroupItem>
+                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "nonpreserved")} value="nonpreserved"><X /></ToggleGroupItem>
               </TooltipTrigger>
               <TooltipContent>Lost</TooltipContent>
             </Tooltip>
@@ -587,7 +576,7 @@ export const fedButtonColumn = () => (
           if (value) setValue(value);
         }}
           onClick={() => onIncrement(sample._id, "fed")}
-        ><PiCarrotBold /></Button>
+        ><Carrot /></Button>
       )
     },
   }
@@ -631,7 +620,7 @@ export const moltedButtonColumn = () => (
           if (value) setValue(value);
         }}
           onClick={() => onIncrement(sample._id, "molted")}
-        ><PiShieldBold /></Button>
+        ><Shield /></Button>
       )
     },
   }
@@ -652,7 +641,7 @@ export const eggsacButtonColumn = () => (
           if (value) setValue(value);
         }}
           onClick={() => onIncrement(sample._id, "eggsac")}
-        ><PiEggBold /></Button>
+        ><Egg /></Button>
       )
     },
   }
@@ -1035,9 +1024,9 @@ export const fileUploadColumn = () => ({
           >
             <span>
               {isUploading ? (
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <ArrowClockwise className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <UploadIcon className="mr-2 h-4 w-4" />
+                <UploadSimple className="mr-2 h-4 w-4" />
               )}
               Upload
             </span>
