@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, DownloadSimple } from "@phosphor-icons/react";
+import { X, DownloadSimple, SlidersHorizontal } from "@phosphor-icons/react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 
@@ -12,12 +12,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+// "recentChangeDate" -> "Recent change date". Column ids are the data keys;
+// most headers are JSX so there is no plain-text label to reuse.
+function humanise(id) {
+  return id
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/^./, (c) => c.toUpperCase());
+}
 
 function saveBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -84,6 +94,30 @@ export function DataTableToolbar({ table, entity, onExportRelated = null, childr
       <div className="flex flex-wrap items-center gap-2">
         <NlFilterBar columns={filterColumns} />
         <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <SlidersHorizontal /> Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+              <DropdownMenuLabel>Show columns</DropdownMenuLabel>
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    onSelect={(event) => event.preventDefault()}
+                  >
+                    {humanise(column.id)}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">

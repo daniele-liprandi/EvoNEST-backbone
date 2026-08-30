@@ -84,13 +84,17 @@ export const handleBulkUpdateTraitFields = async (traitIds, changes) => {
     }
 };
 
+// No success toast: called on every click of an inline control; only failures surface.
 const debouncedHandleStatusChangeTrait = debounce(async (traitId, field, value, withmutate = false) => {
-    await fetch(`${prepend_path}/api/traits`, {
+    const res = await fetch(`${prepend_path}/api/traits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: "setfield", id: traitId, field: field, value: value })
     });
-    toast.message("Status changed");
+    if (!res.ok) {
+        toast.error("Could not save the change");
+        return;
+    }
     if (withmutate) {
         mutate(`${prepend_path}/api/traits`);
     }
@@ -102,12 +106,15 @@ export const handleStatusChangeTrait = (traitId, field, value, withmutate = fals
 
 
 export const handleStatusIncrementTrait = debounce(async (traitId, field, withmutate = false) => {
-    await fetch(`${prepend_path}/api/traits`, {
+    const res = await fetch(`${prepend_path}/api/traits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: "incrementfield", id: traitId, field: field })
     });
-    toast.message("increment");
+    if (!res.ok) {
+        toast.error("Could not save the change");
+        return;
+    }
     if (withmutate) {
         mutate(`${prepend_path}/api/traits`);
     }

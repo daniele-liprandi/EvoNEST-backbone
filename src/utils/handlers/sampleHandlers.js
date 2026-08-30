@@ -85,13 +85,18 @@ export const handleBulkUpdateSampleFields = async (sampleIds, changes) => {
     }
 };
 
+// No success toast on these two: the husbandry buttons call them on every
+// click and the cell already reflects the new value. Only failures surface.
 const debouncedHandleStatusChangeSample = debounce(async (sampleId, field, value, customLogbookEntry, withmutate = false) => {
-    await fetch(`${prepend_path}/api/samples`, {
+    const res = await fetch(`${prepend_path}/api/samples`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: "setfield", id: sampleId, field: field, value: value, customLogbookEntry: customLogbookEntry})
     });
-    toast.message("Status changed");
+    if (!res.ok) {
+        toast.error("Could not save the change");
+        return;
+    }
     if (withmutate) {
         mutate(`${prepend_path}/api/samples`);
     }
@@ -102,12 +107,15 @@ export const handleStatusChangeSample = (sampleId, field, value, customLogbookEn
 };
 
 export const handleStatusIncrementSample = debounce(async (sampleId, field, withmutate = false) => {
-    await fetch(`${prepend_path}/api/samples`, {
+    const res = await fetch(`${prepend_path}/api/samples`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: "incrementfield", id: sampleId, field: field })
     });
-    toast.message("increment");
+    if (!res.ok) {
+        toast.error("Could not save the change");
+        return;
+    }
     if (withmutate) {
         mutate(`${prepend_path}/api/samples`);
     }
