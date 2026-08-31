@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findCreateToolResult, findQueryToolResult } from '../lib/toolResults.js'
+import { findCreateToolResult, findQueryToolResult, findTreemapToolResult } from '../lib/toolResults.js'
 
 const queryPayload = {
   data: [{ name: 'Araatr1' }],
@@ -75,5 +75,24 @@ describe('findCreateToolResult', () => {
 
   it('returns null when no create tool ran', () => {
     expect(findCreateToolResult({ toolResults: [{ toolName: 'queryData', result: queryPayload }] })).toBeNull()
+  })
+})
+
+describe('findTreemapToolResult', () => {
+  const treemapPayload = {
+    ids: ['family:Araneidae', 'family:Araneidae/genus:Araneus'],
+    labels: ['Araneidae', 'Araneus'],
+    parents: ['', 'family:Araneidae'],
+    values: [3, 2],
+    title: 'samples by family > genus',
+  }
+
+  it('reads the treemap arrays from a step result', () => {
+    const r = { steps: [{ toolResults: [{ toolName: 'generateTreemap', result: treemapPayload }] }] }
+    expect(findTreemapToolResult(r)?.values).toEqual([3, 2])
+  })
+
+  it('ignores a query result', () => {
+    expect(findTreemapToolResult({ toolResults: [{ toolName: 'queryData', result: queryPayload }] })).toBeNull()
   })
 })
