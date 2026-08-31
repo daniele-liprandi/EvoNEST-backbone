@@ -59,29 +59,65 @@ const setSampleFields = async (sampleId, changes) => {
     return failed;
 };
 
+const TAXON_FIELDS = ["family", "genus", "species"];
+const splitTaxon = (changes) => {
+    const taxon = {};
+    const rest = {};
+    for (const [k, v] of Object.entries(changes)) {
+        (TAXON_FIELDS.includes(k) ? taxon : rest)[k] = v;
+    }
+    return { taxon, rest };
+};
+
+// Apply family/genus/species (and optionally regenerate the derived names) to a
+// batch of samples in one race-free server pass.
+const retaxon = async (ids, taxonChanges, regenerate) => {
+    const res = await fetch(`${prepend_path}/api/samples`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method: 'retaxon', ids, changes: taxonChanges, regenerateNames: regenerate }),
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'retaxon failed');
+    return res.json();
+};
+
 // Write only the fields the caller passes, so an untouched field is never sent.
-// Used by the row edit dialog.
-export const handleUpdateSampleFields = async (sampleId, changes) => {
+// Used by the row edit dialog. A taxon change routes through `retaxon`.
+export const handleUpdateSampleFields = async (sampleId, changes, { regenerate = false } = {}) => {
     if (Object.keys(changes).length === 0) return;
-    const failed = await setSampleFields(sampleId, changes);
-    mutate(`${prepend_path}/api/samples`);
-    if (failed.length) {
-        toast.error(`Could not update: ${failed.join(', ')}`);
-    } else {
-        toast.message('Sample updated');
+    const { taxon, rest } = splitTaxon(changes);
+    try {
+        if (Object.keys(taxon).length) await retaxon([sampleId], taxon, regenerate);
+        const failed = Object.keys(rest).length ? await setSampleFields(sampleId, rest) : [];
+        mutate(`${prepend_path}/api/samples`);
+        if (failed.length) toast.error(`Could not update: ${failed.join(', ')}`);
+        else toast.message(regenerate && Object.keys(taxon).length ? 'Sample updated and renamed' : 'Sample updated');
+    } catch (e) {
+        mutate(`${prepend_path}/api/samples`);
+        toast.error(e instanceof Error ? e.message : 'Could not update the sample');
     }
 };
 
 // Same change applied to many samples (bulk edit).
-export const handleBulkUpdateSampleFields = async (sampleIds, changes) => {
+export const handleBulkUpdateSampleFields = async (sampleIds, changes, { regenerate = false } = {}) => {
     if (Object.keys(changes).length === 0) return;
-    const perSample = await Promise.all(sampleIds.map((id) => setSampleFields(id, changes)));
-    const failed = perSample.filter((f) => f.length > 0).length;
-    mutate(`${prepend_path}/api/samples`);
-    if (failed) {
-        toast.error(`${failed} of ${sampleIds.length} samples could not be updated`);
-    } else {
-        toast.message(`Updated ${sampleIds.length} samples`);
+    const { taxon, rest } = splitTaxon(changes);
+    try {
+        let renamed = 0;
+        if (Object.keys(taxon).length) {
+            const result = await retaxon(sampleIds, taxon, regenerate);
+            renamed = result.renamed?.length ?? 0;
+        }
+        const perSample = Object.keys(rest).length
+            ? await Promise.all(sampleIds.map((id) => setSampleFields(id, rest)))
+            : [];
+        const failed = perSample.filter((f) => f.length > 0).length;
+        mutate(`${prepend_path}/api/samples`);
+        if (failed) toast.error(`${failed} of ${sampleIds.length} samples could not be updated`);
+        else toast.message(renamed ? `Updated ${sampleIds.length} samples, renamed ${renamed}` : `Updated ${sampleIds.length} samples`);
+    } catch (e) {
+        mutate(`${prepend_path}/api/samples`);
+        toast.error(e instanceof Error ? e.message : 'Could not update the samples');
     }
 };
 

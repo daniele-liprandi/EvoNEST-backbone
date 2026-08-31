@@ -25,8 +25,9 @@ import {
  * @param {{
  *   table: any,
  *   onBulkDelete?: ((ids: string[]) => Promise<any> | any) | null,
- *   onBulkUpdateFields?: ((ids: string[], changes: Record<string, any>) => Promise<any> | any) | null,
+ *   onBulkUpdateFields?: ((ids: string[], changes: Record<string, any>, opts: { regenerate: boolean }) => Promise<any> | any) | null,
  *   bulkEditFields?: any[],
+ *   bulkRegenerateOn?: { fields: string[], label: string },
  *   entityLabel?: string,
  *   children?: any,
  * }} props
@@ -36,6 +37,7 @@ export function BulkActionsBar({
   onBulkDelete = null,
   onBulkUpdateFields = null,
   bulkEditFields = [],
+  bulkRegenerateOn = undefined,
   entityLabel = "row",
   children = null,
 }) {
@@ -72,7 +74,8 @@ export function BulkActionsBar({
             rows={selected.map((row) => row.original)}
             fields={bulkEditFields}
             entityLabel={entityLabel}
-            onSubmit={(ids, changes) => onBulkUpdateFields(ids, changes)}
+            regenerateOn={bulkRegenerateOn}
+            onSubmit={(ids, changes, opts) => onBulkUpdateFields(ids, changes, opts)}
             trigger={
               <Button variant="outline" size="sm">
                 <PencilSimple className="size-4" /> Edit

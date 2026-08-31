@@ -22,9 +22,9 @@ import {
   typeColumn,
   sortableFilterableColumn,
 } from "@/components/tables/columns"
-import { sampleEditFields } from "@/components/tables/edit-fields"
+import { sampleEditFields, sampleRegenerateOn } from "@/components/tables/edit-fields"
 
-const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
+const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields, regenerateOn: sampleRegenerateOn })
 
 // The columns a sample table can show, by key. A sample type names the subset it
 // wants (config `columns`); the admin edits that list. Adding a genuinely new

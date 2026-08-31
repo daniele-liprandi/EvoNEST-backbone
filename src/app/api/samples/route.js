@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user, get_name_authuser } from "@/app/api/utils/get_database_user";
 import { isObjectIdString } from "@/app/api/utils/objectId";
+import { DEFAULT_ID_GENERATION, regenerateSampleNames } from "@/shared/config/sample-names";
 
 /**
  * @swagger
@@ -433,6 +434,74 @@ export async function POST(req) {
         } else {
             return new NextResponse(JSON.stringify({ message: "Sample updated successfully" }), { status: 200 });
         }
+    }
+
+    // Change family / genus / species on one or many samples at once, and
+    // optionally regenerate the derived names in a single race-free pass.
+    if (data.method === "retaxon") {
+        const ids = Array.isArray(data.ids) ? data.ids : [];
+        const changes = data.changes && typeof data.changes === "object" ? data.changes : {};
+        const allowed = ["family", "genus", "species"];
+        const taxonChanges = Object.fromEntries(
+            Object.entries(changes).filter(([k]) => allowed.includes(k)),
+        );
+
+        if (ids.length === 0 || Object.keys(taxonChanges).length === 0) {
+            return new NextResponse(JSON.stringify({ error: "retaxon needs ids and family/genus/species changes" }), { status: 400 });
+        }
+
+        const objectIds = ids.map((id) => new ObjectId(id));
+        const targetsRaw = await samples.find({ _id: { $in: objectIds } }).toArray();
+        if (targetsRaw.length === 0) {
+            return new NextResponse(JSON.stringify({ error: "No matching samples" }), { status: 404 });
+        }
+
+        const targets = targetsRaw.map((s) => ({
+            _id: s._id,
+            type: s.type,
+            name: s.name,
+            family: taxonChanges.family ?? s.family,
+            genus: taxonChanges.genus ?? s.genus,
+            species: taxonChanges.species ?? s.species,
+        }));
+
+        let newNames = new Map();
+        if (data.regenerateNames) {
+            const mainSettings = await db.collection("settings").findOne({ type: "main" });
+            const idGeneration = mainSettings?.idGeneration || DEFAULT_ID_GENERATION;
+            const allSamples = await samples
+                .find({}, { projection: { name: 1, genus: 1, species: 1, type: 1 } })
+                .toArray();
+            // The collision context must already reflect the new taxonomy.
+            const byId = new Map(targets.map((t) => [String(t._id), t]));
+            const context = allSamples.map((s) => byId.get(String(s._id)) ?? s);
+            newNames = regenerateSampleNames(targets, context, idGeneration);
+        }
+
+        const now = new Date().toISOString();
+        const renamed = [];
+        const ops = targets.map((t) => {
+            const set = { ...taxonChanges, recentChangeDate: now };
+            const logParts = allowed
+                .filter((k) => k in taxonChanges)
+                .map((k) => `${k}=${taxonChanges[k]}`);
+            let logMsg = `Set ${logParts.join(", ")} by ${authuser}`;
+            const newName = newNames.get(String(t._id));
+            if (newName && newName !== t.name) {
+                set.name = newName;
+                renamed.push({ id: String(t._id), from: t.name, to: newName });
+                logMsg += `; name ${t.name} -> ${newName}`;
+            }
+            return {
+                updateOne: {
+                    filter: { _id: t._id },
+                    update: { $set: set, $push: { logbook: [now, logMsg] } },
+                },
+            };
+        });
+
+        await samples.bulkWrite(ops);
+        return NextResponse.json({ updated: ops.length, renamed });
     }
 
     // Assuming data.method is "incrementfield" and data contains 'id' and the field name to increment

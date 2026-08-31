@@ -19,9 +19,9 @@ import {
   slotColumn,
   speciesColumn,
 } from "@/components/tables/columns"
-import { sampleEditFields } from "@/components/tables/edit-fields"
+import { sampleEditFields, sampleRegenerateOn } from "@/components/tables/edit-fields"
 
-const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
+const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields, regenerateOn: sampleRegenerateOn })
 
 export const positionColumns = [
   selectColumn(),
