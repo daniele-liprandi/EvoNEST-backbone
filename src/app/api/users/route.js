@@ -325,7 +325,8 @@
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
-import { get_database_user, check_user_role } from "../utils/get_database_user";
+import { get_database_user, get_current_user } from "../utils/get_database_user";
+import { userCan } from "../utils/permissions";
 import { isObjectIdString } from "../utils/objectId";
 
 async function getUsers(client) {
@@ -377,6 +378,21 @@ export async function POST(req) {
 
     if (client == null) {
         return new NextResponse(JSON.stringify({ error: "Failed to connect to database" }), { status: 500 });
+    }
+
+    // `update` writes arbitrary fields ($set of the whole body, role included);
+    // `change_databases` and `incrementfield` are equally privileged. Only the
+    // user-manager may call them. `setfield` is self-service (its own
+    // protected-field list) but must still be restricted to your own record.
+    const MANAGE_METHODS = new Set(["update", "incrementfield", "change_databases"]);
+    if (MANAGE_METHODS.has(data.method) && !(await userCan("users.manage"))) {
+        return new NextResponse(JSON.stringify({ error: "Not allowed to manage users" }), { status: 403 });
+    }
+    if (data.method === "setfield" && !(await userCan("users.manage"))) {
+        const self = await get_current_user().catch(() => null);
+        if (!self || String(self._id) !== String(data.id)) {
+            return new NextResponse(JSON.stringify({ error: "You can only edit your own profile" }), { status: 403 });
+        }
     }
 
     const db = client.db("usersdb");
@@ -470,11 +486,7 @@ export async function POST(req) {
 
     // Check if the request is to change user databases
     if (data.method === "change_databases") {
-        // Check if user has admin role before allowing database changes
-        const isAdmin = await check_user_role('admin');
-        if (!isAdmin) {
-            return new NextResponse(JSON.stringify({ error: "Only administrators can change user databases" }), { status: 403 });
-        }
+        // authorization handled by the MANAGE_METHODS gate above
 
         // Validate that all requested databases exist in the system
         if (data.databases && data.databases.length > 0) {
@@ -513,11 +525,9 @@ export async function POST(req) {
         }
     }
 
-    // Create a new user if it's not an update
-    // Check if user has admin role before allowing user creation
-    const isAdmin = await check_user_role('admin');
-    if (!isAdmin) {
-        return new NextResponse(JSON.stringify({ error: "Only administrators can create new users" }), { status: 403 });
+    // Create a new user if it's not one of the methods above
+    if (!(await userCan("users.manage"))) {
+        return new NextResponse(JSON.stringify({ error: "Not allowed to create users" }), { status: 403 });
     }
 
     // Validate that all requested databases exist in the system
@@ -562,10 +572,8 @@ export async function POST(req) {
 
 export async function DELETE(req) {
     try {
-        // Check if user has admin role before allowing user deletion
-        const isAdmin = await check_user_role('admin');
-        if (!isAdmin) {
-            return new NextResponse(JSON.stringify({ error: "Only administrators can delete users" }), { status: 403 });
+        if (!(await userCan("users.manage"))) {
+            return new NextResponse(JSON.stringify({ error: "Not allowed to delete users" }), { status: 403 });
         }
 
         // Parse the request body to get the sample ID

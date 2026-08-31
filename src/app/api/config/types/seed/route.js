@@ -4,6 +4,7 @@ import {
   get_database_user,
   get_name_authuser,
 } from "@/app/api/utils/get_database_user";
+import { userCan } from "@/app/api/utils/permissions";
 import { DEFAULT_CONFIGS } from "@/shared/config/default-types";
 
 /**
@@ -17,11 +18,21 @@ import { DEFAULT_CONFIGS } from "@/shared/config/default-types";
  *     responses:
  *       200:
  *         description: Database set to defaults successfully
+ *       403:
+ *         description: Not allowed to reset the lab configuration
  *       500:
  *         description: Server error
  */
 export async function POST(req) {
   try {
+    // Destructive: replaces every config document with the defaults.
+    if (!(await userCan("config.seed"))) {
+      return new NextResponse(
+        JSON.stringify({ error: "Not allowed to reset the lab configuration" }),
+        { status: 403 }
+      );
+    }
+
     const client = await get_or_create_client();
     const authuser = (await get_name_authuser()) || "system";
 

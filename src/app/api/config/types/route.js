@@ -2,6 +2,7 @@ import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user, get_name_authuser } from "@/app/api/utils/get_database_user";
+import { userCan } from "@/app/api/utils/permissions";
 
 /**
  * @swagger
@@ -169,6 +170,11 @@ export async function POST(req) {
     const client = await get_or_create_client();
     const authuser = await get_name_authuser() || "unknown user";
 
+    const capability = data.method === "seed" ? "config.seed" : "config.edit";
+    if (!(await userCan(capability))) {
+        return new NextResponse(JSON.stringify({ error: "Not allowed to edit the lab configuration" }), { status: 403 });
+    }
+
     if (client == null) {
         return new NextResponse(JSON.stringify({ error: "Failed to connect to database" }), { status: 500 });
     }
@@ -284,9 +290,13 @@ export async function POST(req) {
 
 export async function DELETE(req) {
     try {
+        if (!(await userCan("config.edit"))) {
+            return new NextResponse(JSON.stringify({ error: "Not allowed to edit the lab configuration" }), { status: 403 });
+        }
+
         const { type, value } = await req.json();
         const client = await get_or_create_client();
-        
+
         if (!client) {
             return new NextResponse(JSON.stringify({ error: "Failed to connect to database" }), { status: 500 });
         }
