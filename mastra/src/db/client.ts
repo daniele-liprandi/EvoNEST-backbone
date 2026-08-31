@@ -2,14 +2,18 @@ import { MongoClient } from 'mongodb'
 
 const uri = process.env.MONGODB_URI
 
-let client: MongoClient | null = null
+let clientPromise: Promise<MongoClient> | null = null
 
-export async function getMongoClient(): Promise<MongoClient> {
-  if (client) return client
-  if (!uri) throw new Error('MONGODB_URI is required')
-  client = new MongoClient(uri)
-  await client.connect()
-  return client
+export function getMongoClient(): Promise<MongoClient> {
+  if (!clientPromise) {
+    if (!uri) throw new Error('MONGODB_URI is required')
+    clientPromise = new MongoClient(uri).connect().catch((err) => {
+      // Let the next call retry instead of caching a rejected promise.
+      clientPromise = null
+      throw err
+    })
+  }
+  return clientPromise
 }
 
 export async function getDb(dbName: string) {
