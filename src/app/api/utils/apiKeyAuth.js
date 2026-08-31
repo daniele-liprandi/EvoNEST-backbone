@@ -57,7 +57,9 @@ export async function validateApiKey(apiKey, database) {
 }
 
 /**
- * Extracts API key from request headers
+ * Extracts the API key from request headers only. Query-string keys are not
+ * accepted: they end up in access logs, proxy logs and Referer headers.
+ * Accepts `Authorization: Bearer <key>` or `X-API-Key: <key>`.
  * @param {Request} req - The Next.js request object
  * @returns {string|null} The API key if found, null otherwise
  */
