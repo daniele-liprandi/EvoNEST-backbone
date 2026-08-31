@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Atkinson_Hyperlegible_Next } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/themeprovider";
+import { IconProvider } from "@/components/icon-provider";
 import { Toaster } from "@/components/ui/sonner"
 import { Providers } from "./providers";
 import { cn } from "@/lib/utils";
@@ -39,13 +40,15 @@ export default function RootLayout({
             enableSystem={false}
             disableTransitionOnChange
           >
-            <SWRProvider>
-              <Toaster richColors />
-              <div className="flex-grow">
-                {children}
-              </div>
-              <Footer />
-            </SWRProvider>
+            <IconProvider>
+              <SWRProvider>
+                <Toaster richColors />
+                <div className="flex-grow">
+                  {children}
+                </div>
+                <Footer />
+              </SWRProvider>
+            </IconProvider>
           </ThemeProvider>
         </Providers>
       </body>

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "@radix-ui/react-icons"
+import { CalendarDays } from "lucide-react"
 import { format } from "date-fns"
 import { mutate } from "swr"
 
@@ -35,7 +35,6 @@ import { LabelType } from "@/utils/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useMemo, useState } from "react"
 import { getUserIdByName } from "@/hooks/userHooks"
-import { Textarea } from "../ui/textarea"
 import { linkFileToEntry, uploadFiles } from "@/utils/handlers/fileHandlers"
 
 const formSchema = z.object({
@@ -113,7 +112,6 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const method = 'create';
         const endpoint = `${prepend_path}/api/traits`;
-        console.log(values)
         // if measurements is a list of measurement, do the following
         // 1. save the list formatted correctly inside listvals
         // 2. calculate the average of the list
@@ -170,10 +168,7 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
             mutate(`${prepend_path}/api/traits`);
             mutate(`${prepend_path}/api/traits?includeSampleFeatures=true`);
             
-            toast.success(
-                "Submitted!", {
-                description: <code className="text-white">{JSON.stringify(values, null, 2)}</code>,
-            })
+            toast.success("Trait saved")
             // for each file in fileResponse, link it to the trait
             if (fileResponse) {
                 fileResponse.forEach(async (fileId: string | null) => {
@@ -187,7 +182,7 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <Tabs defaultValue="general" className="w-auto">
+                <Tabs defaultValue="general" className="w-full">
                     <TabsList>
                         <TabsTrigger value="general">General</TabsTrigger>
                         <TabsTrigger value="details">Details</TabsTrigger>
@@ -231,9 +226,10 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
                                         <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button
-                                                    variant={"outline"}
+                                                    variant="outline"
+                                                    type="button"
                                                     className={cn(
-                                                        "w-[240px] pl-3 text-left font-normal",
+                                                        "w-full pl-3 text-left font-normal",
                                                         !field.value && "text-muted-foreground"
                                                     )}
                                                 >
@@ -242,7 +238,7 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
                                                     ) : (
                                                         <span>Pick a date</span>
                                                     )}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                    <CalendarDays className="ml-auto size-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
@@ -265,7 +261,7 @@ export function ProfileFormTraits({ users, samples, user }: { users: any, sample
                             )}
                         />
                     </TabsContent>
-                    <TabsContent value="values">
+                    <TabsContent value="values" className="space-y-4">
                         <ComboFormBox
                             control={form.control}
                             setValue={form.setValue}

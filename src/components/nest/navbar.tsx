@@ -6,21 +6,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-  PiBugBeetleBold,
-  PiButterflyDuotone,
-  PiBellBold,
-  PiDatabaseBold,
-  PiHouseBold,
-  PiRulerBold,
-  PiUserBold,
-  PiUserCircleBold,
-  PiWrenchBold,
-  PiMagnifyingGlassBold,
-  PiHamburgerBold,
-  PiMathOperationsBold,
-  PiChatBold,
-} from "react-icons/pi";
-import { RxHamburgerMenu } from "react-icons/rx";
+  BugBeetle,
+  Bell,
+  Database,
+  Ruler,
+  User,
+  UserCircle,
+  Wrench,
+  MathOperations,
+  List,
+} from "@phosphor-icons/react";
 import { cn, prepend_path } from "@/lib/utils";
 import {
   NavigationMenu,
@@ -60,7 +55,7 @@ import { useConfigTypes } from "@/hooks/useConfigTypes";
 
 const usersProps = {
   label: "Users",
-  icon: <PiUserBold size={60} />, // Replace with the actual icon component
+  icon: <User size={60} />, // Replace with the actual icon component
   description: "All the users in the NEST",
   options: [],
   href: "/users",
@@ -68,7 +63,7 @@ const usersProps = {
 
 const experimentsProps = {
   label: "Experiments",
-  icon: <PiMathOperationsBold size={60} />,
+  icon: <MathOperations size={60} />,
   description: "All the experiments collected in the NEST",
   options: [
     {
@@ -82,7 +77,7 @@ const experimentsProps = {
 
 const traitsProps = {
   label: "Traits",
-  icon: <PiRulerBold size={60} />,
+  icon: <Ruler size={60} />,
   description: "Traits in the NEST",
   options: [
     {
@@ -96,7 +91,7 @@ const traitsProps = {
 
 const settingsProps = {
   label: "Settings",
-  icon: <PiWrenchBold size={60} />,
+  icon: <Wrench size={60} />,
   description: "Settings for the NEST",
   options: [
     {
@@ -177,7 +172,7 @@ export function NavBar() {
 
   const samplesProps = {
     label: "Samples",
-    icon: <PiBugBeetleBold size={60} />, // Replace with the actual icon component
+    icon: <BugBeetle size={60} />, // Replace with the actual icon component
     description: "All the samples collected in the NEST",
     options: [
       ...sampletypes.map((sampletype) => ({
@@ -323,7 +318,7 @@ export function NavBar() {
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <RxHamburgerMenu className="h-5 w-5" />
+            <List className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
@@ -433,7 +428,7 @@ export function NavBar() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <PiBellBold className="h-5 w-5" />
+              <Bell className="h-5 w-5" />
               <span className="sr-only">Developer news</span>
             </Button>
           </PopoverTrigger>
@@ -447,7 +442,7 @@ export function NavBar() {
         {session?.user && (
           <Select value={activeDatabase} onValueChange={handleDatabaseChange}>
             <SelectTrigger className="hidden w-10 md:flex md:w-[150px]">
-              <PiDatabaseBold className="h-5 w-5" />
+              <Database className="h-5 w-5" />
               <SelectValue placeholder="Select database" />
             </SelectTrigger>
             <SelectContent>
@@ -474,7 +469,7 @@ export function NavBar() {
               </Avatar>
             ) : (
               <Button variant="outline" size="icon">
-                <PiUserCircleBold className="h-8 w-8" />
+                <UserCircle className="h-8 w-8" />
               </Button>
             )}
           </DropdownMenuTrigger>
