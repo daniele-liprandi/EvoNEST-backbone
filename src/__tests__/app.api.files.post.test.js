@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import { POST } from '@/app/api/files/route';
 import { ObjectId } from 'mongodb';
 

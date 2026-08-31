@@ -1,3 +1,4 @@
+/** @jest-environment node */
 import { describe, expect, jest, test } from '@jest/globals';
 import { ObjectId } from 'mongodb';
 import { DELETE } from '@/app/api/traits/route'; // adjust path as needed
