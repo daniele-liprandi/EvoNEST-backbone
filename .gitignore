@@ -66,3 +66,5 @@ docs/.vitepress/cache/
 
 # Internal docs
 .internal_docs/
+# Internal session handoff scratchpad, not project content
+notes-for-user.md
