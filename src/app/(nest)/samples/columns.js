@@ -21,15 +21,15 @@ import {
   speciesColumn,
   typeColumn,
   sortableFilterableColumn,
+  customColumn,
 } from "@/components/tables/columns"
 import { sampleEditFields } from "@/components/tables/edit-fields"
 
 const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
 
-// The columns a sample table can show, by key. A sample type names the subset it
-// wants (config `columns`); the admin edits that list. Adding a genuinely new
-// kind of column (a custom counter, a lab-specific toggle) is the dynamic-columns
-// epic — this is the fixed built-in set.
+// The built-in columns a sample table can show, by key. A sample type's config
+// `columns` list is a mix of these keys and custom column objects
+// ({ key, label, kind, ... } — see customColumn); the admin edits the list.
 const PALETTE = {
   name: sampleNameColumn,
   responsible: responsibleColumn,
@@ -53,8 +53,11 @@ const PALETTE = {
   eggsac: eggsacButtonColumn,
 }
 
-/** Every column key a sample type may list. */
+/** Every built-in column key a sample type may list. */
 export const SAMPLE_COLUMN_KEYS = Object.keys(PALETTE)
+
+/** The `kind` values a custom column may have. */
+export const CUSTOM_COLUMN_KINDS = ["counter", "toggle", "progress", "text", "number", "date"]
 
 // Used when a sample type does not name its own `columns`.
 const DEFAULT_COLUMNS = ["name", "responsible", "recentChange", "date", "type", "parent", "location"]
@@ -73,14 +76,19 @@ const BUILTIN_TYPE_COLUMNS = {
 /**
  * Column set for one sample type's table, from its config `columns` list (or a
  * sensible fallback). `typeConfig` is the config entry — `{ value, columns? }`.
+ * Each list entry is a built-in key (string) or a custom column object.
  */
 export function buildSampleColumns(typeConfig) {
   const type = typeof typeConfig === "string" ? typeConfig : typeConfig?.value
-  const keys =
+  const entries =
     (Array.isArray(typeConfig?.columns) && typeConfig.columns.length && typeConfig.columns) ||
     BUILTIN_TYPE_COLUMNS[type] ||
     DEFAULT_COLUMNS
-  const cols = keys.flatMap((key) => (PALETTE[key] ? [PALETTE[key]()] : []))
+  const cols = entries.flatMap((entry) => {
+    if (typeof entry === "string") return PALETTE[entry] ? [PALETTE[entry]()] : []
+    if (entry && entry.key && entry.kind) return [customColumn(entry)]
+    return []
+  })
   return [selectColumn(), ...cols, actions]
 }
 
