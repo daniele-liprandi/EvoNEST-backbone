@@ -3,9 +3,18 @@ import path from "path";
 import fs from "fs/promises";
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { get_database_user } from "@/app/api/utils/get_database_user";
+import { requireEnv } from "@/app/api/utils/env";
 import { ObjectId } from "mongodb";
 
-const STORAGE_PATH = process.env.STORAGE_PATH 
+const STORAGE_PATH = requireEnv("STORAGE_PATH");
+
+// The stored path comes from the database. Confirm it resolves to a location
+// inside the storage root before touching the filesystem.
+function isWithinStorage(filePath) {
+    const root = path.resolve(STORAGE_PATH);
+    const resolved = path.resolve(filePath);
+    return resolved === root || resolved.startsWith(root + path.sep);
+}
 
 function toSafeFilename(name) {
     return String(name || "download")
@@ -109,6 +118,11 @@ export async function GET(req) {
         }
 
         const filePath = fileDoc.path;
+
+        if (typeof filePath !== "string" || !isWithinStorage(filePath)) {
+            console.error("Refusing to serve a file outside the storage root:", filePath);
+            return NextResponse.json({ error: "Invalid file path." }, { status: 403 });
+        }
 
         // Check if the file exists
         try {
