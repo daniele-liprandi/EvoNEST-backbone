@@ -192,6 +192,29 @@ At the top-right, you'll see the `Scan QR` button, the theme toggle, **the curre
 From the **Users** page, admins can create additional NESTs for different projects or research groups. Users can be granted access to multiple NESTs and switch between them using the NEST selector in the top-right corner.
 :::
 
+### Roles and permissions
+
+Every user has one **role**. Which actions each role can perform is a list an
+admin edits under **Settings → Administration**:
+
+- **Roles** — add, rename or remove the roles your lab uses. `admin` always has
+  full access and cannot be removed.
+- **Permissions** — a grid of action against role. Tick a box to let that role
+  perform that action (deleting samples, editing the lab configuration, and so
+  on). `admin` holds every one.
+- **People** — assign a role to each user.
+
+The defaults keep user and database management admin-only, and let the working
+roles edit the configuration and delete records. The **first person to sign in**
+before any admin exists is treated as an admin so they can finish setup.
+
+::: tip Direct database access
+If you ever need to change data the app does not expose — including a user's
+role when you are locked out — the Mongo Express admin tool at
+`http://localhost:8081` reads and writes the database directly. Use it
+sparingly; it has no guard rails.
+:::
+
 ## Step 6: understand the data structure
 
 Before we start adding data, let's understand how EvoNEST organizes information.
