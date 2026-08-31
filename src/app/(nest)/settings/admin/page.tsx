@@ -62,6 +62,10 @@ function RolesEditor({ roles, onSaved }: { roles: Role[]; onSaved: () => void })
   const [saving, setSaving] = useState(false)
   useEffect(() => setDraft(roles), [roles])
 
+  // A saved role's value is the key users are stored under, so renaming it would
+  // orphan those users. Only a role added in this session can have its value edited.
+  const savedValues = useMemo(() => new Set(roles.map((r) => r.value)), [roles])
+
   const set = (i: number, patch: Partial<Role>) =>
     setDraft((d) => d.map((r, j) => (j === i ? { ...r, ...patch } : r)))
 
@@ -84,6 +88,7 @@ function RolesEditor({ roles, onSaved }: { roles: Role[]; onSaved: () => void })
         <CardTitle>Roles</CardTitle>
         <CardDescription>
           The roles a person can hold. <code>admin</code> always has full access and cannot be removed.
+          A role&apos;s value is fixed once saved — to rename one, add a new role and reassign people.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -92,7 +97,7 @@ function RolesEditor({ roles, onSaved }: { roles: Role[]; onSaved: () => void })
             <Input
               className="w-32 font-mono text-sm"
               value={role.value}
-              disabled={role.value === "admin"}
+              disabled={savedValues.has(role.value)}
               onChange={(e) => set(i, { value: e.target.value.replace(/\s/g, "") })}
               placeholder="value"
             />
