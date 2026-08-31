@@ -1,6 +1,7 @@
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
 import { getDb } from '../db/client.js'
+import { buildMongoFilter, sanitizeFilterParams } from '../lib/filters.js'
 
 export const generateTreemap = createTool({
   id: 'generateTreemap',
@@ -21,7 +22,11 @@ export const generateTreemap = createTool({
   }),
   execute: async ({ entity = 'samples', hierarchy = ['family', 'genus', 'species'], dbName, filters = {} }) => {
     const db = await getDb(dbName)
-    const docs = await db.collection(entity).find(filters as any).toArray()
+    const { params: safeFilters, rejected } = sanitizeFilterParams(filters)
+    if (rejected.length) {
+      console.warn('[generateTreemap] rejected filter keys:', rejected.join(', '))
+    }
+    const docs = await db.collection(entity).find(buildMongoFilter(safeFilters)).toArray()
 
     const counts = new Map<string, number>()
     for (const doc of docs) {

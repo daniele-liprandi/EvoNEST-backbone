@@ -2,6 +2,7 @@ import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
 import { getDb } from '../db/client.js'
 import { buildFilterUrl } from './querySamples.js'
+import { sanitizeFilterParams } from '../lib/filters.js'
 
 const FiltersSchema = z.record(z.string(), z.string()).describe(
   'Field filters. Supports *, comma-separated OR, and _gte/_lte date suffixes.'
@@ -44,7 +45,9 @@ export const queryTraits = createTool({
     totalCount: z.number(),
     filterUrl: z.string(),
   }),
-  execute: async ({ params = {}, dbName }) => {
+  execute: async ({ params: rawParams = {}, dbName }) => {
+    const { params, rejected } = sanitizeFilterParams(rawParams)
+    if (rejected.length) console.warn('[queryTraits] rejected filter keys:', rejected.join(', '))
     console.log('[queryTraits] params:', JSON.stringify(params), 'dbName:', dbName)
     const db = await getDb(dbName)
     const collection = db.collection('traits')
