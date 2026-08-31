@@ -74,6 +74,14 @@ const BUILTIN_TYPE_COLUMNS = {
 }
 
 /**
+ * The column list a type falls back to when it has not configured its own —
+ * what the Settings editor seeds a fresh type's list from.
+ */
+export function defaultColumnsForType(type) {
+  return BUILTIN_TYPE_COLUMNS[type] || DEFAULT_COLUMNS
+}
+
+/**
  * Column set for one sample type's table, from its config `columns` list (or a
  * sensible fallback). `typeConfig` is the config entry — `{ value, columns? }`.
  * Each list entry is a built-in key (string) or a custom column object.

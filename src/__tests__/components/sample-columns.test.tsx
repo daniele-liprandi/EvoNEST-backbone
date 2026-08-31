@@ -1,4 +1,4 @@
-import { buildSampleColumns, SAMPLE_COLUMN_KEYS, CUSTOM_COLUMN_KINDS } from "@/app/(nest)/samples/columns";
+import { buildSampleColumns, SAMPLE_COLUMN_KEYS, CUSTOM_COLUMN_KINDS, defaultColumnsForType } from "@/app/(nest)/samples/columns";
 import { customColumn } from "@/components/tables/columns";
 
 const keyOf = (col: any) => col.id ?? col.accessorKey;
@@ -55,5 +55,25 @@ describe("customColumn", () => {
   test("exports the palette keys and the custom kinds", () => {
     expect(SAMPLE_COLUMN_KEYS).toEqual(expect.arrayContaining(["name", "sex", "molted"]));
     expect(CUSTOM_COLUMN_KINDS).toEqual(["counter", "toggle", "progress", "text", "number", "date"]);
+  });
+});
+
+describe("defaultColumnsForType", () => {
+  test("special-cased types get their own layout", () => {
+    expect(defaultColumnsForType("animal")).toContain("eggsac");
+    expect(defaultColumnsForType("subsample")).toContain("subsampletype");
+  });
+
+  test("any other type gets the generic set", () => {
+    expect(defaultColumnsForType("plant")).toEqual(defaultColumnsForType("whatever"));
+    expect(defaultColumnsForType("plant")).toContain("name");
+  });
+
+  test("every default key is a real built-in the editor offers", () => {
+    for (const type of ["animal", "subsample", "plant"]) {
+      for (const key of defaultColumnsForType(type)) {
+        expect(SAMPLE_COLUMN_KEYS).toContain(key);
+      }
+    }
   });
 });

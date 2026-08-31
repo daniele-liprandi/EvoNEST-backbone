@@ -39,6 +39,7 @@ import {
 } from "@/utils/types";
 import { ConfigSetup } from "@/components/config-setup";
 import { checkConfigExists } from "@/utils/config-utils";
+import { ColumnEditor } from "./column-editor";
 
 interface LabelType {
   value: string;
@@ -56,6 +57,7 @@ interface TypeTableProps {
   showColumns: string[];
   configType: string;
   onRefresh: () => void;
+  renderRowExtra?: (item: LabelType) => React.ReactNode;
 }
 
 const AddItemForm = ({
@@ -218,6 +220,7 @@ const TypeTable = ({
   showColumns,
   configType,
   onRefresh,
+  renderRowExtra,
 }: TypeTableProps) => (
   <Card className="mb-6">
     <CardHeader>
@@ -247,15 +250,18 @@ const TypeTable = ({
                 <TableCell key={column}>{item[column] || "-"}</TableCell>
               ))}
               <TableCell>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() =>
-                    handleDeleteItem(configType, item.value, onRefresh)
-                  }
-                >
-                  Delete
-                </Button>
+                <div className="flex items-center gap-2">
+                  {renderRowExtra?.(item)}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() =>
+                      handleDeleteItem(configType, item.value, onRefresh)
+                    }
+                  >
+                    Delete
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -426,6 +432,12 @@ export default function TypesPage() {
             showColumns={["label", "value", "description", "shortened"]}
             configType="sampletypes"
             onRefresh={refreshConfig}
+            renderRowExtra={(item) => (
+              <ColumnEditor
+                type={item as unknown as React.ComponentProps<typeof ColumnEditor>["type"]}
+                onSaved={refreshConfig}
+              />
+            )}
           />
 
           <TypeTable
@@ -442,15 +454,6 @@ export default function TypesPage() {
             description="Different types of measurements and traits that can be recorded"
             data={configs.traittypes}
             showColumns={["label", "value", "unit", "description"]}
-            configType="traittypes"
-            onRefresh={refreshConfig}
-          />
-
-          <TypeTable
-            title="Trait Types"
-            description="Different types of measurements and traits that can be recorded"
-            data={configs.traittypes}
-            showColumns={['label', 'value', 'unit', 'description']}
             configType="traittypes"
             onRefresh={refreshConfig}
           />
