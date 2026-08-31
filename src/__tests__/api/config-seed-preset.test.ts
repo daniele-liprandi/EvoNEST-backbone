@@ -14,13 +14,14 @@ const { get_or_create_client } = require("@/app/api/utils/mongodbClient");
 const { userCan } = require("@/app/api/utils/permissions");
 
 const replaceOne = jest.fn().mockResolvedValue({ upsertedCount: 1 });
+const updateOne = jest.fn().mockResolvedValue({});
 
 beforeEach(() => {
   jest.clearAllMocks();
   jest.spyOn(console, "error").mockImplementation(() => {});
   userCan.mockResolvedValue(true);
   get_or_create_client.mockResolvedValue({
-    db: () => ({ collection: () => ({ replaceOne }) }),
+    db: () => ({ collection: () => ({ replaceOne, updateOne }) }),
   });
 });
 
@@ -59,6 +60,20 @@ describe("config/types/seed with presets", () => {
     userCan.mockResolvedValue(false);
     const res = await POST(body({ preset: "generic" }));
     expect(res.status).toBe(403);
+  });
+
+  test("the lab name and description are written to the main settings", async () => {
+    await POST(body({ preset: "generic", labName: "Silk Lab", labDescription: "we study spider silk" }));
+    expect(updateOne).toHaveBeenCalledWith(
+      { type: "main" },
+      { $set: { type: "main", "labInfo.name": "Silk Lab", "labInfo.description": "we study spider silk" } },
+      { upsert: true },
+    );
+  });
+
+  test("no settings write when the lab fields are absent", async () => {
+    await POST(body({ preset: "generic" }));
+    expect(updateOne).not.toHaveBeenCalled();
   });
 
   test("resolvePreset merges the override onto the defaults", () => {
