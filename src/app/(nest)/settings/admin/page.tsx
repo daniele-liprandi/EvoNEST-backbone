@@ -311,7 +311,11 @@ export default function AdminSettingsPage() {
     roles: Role[]
     permissions: Permission[]
     capabilities: Capability[]
-  }>(isAdmin ? `${prepend_path}/api/config/roles` : null, fetcher)
+  }>(isAdmin ? `${prepend_path}/api/config/roles` : null, fetcher, {
+    // The editors seed their draft from this data; a focus revalidation
+    // mid-edit would otherwise discard unsaved changes.
+    revalidateOnFocus: false,
+  })
 
   if (isUserLoading) {
     return <Skeleton className="m-6 h-96 w-full max-w-3xl rounded-xl" />
