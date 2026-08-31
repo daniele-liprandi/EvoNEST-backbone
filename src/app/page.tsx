@@ -2,25 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ModeToggle } from "@/components/ui/custom/mode-toggle";
+import { ThemeMenu } from "@/components/ui/custom/theme-menu";
 import { EvoNestLogo } from "@/components/ui/custom/evonest-logo";
 import { FeatureResources } from "@/components/landing/feature-resources";
 import herodark from "@/images/hero-dark.png";
 import herolight from "@/images/hero-light.png";
 
 export default function Home() {
-  const { setTheme } = useTheme();
-
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with mode toggle */}
         <div className="flex justify-end mb-8">
-          <ModeToggle setTheme={setTheme} />
+          <ThemeMenu />
         </div>
         {/* Main content */}
         <div className="max-w-4xl mx-auto text-center space-y-8">

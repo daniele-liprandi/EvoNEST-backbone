@@ -47,9 +47,25 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --radius-xl: calc(var(--radius) + 4px);
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  /* Elevation — themes set the --elevation-* raw values below, so shadow-*
+     utilities follow the active theme (see the edge theme for hard offsets). */
+  --shadow-2xs: var(--elevation-2xs);
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+  --shadow-2xl: var(--elevation-2xl);
+
+  --font-weight-heading: var(--heading-weight);
 
   --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
   --animate-slide: slide var(--speed) ease-in-out infinite alternate;
@@ -165,6 +181,16 @@
     --input: 34 9% 93%;
     --ring: 34 100% 42%;
     --radius: 0.5rem;
+    --heading-weight: 600;
+
+    /* Elevation — soft warm shadows, tinted with the foreground hue. */
+    --elevation-2xs: 0 1px 2px 0 hsl(34 40% 12% / 0.04);
+    --elevation-xs:  0 1px 2px 0 hsl(34 40% 12% / 0.06);
+    --elevation-sm:  0 1px 3px 0 hsl(34 40% 12% / 0.08), 0 1px 2px -1px hsl(34 40% 12% / 0.08);
+    --elevation-md:  0 4px 8px -2px hsl(34 40% 12% / 0.10), 0 2px 4px -2px hsl(34 40% 12% / 0.08);
+    --elevation-lg:  0 12px 20px -4px hsl(34 40% 12% / 0.12), 0 4px 8px -4px hsl(34 40% 12% / 0.10);
+    --elevation-xl:  0 20px 32px -8px hsl(34 40% 12% / 0.16);
+    --elevation-2xl: 0 32px 56px -12px hsl(34 40% 12% / 0.22);
 
     /* Categorical palette — oklch for perceptual balance (full color values, not HSL channels) */
     --green: oklch(0.74 0.16 150);   --green-foreground: oklch(0.15 0 0);
@@ -179,6 +205,15 @@
     --brown: oklch(0.50 0.08 55);    --brown-foreground: oklch(0.98 0 0);
     --gray: oklch(0.68 0.012 60);    --gray-foreground: oklch(0.98 0 0);
     --black: oklch(0.30 0.006 60);   --black-foreground: oklch(0.98 0 0);
+  }
+
+  /* ── EvoNEST — the signature. Rounded like the logo, weighted headings,
+        a warm orange focus ring. Surfaces come from :root above. ─────── */
+  [data-theme="evonest"] {
+    --radius: 0.75rem;
+    --heading-weight: 700;
+    --heading-tracking: -0.02em;
+    --ring: 34 100% 42%;
   }
 
   /* ── Sepia — warm parchment, field-notebook tone ─────────────────── */
@@ -208,11 +243,15 @@
     --border: 30 22% 9%;
     --input: 30 22% 14%;
     --radius: 0;
-    --shadow-xs: 2px 2px 0 0 hsl(30 22% 9%);
-    --shadow-sm: 3px 3px 0 0 hsl(30 22% 9%);
-    --shadow: 3px 3px 0 0 hsl(30 22% 9%);
-    --shadow-md: 4px 4px 0 0 hsl(30 22% 9%);
-    --shadow-lg: 5px 5px 0 0 hsl(30 22% 9%);
+    --heading-weight: 700;
+    --heading-tracking: 0;
+    --elevation-2xs: 2px 2px 0 0 hsl(30 22% 9%);
+    --elevation-xs:  2px 2px 0 0 hsl(30 22% 9%);
+    --elevation-sm:  3px 3px 0 0 hsl(30 22% 9%);
+    --elevation-md:  4px 4px 0 0 hsl(30 22% 9%);
+    --elevation-lg:  5px 5px 0 0 hsl(30 22% 9%);
+    --elevation-xl:  7px 7px 0 0 hsl(30 22% 9%);
+    --elevation-2xl: 10px 10px 0 0 hsl(30 22% 9%);
   }
 
   /* ── Dark — warm near-black ──────────────────────────────────────── */
@@ -236,6 +275,15 @@
     --border: 34 12% 17%;
     --input: 34 12% 17%;
     --ring: 34 100% 42%;
+    --heading-weight: 600;
+
+    --elevation-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.30);
+    --elevation-xs:  0 1px 2px 0 hsl(0 0% 0% / 0.40);
+    --elevation-sm:  0 1px 3px 0 hsl(0 0% 0% / 0.50), 0 1px 2px -1px hsl(0 0% 0% / 0.50);
+    --elevation-md:  0 4px 8px -2px hsl(0 0% 0% / 0.55), 0 2px 4px -2px hsl(0 0% 0% / 0.45);
+    --elevation-lg:  0 12px 20px -4px hsl(0 0% 0% / 0.60), 0 4px 8px -4px hsl(0 0% 0% / 0.50);
+    --elevation-xl:  0 20px 32px -8px hsl(0 0% 0% / 0.65);
+    --elevation-2xl: 0 32px 56px -12px hsl(0 0% 0% / 0.70);
 
     --green: oklch(0.74 0.16 150);   --green-foreground: oklch(0.15 0 0);
     --teal: oklch(0.70 0.11 195);    --teal-foreground: oklch(0.15 0 0);
@@ -264,7 +312,9 @@
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-fira_sans), sans-serif;
+  font-family: var(--font-sans);
+  font-weight: var(--heading-weight, 600);
+  letter-spacing: var(--heading-tracking, -0.01em);
 }
 
 
