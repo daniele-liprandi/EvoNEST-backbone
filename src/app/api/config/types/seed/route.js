@@ -1,6 +1,7 @@
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { NextResponse } from "next/server";
 import {
+  check_user_role,
   get_database_user,
   get_name_authuser,
 } from "@/app/api/utils/get_database_user";
@@ -17,11 +18,21 @@ import { DEFAULT_CONFIGS } from "@/shared/config/default-types";
  *     responses:
  *       200:
  *         description: Database set to defaults successfully
+ *       403:
+ *         description: Requires the admin role
  *       500:
  *         description: Server error
  */
 export async function POST(req) {
   try {
+    // Destructive: replaces every config document with the defaults.
+    if (!(await check_user_role("admin"))) {
+      return new NextResponse(
+        JSON.stringify({ error: "Requires the admin role" }),
+        { status: 403 }
+      );
+    }
+
     const client = await get_or_create_client();
     const authuser = (await get_name_authuser()) || "system";
 
