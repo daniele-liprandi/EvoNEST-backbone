@@ -6,20 +6,12 @@ import { useTaxonomicValidation } from '@/hooks/useTaxonomicValidation';
 import { cn } from '@/lib/utils';
 
 /**
- * A taxonomic input field that validates and corrects names on blur
- * @param {Object} props
- * @param {string} props.value - Current field value
- * @param {Function} props.onChange - Change handler
- * @param {Function} props.onBlur - Blur handler (optional)
- * @param {Function} props.onCorrected - Called when a name is corrected with new value
- * @param {Function} props.onValidated - Called when validation is complete with full result
- * @param {string} props.placeholder - Input placeholder
- * @param {string} props.source - Data source for validation ('WSC', 'GNames', 'auto')
- * @param {boolean} props.autoCorrect - Whether to auto-correct on blur (default: true)
- * @param {string} props.validationMode - 'correctName' or 'fullTaxaInfo'
- * @param {string} props.className - Additional CSS classes
- * @param {boolean} props.disabled - Whether the input is disabled
- * @param {string} props.name - Input name attribute
+ * A taxonomic input that verifies the name against GNames on blur / Enter.
+ *
+ * An unrecognised name is not treated as an error: the field shows a neutral
+ * warning state and a toast offering the fallbacks ("Genus sp." or the entered
+ * name). Nothing is rejected. `onCorrected(correctedValue, source)` fires on a
+ * correction; `onValidated(result)` fires in `fullTaxaInfo` mode.
  */
 export const TaxonomicInput = ({
   value = '',
@@ -28,7 +20,6 @@ export const TaxonomicInput = ({
   onCorrected,
   onValidated,
   placeholder = 'Enter taxonomic name',
-  source = 'auto',
   autoCorrect = true,
   validationMode = 'correctName',
   className,
@@ -36,64 +27,57 @@ export const TaxonomicInput = ({
   name,
   ...props
 }) => {
-  const [validationStatus, setValidationStatus] = useState(null); // null, 'validating', 'valid', 'invalid'
+  const [status, setStatus] = useState(null); // null | 'validating' | 'valid' | 'unrecognised' | 'error'
   const [lastValidatedValue, setLastValidatedValue] = useState('');
-  
+
   const { validateName, isValidating } = useTaxonomicValidation();
 
   const handleValidation = useCallback(async (inputValue) => {
-    if (!inputValue || !inputValue.trim() || inputValue === lastValidatedValue) {
-      setValidationStatus(null);
+    const trimmed = (inputValue ?? '').trim();
+    if (!trimmed || trimmed === lastValidatedValue) {
+      setStatus(null);
       return;
     }
 
-    setValidationStatus('validating');
-    
-    try {
-      const result = await validateName(inputValue.trim(), validationMode, source);
-      
-      if (result.success) {
-        const correctedValue = validationMode === 'correctName' ? result.data : result.data.canonical_form;
-        
-        setValidationStatus('valid');
-        setLastValidatedValue(correctedValue);
-        
-        // Call onValidated callback with full result for fullTaxaInfo mode
-        if (validationMode === 'fullTaxaInfo') {
-          onValidated?.(result);
-        }
-        
-        // If the name was corrected and auto-correction is enabled
-        if (autoCorrect && correctedValue !== inputValue.trim()) {
-          toast.success(`Name corrected to: ${correctedValue}`);
-          
-          // Update the field value
-          const syntheticEvent = {
-            target: { value: correctedValue, name }
-          };
-          onChange?.(syntheticEvent);
-          onCorrected?.(correctedValue, result.source);
-        } else if (correctedValue === inputValue.trim()) {
-          toast.success('Name validated successfully');
-        }
-      } else {
-        setValidationStatus('invalid');
-        toast.error(`Validation failed: ${result.error}`);
+    setStatus('validating');
+    const result = await validateName(trimmed, validationMode);
+
+    if (result.success) {
+      const corrected = validationMode === 'correctName' ? result.data : result.data.canonical_form;
+      setStatus('valid');
+      setLastValidatedValue(corrected);
+
+      if (validationMode === 'fullTaxaInfo') onValidated?.(result);
+
+      if (autoCorrect && corrected !== trimmed) {
+        toast.success(`Name corrected to: ${corrected}`);
+        onChange?.({ target: { value: corrected, name } });
+        onCorrected?.(corrected, result.source);
+      } else if (corrected === trimmed) {
+        toast.success('Name verified');
       }
-    } catch (error) {
-      setValidationStatus('invalid');
-      toast.error('Failed to validate name');
-      console.error('Validation error:', error);
+      return;
     }
-  }, [validateName, validationMode, source, autoCorrect, onChange, onCorrected, onValidated, name, lastValidatedValue]);
+
+    if (result.unrecognised) {
+      setStatus('unrecognised');
+      const options = (result.suggestions ?? []).join('  ·  ');
+      toast.warning(
+        options
+          ? `"${trimmed}" is not in the Global Names verifier. You can use: ${options}`
+          : `"${trimmed}" is not in the Global Names verifier.`,
+      );
+      return;
+    }
+
+    setStatus('error');
+    toast.error(result.error || 'Could not verify the name');
+  }, [validateName, validationMode, autoCorrect, onChange, onCorrected, onValidated, name, lastValidatedValue]);
 
   const handleBlur = useCallback(async (e) => {
-    const inputValue = e.target.value;
-    
-    if (autoCorrect && inputValue && inputValue.trim()) {
-      await handleValidation(inputValue);
+    if (autoCorrect && e.target.value?.trim()) {
+      await handleValidation(e.target.value);
     }
-    
     onBlur?.(e);
   }, [handleValidation, autoCorrect, onBlur]);
 
@@ -104,33 +88,21 @@ export const TaxonomicInput = ({
     }
   }, [handleValidation, autoCorrect, value]);
 
-  const getStatusIcon = () => {
-    if (isValidating || validationStatus === 'validating') {
-      return <SearchIcon className="h-4 w-4 text-blue-500 animate-spin" />;
+  const statusIcon = () => {
+    if (isValidating || status === 'validating') {
+      return <SearchIcon className="h-4 w-4 animate-spin text-muted-foreground" />;
     }
-    if (validationStatus === 'valid') {
-      return <CheckIcon className="h-4 w-4 text-green-500" />;
-    }
-    if (validationStatus === 'invalid') {
-      return <AlertCircleIcon className="h-4 w-4 text-red-500" />;
-    }
-    return <SearchIcon className="h-4 w-4 text-gray-400" />;
+    if (status === 'valid') return <CheckIcon className="h-4 w-4 text-primary" />;
+    if (status === 'unrecognised') return <AlertCircleIcon className="h-4 w-4 text-amber-500" />;
+    if (status === 'error') return <AlertCircleIcon className="h-4 w-4 text-destructive" />;
+    return <SearchIcon className="h-4 w-4 text-muted-foreground/60" />;
   };
 
-  const getInputClassName = () => {
-    const baseClasses = 'pr-8';
-    
-    if (validationStatus === 'valid') {
-      return cn(baseClasses, 'border-green-300 focus:border-green-500', className);
-    }
-    if (validationStatus === 'invalid') {
-      return cn(baseClasses, 'border-red-300 focus:border-red-500', className);
-    }
-    if (validationStatus === 'validating') {
-      return cn(baseClasses, 'border-blue-300 focus:border-blue-500', className);
-    }
-    
-    return cn(baseClasses, className);
+  const borderClass = () => {
+    if (status === 'valid') return 'border-primary/50 focus-visible:border-primary';
+    if (status === 'unrecognised') return 'border-amber-500/50 focus-visible:border-amber-500';
+    if (status === 'error') return 'border-destructive/50 focus-visible:border-destructive';
+    return '';
   };
 
   return (
@@ -142,14 +114,12 @@ export const TaxonomicInput = ({
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={getInputClassName()}
+        className={cn('pr-8', borderClass(), className)}
         disabled={disabled || isValidating}
         name={name}
         {...props}
       />
-      <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-        {getStatusIcon()}
-      </div>
+      <div className="absolute right-2 top-1/2 -translate-y-1/2">{statusIcon()}</div>
     </div>
   );
 };

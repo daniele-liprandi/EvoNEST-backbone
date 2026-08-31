@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { TaxonomicInput } from './TaxonomicInput';
 import { useTaxonomicValidation } from '@/hooks/useTaxonomicValidation';
 import { toast } from 'sonner';
@@ -9,190 +9,101 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 
 /**
- * Component for managing taxonomic hierarchy (family, genus, species)
- * Validates the complete taxonomy when all three fields are filled
- * @param {Object} props
- * @param {Object} props.values - Current values {family, genus, species}
- * @param {Function} props.onChange - Called when any field changes
- * @param {Function} props.onValidated - Called when taxonomy is validated with corrected values
- * @param {string} props.source - Data source preference
- * @param {boolean} props.autoCorrect - Whether to auto-correct fields
- * @param {boolean} props.disabled - Whether inputs are disabled
- * @param {Object} props.fieldProps - Additional props for individual fields
+ * Family / genus / species, verified together against GNames when genus and
+ * species are filled. An unrecognised name warns and leaves the fields as
+ * entered — it is never rejected. `onValidated(correctedTaxonomy, source,
+ * fullName)` fires on a successful check.
  */
 export const TaxonomicHierarchy = ({
   values = { family: '', genus: '', species: '' },
   onChange,
   onValidated,
-  source = 'auto',
   autoCorrect = true,
   disabled = false,
   fieldProps = {},
   ...props
 }) => {
+  const [status, setStatus] = useState(null); // null | 'validating' | 'valid' | 'unrecognised' | 'error'
   const [lastValidated, setLastValidated] = useState(null);
-  const [validationStatus, setValidationStatus] = useState(null);
-  const [validationSource, setValidationSource] = useState(null);
-  
+
   const { validateTaxonomicHierarchy, isValidating } = useTaxonomicValidation();
 
-  // Check if all three fields are filled
-  const allFieldsFilled = values.family?.trim() && values.genus?.trim() && values.species?.trim();
   const minFieldsFilled = values.genus?.trim() && values.species?.trim();
-  
-  // Create a string representation for comparison
+  const allFieldsFilled = minFieldsFilled && values.family?.trim();
   const currentValues = `${values.family?.trim()}-${values.genus?.trim()}-${values.species?.trim()}`;
 
-  const validateHierarchy = useCallback(async () => {
+  const runValidation = useCallback(async ({ force = false } = {}) => {
     if (!minFieldsFilled) {
-      setValidationStatus(null);
+      if (force) toast.warning('Fill in genus and species before verifying');
+      setStatus(null);
       setLastValidated(null);
       return;
     }
+    if (!force && currentValues === lastValidated) return;
 
-    // Don't validate if nothing has changed
-    if (currentValues === lastValidated) {
+    setStatus('validating');
+    const result = await validateTaxonomicHierarchy(values);
+
+    if (result.success) {
+      setStatus('valid');
+      setLastValidated(currentValues);
+      const corrected = result.correctedTaxonomy;
+      const changed =
+        corrected.family !== values.family ||
+        corrected.genus !== values.genus ||
+        corrected.species !== values.species;
+      toast.success(changed ? `Taxonomy corrected: ${result.fullName}` : `Taxonomy verified: ${result.fullName}`);
+      if (changed && autoCorrect) onChange?.(corrected);
+      onValidated?.(corrected, result.source, result.fullName);
       return;
     }
 
-    setValidationStatus('validating');
-    
-    try {
-      const result = await validateTaxonomicHierarchy(values, source);
-      
-      if (result.success) {
-        setValidationStatus('valid');
-        setValidationSource(result.source);
-        setLastValidated(currentValues);
-        
-        const corrected = result.correctedTaxonomy;
-        
-        // Check if any corrections were made
-        const hasCorrections = 
-          corrected.family !== values.family ||
-          corrected.genus !== values.genus ||
-          corrected.species !== values.species;
-
-        if (hasCorrections && autoCorrect) {
-          toast.success(`Taxonomy corrected: ${result.fullName}`);
-          onChange?.(corrected);
-          onValidated?.(corrected, result.source, result.fullName);
-        } else {
-          toast.success(`Taxonomy validated: ${result.fullName}`);
-          onValidated?.(corrected, result.source, result.fullName);
-        }
-      } else {
-        setValidationStatus('invalid');
-        setValidationSource(null);
-        toast.warning(`Could not validate taxonomy: ${result.error}`);
-      }
-    } catch (error) {
-      setValidationStatus('invalid');
-      setValidationSource(null);
-      toast.error('Failed to validate taxonomy');
-      console.error('Taxonomy validation error:', error);
-    }
-  }, [values, minFieldsFilled, currentValues, lastValidated, validateTaxonomicHierarchy, source, autoCorrect, onChange, onValidated]);
-
-  // Manual validation trigger (ignores the lastValidated check)
-  const handleManualValidation = useCallback(async () => {
-    if (!minFieldsFilled) {
-      toast.warning('Please fill all three fields (family, genus, species) before validating');
-      return;
-    }
-
-    setValidationStatus('validating');
-    
-    try {
-      const result = await validateTaxonomicHierarchy(values, source);
-      
-      if (result.success) {
-        setValidationStatus('valid');
-        setValidationSource(result.source);
-        setLastValidated(currentValues);
-        
-        const corrected = result.correctedTaxonomy;
-        
-        // Check if any corrections were made
-        const hasCorrections = 
-          corrected.family !== values.family ||
-          corrected.genus !== values.genus ||
-          corrected.species !== values.species;
-
-        if (hasCorrections && autoCorrect) {
-          toast.success(`Taxonomy corrected: ${result.fullName}`);
-          onChange?.(corrected);
-          onValidated?.(corrected, result.source, result.fullName);
-        } else {
-          toast.success(`Taxonomy validated: ${result.fullName}`);
-          onValidated?.(corrected, result.source, result.fullName);
-        }
-      } else {
-        setValidationStatus('invalid');
-        setValidationSource(null);
-        toast.warning(`Could not validate taxonomy: ${result.error}`);
-      }
-    } catch (error) {
-      setValidationStatus('invalid');
-      setValidationSource(null);
-      toast.error('Failed to validate taxonomy');
-      console.error('Taxonomy validation error:', error);
-    }
-  }, [values, minFieldsFilled, currentValues, validateTaxonomicHierarchy, source, autoCorrect, onChange, onValidated]);
-
-  // Validate when all fields are filled and user focuses out
-  const handleFieldBlur = useCallback((fieldName) => {
-    // Small delay to allow for rapid field changes
-    setTimeout(() => {
-      if (minFieldsFilled) {
-        validateHierarchy();
-      }
-    }, 100);
-  }, [validateHierarchy, minFieldsFilled]);
-
-  const handleFieldChange = useCallback((fieldName, value) => {
-    const newValues = { ...values, [fieldName]: value };
-    onChange?.(newValues);
-    
-    // Reset validation status when any field changes
-    if (validationStatus) {
-      setValidationStatus(null);
-      setValidationSource(null);
-    }
-  }, [values, onChange, validationStatus]);
-
-  const getStatusBadge = () => {
-    if (!minFieldsFilled) return null;
-    
-    if (isValidating || validationStatus === 'validating') {
-      return <Badge variant="secondary" className="text-xs">Validating...</Badge>;
-    }
-    if (validationStatus === 'valid') {
-      return (
-        <Badge variant="default" className="text-xs bg-green-100 text-green-800">
-          Validated {validationSource && `via ${validationSource}`}
-        </Badge>
+    if (result.unrecognised) {
+      setStatus('unrecognised');
+      setLastValidated(currentValues);
+      const options = (result.suggestions ?? []).join('  ·  ');
+      toast.warning(
+        options
+          ? `Not in the Global Names verifier. You can use: ${options}`
+          : 'Not in the Global Names verifier.',
       );
+      return;
     }
-    if (validationStatus === 'invalid') {
-      return <Badge variant="destructive" className="text-xs">Validation failed</Badge>;
-    }
-    
+
+    setStatus('error');
+    toast.error(result.error || 'Could not verify the taxonomy');
+  }, [values, minFieldsFilled, currentValues, lastValidated, validateTaxonomicHierarchy, autoCorrect, onChange, onValidated]);
+
+  const handleFieldChange = (field, value) => {
+    onChange?.({ ...values, [field]: value });
+    if (status) setStatus(null);
+  };
+
+  const handleFieldBlur = () => {
+    setTimeout(() => { if (minFieldsFilled) runValidation(); }, 100);
+  };
+
+  const statusBadge = () => {
+    if (!minFieldsFilled) return null;
+    if (isValidating || status === 'validating') return <Badge variant="secondary" className="text-xs">Verifying…</Badge>;
+    if (status === 'valid') return <Badge className="text-xs">Verified</Badge>;
+    if (status === 'unrecognised') return <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">Not recognised</Badge>;
+    if (status === 'error') return <Badge variant="destructive" className="text-xs">Check failed</Badge>;
     return null;
   };
 
   return (
     <div className="space-y-4" {...props}>
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">Taxonomic Classification</Label>
+        <Label className="text-sm font-medium">Taxonomic classification</Label>
         <div className="flex items-center gap-2">
-          {getStatusBadge()}
+          {statusBadge()}
           {minFieldsFilled && (
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={handleManualValidation}
+              onClick={() => runValidation({ force: true })}
               disabled={isValidating}
               className="h-6 px-2"
             >
@@ -201,8 +112,8 @@ export const TaxonomicHierarchy = ({
           )}
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="family" className="text-xs text-muted-foreground">Family</Label>
           <TaxonomicInput
@@ -210,16 +121,13 @@ export const TaxonomicHierarchy = ({
             value={values.family}
             placeholder="Enter family name"
             onChange={(e) => handleFieldChange('family', e.target.value)}
-            onBlur={() => handleFieldBlur('family')}
-            autoCorrect={false} // Don't auto-correct individual fields
+            onBlur={handleFieldBlur}
+            autoCorrect={false}
             disabled={disabled}
             {...fieldProps.family}
           />
         </div>
-        <div>
-
-        </div>
-        
+        <div />
         <div className="space-y-2">
           <Label htmlFor="genus" className="text-xs text-muted-foreground">Genus</Label>
           <TaxonomicInput
@@ -227,13 +135,12 @@ export const TaxonomicHierarchy = ({
             value={values.genus}
             placeholder="Enter genus name"
             onChange={(e) => handleFieldChange('genus', e.target.value)}
-            onBlur={() => handleFieldBlur('genus')}
-            autoCorrect={false} // Don't auto-correct individual fields
+            onBlur={handleFieldBlur}
+            autoCorrect={false}
             disabled={disabled}
             {...fieldProps.genus}
           />
         </div>
-        
         <div className="space-y-2">
           <Label htmlFor="species" className="text-xs text-muted-foreground">Species</Label>
           <TaxonomicInput
@@ -241,16 +148,16 @@ export const TaxonomicHierarchy = ({
             value={values.species}
             placeholder="Enter species name"
             onChange={(e) => handleFieldChange('species', e.target.value)}
-            onBlur={() => handleFieldBlur('species')}
-            autoCorrect={false} // Don't auto-correct individual fields
+            onBlur={handleFieldBlur}
+            autoCorrect={false}
             disabled={disabled}
             {...fieldProps.species}
           />
         </div>
       </div>
-      
+
       {allFieldsFilled && (
-        <div className="flex space-x-3 text-xs text-muted-foreground pt-2 border-t">
+        <div className="flex space-x-3 border-t pt-2 text-xs text-muted-foreground">
           {values.family && (
             <>
               <Separator orientation="vertical" />

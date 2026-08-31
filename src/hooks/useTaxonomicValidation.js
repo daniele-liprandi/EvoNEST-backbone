@@ -2,44 +2,42 @@ import { useState } from 'react';
 import { prepend_path } from '@/lib/utils';
 
 /**
- * Custom hook for taxonomic name validation and correction
- * Provides a clean interface to the checknames API
+ * Thin client for /api/checknames (Global Names verifier).
+ *
+ * A verified name resolves as `{ success: true, data, canonical? }`.
+ * An unrecognised name is NOT an error — it resolves as
+ * `{ success: false, unrecognised: true, suggestions: [...] }` so the caller
+ * can warn and offer the fallbacks ("Genus sp." or the entered name).
  */
 export const useTaxonomicValidation = () => {
   const [isValidating, setIsValidating] = useState(false);
 
-  /**
-   * Validate and correct a single taxonomic name
-   * @param {string} taxa - The taxonomic name to validate
-   * @param {string} method - 'correctName' or 'fullTaxaInfo'
-   * @param {string} source - 'WSC', 'GNames', or 'auto'
-   * @returns {Promise<{success: boolean, data?: any, error?: string}>}
-   */
-  const validateName = async (taxa, method = 'correctName', source = 'auto') => {
+  const validateName = async (taxa, method = 'correctName') => {
     if (!taxa || !taxa.trim()) {
       return { success: false, error: 'No name provided' };
     }
 
     setIsValidating(true);
-    
     try {
       const response = await fetch(`${prepend_path}/api/checknames`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taxa: taxa.trim(), method, source })
+        body: JSON.stringify({ taxa: taxa.trim(), method }),
       });
+      const result = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
       if (result.status === 'success') {
         return { success: true, data: result.data, source: result.source };
-      } else {
-        return { success: false, error: result.error || 'Unknown error' };
       }
+      if (result.status === 'unrecognised') {
+        return {
+          success: false,
+          unrecognised: true,
+          suggestions: result.suggestions ?? [],
+          error: 'Not recognised by the Global Names verifier',
+        };
+      }
+      return { success: false, error: result.error || `Request failed (${response.status})` };
     } catch (error) {
       console.error('Taxonomic validation error:', error);
       return { success: false, error: error.message };
@@ -48,105 +46,40 @@ export const useTaxonomicValidation = () => {
     }
   };
 
-  /**
-   * Get full taxonomic information for a scientific name
-   * @param {string} taxa - The taxonomic name
-   * @param {string} source - Data source preference
-   * @returns {Promise<{success: boolean, data?: {family, genus, species, class, order, canonical_form}, error?: string}>}
-   */
-  const getFullTaxonomicInfo = async (taxa, source = 'GNames') => {
-    return await validateName(taxa, 'fullTaxaInfo', source);
+  const getFullTaxonomicInfo = (taxa) => validateName(taxa, 'fullTaxaInfo');
+
+  const correctName = async (taxa) => {
+    const result = await validateName(taxa, 'correctName');
+    return result.success ? { success: true, correctedName: result.data, source: result.source } : result;
   };
 
   /**
-   * Correct a taxonomic name (returns just the corrected name string)
-   * @param {string} taxa - The taxonomic name to correct
-   * @param {string} source - Data source preference
-   * @returns {Promise<{success: boolean, correctedName?: string, error?: string}>}
+   * Verify family/genus/species together. Builds "Genus species" (or "Genus"),
+   * verifies it, and returns the corrected parts. An unrecognised name comes
+   * back with `unrecognised: true` and `suggestions`.
    */
-  const correctName = async (taxa, source = 'auto') => {
-    const result = await validateName(taxa, 'correctName', source);
-    if (result.success) {
-      return { 
-        success: true, 
-        correctedName: result.data,
-        source: result.source
-      };
-    }
-    return result;
-  };
-
-  /**
-   * Validate taxonomic hierarchy (family, genus, species)
-   * Constructs the full name and validates it, then returns corrected parts
-   * @param {Object} taxonomy - {family, genus, species}
-   * @param {string} source - Data source preference
-   * @returns {Promise<{success: boolean, correctedTaxonomy?: Object, fullName?: string, error?: string}>}
-   */
-  const validateTaxonomicHierarchy = async ({ family, genus, species }, source = 'auto') => {
-    // Construct the scientific name from genus and species
+  const validateTaxonomicHierarchy = async ({ family, genus, species }) => {
     if (!genus) {
       return { success: false, error: 'Genus is required' };
     }
-
     const scientificName = species ? `${genus} ${species}` : genus;
-    
-    // Always try to include family information in the request if available
-    let result;
-    
-    if (family) {
-      // Try with family context first
-      try {
-        const response = await fetch(`${prepend_path}/api/checknames`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            taxa: scientificName, 
-            method: 'fullTaxaInfo', 
-            source,
-            family: family  // Include family as additional context
-          })
-        });
+    const result = await getFullTaxonomicInfo(scientificName);
 
-        if (response.ok) {
-          const apiResult = await response.json();
-          if (apiResult.status === 'success') {
-            result = { success: true, data: apiResult.data, source: apiResult.source };
-          } else {
-            result = { success: false, error: apiResult.error || 'Unknown error' };
-          }
-        } else {
-          result = { success: false, error: 'API request failed' };
-        }
-      } catch (error) {
-        console.log('Family context validation failed:', error);
-        result = { success: false, error: error.message };
-      }
-    } else {
-      // If no family, use the standard validation
-      result = await getFullTaxonomicInfo(scientificName, source);
+    if (!result.success) {
+      return result; // carries `unrecognised` / `suggestions` when relevant
     }
-    
-    // If the request with family context failed, try without family as fallback
-    if (!result.success && family) {
-      result = await getFullTaxonomicInfo(scientificName, source);
-    }
-    
-    if (result.success) {
-      const data = result.data;
-      return {
-        success: true,
-        correctedTaxonomy: {
-          family: data.family || family,
-          genus: data.genus || genus,
-          species: data.species || species
-        },
-        fullName: data.canonical_form,
-        source: result.source
-      };
-    }
-    
-    return result;
+
+    const info = result.data;
+    return {
+      success: true,
+      correctedTaxonomy: {
+        family: info.family || family,
+        genus: info.genus || genus,
+        species: info.species || species,
+      },
+      fullName: info.canonical_form,
+      source: result.source,
+    };
   };
 
   return {
@@ -154,6 +87,6 @@ export const useTaxonomicValidation = () => {
     correctName,
     getFullTaxonomicInfo,
     validateTaxonomicHierarchy,
-    isValidating
+    isValidating,
   };
 };
