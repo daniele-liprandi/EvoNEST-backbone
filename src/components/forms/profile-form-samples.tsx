@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarDays } from "lucide-react";
+import { CalendarDots } from "@phosphor-icons/react";
 import { format } from "date-fns";
 
 import { ComboFormBox } from "@/components/forms/combo-form-box";
@@ -805,7 +805,7 @@ export function ProfileFormSamples({
                           ) : (
                             <span>Pick a date</span>
                           )}
-                          <CalendarDays className="ml-auto size-4 opacity-50" />
+                          <CalendarDots className="ml-auto size-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>

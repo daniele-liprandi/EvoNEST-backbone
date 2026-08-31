@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import * as XLSX from 'xlsx';
 import { MdDownload } from 'react-icons/md';
-import { Download, Upload } from 'lucide-react';
+import { DownloadSimple, UploadSimple } from '@phosphor-icons/react';
 
 // Dynamically import Plotly to ensure it only loads on the client side
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
@@ -830,15 +830,15 @@ export default function NonLinearFibreBundleAnalysis() {
                 <CardContent>
                     <div className="flex justify-end space-x-2 mt-2">
                         <Button size="sm" onClick={() => setShowImportModal(true)}>
-                            <Upload className="mr-2 h-4 w-4" />
+                            <UploadSimple className="mr-2 h-4 w-4" />
                             Import Data
                         </Button>
                         <Button variant="secondary" size="sm" onClick={exportAsCSV}>
-                            <Download className="mr-2 h-4 w-4" />
+                            <DownloadSimple className="mr-2 h-4 w-4" />
                             Export Config to CSV
                         </Button>
                         <Button variant="secondary" size="sm" onClick={exportConfig}>
-                            <Download className="mr-2 h-4 w-4" />
+                            <DownloadSimple className="mr-2 h-4 w-4" />
                             Export Config to Excel
                         </Button>
                     </div>
@@ -1121,7 +1121,7 @@ export default function NonLinearFibreBundleAnalysis() {
                         <CardContent>
                             <div className="flex justify-end pb-3">
                                 <Button variant="secondary" size="sm" onClick={exportResults}>
-                                    <Download className="mr-2 h-4 w-4" />
+                                    <DownloadSimple className="mr-2 h-4 w-4" />
                                     Export Results to Excel
                                 </Button>
                             </div>

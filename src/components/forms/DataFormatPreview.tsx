@@ -5,7 +5,7 @@
  */
 
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertCircle, FileText, Database } from "lucide-react";
+import { CheckCircle, Database, FileText, WarningCircle } from "@phosphor-icons/react";
 
 interface DataFormatPreviewProps {
   allFileData: any[];
@@ -42,7 +42,7 @@ export function DataFormatPreview({
                 </>
               ) : (
                 <>
-                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  <WarningCircle className="h-4 w-4 text-amber-500" />
                   <Badge variant="secondary">
                     {fileInfo.type || "Unknown"}
                   </Badge>

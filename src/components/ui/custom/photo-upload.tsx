@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Camera, Loader2 } from 'lucide-react';
+import { Camera, CircleNotch } from '@phosphor-icons/react';
 import { Button } from "@/components/ui/button";
 import { uploadFiles } from '@/utils/handlers/fileHandlers';
 import { mutate } from 'swr';
@@ -146,7 +146,7 @@ export default function PhotoUpload({ entryType, entryId, className }: PhotoUplo
         disabled={isUploading}
       >
         {isUploading ? (
-          <Loader2 className="h-6 w-6 animate-spin" />
+          <CircleNotch className="h-6 w-6 animate-spin" />
         ) : (
           <Camera className="h-6 w-6" />
         )}

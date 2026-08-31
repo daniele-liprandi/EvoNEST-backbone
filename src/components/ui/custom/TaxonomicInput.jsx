@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { SearchIcon, CheckIcon, AlertCircleIcon } from 'lucide-react';
+import { Check, MagnifyingGlass, WarningCircle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useTaxonomicValidation } from '@/hooks/useTaxonomicValidation';
 import { cn } from '@/lib/utils';
@@ -106,15 +106,15 @@ export const TaxonomicInput = ({
 
   const getStatusIcon = () => {
     if (isValidating || validationStatus === 'validating') {
-      return <SearchIcon className="h-4 w-4 text-blue-500 animate-spin" />;
+      return <MagnifyingGlass className="h-4 w-4 text-blue-500 animate-spin" />;
     }
     if (validationStatus === 'valid') {
-      return <CheckIcon className="h-4 w-4 text-green-500" />;
+      return <Check className="h-4 w-4 text-green-500" />;
     }
     if (validationStatus === 'invalid') {
-      return <AlertCircleIcon className="h-4 w-4 text-red-500" />;
+      return <WarningCircle className="h-4 w-4 text-red-500" />;
     }
-    return <SearchIcon className="h-4 w-4 text-gray-400" />;
+    return <MagnifyingGlass className="h-4 w-4 text-gray-400" />;
   };
 
   const getInputClassName = () => {

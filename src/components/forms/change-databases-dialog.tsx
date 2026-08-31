@@ -22,7 +22,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { Database } from "lucide-react"
+import { Database } from "@phosphor-icons/react";
 import { toast } from "sonner"
 import { mutate } from "swr"
 import { prepend_path } from "@/lib/utils"

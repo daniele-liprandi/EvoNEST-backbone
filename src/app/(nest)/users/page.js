@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { DatabaseManager } from '@/components/forms/database-manager';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield } from 'lucide-react';
+import { Shield } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 
 export default function UsersPage() {

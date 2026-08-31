@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { ArrowsClockwise } from '@phosphor-icons/react';
 
 /**
  * Component for managing taxonomic hierarchy (family, genus, species)
@@ -196,7 +196,7 @@ export const TaxonomicHierarchy = ({
               disabled={isValidating}
               className="h-6 px-2"
             >
-              <RefreshCw className={`h-3 w-3 ${isValidating ? 'animate-spin' : ''}`} />
+              <ArrowsClockwise className={`h-3 w-3 ${isValidating ? 'animate-spin' : ''}`} />
             </Button>
           )}
         </div>

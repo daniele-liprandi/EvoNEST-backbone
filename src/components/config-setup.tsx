@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { CheckCircle2, Settings, Database } from "lucide-react"
+import { CheckCircle, Database, Gear } from "@phosphor-icons/react";
 import { toast } from "sonner"
 
 interface ConfigSetupProps {
@@ -72,7 +72,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
       <div className="space-y-4">
         <div className="bg-muted/50 p-4 rounded-lg">
           <h3 className="font-semibold flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+            <Gear className="h-4 w-4" />
             What we&apos;ll set up:
           </h3>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onO
       <div className="flex justify-center">
         {seeded ? (
           <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle2 className="h-5 w-5" />
+            <CheckCircle className="h-5 w-5" />
             <span className="font-medium">Configuration initialised successfully!</span>
           </div>
         ) : (
