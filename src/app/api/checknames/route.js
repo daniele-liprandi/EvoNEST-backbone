@@ -1,6 +1,9 @@
 import { get_or_create_client } from '../utils/mongodbClient';
 import { spytraxCheckTaxa } from '@/utils/spytrax';
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { isServiceRequest } from "@/app/api/utils/verifyServiceKey";
 
 const REQUEST_TIMEOUT_MS = 10000;
 
@@ -246,6 +249,15 @@ export async function GET() {
 
 
 export async function POST(req) {
+    // checknames is excluded from the auth middleware (proxy.js) so the Mastra
+    // service can reach it. Accept a valid session or the service key.
+    if (!isServiceRequest(req)) {
+        const session = await getServerSession(authOptions);
+        if (!session?.user) {
+            return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+        }
+    }
+
     const data = await req.json();
 
     const method = data.method || 'correctName';  // Default to correctName if no method is provided

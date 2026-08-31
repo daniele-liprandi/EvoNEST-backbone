@@ -1,5 +1,6 @@
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
+import { serviceAuthHeader } from '../lib/serviceHeaders.js'
 
 const baseUrl = process.env.NEXTJS_BASE_URL ?? 'http://node:3000'
 const REQUEST_TIMEOUT_MS = 15000
@@ -28,7 +29,7 @@ export const checkTaxonomicName = createTool({
     try {
       const res = await fetch(`${baseUrl}/api/checknames`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...serviceAuthHeader() },
         body: JSON.stringify({
           taxa: taxa.trim(),
           method,
