@@ -8,6 +8,7 @@ import { ReadbackBlock } from './blocks/ReadbackBlock'
 import MapboxScatterPlot from '@/components/plots/scatter-map'
 
 export interface ConversationMessage {
+  id: string
   role: 'user' | 'assistant'
   content?: string
   blocks?: MessageBlock[]
@@ -16,9 +17,10 @@ export interface ConversationMessage {
 interface Props {
   messages: ConversationMessage[]
   samplesData: any[]
-  onFix?: (blockIndex: number) => void
-  onConfirm?: (entity: string, records: Record<string, any>[]) => void
-  confirmingIndex?: number
+  onFix?: (blockKey: string) => void
+  onConfirm?: (blockKey: string, entity: string, records: Record<string, any>[]) => void
+  savingKey?: string | null
+  savedKeys?: Set<string>
 }
 
 function BlockRenderer({
@@ -26,23 +28,25 @@ function BlockRenderer({
   onConfirm,
   onFix,
   confirming,
+  saved,
 }: {
   block: MessageBlock
   onConfirm: (records: Record<string, any>[]) => void
   onFix: () => void
   confirming?: boolean
+  saved?: boolean
 }) {
   switch (block.type) {
     case 'text': return <TextBlock block={block} />
     case 'table': return <TableBlock block={block} />
     case 'chart': return <ChartBlock block={block} />
     case 'readback':
-      return <ReadbackBlock block={block} onConfirm={onConfirm} onFix={onFix} confirming={confirming} />
+      return <ReadbackBlock block={block} onConfirm={onConfirm} onFix={onFix} confirming={confirming} saved={saved} />
     default: return null
   }
 }
 
-export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, confirmingIndex }: Props) {
+export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, savingKey, savedKeys }: Props) {
   if (messages.length === 0) {
     return (
       <div className="relative rounded-lg overflow-hidden min-h-[300px] flex-1">
@@ -59,8 +63,8 @@ export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, co
 
   return (
     <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-      {[...messages].reverse().map((msg, msgIdx) => (
-        <div key={msgIdx}>
+      {[...messages].reverse().map((msg) => (
+        <div key={msg.id}>
           {msg.role === 'user' ? (
             <div className="flex justify-end">
               <div className="bg-muted rounded-lg px-3 py-2 text-sm max-w-[80%]">
@@ -69,19 +73,24 @@ export function ConversationCanvas({ messages, samplesData, onFix, onConfirm, co
             </div>
           ) : (
             <div className="space-y-2">
-              {msg.blocks?.map((block, blockIdx) => (
-                <div key={blockIdx} className="bg-card border rounded-lg px-3 py-2">
-                  <BlockRenderer
-                    block={block}
-                    onConfirm={(records) => onConfirm?.(
-                      block.type === 'readback' ? block.entity : 'samples',
-                      records
-                    )}
-                    onFix={() => onFix?.(blockIdx)}
-                    confirming={confirmingIndex === blockIdx}
-                  />
-                </div>
-              ))}
+              {msg.blocks?.map((block, blockIdx) => {
+                const blockKey = `${msg.id}:${blockIdx}`
+                return (
+                  <div key={blockKey} className="bg-card border rounded-lg px-3 py-2">
+                    <BlockRenderer
+                      block={block}
+                      onConfirm={(records) => onConfirm?.(
+                        blockKey,
+                        block.type === 'readback' ? block.entity : 'samples',
+                        records
+                      )}
+                      onFix={() => onFix?.(blockKey)}
+                      confirming={savingKey === blockKey}
+                      saved={savedKeys?.has(blockKey)}
+                    />
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

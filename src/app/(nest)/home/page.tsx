@@ -56,6 +56,8 @@ export default function Home() {
 
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [aiLoading, setAiLoading] = useState(false)
+  const [savingKey, setSavingKey] = useState<string | null>(null)
+  const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set())
   const threadIdRef = useRef<string | null>(null)
 
   if (!threadIdRef.current) {
@@ -63,7 +65,7 @@ export default function Home() {
   }
 
   const handleSend = useCallback(async (text: string) => {
-    setMessages((prev) => [...prev, { role: 'user', content: text }])
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'user', content: text }])
     setAiLoading(true)
     try {
       const res = await fetch(`${prepend_path}/api/ai/chat`, {
@@ -71,10 +73,19 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, threadId: threadIdRef.current }),
       })
-      const { blocks } = await res.json()
-      setMessages((prev) => [...prev, { role: 'assistant', blocks }])
+      const payload = await res.json().catch(() => null)
+      const blocks = Array.isArray(payload?.blocks) && payload.blocks.length
+        ? payload.blocks
+        : [{
+            type: 'text',
+            content: res.ok
+              ? 'No answer came back. Please try again.'
+              : 'The assistant is unavailable right now. Please try again.',
+          }]
+      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: 'assistant', blocks }])
     } catch {
       setMessages((prev) => [...prev, {
+        id: crypto.randomUUID(),
         role: 'assistant',
         blocks: [{ type: 'text', content: 'Something went wrong. Please try again.' }],
       }])
@@ -83,8 +94,10 @@ export default function Home() {
     }
   }, [])
 
-  const handleConfirm = useCallback(async (entity: string, records: Record<string, any>[]) => {
+  const handleConfirm = useCallback(async (blockKey: string, entity: string, records: Record<string, any>[]) => {
     if (!records.length) { toast.error('No records to save.'); return }
+    if (savingKey || savedKeys.has(blockKey)) return
+    setSavingKey(blockKey)
     try {
       const endpoint = entity === 'traits' ? `${prepend_path}/api/traits` : `${prepend_path}/api/samples`
       const responsible = getUserIdByName(session?.user?.name, usersData ?? [])
@@ -108,13 +121,16 @@ export default function Home() {
       }
       await mutate(`${prepend_path}/api/samples`)
       await mutate(`${prepend_path}/api/traits`)
+      setSavedKeys((prev) => new Set(prev).add(blockKey))
       toast.success(`${records.length} ${entity} saved successfully`)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to save records.')
+    } finally {
+      setSavingKey(null)
     }
-  }, [samplesData, session?.user?.name, usersData])
+  }, [savingKey, savedKeys, samplesData, session?.user?.name, usersData])
 
-  const handleFix = useCallback(() => {
+  const handleFix = useCallback((_blockKey: string) => {
     document.querySelector<HTMLInputElement>('input[placeholder*="Ask anything"]')?.focus()
   }, [])
 
@@ -162,6 +178,8 @@ export default function Home() {
               samplesData={samplesData ?? []}
               onConfirm={handleConfirm}
               onFix={handleFix}
+              savingKey={savingKey}
+              savedKeys={savedKeys}
             />
           </div>
         ) : (
