@@ -256,6 +256,8 @@ function PeopleRoles({ roles }: { roles: Role[] }) {
 
   if (!usersData) return <Skeleton className="h-48 w-full rounded-xl" />
 
+  const users: any[] = Array.isArray(usersData) ? usersData : []
+
   return (
     <Card>
       <CardHeader>
@@ -272,7 +274,7 @@ function PeopleRoles({ roles }: { roles: Role[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {usersData.map((user: any) => (
+            {users.map((user: any) => (
               <TableRow key={user._id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell className="text-muted-foreground">{user.email}</TableCell>
