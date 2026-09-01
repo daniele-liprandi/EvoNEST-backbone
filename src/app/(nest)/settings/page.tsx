@@ -2,8 +2,10 @@
 
 import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
 import Link from "next/link"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
 
 export default function Component() {
+  const { isAdmin } = useCurrentUser()
   return (
     <section className="w-full py-12 md:py-24 lg:py-32">
       <div className="container grid gap-6 md:gap-8 px-4 md:px-6">
@@ -40,6 +42,20 @@ export default function Component() {
               </CardContent>
             </Card>
           </Link>
+          {isAdmin && (
+            <Link href="/settings/admin">
+              <Card className="p-6 lg:p-8 rounded-xl shadow-lg dark:shadow-orange-500/50">
+                <CardHeader>
+                  <CardTitle>Administration</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-4">
+                  <div className="flex items-center gap-2">
+                    <span>Manage roles, permissions and who holds them</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
         </div>
       </div>
     </section>
