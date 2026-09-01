@@ -2,6 +2,7 @@ import { get_or_create_client } from "@/app/api/utils/mongodbClient";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user } from "../utils/get_database_user";
+import { userCan } from "../utils/permissions";
 import fs from 'fs/promises';
 
 /**
@@ -563,6 +564,10 @@ export async function POST(req) {
 
 export async function DELETE(req) {
     try {
+        if (!(await userCan("experiments.delete"))) {
+            return new NextResponse(JSON.stringify({ error: "Not allowed to delete experiments" }), { status: 403 });
+        }
+
         const { id } = await req.json();
 
         const client = await get_or_create_client();
