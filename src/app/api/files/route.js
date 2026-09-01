@@ -6,6 +6,7 @@ import { get_database_user } from "@/app/api/utils/get_database_user";
 import { requireEnv } from "@/app/api/utils/env";
 import { ObjectId } from "mongodb";
 import fs from "fs";
+import { rollbackUpload } from "./rollback";
 
 export const dynamic = 'force-dynamic';
 
@@ -213,24 +214,6 @@ export async function POST(req) {
     }
 }
 
-
-/**
- * Undo a partial upload: remove the written file and its document. Both steps
- * are attempted independently so a failure in one still runs the other, and
- * each failure is logged rather than thrown.
- */
-export async function rollbackUpload(filePath, fileId, filesCollection) {
-    const [unlinkResult, deleteResult] = await Promise.allSettled([
-        fs.promises.unlink(filePath),
-        filesCollection.deleteOne({ _id: fileId }),
-    ]);
-    if (unlinkResult.status === "rejected") {
-        console.error(`Upload rollback: failed to remove file ${filePath}:`, unlinkResult.reason);
-    }
-    if (deleteResult.status === "rejected") {
-        console.error(`Upload rollback: failed to remove file document ${fileId}:`, deleteResult.reason);
-    }
-}
 
 /**
  * Ensures that the specified directory exists, creating it if necessary

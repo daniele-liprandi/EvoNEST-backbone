@@ -6,7 +6,7 @@ jest.mock('@/app/api/utils/mongodbClient', () => ({ get_or_create_client: jest.f
 jest.mock('@/app/api/utils/get_database_user', () => ({ get_database_user: jest.fn() }));
 
 const fs = require('fs');
-const { rollbackUpload } = require('@/app/api/files/route');
+const { rollbackUpload } = require('@/app/api/files/rollback');
 
 describe('rollbackUpload', () => {
   let unlinkSpy;
