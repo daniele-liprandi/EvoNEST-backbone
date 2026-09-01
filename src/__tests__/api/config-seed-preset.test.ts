@@ -92,6 +92,18 @@ describe("config/types/seed with presets", () => {
     ]));
     expect(resolved?.traittypes.map((t: any) => t.value)).toContain("yield");
   });
+
+  test.each([
+    ["herbarium", "herbarium", "phenology"],
+    ["museum-specimens", "specimen", "preparation"],
+    ["sequencing-pipeline", "seqsample", "qc"],
+    ["microbial-culture", "strain", "contamination"],
+  ])("the %s preset defines its lead sample type with custom columns", (preset, typeValue, customKey) => {
+    const resolved = resolvePreset(preset);
+    const type = resolved?.sampletypes.find((s: any) => s.value === typeValue);
+    expect(type).toBeTruthy();
+    expect(type.columns.some((c: any) => typeof c === "object" && c.key === customKey)).toBe(true);
+  });
 });
 
 const VALID_KINDS = ["counter", "toggle", "progress", "text", "number", "date"];
