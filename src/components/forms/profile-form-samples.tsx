@@ -866,7 +866,6 @@ export function ProfileFormSamples({
                 const id = generateNameAnimal(form);
                 form.setValue("name", id);
               }}
-              source="auto"
               autoCorrect={true}
               disabled={false}
               fieldProps={{}}
@@ -938,7 +937,6 @@ export function ProfileFormSamples({
                   form.setValue("name", id);
                 }
               }}
-              source="auto"
               autoCorrect={true}
               disabled={false}
               fieldProps={{}}
