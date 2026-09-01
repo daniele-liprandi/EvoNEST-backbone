@@ -1,7 +1,8 @@
 /** @jest-environment node */
-import { describe, expect, jest, test } from '@jest/globals';
+// Uses the global `jest` (not @jest/globals) so jest.mock() calls hoist above the
+// route import — the route pulls in permissions.js, which must be mocked.
 import { ObjectId } from 'mongodb';
-import { DELETE } from '@/app/api/traits/route'; // adjust path as needed
+import { DELETE } from '@/app/api/traits/route';
 
 // Mock the MongoDB client and utilities
 jest.mock('@/app/api/utils/mongodbClient', () => ({
@@ -10,6 +11,10 @@ jest.mock('@/app/api/utils/mongodbClient', () => ({
 
 jest.mock('@/app/api/utils/get_database_user', () => ({
   get_database_user: jest.fn().mockResolvedValue('testdb'),
+}));
+
+jest.mock('@/app/api/utils/permissions', () => ({
+  userCan: jest.fn().mockResolvedValue(true),
 }));
 
 describe('Trait DELETE Operation', () => {
@@ -39,6 +44,9 @@ describe('Trait DELETE Operation', () => {
     // Set the mock implementation for get_or_create_client
     const { get_or_create_client } = require('@/app/api/utils/mongodbClient');
     get_or_create_client.mockResolvedValue(mockClient);
+
+    // Caller is allowed unless a test says otherwise
+    require('@/app/api/utils/permissions').userCan.mockResolvedValue(true);
   });
 
   // TODO - the mongo operation is mocked. It would be cool to test the POST, and then test the DELETE on the same entry
@@ -67,6 +75,20 @@ describe('Trait DELETE Operation', () => {
     expect(mockCollection.deleteOne).toHaveBeenCalledWith({ 
       _id: expect.any(ObjectId) 
     });
+  });
+
+  test('returns 403 when the user lacks traits.delete', async () => {
+    const { userCan } = require('@/app/api/utils/permissions');
+    userCan.mockResolvedValueOnce(false);
+
+    const response = await DELETE(new Request('http://localhost/api/traits', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: new ObjectId().toString() }),
+    }));
+
+    expect(response.status).toBe(403);
+    expect(mockCollection.deleteOne).not.toHaveBeenCalled();
   });
 
   test('returns 404 when trait not found', async () => {
@@ -121,7 +143,7 @@ describe('Trait DELETE Operation', () => {
     const responseData = await response.json();
 
     // Assert
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     expect(responseData.error).toBeDefined();
   });
 });
