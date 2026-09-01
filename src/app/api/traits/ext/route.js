@@ -16,11 +16,6 @@
  *           type: string
  *         description: Database name to export from
  *       - in: query
- *         name: apiKey
- *         schema:
- *           type: string
- *         description: API key for authentication (can also use Authorization header)
- *       - in: query
  *         name: format
  *         schema:
  *           type: string
