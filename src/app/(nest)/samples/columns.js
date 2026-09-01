@@ -23,9 +23,9 @@ import {
   sortableFilterableColumn,
   customColumn,
 } from "@/components/tables/columns"
-import { sampleEditFields } from "@/components/tables/edit-fields"
+import { sampleEditFields, sampleRegenerateOn } from "@/components/tables/edit-fields"
 
-const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
+const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields, regenerateOn: sampleRegenerateOn })
 
 // The built-in columns a sample table can show, by key. A sample type's config
 // `columns` list is a mix of these keys and custom column objects

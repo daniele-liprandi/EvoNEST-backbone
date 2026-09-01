@@ -22,7 +22,7 @@ import {
     handleStatusIncrementSample,
     handleUpdateSampleFields,
 } from '@/utils/handlers/sampleHandlers.js';
-import { sampleEditFields } from '@/components/tables/edit-fields';
+import { sampleEditFields, sampleRegenerateOn } from '@/components/tables/edit-fields';
 import { Button } from "@/components/ui/button"
 
 const sampleHandlers = {
@@ -33,6 +33,7 @@ const sampleHandlers = {
     onBulkDelete: handleBulkDeleteSamples,
     onBulkUpdateFields: handleBulkUpdateSampleFields,
     bulkEditFields: sampleEditFields,
+    bulkRegenerateOn: sampleRegenerateOn,
     bulkEntityLabel: "sample" as const,
 };
 

@@ -181,7 +181,7 @@ export const selectColumn = () => (
  * an onUpdateFields handler) and a Delete confirmation. Replaces the per-page
  * hand-rolled "Actions" cells so every table row acts the same way.
  */
-export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "name" }) => ({
+export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "name", regenerateOn = undefined }) => ({
   id: "actions",
   enableSorting: false,
   enableHiding: false,
@@ -196,7 +196,8 @@ export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "n
             rows={[row]}
             fields={editFields}
             entityLabel={entityLabel}
-            onSubmit={(ids, changes) => onUpdateFields(ids[0], changes)}
+            regenerateOn={regenerateOn}
+            onSubmit={(ids, changes, opts) => onUpdateFields(ids[0], changes, opts)}
           />
         ) : null}
         {onDelete ? (

@@ -17,7 +17,7 @@ import { tableSwrConfig } from '@/hooks/swrConfig';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { handleBulkDeleteSamples, handleBulkUpdateSampleFields, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated, handleUpdateSampleFields } from '@/utils/handlers/sampleHandlers';
-import { sampleEditFields } from '@/components/tables/edit-fields';
+import { sampleEditFields, sampleRegenerateOn } from '@/components/tables/edit-fields';
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -98,6 +98,7 @@ function TypePageContent() {
                         onBulkDelete={handleBulkDeleteSamples}
                         onBulkUpdateFields={handleBulkUpdateSampleFields}
                         bulkEditFields={sampleEditFields}
+                        bulkRegenerateOn={sampleRegenerateOn}
                         bulkEntityLabel="sample"
                         columns={columns}
                         data={dataTableData}
