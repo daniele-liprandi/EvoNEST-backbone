@@ -56,14 +56,9 @@ const CACHE_DURATION = 2.5 * 60 * 1000 // 2.5 minutes in milliseconds
  *       - Fresh data is fetched from external source when cache expires
  *       - Cache is updated automatically on successful external fetch
  *       **Fallback Strategy:**
- *       1. External JSON source (currently hardcoded due to environment variable configuration issues)
+ *       1. External JSON source (`NOTIFICATIONS_URL`, defaulting to the public EvoNEST-news feed)
  *       2. Cached data (even if expired) when external source fails
  *       3. Local notifications.json file as final fallback
- *       
- *       **Current Implementation Note:**
- *       - `NOTIFICATIONS_URL` is temporarily hardcoded to "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
- *       - This is a temporary workaround due to environment variable configuration issues
- *       - Future versions should properly configure this as an environment variable
  *     tags:
  *       - Utilities
  *     responses:
@@ -128,12 +123,11 @@ export async function GET() {
       return NextResponse.json(cachedNotifications)
     }
 
-    // Fetch notifications from the external source
-    const NOTIFICATIONS_URL = "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
-    
-    if (!NOTIFICATIONS_URL) {
-      throw new Error('NOTIFICATIONS_URL environment variable not set', Object.keys(process.env))
-    }
+    // Override the news feed with NOTIFICATIONS_URL; the default is the public
+    // EvoNEST-news feed so a fresh install still shows release notes.
+    const NOTIFICATIONS_URL =
+      process.env.NOTIFICATIONS_URL ||
+      "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
 
     const response = await fetch(NOTIFICATIONS_URL, {
       // Disable Next.js caching to ensure fresh data
