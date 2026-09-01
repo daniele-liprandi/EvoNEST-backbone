@@ -34,6 +34,22 @@ function roleAllows(permissions, capability, role) {
   return Array.isArray(entry?.roles) && entry.roles.includes(role);
 }
 
+// First-admin bootstrap: until someone is an admin, every signed-in user is
+// treated as one so the first person can finish setup. Fails closed on error.
+async function noAdminExists() {
+  try {
+    const client = await get_or_create_client();
+    if (!client) return false;
+    const admin = await client
+      .db("usersdb")
+      .collection("users")
+      .findOne({ role: "admin" }, { projection: { _id: 1 } });
+    return !admin;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Whether the current user may perform `capability`. Replaces the scattered
  * `check_user_role("admin")` calls. Returns false (not throws) when there is no
@@ -43,6 +59,7 @@ export async function userCan(capability) {
   try {
     const user = await get_current_user();
     if (user.role === "admin") return true;
+    if (await noAdminExists()) return true;
     const permissions = await getPermissions();
     return roleAllows(permissions, capability, user.role);
   } catch {
@@ -55,7 +72,9 @@ export async function getUserCapabilities() {
   try {
     const user = await get_current_user();
     const permissions = await getPermissions();
-    if (user.role === "admin") return permissions.map((p) => p.value);
+    if (user.role === "admin" || (await noAdminExists())) {
+      return permissions.map((p) => p.value);
+    }
     return permissions.filter((p) => p.roles?.includes(user.role)).map((p) => p.value);
   } catch {
     return [];

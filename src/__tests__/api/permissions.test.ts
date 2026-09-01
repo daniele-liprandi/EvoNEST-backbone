@@ -12,12 +12,20 @@ import { userCan, getUserCapabilities } from "@/app/api/utils/permissions";
 const { get_or_create_client } = require("@/app/api/utils/mongodbClient");
 const { get_current_user } = require("@/app/api/utils/get_database_user");
 
-function stubConfig(docByType: Record<string, unknown[] | undefined>) {
+// `hasAdmin` defaults true — the first-admin bootstrap is exercised separately.
+function stubConfig(
+  docByType: Record<string, unknown[] | undefined>,
+  { hasAdmin = true }: { hasAdmin?: boolean } = {},
+) {
   get_or_create_client.mockResolvedValue({
     db: () => ({
       collection: () => ({
-        findOne: async ({ type }: { type: string }) =>
-          docByType[type] ? { type, data: docByType[type] } : null,
+        findOne: async (filter: { type?: string; role?: string }) => {
+          if (filter.role === "admin") return hasAdmin ? { _id: "admin-user" } : null;
+          return filter.type && docByType[filter.type]
+            ? { type: filter.type, data: docByType[filter.type] }
+            : null;
+        },
       }),
     }),
   });
@@ -64,6 +72,18 @@ describe("userCan", () => {
     get_current_user.mockResolvedValue({ role: "viewer" });
     stubConfig({ permissions: [] });
     await expect(userCan("made.up")).resolves.toBe(false);
+  });
+
+  test("first-admin bootstrap: every signed-in user passes until an admin exists", async () => {
+    get_current_user.mockResolvedValue({ role: "viewer" });
+    stubConfig({ permissions: [{ value: "users.manage", roles: [] }] }, { hasAdmin: false });
+    await expect(userCan("users.manage")).resolves.toBe(true);
+  });
+
+  test("bootstrap stops once an admin exists", async () => {
+    get_current_user.mockResolvedValue({ role: "viewer" });
+    stubConfig({ permissions: [{ value: "users.manage", roles: [] }] }, { hasAdmin: true });
+    await expect(userCan("users.manage")).resolves.toBe(false);
   });
 });
 
