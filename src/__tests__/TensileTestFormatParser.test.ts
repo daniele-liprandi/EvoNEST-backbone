@@ -72,8 +72,8 @@ describe('TensileTestFormatParser', () => {
             // Check toughness (Line 13: Toughness 218.498 MPa) - converted to Pa
             expect(traits.toughness).toBe(218.498e6);
 
-            // Check specimenDiameter (Line 8: SpecimenDiameter 0.991 um) - no conversion
-            expect(traits.specimenDiameter).toBe(0.991);
+            // Check equivalentDiameter (file field SpecimenDiameter 0.991 um) - no conversion
+            expect(traits.equivalentDiameter).toBe(0.991);
 
             // Check strainRate (Line 9: StrainRate 1.000e-02 1/s) - no conversion
             expect(traits.strainRate).toBe(0.01);
@@ -120,10 +120,10 @@ describe('TensileTestFormatParser', () => {
             expect(toughnessTrait?.unit).toBe('Pa');
             expect(toughnessTrait?.measurement).toBe(218.498e6); // 218.498 MPa = 218.498e6 Pa
 
-            const specimenDiameterTrait = apiTraits.find((t: any) => t.type === 'specimenDiameter');
-            expect(specimenDiameterTrait).toBeDefined();
-            expect(specimenDiameterTrait?.unit).toBe('um');
-            expect(specimenDiameterTrait?.measurement).toBe(0.991); // No conversion
+            const equivalentDiameterTrait = apiTraits.find((t: any) => t.type === 'equivalentDiameter');
+            expect(equivalentDiameterTrait).toBeDefined();
+            expect(equivalentDiameterTrait?.unit).toBe('um');
+            expect(equivalentDiameterTrait?.measurement).toBe(0.991); // No conversion
         });
 
         it('should extract channel data', () => {
@@ -165,7 +165,7 @@ describe('TensileTestFormatParser', () => {
             expect(traits.offsetYieldStress).toBeDefined();
             expect(traits.offsetYieldStrain).toBeDefined();
             expect(traits.toughness).toBeDefined();
-            expect(traits.specimenDiameter).toBeDefined();
+            expect(traits.equivalentDiameter).toBeDefined();
             expect(traits.strainRate).toBeDefined();
             expect(traits.loadAtBreak).toBeDefined();
             
@@ -261,7 +261,7 @@ describe('TensileTestFormatParser', () => {
             expect(traitNames).toContain('offsetYieldStress');
             expect(traitNames).toContain('offsetYieldStrain');
             expect(traitNames).toContain('toughness');
-            expect(traitNames).toContain('specimenDiameter');
+            expect(traitNames).toContain('equivalentDiameter');
             expect(traitNames).toContain('strainRate');
             expect(traitNames).toContain('loadAtBreak');
 
@@ -275,8 +275,8 @@ describe('TensileTestFormatParser', () => {
             const strainAtBreak = generatedTraits.find((t: any) => t.name === 'strainAtBreak');
             expect(strainAtBreak?.unit).toBe('mm/mm');
 
-            const specimenDiameter = generatedTraits.find((t: any) => t.name === 'specimenDiameter');
-            expect(specimenDiameter?.unit).toBe('um');
+            const equivalentDiameter = generatedTraits.find((t: any) => t.name === 'equivalentDiameter');
+            expect(equivalentDiameter?.unit).toBe('um');
 
             const loadAtBreak = generatedTraits.find((t: any) => t.name === 'loadAtBreak');
             expect(loadAtBreak?.unit).toBe('N');
