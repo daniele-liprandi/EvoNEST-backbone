@@ -8,7 +8,7 @@ jest.mock("@/app/api/utils/get_database_user", () => ({
 jest.mock("@/app/api/utils/permissions", () => ({ userCan: jest.fn() }));
 
 import { POST } from "@/app/api/config/types/seed/route";
-import { resolvePreset } from "@/shared/config/lab-presets";
+import { resolvePreset, LAB_PRESETS } from "@/shared/config/lab-presets";
 
 const { get_or_create_client } = require("@/app/api/utils/mongodbClient");
 const { userCan } = require("@/app/api/utils/permissions");
@@ -81,5 +81,46 @@ describe("config/types/seed with presets", () => {
     expect(resolved?.sampletypes.some((s: any) => s.value === "animal")).toBe(true);
     expect(resolved?.equipmenttypes.length).toBeGreaterThan(0);
     expect(resolvePreset("nope")).toBeNull();
+  });
+
+  test("the crop field-trial preset carries crop columns and yield traits", () => {
+    const resolved = resolvePreset("crop-field-trial");
+    const crop = resolved?.sampletypes.find((s: any) => s.value === "crop");
+    expect(crop.columns).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: "growthStage", kind: "toggle" }),
+      expect.objectContaining({ key: "watered", kind: "counter" }),
+    ]));
+    expect(resolved?.traittypes.map((t: any) => t.value)).toContain("yield");
+  });
+
+  test.each([
+    ["herbarium", "herbarium", "phenology"],
+    ["museum-specimens", "specimen", "preparation"],
+    ["sequencing-pipeline", "seqsample", "qc"],
+    ["microbial-culture", "strain", "contamination"],
+  ])("the %s preset defines its lead sample type with custom columns", (preset, typeValue, customKey) => {
+    const resolved = resolvePreset(preset);
+    const type = resolved?.sampletypes.find((s: any) => s.value === typeValue);
+    expect(type).toBeTruthy();
+    expect(type.columns.some((c: any) => typeof c === "object" && c.key === customKey)).toBe(true);
+  });
+});
+
+const VALID_KINDS = ["counter", "toggle", "progress", "text", "number", "date"];
+
+describe("preset sample-column lists", () => {
+  const columnEntries = LAB_PRESETS.flatMap((p) =>
+    (p.overrides.sampletypes ?? []).flatMap((t: any) => t.columns ?? []),
+  );
+
+  test("every custom column entry is well formed for its kind", () => {
+    for (const entry of columnEntries) {
+      if (typeof entry === "string") continue;
+      expect(entry.key).toBeTruthy();
+      expect(entry.label).toBeTruthy();
+      expect(VALID_KINDS).toContain(entry.kind);
+      if (entry.kind === "toggle") expect(Array.isArray(entry.options)).toBe(true);
+      if (entry.kind === "progress") expect(entry.field ?? entry.key).toBeTruthy();
+    }
   });
 });
