@@ -12,12 +12,18 @@ jest.mock('@/app/api/utils/get_database_user', () => ({
   get_database_user: jest.fn().mockResolvedValue('testdb'),
 }));
 
-// Mock filesystem operations
+// Mock filesystem operations. Next's build resolves route.js's
+// `import { writeFile } from "fs/promises"` to the "node:fs/promises"
+// specifier — a different module registry entry to Jest than the bare
+// "fs/promises" one, so it needs its own mock. Point it at the same mock
+// object (rather than a second, independent one) so the assertions below,
+// which read the mock via the bare specifier, see the calls either way.
 jest.mock('fs/promises', () => ({
   writeFile: jest.fn().mockResolvedValue(undefined),
   mkdir: jest.fn().mockResolvedValue(undefined),
   access: jest.fn().mockRejectedValue(new Error('Directory does not exist')), // Mock access to fail so mkdir gets called
 }));
+jest.mock('node:fs/promises', () => require('fs/promises'));
 
 // Mock fs for the ensureDirectoryExists function
 jest.mock('fs', () => ({

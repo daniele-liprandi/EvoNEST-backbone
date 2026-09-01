@@ -12,8 +12,9 @@ const config: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
   testMatch: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx'],
-  // Never pick up compiled output (e.g. mastra/dist) or vendored deps.
-  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.next/'],
+  // Never pick up compiled output, vendored deps, or the mastra sub-package
+  // (which has its own vitest runner — `cd mastra && npm test`).
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.next/', '<rootDir>/mastra/'],
   verbose: true,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

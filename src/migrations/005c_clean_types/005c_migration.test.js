@@ -48,7 +48,7 @@ describe('Silktype Standardization Migration', () => {
     });
 
     test('standardizes major and minor ampullate variations', async () => {
-        await up(client);  // Pass the test client
+        await up(client, 'test');  // Pass the test client and db name
 
         const results = await traitsCollection.find({}).toArray();
         
@@ -78,7 +78,7 @@ describe('Silktype Standardization Migration', () => {
             {}
         ]);
 
-        await up(client);  // Pass the test client
+        await up(client, 'test');  // Pass the test client and db name
 
         const emptyResults = await traitsCollection.find({
             $or: [

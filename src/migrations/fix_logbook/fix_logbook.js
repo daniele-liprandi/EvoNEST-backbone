@@ -125,13 +125,19 @@ async function up(testClient = null, dbName = "test") {
             console.log(`- Errors encountered: ${data.errors}`);
         }
 
-        // Check for errors
+        // A per-document error (e.g. an unparseable date) means that one
+        // document was left unchanged, already logged above — it should not
+        // abort the run and lose the fixes already made to every other
+        // document. Only a thrown error below (a real infrastructure
+        // failure) does that.
         const totalErrors = Object.values(stats).reduce((sum, data) => sum + data.errors, 0);
         if (totalErrors > 0) {
-            throw new Error(`Migration completed with ${totalErrors} errors. Please check the logs.`);
+            console.warn(`\nMigration completed with ${totalErrors} error(s); the affected documents were left unchanged — see the per-document logs above.`);
+        } else {
+            console.log("\nMigration completed successfully");
         }
 
-        console.log("\nMigration completed successfully");
+        return stats;
 
     } catch (error) {
         console.error("\nError applying migration:", error);

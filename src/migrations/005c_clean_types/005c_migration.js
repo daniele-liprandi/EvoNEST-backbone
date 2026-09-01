@@ -14,7 +14,7 @@ async function connectClient() {
     }
 }
 
-async function up(testClient = null) {
+async function up(testClient = null, dbName = "evonest") {
     let client;
     try {
         // Use provided test client or create a new connection
@@ -24,10 +24,10 @@ async function up(testClient = null) {
             client = new MongoClient(process.env.MONGODB_URI || "mongodb://localhost:27017");
             await client.connect();
         }
-        
+
         console.log('Connected successfully to MongoDB');
 
-        const db = client.db("evonest");
+        const db = client.db(dbName);
         const traitsCollection = db.collection("traits");
 
         // Update major ampullate variations
