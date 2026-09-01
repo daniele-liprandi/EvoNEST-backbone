@@ -15,7 +15,8 @@ import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { prepend_path } from "@/lib/utils";
 import { baseColumns } from './columns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { handleBulkDeleteTraits, handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait, handleExportAllTraitsRelated, handleConvertAllUnits, previewUnitConversion } from '@/utils/handlers/traitHandlers';
+import { handleBulkDeleteTraits, handleBulkUpdateTraitFields, handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait, handleExportAllTraitsRelated, handleConvertAllUnits, previewUnitConversion, handleUpdateTraitFields } from '@/utils/handlers/traitHandlers';
+import { traitEditFields } from '@/components/tables/edit-fields';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { useTraitData } from '@/hooks/useTraitData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -148,7 +149,10 @@ function TraitsPageContent() {
                         onEdit={null}
                         onStatusChange={handleStatusChangeTrait}
                         onIncrement={handleStatusIncrementTrait}
+                        onUpdateFields={handleUpdateTraitFields}
                         onBulkDelete={handleBulkDeleteTraits}
+                        onBulkUpdateFields={handleBulkUpdateTraitFields}
+                        bulkEditFields={traitEditFields}
                         bulkEntityLabel="trait"
                         renderToolbar={(table: TanstackTable<any>) => (
                             <DataTableToolbar

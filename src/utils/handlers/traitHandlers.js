@@ -37,6 +37,53 @@ export const handleBulkDeleteTraits = async (traitIds) => {
     }
 };
 
+// One setfield request per field against a single trait. Returns the names of
+// the fields that failed. No toast, no revalidation — the callers below own that.
+const setTraitFields = async (traitId, changes) => {
+    const entries = Object.entries(changes);
+    const results = await Promise.allSettled(
+        entries.map(([field, value]) =>
+            fetch(`${prepend_path}/api/traits`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ method: 'setfield', id: traitId, field, value }),
+            }).then((res) => {
+                if (!res.ok) throw new Error(field);
+            })
+        )
+    );
+    const failed = [];
+    results.forEach((r, i) => {
+        if (r.status === 'rejected') failed.push(entries[i][0]);
+    });
+    return failed;
+};
+
+// Write only the fields the caller passes (row edit dialog).
+export const handleUpdateTraitFields = async (traitId, changes) => {
+    if (Object.keys(changes).length === 0) return;
+    const failed = await setTraitFields(traitId, changes);
+    mutate(`${prepend_path}/api/traits`);
+    if (failed.length) {
+        toast.error(`Could not update: ${failed.join(', ')}`);
+    } else {
+        toast.message('Trait updated');
+    }
+};
+
+// Same change applied to many traits (bulk edit).
+export const handleBulkUpdateTraitFields = async (traitIds, changes) => {
+    if (Object.keys(changes).length === 0) return;
+    const perTrait = await Promise.all(traitIds.map((id) => setTraitFields(id, changes)));
+    const failed = perTrait.filter((f) => f.length > 0).length;
+    mutate(`${prepend_path}/api/traits`);
+    if (failed) {
+        toast.error(`${failed} of ${traitIds.length} traits could not be updated`);
+    } else {
+        toast.message(`Updated ${traitIds.length} traits`);
+    }
+};
+
 const debouncedHandleStatusChangeTrait = debounce(async (traitId, field, value, withmutate = false) => {
     await fetch(`${prepend_path}/api/traits`, {
         method: 'POST',

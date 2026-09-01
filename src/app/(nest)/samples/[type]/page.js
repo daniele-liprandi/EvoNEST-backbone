@@ -16,7 +16,8 @@ import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { getUserNameById } from "@/hooks/userHooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SmartVaul } from '@/components/forms/smart-vaul';
-import { handleBulkDeleteSamples, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated } from '@/utils/handlers/sampleHandlers';
+import { handleBulkDeleteSamples, handleBulkUpdateSampleFields, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated, handleUpdateSampleFields } from '@/utils/handlers/sampleHandlers';
+import { sampleEditFields } from '@/components/tables/edit-fields';
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -83,7 +84,10 @@ function TypePageContent() {
                         onDelete={handleDeleteSample}
                         onEdit={handleEditSample}
                         onIncrement={handleStatusIncrementSample}
+                        onUpdateFields={handleUpdateSampleFields}
                         onBulkDelete={handleBulkDeleteSamples}
+                        onBulkUpdateFields={handleBulkUpdateSampleFields}
+                        bulkEditFields={sampleEditFields}
                         bulkEntityLabel="sample"
                         columns={columns}
                         data={dataTableData}
