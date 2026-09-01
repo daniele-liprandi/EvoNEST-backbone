@@ -74,6 +74,19 @@ export async function POST(req) {
     const db = client.db(dbname);
     const configs = db.collection("config");
 
+    // The wizard passes the lab name and a free-text description; keep them on
+    // the main settings without touching the rest of that document.
+    if (body?.labName || body?.labDescription) {
+      const labInfo = {};
+      if (body.labName) labInfo["labInfo.name"] = String(body.labName);
+      if (body.labDescription) labInfo["labInfo.description"] = String(body.labDescription);
+      await db.collection("settings").updateOne(
+        { type: "main" },
+        { $set: { type: "main", ...labInfo } },
+        { upsert: true },
+      );
+    }
+
     const results = [];
 
     for (const [configType, data] of Object.entries(configSet)) {

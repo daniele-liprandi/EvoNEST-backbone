@@ -1,6 +1,12 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useState } from "react"
+import useSWR from "swr"
+import { toast } from "sonner"
+import { Check, ChevronLeft } from "lucide-react"
+
+import { prepend_path } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -8,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -16,8 +21,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { CheckCircle2, Settings, Database } from "lucide-react"
-import { toast } from "sonner"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+interface Preset {
+  value: string
+  label: string
+  description: string
+}
 
 interface ConfigSetupProps {
   onComplete: () => void
@@ -26,121 +41,136 @@ interface ConfigSetupProps {
   onOpenChange?: (open: boolean) => void
 }
 
-export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onOpenChange }: ConfigSetupProps) {
-  const [loading, setLoading] = useState(false)
-  const [seeded, setSeeded] = useState(false)
+function Wizard({ onComplete }: { onComplete: () => void }) {
+  const { data: presets } = useSWR<Preset[]>(`${prepend_path}/api/config/presets`, fetcher)
+  const [step, setStep] = useState(0)
+  const [labName, setLabName] = useState("")
+  const [labDescription, setLabDescription] = useState("")
+  const [preset, setPreset] = useState("generic")
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSeedDatabase = async () => {
-    setLoading(true)
+  const apply = async () => {
+    setSubmitting(true)
     try {
-      const response = await fetch('/api/config/types/seed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+      const res = await fetch(`${prepend_path}/api/config/types/seed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preset, labName, labDescription }),
       })
-      
-      if (response.ok) {
-        const result = await response.json()
-        console.log('Seed result:', result)
-        setSeeded(true)
-        toast.success('Configuration initialised successfully')
-        // Wait a moment for the user to see the success state
-        setTimeout(() => {
-          onComplete()
-        }, 1500)
-      } else {
-        console.error('Failed to seed database')
-        toast.error('Failed to initialize configuration. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error seeding database:', error)
-      toast.error('Error initializing configuration. Please try again.')
+      if (!res.ok) throw new Error((await res.json()).error || "Setup failed")
+      toast.success("Your NEST is set up")
+      onComplete()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Setup failed. Please try again.")
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
-  const SetupContent = () => (
+  return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <Database className="h-12 w-12 mx-auto text-blue-500" />
-        <h2 className="text-2xl font-bold">Welcome to your NEST!</h2>
-        <p className="text-muted-foreground">
-          It looks like this is your first time using the system. Let&apos;s set up your configuration.
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="bg-muted/50 p-4 rounded-lg">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            What we&apos;ll set up:
-          </h3>
-          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <li>• Sample types (Animal, Blood, DNA extract, etc.)</li>
-            <li>• Trait types (Mass, Length, DNA concentration, etc.)</li>
-            <li>• Equipment types (Microscopes, PCR machines, etc.)</li>
-            <li>• Sample subtypes (Whole blood, Serum, Muscle, etc.)</li>
-            <li>• SI unit prefixes</li>
-            <li>• Base units (meter, Pascal, Newton, etc.)</li>
-          </ul>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-          <h4 className="font-medium text-blue-900">Note:</h4>
-          <p className="text-sm text-blue-800 mt-1">
-            These are default configurations that you can customise later. Each database has its own configuration, 
-            so different research projects can have their own sample types and measurements.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex justify-center">
-        {seeded ? (
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle2 className="h-5 w-5" />
-            <span className="font-medium">Configuration initialised successfully!</span>
+      {step === 0 && (
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">About your lab</h2>
+            <p className="text-sm text-muted-foreground">
+              This names your NEST. The description is optional and helps tailor the setup.
+            </p>
           </div>
-        ) : (
-          <Button 
-            onClick={handleSeedDatabase} 
-            disabled={loading}
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            {loading ? 'Initialising...' : 'Initialise configuration'}
-          </Button>
-        )}
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="lab-name">Lab name</Label>
+            <Input
+              id="lab-name"
+              value={labName}
+              onChange={(e) => setLabName(e.target.value)}
+              placeholder="e.g. Spider Silk Lab, University of Somewhere"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lab-description">What does your lab study?</Label>
+            <Textarea
+              id="lab-description"
+              value={labDescription}
+              onChange={(e) => setLabDescription(e.target.value)}
+              placeholder="A sentence or two: the organisms, the measurements, the questions."
+              rows={3}
+            />
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setStep(1)} disabled={!labName.trim()}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === 1 && (
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Choose a starting point</h2>
+            <p className="text-sm text-muted-foreground">
+              This sets the initial sample and trait types. You can change all of it later under Settings.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            {(presets ?? []).map((p) => (
+              <button
+                key={p.value}
+                type="button"
+                onClick={() => setPreset(p.value)}
+                className={cn(
+                  "rounded-lg border p-3 text-left transition-colors",
+                  preset === p.value
+                    ? "border-primary bg-muted/50"
+                    : "hover:border-primary/40 hover:bg-muted/30",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{p.label}</span>
+                  {preset === p.value && <Check className="size-4 text-primary" />}
+                </div>
+                <p className="text-sm text-muted-foreground">{p.description}</p>
+              </button>
+            ))}
+          </div>
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={() => setStep(0)}>
+              <ChevronLeft className="size-4" /> Back
+            </Button>
+            <Button onClick={apply} disabled={submitting}>
+              {submitting ? "Setting up…" : "Set up my NEST"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+export function ConfigSetup({ onComplete, showAsDialog = false, open = true, onOpenChange }: ConfigSetupProps) {
+  const body = <Wizard onComplete={onComplete} />
 
   if (showAsDialog) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>First time setup</DialogTitle>
-            <DialogDescription>
-              Initialize your NEST to get started.
-            </DialogDescription>
+            <DialogTitle>Set up your NEST</DialogTitle>
+            <DialogDescription>A couple of questions and you are ready to go.</DialogDescription>
           </DialogHeader>
-          <SetupContent />
+          {body}
         </DialogContent>
       </Dialog>
     )
   }
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="mx-auto max-w-lg">
       <CardHeader>
-        <CardTitle>First time setup</CardTitle>
-        <CardDescription>
-              Initialize your NEST to get started.
-        </CardDescription>
+        <CardTitle>Set up your NEST</CardTitle>
+        <CardDescription>A couple of questions and you are ready to go.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <SetupContent />
-      </CardContent>
+      <CardContent>{body}</CardContent>
     </Card>
   )
 }
