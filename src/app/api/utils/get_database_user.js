@@ -90,6 +90,7 @@ export async function get_current_user() {
     return userdb;
 }
 
+/** @deprecated Use `userCan(capability)` from `@/app/api/utils/permissions`. */
 export async function check_user_role(requiredRole) {
     try {
         const user = await get_current_user();

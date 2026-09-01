@@ -10,8 +10,6 @@ import { useUserData } from '@/hooks/useUserData'
 import { prepend_path } from '@/lib/utils'
 import { Bug, Flask, Ruler, Users, Sparkle, ArrowRight } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
-import { useConfigCheck } from '@/hooks/useConfigCheck'
-import { ConfigSetup } from '@/components/config-setup'
 import { CardSamples } from '@/components/nest/dashboard/card-samples'
 import { DemoDescription } from '@/components/nest/dashboard/demo-description'
 import { getUserIdByName } from '@/hooks/userHooks'
@@ -52,7 +50,6 @@ export default function Home() {
   const { traitsData } = useTraitData(prepend_path)
   const { experimentsData } = useExperimentsData(prepend_path)
   const { session, isLoading } = useAuth()
-  const { configExists, loading } = useConfigCheck()
 
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [aiLoading, setAiLoading] = useState(false)
@@ -134,14 +131,6 @@ export default function Home() {
     document.querySelector<HTMLInputElement>('input[placeholder*="Ask anything"]')?.focus()
   }, [])
 
-  if (loading) return <div className="p-8 text-muted-foreground">Loading…</div>
-  if (configExists === false) {
-    return (
-      <div className="container mx-auto py-8">
-        <ConfigSetup onComplete={() => window.location.reload()} />
-      </div>
-    )
-  }
   if (isLoading) return <div className="p-8 text-muted-foreground">Loading…</div>
 
   const isDemo = session?.user?.name === 'demo'
