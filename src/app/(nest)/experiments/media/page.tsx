@@ -5,7 +5,7 @@ import { Trash } from "@phosphor-icons/react";
 import { CellContext, Table as TanstackTable } from "@tanstack/react-table";
 
 import { SmartVaul } from "@/components/forms/smart-vaul";
-import { dateColumn, imageColumn, responsibleColumn, sampleColumn } from "@/components/tables/columns";
+import { dateColumn, imageColumn, responsibleColumn, sampleColumn, selectColumn } from "@/components/tables/columns";
 import { DataTable } from "@/components/tables/data-table";
 import { DataTableToolbar } from "@/components/tables/data-table-toolbar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -19,7 +19,7 @@ import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from "@/hooks/useSampleData";
 import { useUserData } from "@/hooks/useUserData";
 import { prepend_path } from "@/lib/utils";
-import { handleDeleteExperiment, handleExperimentFileDownload, handleStatusChangeExperiment, handleStatusIncrementExperiment } from "@/utils/handlers/experimentHandlers";
+import { handleBulkDeleteExperiments, handleDeleteExperiment, handleExperimentFileDownload, handleStatusChangeExperiment, handleStatusIncrementExperiment } from "@/utils/handlers/experimentHandlers";
 
 export interface Experiment {
   _id: string;
@@ -32,6 +32,7 @@ interface TableMeta {
 }
 
 const baseColumns = [
+  selectColumn(),
   { accessorKey: "name", header: "Name" },
   sampleColumn("sampleId", "sampleName", "Sample"),
   responsibleColumn(),
@@ -129,6 +130,8 @@ function MediaPageContent() {
           onEdit={null}
           onStatusChange={handleStatusChangeExperiment}
           onIncrement={handleStatusIncrementExperiment}
+          onBulkDelete={handleBulkDeleteExperiments}
+          bulkEntityLabel="media experiment"
           renderToolbar={(table: TanstackTable<any>) => (
             <DataTableToolbar table={table} entity="media">
               {newButton}

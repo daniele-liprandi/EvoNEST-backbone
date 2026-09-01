@@ -14,6 +14,27 @@ export const handleDeleteExperiment = async (experimentId: any) => {
   mutate(`${prepend_path}/api/experiments`);
 };
 
+export const handleBulkDeleteExperiments = async (experimentIds: string[]) => {
+  const results = await Promise.allSettled(
+    experimentIds.map((id) =>
+      fetch(`${prepend_path}/api/experiments`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      }).then((res) => {
+        if (!res.ok) throw new Error(id);
+      })
+    )
+  );
+  const failed = results.filter((r) => r.status === 'rejected').length;
+  mutate(`${prepend_path}/api/experiments`);
+  if (failed) {
+    toast.error(`${failed} of ${experimentIds.length} experiments could not be deleted`);
+  } else {
+    toast.message(`Deleted ${experimentIds.length} experiments`);
+  }
+};
+
 // Create the core handler function
 const debouncedHandleStatusChangeExperiment = debounce(async (experimentId: any, field: string, value: string) => {
   const response = await fetch(`${prepend_path}/api/experiments`, {

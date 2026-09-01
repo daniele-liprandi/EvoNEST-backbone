@@ -72,6 +72,7 @@ export const baseColumns = [
 ]
 
 const animalColumns = [
+  selectColumn(),
   sampleNameColumn(),
   familyColumn(),
   genusColumn(),
@@ -116,6 +117,7 @@ const animalColumns = [
 ]
 
 const subsampleColumns = [
+  selectColumn(),
   sampleNameColumn(),
   parentColumn(),
   recentChangeDateColumn(),

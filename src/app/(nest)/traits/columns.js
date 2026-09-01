@@ -13,6 +13,7 @@ import { handleTraitDataDownload } from "@/utils/handlers/traitHandlers"
 
 
 export const baseColumns = [
+  selectColumn(),
   logbookColumn(),
   sampleColumn("sampleId", "sampleName", "Sample", true), // go directly to the traits page
   sampleColumn("animalId", "animalName", "Animal"),
