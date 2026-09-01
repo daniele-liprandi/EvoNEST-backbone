@@ -89,11 +89,10 @@ const debouncedHandleStatusChangeExperiment = debounce(async (experimentId: any,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ method: "setfield", id: experimentId, field: field, value: value })
   });
+  // No success toast: called on every click of an inline control.
   if (!response.ok) {
-    toast.error("Failed to change status");
+    toast.error("Could not save the change");
   }
-  else
-    toast.message("Status changed");
 }, 1000);
 
 // Export the debounced version
@@ -102,13 +101,14 @@ export const handleStatusChangeExperiment = (experimentId: any, field: string, v
 };
 
 export const handleStatusIncrementExperiment = async (experimentId: any, field: string) => {
-  await fetch(`${prepend_path}/api/experiments`, {
+  const response = await fetch(`${prepend_path}/api/experiments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ method: "incrementfield", id: experimentId, field: field })
   });
-
-  toast.message("increment")
+  if (!response.ok) {
+    toast.error("Could not save the change");
+  }
 };
 
 export const handleExperimentFileDownload = async (fileId: string) => {

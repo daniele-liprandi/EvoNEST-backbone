@@ -619,27 +619,37 @@ export const lifestatusColumn = () => (
     }
   }
 );
-export const fedButtonColumn = () => (
-  {
-    accessorKey: "fed",
-    header: "Feed",
-    cell: function Cell(info) {
+// A counter field bumped by one on each click (fed / molted / egg sac). Shows
+// the current count next to the icon so the click needs no toast to confirm.
+const incrementButtonColumn = (field, header, Icon, tooltip) => ({
+  accessorKey: field,
+  header,
+  cell: function Cell(info) {
+    const sample = info.row.original;
+    const { onIncrement } = info.table.options.meta;
+    const count = Number(sample[field]) || 0;
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={tooltip}
+              onClick={() => onIncrement(sample._id, field)}
+            >
+              <Icon className="size-4" />
+              {count > 0 ? <span className="tabular-nums">{count}</span> : null}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  },
+});
 
-      const sample = info.row.original;
-      const { onIncrement } = info.table.options.meta;
-
-      const [value, setValue] = React.useState(sample.fed);
-      return (
-
-        <Button value={value} onValueChange={(value) => {
-          if (value) setValue(value);
-        }}
-          onClick={() => onIncrement(sample._id, "fed")}
-        ><Carrot /></Button>
-      )
-    },
-  }
-);
+export const fedButtonColumn = () => incrementButtonColumn("fed", "Feed", Carrot, "Record a feeding");
 export const hungryProgressbarColumn = () => (
   {
     accessorKey: "lastFed",
@@ -663,48 +673,8 @@ export const hungryProgressbarColumn = () => (
   }
 );
 
-export const moltedButtonColumn = () => (
-  {
-    accessorKey: "molted",
-    header: "Molted",
-    cell: function Cell(info) {
-
-      const sample = info.row.original;
-      const { onIncrement } = info.table.options.meta;
-
-      const [value, setValue] = React.useState(sample.fed);
-      return (
-
-        <Button value={value} onValueChange={(value) => {
-          if (value) setValue(value);
-        }}
-          onClick={() => onIncrement(sample._id, "molted")}
-        ><Shield /></Button>
-      )
-    },
-  }
-);
-export const eggsacButtonColumn = () => (
-  {
-    accessorKey: "eggsac",
-    header: "with Egg Sac",
-    cell: function Cell(info) {
-
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange, onIncrement } = info.table.options.meta;
-
-      const [value, setValue] = React.useState(sample.eggsac);
-      return (
-
-        <Button value={value} onValueChange={(value) => {
-          if (value) setValue(value);
-        }}
-          onClick={() => onIncrement(sample._id, "eggsac")}
-        ><Egg /></Button>
-      )
-    },
-  }
-);
+export const moltedButtonColumn = () => incrementButtonColumn("molted", "Molted", Shield, "Record a moult");
+export const eggsacButtonColumn = () => incrementButtonColumn("eggsac", "Egg sac", Egg, "Record an egg sac");
 export const sexButtonColumn = () => (
   {
     accessorKey: "sex",

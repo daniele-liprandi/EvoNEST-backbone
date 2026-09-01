@@ -26,16 +26,19 @@ function capitalizeFirstLetter(val) {
 function TypePageContent() {
     const pathname = usePathname();
     const type = pathname.split('/').pop();
-    const typeLabel = capitalizeFirstLetter(type);
     const { filterData } = useUrlFilters();
     const { samplesData, samplesError } = useSampleData(prepend_path, tableSwrConfig);
     const { usersData, usersError } = useUserData(prepend_path, tableSwrConfig);
     const { sampletypes } = useConfigTypes();
 
-    const columns = useMemo(() => {
-        const typeConfig = sampletypes.find((t) => t.value === type) ?? { value: type };
-        return buildSampleColumns(typeConfig);
-    }, [sampletypes, type]);
+    const typeConfig = sampletypes.find((t) => t.value === type);
+    // Prefer the configured label; fall back to the capitalised URL segment.
+    const typeLabel = typeConfig?.label || capitalizeFirstLetter(type);
+
+    const columns = useMemo(
+        () => buildSampleColumns(typeConfig ?? { value: type }),
+        [sampletypes, type],
+    );
 
     // Use useMemo for filtered data to prevent unnecessary recalculations
     const filteredData = useMemo(() => {
