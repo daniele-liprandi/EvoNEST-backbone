@@ -46,7 +46,7 @@ describe('Silktype Standardization Migration', () => {
     });
 
     test('standardizes bridging line variations', async () => {
-        await up(client);  // Pass the test client
+        await up(client, 'test');  // Pass the test client and db name
 
         const results = await samplesCollection.find({}).toArray();
         
@@ -67,7 +67,7 @@ describe('Silktype Standardization Migration', () => {
             {}
         ]);
 
-        await up(client);  // Pass the test client
+        await up(client, 'test');  // Pass the test client and db name
 
         const emptyResults = await samplesCollection.find({
             $or: [

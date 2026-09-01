@@ -73,7 +73,7 @@ async function up(testClient = null, dbName = "test") {
                     $push: {
                         logbook: [
                             `${new Date().toISOString()}`,
-                            `Added loadAtBreak: ${loadAtBreak}N from migration script`
+                            `Added loadAtBreak: ${loadAtBreak}mN from migration script`
                         ]
                     }
                 }

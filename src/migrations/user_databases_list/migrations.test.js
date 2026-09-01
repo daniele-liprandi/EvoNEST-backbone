@@ -9,16 +9,14 @@ describe('MongoDB Migrations', () => {
 
     beforeAll(async () => {
         mongoServer = await MongoMemoryServer.create();
-        connection = await MongoClient.connect(mongoServer.getUri(), {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        db = connection.db();
+        connection = await MongoClient.connect(mongoServer.getUri());
+        // migrateUsers targets the fixed global users database
+        db = connection.db('usersdb');
     });
 
     afterAll(async () => {
-        await connection.close();
-        await mongoServer.stop();
+        if (connection) await connection.close();
+        if (mongoServer) await mongoServer.stop();
     });
 
     beforeEach(async () => {

@@ -364,7 +364,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             }
 
             const output = content.substr(position);
-            const outputSplit = output.split(/\r\n/);
+            const outputSplit = output.split(/\r?\n/); // files may be LF or CRLF
             
             // Get channel names from the header
             let channelNamesRaw = outputSplit[2];

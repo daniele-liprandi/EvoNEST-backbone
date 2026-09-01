@@ -83,7 +83,7 @@ describe('LoadAtBreak Migration', () => {
             expect.arrayContaining([
                 expect.arrayContaining([
                     expect.any(String), // timestamp
-                    expect.stringContaining('Added loadAtBreak: 25N') // message
+                    expect.stringContaining('Added loadAtBreak: 25mN') // message
                 ])
             ])
         );
@@ -101,7 +101,7 @@ describe('LoadAtBreak Migration', () => {
 
         expect(traits.length).toBe(1);
         expect(traits[0].measurement).toBe(25);
-        expect(traits[0].unit).toBe('N');
+        expect(traits[0].unit).toBe('mN');
         expect(traits[0].experimentId).toEqual(experimentId);
     });
 
