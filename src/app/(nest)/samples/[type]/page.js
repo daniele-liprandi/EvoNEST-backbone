@@ -10,8 +10,9 @@ import { DataTable } from '@/components/tables/data-table';
 import { DataTableToolbar } from '@/components/tables/data-table-toolbar';
 import { prepend_path } from "@/lib/utils";
 import { Skeleton } from '@/components/ui/skeleton';
-import { baseColumns, typeColumns } from '../columns';
+import { buildSampleColumns } from '../columns';
 import { getSampleNamebyId } from '@/hooks/sampleHooks';
+import { useConfigTypes } from '@/hooks/useConfigTypes';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { getUserNameById } from "@/hooks/userHooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,12 @@ function TypePageContent() {
     const { filterData } = useUrlFilters();
     const { samplesData, samplesError } = useSampleData(prepend_path);
     const { usersData, usersError } = useUserData(prepend_path);
+    const { sampletypes } = useConfigTypes();
+
+    const columns = useMemo(() => {
+        const typeConfig = sampletypes.find((t) => t.value === type) ?? { value: type };
+        return buildSampleColumns(typeConfig);
+    }, [sampletypes, type]);
 
     // Use useMemo for filtered data to prevent unnecessary recalculations
     const filteredData = useMemo(() => {
@@ -59,7 +66,6 @@ function TypePageContent() {
         return <Skeleton className="h-96 w-full rounded-xl" />;
     }
 
-    const columns = typeColumns[type] || baseColumns;
     const newButton = (
         <SmartVaul formType="samples" users={usersData} samples={samplesData} page={type || ""} size="sm" />
     );
