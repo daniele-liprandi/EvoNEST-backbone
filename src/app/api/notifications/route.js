@@ -7,6 +7,83 @@ let cachedNotifications = null
 let cacheTimestamp = null
 const CACHE_DURATION = 2.5 * 60 * 1000 // 2.5 minutes in milliseconds
 
+// Sent on every response so the browser (and any CDN in front of this route)
+// also cache the result, instead of every open tab's 5-minute poll always
+// reaching this handler.
+const CACHE_CONTROL = `public, max-age=${Math.round(CACHE_DURATION / 1000)}, stale-while-revalidate=3600`
+
+// Memoized app version, read once from package.json, for minVersion/maxVersion
+// gating below. `undefined` means "not yet read"; `null` means "read failed".
+let appVersion
+function getAppVersion() {
+  if (appVersion !== undefined) return appVersion
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'))
+    appVersion = pkg.version || null
+  } catch {
+    appVersion = null
+  }
+  return appVersion
+}
+
+function parseVersion(v) {
+  const parts = String(v ?? '').split('.').map((p) => parseInt(p, 10) || 0)
+  return [parts[0] || 0, parts[1] || 0, parts[2] || 0]
+}
+
+function compareVersions(a, b) {
+  const [a1, a2, a3] = parseVersion(a)
+  const [b1, b2, b3] = parseVersion(b)
+  return a1 - b1 || a2 - b2 || a3 - b3
+}
+
+function slugify(text) {
+  return String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60)
+}
+
+// The feed originally used { name, description, icon, color, time }, with a
+// homegrown "yymmdd-hh:mm" timestamp. Both shapes are accepted here so the
+// feed repo can move to the current one on its own schedule.
+function legacyTimeToIso(time) {
+  const match = /^(\d{2})(\d{2})(\d{2})-(\d{2}):(\d{2})$/.exec(time || '')
+  if (!match) return null
+  const [, yy, mm, dd, hh, min] = match
+  const date = new Date(Date.UTC(2000 + Number(yy), Number(mm) - 1, Number(dd), Number(hh), Number(min)))
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
+function normalizeNotification(raw, index) {
+  const title = raw.title || raw.name || 'Update'
+  const date = raw.date || legacyTimeToIso(raw.time) || new Date(0).toISOString()
+  return {
+    id: raw.id || `${slugify(title)}-${slugify(date)}` || `notification-${index}`,
+    date,
+    title,
+    body: raw.body || raw.description || '',
+    level: raw.level || 'info',
+    link: raw.link || null,
+    icon: raw.icon || null,
+    color: raw.color || null,
+  }
+}
+
+// A notification can name the app version range it applies to, so a
+// deployment on an older build doesn't get told about a feature it doesn't
+// have yet. No range on the item means "always visible".
+function isVisibleForVersion(raw) {
+  const version = getAppVersion()
+  if (!version) return true // can't tell our own version -> don't hide anything
+  if (raw.minVersion && compareVersions(version, raw.minVersion) < 0) return false
+  if (raw.maxVersion && compareVersions(version, raw.maxVersion) > 0) return false
+  return true
+}
+
+function prepareNotifications(rawList) {
+  return (Array.isArray(rawList) ? rawList : [])
+    .filter(isVisibleForVersion)
+    .map(normalizeNotification)
+}
+
 /**
  * @swagger
  * components:
@@ -16,74 +93,72 @@ const CACHE_DURATION = 2.5 * 60 * 1000 // 2.5 minutes in milliseconds
  *       properties:
  *         id:
  *           type: string
- *           description: Unique notification identifier
- *           example: "notif_001"
- *         title:
- *           type: string
- *           description: Notification title
- *           example: "System Maintenance"
- *         message:
- *           type: string
- *           description: Notification content
- *           example: "The system will be down for maintenance on..."
- *         type:
- *           type: string
- *           enum: [info, warning, error, success]
- *           description: Notification type
- *           example: "info"
- *         timestamp:
+ *           description: Stable identifier — the client uses this to remember dismissals
+ *           example: "taxon-rename-2026-09-01"
+ *         date:
  *           type: string
  *           format: date-time
- *           description: When the notification was created
- *           example: "2024-03-15T10:30:00Z"
- *         priority:
+ *           description: When the notification was published
+ *           example: "2026-09-01T10:00:00Z"
+ *         title:
  *           type: string
- *           enum: [low, medium, high, urgent]
- *           description: Notification priority level
- *           example: "medium"
+ *           example: "Bulk taxon rename"
+ *         body:
+ *           type: string
+ *           description: Notification content
+ *           example: "You can now rename a taxon across a whole selection of samples."
+ *         level:
+ *           type: string
+ *           enum: [info, warning, critical]
+ *           example: "info"
+ *         link:
+ *           type: string
+ *           nullable: true
+ *           example: "https://github.com/daniele-liprandi/EvoNEST-backbone/releases"
+ *         icon:
+ *           type: string
+ *           nullable: true
+ *           example: "💬"
+ *         color:
+ *           type: string
+ *           nullable: true
+ *           example: "#3b82f6"
  */
 
 /**
  * @swagger
  * /api/notifications:
  *   get:
- *     summary: Get system notifications
+ *     summary: Get developer news
  *     description: |
- *       Retrieves all current system notifications from an external JSON source with intelligent caching and fallback mechanisms.
- *       
- *       **Caching Strategy:**
- *       - Responses are cached for 2.5 minutes to improve performance
- *       - Fresh data is fetched from external source when cache expires
- *       - Cache is updated automatically on successful external fetch
- *       **Fallback Strategy:**
- *       1. External JSON source (currently hardcoded due to environment variable configuration issues)
- *       2. Cached data (even if expired) when external source fails
- *       3. Local notifications.json file as final fallback
- *       
- *       **Current Implementation Note:**
- *       - `NOTIFICATIONS_URL` is temporarily hardcoded to "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
- *       - This is a temporary workaround due to environment variable configuration issues
- *       - Future versions should properly configure this as an environment variable
+ *       Retrieves the developer news feed shown from the bell icon, with caching and fallback.
+ *
+ *       **Caching:**
+ *       - In-memory cache for 2.5 minutes, plus a `next.revalidate`-backed fetch
+ *         cache on the upstream request and a `Cache-Control` header on the
+ *         response, so a cold instance doesn't re-fetch on every poll either.
+ *
+ *       **Fallback, in order:**
+ *       1. External JSON source (`NOTIFICATIONS_URL`, defaulting to the public EvoNEST-news feed)
+ *       2. Cached data (even if expired) when the external source fails
+ *       3. Local `public/notifications.json` as the final fallback
+ *
+ *       Items accept either the current schema (`id`, `date`, `title`, `body`,
+ *       `level`) or the legacy one (`name`, `description`, `time`); an item
+ *       naming `minVersion`/`maxVersion` is hidden outside that app version range.
  *     tags:
  *       - Utilities
  *     responses:
  *       200:
- *         description: Notifications retrieved successfully from external source
+ *         description: Notifications retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Notification'
- *             examples:
- *               cached_response:
- *                 summary: Cached response (returned within 2.5 minutes)
- *                 description: Fast response from in-memory cache
- *               fresh_response:
- *                 summary: Fresh response (after cache expiration)
- *                 description: New data fetched from external source
  *       206:
- *         description: Partial content - notifications retrieved from fallback source due to external source failure
+ *         description: Partial content - retrieved from a fallback source
  *         content:
  *           application/json:
  *             schema:
@@ -95,21 +170,12 @@ const CACHE_DURATION = 2.5 * 60 * 1000 // 2.5 minutes in milliseconds
  *                     $ref: '#/components/schemas/Notification'
  *                 warning:
  *                   type: string
- *                   description: Warning message about fallback usage
  *                   example: "Using cached data due to external source failure"
  *                 error:
  *                   type: string
- *                   description: Details about the original error
  *                   example: "Failed to fetch notifications: 503"
- *             examples:
- *               cached_fallback:
- *                 summary: Using expired cached data
- *                 description: External source failed, returning stale cached data
- *               local_fallback:
- *                 summary: Using local file fallback
- *                 description: External source failed and no cache available, using local file
  *       500:
- *         description: Failed to fetch notifications from all sources (external, cache, and local fallback)
+ *         description: Failed to fetch notifications from all sources
  *         content:
  *           application/json:
  *             schema:
@@ -117,27 +183,28 @@ const CACHE_DURATION = 2.5 * 60 * 1000 // 2.5 minutes in milliseconds
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "Failed to fetch notifications"
+ *                   example: "Failed to fetch notifications from all sources"
  */
 export async function GET() {
- 
   try {
     // Check if we have cached data that's still valid
     const now = Date.now()
     if (cachedNotifications && cacheTimestamp && (now - cacheTimestamp) < CACHE_DURATION) {
-      return NextResponse.json(cachedNotifications)
+      return NextResponse.json(prepareNotifications(cachedNotifications), {
+        headers: { 'Cache-Control': CACHE_CONTROL },
+      })
     }
 
-    // Fetch notifications from the external source
-    const NOTIFICATIONS_URL = "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
-    
-    if (!NOTIFICATIONS_URL) {
-      throw new Error('NOTIFICATIONS_URL environment variable not set', Object.keys(process.env))
-    }
+    // Override the news feed with NOTIFICATIONS_URL; the default is the public
+    // EvoNEST-news feed so a fresh install still shows release notes.
+    const NOTIFICATIONS_URL =
+      process.env.NOTIFICATIONS_URL ||
+      "https://raw.githubusercontent.com/daniele-liprandi/EvoNEST-news/refs/heads/main/notifications.json"
 
     const response = await fetch(NOTIFICATIONS_URL, {
-      // Disable Next.js caching to ensure fresh data
-      cache: 'no-store'
+      // Next's fetch cache, shared across instances, backs up the in-memory
+      // cache above (which is per-instance and lost on every cold start).
+      next: { revalidate: Math.round(CACHE_DURATION / 1000) },
     })
 
     if (!response.ok) {
@@ -150,38 +217,39 @@ export async function GET() {
     cachedNotifications = notifications
     cacheTimestamp = now
 
-    // Send the notifications as a response
-    return NextResponse.json(notifications)
+    return NextResponse.json(prepareNotifications(notifications), {
+      headers: { 'Cache-Control': CACHE_CONTROL },
+    })
   } catch (error) {
     console.error('Error fetching notifications:', error)
-    
+
     // If we have cached data, return it even if it's expired
     if (cachedNotifications) {
       return NextResponse.json({
-        notifications: cachedNotifications,
+        notifications: prepareNotifications(cachedNotifications),
         warning: 'Using cached data due to external source failure',
         error: error.message
-      }, { status: 206 }) // 206 Partial Content - we have some data but not fresh
+      }, { status: 206, headers: { 'Cache-Control': CACHE_CONTROL } }) // 206 Partial Content - we have some data but not fresh
     }
-    
+
     // Fallback to local file if external source fails and no cache
     try {
       const filePath = path.join(process.cwd(), 'public', 'notifications.json')
       const fileContents = fs.readFileSync(filePath, 'utf8')
       const fallbackNotifications = JSON.parse(fileContents)
-      
+
       // Cache the fallback data too
       cachedNotifications = fallbackNotifications
       cacheTimestamp = Date.now()
-      
+
       return NextResponse.json({
-        notifications: fallbackNotifications,
+        notifications: prepareNotifications(fallbackNotifications),
         warning: 'Using local fallback data due to external source failure',
         error: error.message
-      }, { status: 206 }) // 206 Partial Content - we have fallback data
+      }, { status: 206, headers: { 'Cache-Control': CACHE_CONTROL } }) // 206 Partial Content - we have fallback data
     } catch (fallbackError) {
       console.error('Fallback also failed:', fallbackError)
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Failed to fetch notifications from all sources',
         details: {
           primaryError: error.message,

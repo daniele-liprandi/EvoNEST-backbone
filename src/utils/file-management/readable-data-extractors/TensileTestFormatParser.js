@@ -501,29 +501,6 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
     }
 
     /**
-     * Extract power from unit prefix (you'll need to implement this)
-     * This was imported from "@/utils/types" in your old code
-     */
-    extractPowerFromPrefixBeforeText(unit, baseUnit) {
-        // TODO: Implement your unit conversion logic here
-        // This should handle prefixes like "kPa", "MPa", "GPa", etc.
-        
-        if (!unit || !unit.includes(baseUnit)) return 0;
-        
-        const prefix = unit.replace(baseUnit, '');
-        
-        switch (prefix.toLowerCase()) {
-            case 'k': return 3;   // kilo
-            case 'm': return 6;   // mega
-            case 'g': return 9;   // giga
-            case 'µ': 
-            case 'u': return -6;  // micro
-            case 'n': return -9;  // nano
-            default: return 0;
-        }
-    }
-
-    /**
      * Validate the parsed tensile test data
      */
     validate(parsedData) {

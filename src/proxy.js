@@ -1,20 +1,18 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
+// Authentication only: every matched route requires a signed-in user.
+// Authorization (roles, capabilities) is enforced per route handler via
+// userCan(), since middleware can't reach the DB-backed permission config.
 export default withAuth(
   function proxy(req) {
-    // If user is authenticated, allow the request
     if (req.nextauth.token) {
       return NextResponse.next();
     }
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
-        // Implement any custom authorization logic here
-        // For now, just check if we have a token
-        return !!token;
-      },
+      authorized: ({ token }) => !!token,
     },
   }
 );
