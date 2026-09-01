@@ -1,9 +1,11 @@
 [
   {
-    "name": "Fallback Notification",
-    "description": "fallback",
-    "time": "241204-18:30",
+    "id": "fallback-notice",
+    "date": "2024-12-04T18:30:00Z",
+    "title": "Fallback notification",
+    "body": "This is the offline fallback shown when the live news feed can't be reached.",
+    "level": "info",
     "icon": "💬",
-    "color": "#FFa000"
+    "color": "#f59e0b"
   }
 ]

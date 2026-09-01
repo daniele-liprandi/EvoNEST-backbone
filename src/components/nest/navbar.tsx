@@ -42,7 +42,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DeveloperNewsCard } from "@/components/developer-cards/developer-news";
+import { DeveloperNewsCard, useDeveloperNotifications } from "@/components/developer-cards/developer-news";
 
 import {
   Select,
@@ -166,6 +166,11 @@ export function NavBar() {
   const router = useRouter();
   const [userDatabases, setUserDatabases] = useState<string[]>([]);
   const [activeDatabase, setActiveDatabase] = useState<string>("");
+
+  // Owned here (not inside DeveloperNewsCard) so the bell's badge and the
+  // popover's list agree on the same fetch and the same dismissals.
+  const { notifications: devNotifications, dismiss: dismissDevNotification, unreadCount: devUnreadCount } =
+    useDeveloperNotifications();
 
   // Get configuration types from database or defaults
   const { sampletypes } = useConfigTypes();
@@ -427,13 +432,18 @@ export function NavBar() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="relative h-8 w-8">
               <Bell className="h-5 w-5" />
+              {devUnreadCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground">
+                  {devUnreadCount > 9 ? "9+" : devUnreadCount}
+                </span>
+              )}
               <span className="sr-only">Developer news</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-80 p-0">
-            <DeveloperNewsCard />
+            <DeveloperNewsCard notifications={devNotifications} onDismiss={dismissDevNotification} />
           </PopoverContent>
         </Popover>
 
