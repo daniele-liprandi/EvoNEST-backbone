@@ -27,12 +27,19 @@ export const useCurrentUser = () => {
         }
     );
 
+    const capabilities = roleData?.capabilities ?? [];
+    const isAdmin = roleData?.isAdmin || userData?.role === 'admin';
+
     return {
         currentUser: userData,
         userError: error || roleError,
         isUserLoading: (!error && !userData && !!session?.user) || (!roleError && !roleData && !!session?.user),
         isAuthenticated: !!session?.user,
         sessionLoading: status === "loading",
-        isAdmin: roleData?.isAdmin || userData?.role === 'admin'
+        isAdmin,
+        role: roleData?.role ?? userData?.role ?? null,
+        capabilities,
+        // Mirrors the server's userCan: admin holds everything.
+        can: (capability) => isAdmin || capabilities.includes(capability),
     };
 };

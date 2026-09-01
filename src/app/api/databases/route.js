@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { get_or_create_client } from "@/app/api/utils/mongodbClient";
-import { check_user_role } from "@/app/api/utils/get_database_user";
+import { userCan } from "@/app/api/utils/permissions";
 
 /**
  * @swagger
@@ -86,10 +86,8 @@ export async function GET(req) {
 
 export async function POST(req) {
     try {
-        // Check if user is admin
-        const isAdmin = await check_user_role('admin');
-        if (!isAdmin) {
-            return NextResponse.json({ error: "Only administrators can add databases" }, { status: 403 });
+        if (!(await userCan("databases.manage"))) {
+            return NextResponse.json({ error: "Not allowed to add databases" }, { status: 403 });
         }
 
         const { database } = await req.json();

@@ -1,26 +1,33 @@
 import { NextResponse } from "next/server";
-import { check_user_role } from "@/app/api/utils/get_database_user";
+import { get_current_user } from "@/app/api/utils/get_database_user";
+import { getUserCapabilities } from "@/app/api/utils/permissions";
 
 /**
  * @swagger
  * /api/user/role:
  *   get:
- *     summary: Check current user's role
- *     description: Returns the current authenticated user's role information
+ *     summary: Current user's role and capabilities
+ *     description: The signed-in user's role, the capabilities it grants, and the legacy isAdmin flag.
  *     tags:
  *       - Users
  *     responses:
  *       200:
- *         description: Role information retrieved successfully
+ *         description: Role information
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 role:
+ *                   type: string
+ *                   example: researcher
  *                 isAdmin:
  *                   type: boolean
- *                   description: Whether the user has admin role
- *                   example: true
+ *                 capabilities:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["config.edit", "samples.delete"]
  *       401:
  *         description: Not authenticated
  *       500:
@@ -28,12 +35,18 @@ import { check_user_role } from "@/app/api/utils/get_database_user";
  */
 export async function GET(req) {
     try {
-        const isAdmin = await check_user_role('admin');
-        return NextResponse.json({ isAdmin });
+        const user = await get_current_user();
+        const role = user.role ?? null;
+        return NextResponse.json({
+            role,
+            isAdmin: role === "admin",
+            capabilities: await getUserCapabilities(),
+        });
     } catch (error) {
-        if (error.message === 'Not authenticated') {
+        if (error.message === "Not authenticated") {
             return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
         }
+        console.error("user/role error:", error);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
