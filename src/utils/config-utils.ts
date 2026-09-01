@@ -4,19 +4,13 @@
  */
 export async function checkConfigExists(): Promise<boolean> {
   try {
-    const configTypes = ['sampletypes', 'traittypes', 'samplesubtypes', 'equipmenttypes', 'silktypes', 'siprefixes', 'baseunits']
-    
-    for (const configType of configTypes) {
-      const response = await fetch(`/api/config/types?type=${configType}`)
-      if (response.ok) {
-        const config = await response.json()
-        if (config && config.data && config.data.length > 0) {
-          return true // Found at least one non-empty config
-        }
-      }
-    }
-    
-    return false // No configs found or all are empty
+    // The wizard seeds every config type together, so one non-empty type means
+    // setup has run. This is on the critical path of every page load — keep it
+    // to a single request.
+    const response = await fetch('/api/config/types?type=sampletypes')
+    if (!response.ok) return false
+    const config = await response.json()
+    return Boolean(config && Array.isArray(config.data) && config.data.length > 0)
   } catch (error) {
     console.error('Error checking config existence:', error)
     return false // Assume no config on error

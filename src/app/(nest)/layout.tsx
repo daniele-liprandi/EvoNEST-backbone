@@ -1,4 +1,5 @@
 import { NavBar } from "@/components/nest/navbar";
+import { FirstRunGate } from "@/components/first-run-gate";
 
 
 export default function RootLayout({
@@ -8,9 +9,9 @@ export default function RootLayout({
 }>) {
 
   return (
-    <>
+    <FirstRunGate>
       <NavBar />
       {children}
-    </>
+    </FirstRunGate>
   );
 }
