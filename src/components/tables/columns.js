@@ -562,6 +562,84 @@ export const moltedButtonColumn = () => incrementButtonColumn("molted", "Molted"
 export const eggsacButtonColumn = () => incrementButtonColumn("eggsac", "Egg sac", Egg, "Record an egg sac");
 export const sexButtonColumn = () => toggleFieldColumn("sex", "Sex", SEX_OPTIONS, { filter: true });
 
+// --- Custom columns ---------------------------------------------------------
+// A sample type can define its own columns in the config as
+// { key, label, kind, ...opts } instead of a built-in palette key. These render
+// through the same generic machinery as the built-ins.
+
+function ProgressFromDate({ value, days }) {
+  const then = new Date(value).getTime();
+  if (!value || Number.isNaN(then)) return <Progress value={0} />;
+  const elapsed = (Date.now() - then) / (1000 * 60 * 60 * 24);
+  const remaining = Math.max(0, Math.min(100, 100 - (elapsed / (days || 7)) * 100));
+  return <Progress value={Math.round(remaining)} />;
+}
+
+function formatCell(kind, value) {
+  if (value == null || value === "") return "";
+  if (kind === "date") {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString();
+  }
+  return String(value);
+}
+
+/**
+ * Build a column from a config-defined custom column.
+ * @param {{ key: string, label: string, kind: "counter"|"toggle"|"progress"|"text"|"number"|"date",
+ *           icon?: string, options?: {value:string,label:string}[], field?: string, days?: number }} def
+ */
+export function customColumn(def) {
+  const { key, label, kind } = def;
+
+  if (kind === "counter") {
+    return {
+      accessorKey: key,
+      header: label,
+      cell: function Cell(info) {
+        const row = info.row.original;
+        const { onIncrement } = info.table.options.meta;
+        const count = Number(row[key]) || 0;
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Record ${label}`}
+            onClick={() => onIncrement?.(row._id, key)}
+          >
+            <span aria-hidden>{def.icon || "+"}</span>
+            {count > 0 ? <span className="tabular-nums">{count}</span> : null}
+          </Button>
+        );
+      },
+    };
+  }
+
+  if (kind === "toggle") {
+    return toggleFieldColumn(key, label, def.options ?? [], { filter: true });
+  }
+
+  if (kind === "progress") {
+    return {
+      accessorKey: def.field || key,
+      header: label,
+      cell: (info) => <ProgressFromDate value={info.row.original[def.field || key]} days={def.days} />,
+    };
+  }
+
+  // text | number | date — plain, sortable, filterable display column
+  return {
+    accessorKey: key,
+    header: ({ column, table }) => (
+      <div>
+        <DataTableColumnHeader column={column} title={label} />
+        <Filter column={column} table={table} />
+      </div>
+    ),
+    cell: (info) => formatCell(kind, info.getValue()),
+  };
+}
+
 export const imageColumn = (imagefield) => ({
   accessorKey: imagefield,
   header: "Image",
