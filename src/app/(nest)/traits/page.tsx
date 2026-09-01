@@ -7,11 +7,10 @@ import type { Table as TanstackTable } from '@tanstack/react-table';
 import { DataTable } from '@/components/tables/data-table';
 import { DataTableToolbar } from '@/components/tables/data-table-toolbar';
 import { Button } from '@/components/ui/button';
-import { getParentIdbyId, getSampleNamebyId, getSampleSubtypebyId, getSampletypebyId } from '@/hooks/sampleHooks';
-import { getUserIdByName, getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
+import { tableSwrConfig } from '@/hooks/swrConfig';
 import { prepend_path } from "@/lib/utils";
 import { baseColumns } from './columns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,56 +37,47 @@ function TraitsPageContent() {
     const [conversionPreview, setConversionPreview] = useState<any>(null);
     const [isConverting, setIsConverting] = useState(false);
 
-    const { traitsData, traitsError, isValidating: traitsValidating } = useTraitData(prepend_path, true, undefined, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        keepPreviousData: true,
-        dedupingInterval: 3600000,
-    });
+    const { traitsData, traitsError, isValidating: traitsValidating } = useTraitData(prepend_path, true, undefined, tableSwrConfig);
+    const { samplesData, samplesError, isValidating: samplesValidating } = useSampleData(prepend_path, tableSwrConfig);
+    const { usersData, usersError } = useUserData(prepend_path, tableSwrConfig);
 
-    const { samplesData, samplesError, isValidating: samplesValidating } = useSampleData(prepend_path, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        keepPreviousData: true,
-        dedupingInterval: 3600000,
-    });
-
-    const { usersData, usersError } = useUserData(prepend_path, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        dedupingInterval: 3600000,
-    });
-
-    // Create lookup maps for better performance
-    const sampleLookup = useMemo(() => {
-        if (!samplesData) return new Map();
-        return new Map(samplesData.map((sample: { _id: any; }) => [sample._id, sample]));
-    }, [samplesData]);
-
-    const userLookup = useMemo(() => {
-        if (!usersData) return new Map();
-        return new Map(usersData.map((user: { _id: any; }) => [user._id, user]));
-    }, [usersData]);
+    // Index samples and users by id once, so the per-trait lookups below are O(1)
+    // instead of a linear scan of every sample for every trait.
+    const sampleById = useMemo(
+        () => new Map<string, any>((samplesData ?? []).map((sample: any) => [sample._id, sample])),
+        [samplesData],
+    );
+    const userById = useMemo(
+        () => new Map<string, any>((usersData ?? []).map((user: any) => [user._id, user])),
+        [usersData],
+    );
 
     const dataTableData = useMemo(() => {
         if (!traitsData || !samplesData || !usersData) {
             return [];
         }
 
-        const sortedTraits = [...traitsData].sort((a: { date: string | number | Date; }, b: { date: string | number | Date; }) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const sortedTraits = [...traitsData].sort(
+            (a: { date: string | number | Date }, b: { date: string | number | Date }) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
 
         return filterData(
-            sortedTraits.map((trait: { sampleId: any; responsible: any; }) => ({
-                ...trait,
-                sampleName: getSampleNamebyId(trait.sampleId, samplesData),
-                responsibleName: getUserNameById(trait.responsible, usersData),
-                sampleType: getSampletypebyId(trait.sampleId, samplesData),
-                sampleSubType: getSampleSubtypebyId(trait.sampleId, samplesData),
-                animalId: getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId,
-                animalName: getSampleNamebyId(getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId, samplesData),
-            }))
+            sortedTraits.map((trait: { sampleId: any; responsible: any }) => {
+                const sample = sampleById.get(trait.sampleId);
+                const animalId = sample?.parentId || trait.sampleId;
+                return {
+                    ...trait,
+                    sampleName: sample?.name ?? '',
+                    responsibleName: userById.get(trait.responsible)?.name ?? '',
+                    sampleType: sample?.type ?? '',
+                    sampleSubType: sample?.subsampletype ?? '',
+                    animalId,
+                    animalName: sampleById.get(animalId)?.name ?? '',
+                };
+            }),
         );
-    }, [traitsData, samplesData, usersData, filterData]);
+    }, [traitsData, samplesData, usersData, filterData, sampleById, userById]);
 
     // Show loading states
     const isLoading = !traitsData || !samplesData || !usersData;

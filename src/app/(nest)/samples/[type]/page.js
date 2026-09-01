@@ -11,10 +11,9 @@ import { DataTableToolbar } from '@/components/tables/data-table-toolbar';
 import { prepend_path } from "@/lib/utils";
 import { Skeleton } from '@/components/ui/skeleton';
 import { buildSampleColumns } from '../columns';
-import { getSampleNamebyId } from '@/hooks/sampleHooks';
 import { useConfigTypes } from '@/hooks/useConfigTypes';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
-import { getUserNameById } from "@/hooks/userHooks";
+import { tableSwrConfig } from '@/hooks/swrConfig';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { handleBulkDeleteSamples, handleBulkUpdateSampleFields, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated, handleUpdateSampleFields } from '@/utils/handlers/sampleHandlers';
@@ -29,8 +28,8 @@ function TypePageContent() {
     const type = pathname.split('/').pop();
     const typeLabel = capitalizeFirstLetter(type);
     const { filterData } = useUrlFilters();
-    const { samplesData, samplesError } = useSampleData(prepend_path);
-    const { usersData, usersError } = useUserData(prepend_path);
+    const { samplesData, samplesError } = useSampleData(prepend_path, tableSwrConfig);
+    const { usersData, usersError } = useUserData(prepend_path, tableSwrConfig);
     const { sampletypes } = useConfigTypes();
 
     const columns = useMemo(() => {
@@ -49,11 +48,13 @@ function TypePageContent() {
     // Use useMemo for transformed data
     const dataTableData = useMemo(() => {
         if (!samplesData || !usersData) return [];
+        const sampleName = new Map(samplesData.map((s) => [s._id, s.name]));
+        const userName = new Map(usersData.map((u) => [u._id, u.name]));
         return filterData(
             filteredData.map(sample => ({
                 ...sample,
-                parentName: getSampleNamebyId(sample.parentId, samplesData),
-                responsibleName: getUserNameById(sample.responsible, usersData)
+                parentName: sampleName.get(sample.parentId) ?? '',
+                responsibleName: userName.get(sample.responsible) ?? '',
             }))
         );
     }, [filteredData, samplesData, usersData, filterData]);

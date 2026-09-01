@@ -11,12 +11,11 @@ import { DataTableToolbar } from "@/components/tables/data-table-toolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getSampleNamebyId } from "@/hooks/sampleHooks";
 import { useExperimentsData } from "@/hooks/useExperimentData";
 import { useUrlFilters } from "@/hooks/useUrlFilters";
-import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from "@/hooks/useSampleData";
 import { useUserData } from "@/hooks/useUserData";
+import { tableSwrConfig } from "@/hooks/swrConfig";
 import { prepend_path } from "@/lib/utils";
 import { handleBulkDeleteExperiments, handleBulkUpdateExperimentFields, handleDeleteExperiment, handleExperimentFileDownload, handleStatusChangeExperiment, handleStatusIncrementExperiment, handleUpdateExperimentFields } from "@/utils/handlers/experimentHandlers";
 
@@ -50,21 +49,23 @@ const baseColumns = [
 function DocumentsPageContent() {
   const { filterData } = useUrlFilters();
 
-  const { samplesData, samplesError } = useSampleData(prepend_path);
-  const { experimentsData, experimentsError } = useExperimentsData(prepend_path, true);
-  const { usersData, usersError } = useUserData(prepend_path);
+  const { samplesData, samplesError } = useSampleData(prepend_path, tableSwrConfig);
+  const { experimentsData, experimentsError } = useExperimentsData(prepend_path, true, undefined, tableSwrConfig);
+  const { usersData, usersError } = useUserData(prepend_path, tableSwrConfig);
 
   const dataTableData = useMemo(() => {
     if (!samplesData || !experimentsData || !usersData) {
       return [];
     }
+    const sampleName = new Map<string, string>(samplesData.map((s: any) => [s._id, s.name]));
+    const userName = new Map<string, string>(usersData.map((u: any) => [u._id, u.name]));
     return filterData(
       experimentsData
         .filter((experiment: any) => experiment.type === "document")
         .map((experiment: any) => ({
           ...experiment,
-          sampleName: getSampleNamebyId(experiment.sampleId, samplesData),
-          responsibleName: getUserNameById(experiment.responsible, usersData),
+          sampleName: sampleName.get(experiment.sampleId) ?? "",
+          responsibleName: userName.get(experiment.responsible) ?? "",
         }))
     );
   }, [samplesData, experimentsData, usersData, filterData]);
