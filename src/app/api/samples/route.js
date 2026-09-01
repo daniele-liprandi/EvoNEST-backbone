@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { get_database_user, get_name_authuser } from "@/app/api/utils/get_database_user";
 import { isObjectIdString } from "@/app/api/utils/objectId";
+import { userCan } from "@/app/api/utils/permissions";
 
 /**
  * @swagger
@@ -520,6 +521,10 @@ export async function POST(req) {
 
 export async function DELETE(req) {
     try {
+        if (!(await userCan("samples.delete"))) {
+            return new NextResponse(JSON.stringify({ error: "Not allowed to delete samples" }), { status: 403 });
+        }
+
         // Parse the request body to get the sample ID
         let { id } = await req.json();
 
