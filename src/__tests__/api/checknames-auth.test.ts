@@ -3,7 +3,6 @@
 jest.mock('next-auth', () => ({ getServerSession: jest.fn() }))
 jest.mock('@/app/api/auth/[...nextauth]/options', () => ({ authOptions: {} }))
 jest.mock('@/app/api/utils/mongodbClient', () => ({ get_or_create_client: jest.fn() }))
-jest.mock('@/utils/spytrax', () => ({ spytraxCheckTaxa: jest.fn() }))
 
 const { getServerSession } = require('next-auth')
 import { POST } from '@/app/api/checknames/route'
