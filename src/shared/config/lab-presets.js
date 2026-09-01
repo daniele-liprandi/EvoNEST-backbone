@@ -49,6 +49,127 @@ const CROP_COLUMNS = [
   { key: "harvestDate", label: "Harvested", kind: "date" },
 ];
 
+const HERBARIUM_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location",
+  ...TAXONOMY,
+  { key: "collector", label: "Collector", kind: "text" },
+  { key: "accession", label: "Accession", kind: "text" },
+  { key: "collectedDate", label: "Collected", kind: "date" },
+  {
+    key: "phenology",
+    label: "Phenology",
+    kind: "toggle",
+    options: [
+      { value: "sterile", label: "Sterile" },
+      { value: "budding", label: "Budding" },
+      { value: "flowering", label: "Flowering" },
+      { value: "fruiting", label: "Fruiting" },
+    ],
+  },
+  { key: "determiner", label: "Det. by", kind: "text" },
+  {
+    key: "mounting",
+    label: "Mounting",
+    kind: "toggle",
+    options: [
+      { value: "pressed", label: "Pressed" },
+      { value: "mounted", label: "Mounted" },
+      { value: "filed", label: "Filed" },
+    ],
+  },
+];
+
+const SPECIMEN_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location",
+  ...TAXONOMY,
+  { key: "catalogue", label: "Catalogue no.", kind: "text" },
+  {
+    key: "preparation",
+    label: "Preparation",
+    kind: "toggle",
+    options: [
+      { value: "skin", label: "Skin" },
+      { value: "skeleton", label: "Skeleton" },
+      { value: "fluid", label: "Fluid" },
+      { value: "mount", label: "Mount" },
+    ],
+  },
+  { key: "collector", label: "Collector", kind: "text" },
+  { key: "collectedDate", label: "Collected", kind: "date" },
+  "sex", "lifestage",
+  {
+    key: "loan",
+    label: "Loan",
+    kind: "toggle",
+    options: [
+      { value: "in-collection", label: "In collection" },
+      { value: "on-loan", label: "On loan" },
+      { value: "missing", label: "Missing" },
+    ],
+  },
+  {
+    key: "condition",
+    label: "Condition",
+    kind: "toggle",
+    options: [
+      { value: "good", label: "Good" },
+      { value: "fair", label: "Fair" },
+      { value: "poor", label: "Poor" },
+    ],
+  },
+];
+
+const SEQ_COLUMNS = [
+  "name", "responsible", "parent", "recentChange", "date",
+  { key: "extractionDate", label: "Extracted", kind: "date" },
+  {
+    key: "libPrep",
+    label: "Library prep",
+    kind: "toggle",
+    options: [
+      { value: "queued", label: "Queued" },
+      { value: "prepped", label: "Prepped" },
+      { value: "failed", label: "Failed" },
+    ],
+  },
+  { key: "run", label: "Run", kind: "text" },
+  {
+    key: "qc",
+    label: "QC",
+    kind: "toggle",
+    options: [
+      { value: "pending", label: "Pending" },
+      { value: "pass", label: "Pass" },
+      { value: "fail", label: "Fail" },
+      { value: "repeat", label: "Repeat" },
+    ],
+  },
+  { key: "barcode", label: "Index", kind: "text" },
+  { key: "turnaround", label: "Turnaround", kind: "progress", field: "extractionDate", days: 30 },
+  { key: "concentration", label: "ng/µl", kind: "number" },
+];
+
+const STRAIN_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location",
+  "genus", "species",
+  { key: "strainId", label: "Strain ID", kind: "text" },
+  { key: "medium", label: "Medium", kind: "text" },
+  { key: "isolationSource", label: "Source", kind: "text" },
+  { key: "passage", label: "Passage", kind: "counter" },
+  { key: "cryovials", label: "Cryovials", kind: "counter", icon: "🧊" },
+  {
+    key: "contamination",
+    label: "Contamination",
+    kind: "toggle",
+    options: [
+      { value: "clean", label: "Clean" },
+      { value: "suspect", label: "Suspect" },
+      { value: "contaminated", label: "Contaminated" },
+    ],
+  },
+  { key: "revivedDate", label: "Last revived", kind: "date" },
+];
+
 const SAMPLE_TYPES = {
   animal: { value: "animal", label: "Animal", description: "Animal individual", shortened: "an", columns: ANIMAL_COLUMNS },
   subsample: { value: "subsample", label: "Subsample", description: "A part of another sample", shortened: "sub", columns: SUBSAMPLE_COLUMNS },
@@ -59,6 +180,10 @@ const SAMPLE_TYPES = {
   tissue: { value: "tissue", label: "Tissue", description: "Tissue sample", shortened: "ti", columns: STORAGE_COLUMNS },
   dna_extract: { value: "dna_extract", label: "DNA extract", description: "DNA extract", shortened: "dna", columns: STORAGE_COLUMNS },
   secretion: { value: "secretion", label: "Secretion", description: "Secretion sample", shortened: "se", columns: STORAGE_COLUMNS },
+  herbarium: { value: "herbarium", label: "Herbarium specimen", description: "A pressed, mounted plant specimen", shortened: "hb", columns: HERBARIUM_COLUMNS },
+  specimen: { value: "specimen", label: "Museum specimen", description: "A prepared, catalogued specimen", shortened: "sp", columns: SPECIMEN_COLUMNS },
+  seqsample: { value: "seqsample", label: "Sequencing sample", description: "An extract moving through library prep and sequencing", shortened: "seq", columns: SEQ_COLUMNS },
+  strain: { value: "strain", label: "Strain", description: "A microbial strain or isolate", shortened: "st", columns: STRAIN_COLUMNS },
 };
 
 const TRAIT = (value, label, unit, description) => ({ value, label, unit, description });
@@ -81,6 +206,24 @@ const TRAIT_TYPES = {
   yield_mass: TRAIT("yield", "Yield", "g", "Harvested mass per plant or plot"),
   leaf_area: TRAIT("leaf_area", "Leaf area", "cm²", "Total leaf area"),
   chlorophyll: TRAIT("chlorophyll", "Chlorophyll content", "SPAD", "Relative chlorophyll in SPAD units"),
+  leaf_length: TRAIT("leaf_length", "Leaf length", "mm", "Length of a representative leaf"),
+  specific_leaf_area: TRAIT("specific_leaf_area", "Specific leaf area", "mm²/mg", "Leaf area per unit dry mass"),
+  seed_mass: TRAIT("seed_mass", "Seed mass", "mg", "Mass of a single air-dried seed"),
+  trichome_density: TRAIT("trichome_density", "Trichome density", "1/mm²", "Trichomes per unit leaf area"),
+  total_length: TRAIT("total_length", "Total length", "mm", "Nose to tail tip"),
+  tail_length: TRAIT("tail_length", "Tail length", "mm", "Base of tail to tip, excluding hair"),
+  hindfoot_length: TRAIT("hindfoot_length", "Hind foot length", "mm", "Heel to tip of the longest claw"),
+  ear_length: TRAIT("ear_length", "Ear length", "mm", "Notch to the tip of the pinna"),
+  skull_length: TRAIT("skull_length", "Skull length", "mm", "Greatest length of the skull"),
+  rin: TRAIT("rin", "RIN", "", "RNA integrity number"),
+  fragment_size: TRAIT("fragment_size", "Fragment size", "bp", "Mean insert size of the library"),
+  library_molarity: TRAIT("library_molarity", "Library molarity", "nM", "Molar concentration of the final library"),
+  read_count: TRAIT("read_count", "Read count", "M reads", "Reads returned for the sample"),
+  od600: TRAIT("od600", "OD₆₀₀", "", "Optical density at 600 nm"),
+  doubling_time: TRAIT("doubling_time", "Doubling time", "min", "Time to double in exponential growth"),
+  colony_diameter: TRAIT("colony_diameter", "Colony diameter", "mm", "Diameter of a single colony"),
+  mic: TRAIT("mic", "Antibiotic MIC", "µg/ml", "Minimum inhibitory concentration"),
+  biomass_yield: TRAIT("biomass_yield", "Biomass yield", "g/L", "Dry cell mass per litre of culture"),
 };
 
 export const LAB_PRESETS = [
@@ -150,6 +293,71 @@ export const LAB_PRESETS = [
         TRAIT_TYPES.leaf_area,
         TRAIT_TYPES.chlorophyll,
         TRAIT_TYPES.mass,
+      ],
+    },
+  },
+  {
+    value: "herbarium",
+    label: "Herbarium collection",
+    description:
+      "Pressed and mounted plant specimens: collector and accession, phenology, determination history, mounting status.",
+    overrides: {
+      sampletypes: [SAMPLE_TYPES.herbarium, SAMPLE_TYPES.subsample, SAMPLE_TYPES.tissue],
+      traittypes: [
+        TRAIT_TYPES.leaf_length,
+        TRAIT_TYPES.leaf_area,
+        TRAIT_TYPES.specific_leaf_area,
+        TRAIT_TYPES.seed_mass,
+        TRAIT_TYPES.trichome_density,
+      ],
+    },
+  },
+  {
+    value: "museum-specimens",
+    label: "Natural history collection",
+    description:
+      "Prepared, catalogued specimens: preparation type, collector, loan status and condition, with the standard measurements.",
+    overrides: {
+      sampletypes: [SAMPLE_TYPES.specimen, SAMPLE_TYPES.tissue, SAMPLE_TYPES.subsample],
+      traittypes: [
+        TRAIT_TYPES.total_length,
+        TRAIT_TYPES.tail_length,
+        TRAIT_TYPES.hindfoot_length,
+        TRAIT_TYPES.ear_length,
+        TRAIT_TYPES.skull_length,
+        TRAIT_TYPES.mass,
+      ],
+    },
+  },
+  {
+    value: "sequencing-pipeline",
+    label: "Sequencing pipeline",
+    description:
+      "Extracts moving through library prep and sequencing: prep and QC status, run and index, turnaround, concentration.",
+    overrides: {
+      sampletypes: [SAMPLE_TYPES.seqsample, SAMPLE_TYPES.tissue, SAMPLE_TYPES.animal],
+      traittypes: [
+        TRAIT_TYPES.dna_concentration,
+        TRAIT_TYPES.rin,
+        TRAIT_TYPES.fragment_size,
+        TRAIT_TYPES.library_molarity,
+        TRAIT_TYPES.read_count,
+      ],
+    },
+  },
+  {
+    value: "microbial-culture",
+    label: "Microbial culture collection",
+    description:
+      "Strains and isolates: medium and isolation source, passage and cryostock tallies, contamination status, revival date.",
+    overrides: {
+      sampletypes: [SAMPLE_TYPES.strain, SAMPLE_TYPES.subsample],
+      traittypes: [
+        TRAIT_TYPES.od600,
+        TRAIT_TYPES.doubling_time,
+        TRAIT_TYPES.colony_diameter,
+        TRAIT_TYPES.mic,
+        TRAIT_TYPES.biomass_yield,
       ],
     },
   },
