@@ -8,7 +8,7 @@ import { useSampleData } from '@/hooks/useSampleData'
 import { useTraitData } from '@/hooks/useTraitData'
 import { useUserData } from '@/hooks/useUserData'
 import { prepend_path } from '@/lib/utils'
-import { PiBug, PiFlask, PiRuler, PiUsers, PiSparkle, PiArrowRight } from 'react-icons/pi'
+import { Bug, Flask, Ruler, Users, Sparkle, ArrowRight } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useConfigCheck } from '@/hooks/useConfigCheck'
 import { ConfigSetup } from '@/components/config-setup'
@@ -187,7 +187,7 @@ export default function Home() {
             <p className="font-mono text-[11px] uppercase tracking-[.08em] text-muted-foreground">
               {greeting()}, {firstName}
             </p>
-            <h1 className="font-[var(--font-fira_sans,sans-serif)] text-3xl md:text-4xl font-bold tracking-tight leading-tight text-balance m-0">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-tight text-balance m-0">
               What do you want to explore in the NEST?
             </h1>
             <div className="w-full">
@@ -200,7 +200,7 @@ export default function Home() {
                   onClick={() => handleSend(sg.q)}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-[13px] font-medium shadow-sm transition-colors hover:border-primary hover:text-primary cursor-pointer"
                 >
-                  <PiSparkle className="h-3.5 w-3.5 text-primary" />
+                  <Sparkle className="h-3.5 w-3.5 text-primary" />
                   {sg.label}
                 </button>
               ))}
@@ -249,10 +249,10 @@ export default function Home() {
               <CardContent className="pt-0">
                 <ul className="divide-y divide-border/55">
                   {[
-                    { label: 'Samples', value: totalSamples, icon: PiBug, href: '/samples', sub: uniqueSpecies > 0 ? `${uniqueGenus} genera · ${uniqueSpecies} spp.` : undefined },
-                    { label: 'Experiments', value: totalExperiments, icon: PiFlask, href: '/experiments' },
-                    { label: 'Traits', value: totalTraits, icon: PiRuler, href: '/traits' },
-                    { label: 'Users', value: totalUsers, icon: PiUsers, href: '/users' },
+                    { label: 'Samples', value: totalSamples, icon: Bug, href: '/samples', sub: uniqueSpecies > 0 ? `${uniqueGenus} genera · ${uniqueSpecies} spp.` : undefined },
+                    { label: 'Experiments', value: totalExperiments, icon: Flask, href: '/experiments' },
+                    { label: 'Traits', value: totalTraits, icon: Ruler, href: '/traits' },
+                    { label: 'Users', value: totalUsers, icon: Users, href: '/users' },
                   ].map(({ label, value, icon: Icon, href, sub }) => (
                     <li key={label}>
                       <Link
@@ -266,7 +266,7 @@ export default function Home() {
                         </span>
                         <span className="inline-flex items-center gap-1">
                           <b className="text-[14px] font-semibold tabular-nums text-foreground">{value.toLocaleString()}</b>
-                          <PiArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                         </span>
                       </Link>
                     </li>
@@ -280,7 +280,7 @@ export default function Home() {
                         <span className="text-[13px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">This week</span>
                         <span className="inline-flex items-center gap-1">
                           <b className="text-[14px] font-semibold tabular-nums text-green">+{samplesLastWeek}</b>
-                          <PiArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                         </span>
                       </Link>
                     </li>

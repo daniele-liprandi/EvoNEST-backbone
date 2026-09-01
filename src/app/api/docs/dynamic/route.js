@@ -115,6 +115,14 @@ All endpoints return JSON data unless otherwise specified. Dates are in ISO 8601
               in: "cookie",
               name: "session",
             },
+            // Used by the /ext export routes. The key must travel in a header —
+            // a key in the URL leaks into access logs, proxy logs and Referer.
+            ApiKeyAuth: {
+              type: "apiKey",
+              in: "header",
+              name: "X-API-Key",
+              description: "EvoNEST API key. Also accepted as 'Authorization: Bearer <key>'.",
+            },
           },
         },
         security: [

@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/form"
 import InfoHover from "@/components/ui/custom/info-hover"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
 import { getUserIdByName } from "@/hooks/userHooks"
 import { 
     getSupportedTypes, 
@@ -48,7 +50,6 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
     const [files, setFiles] = useState<FileList | null>(null);
     const [checkSaveFile, setCheckSaveFile] = useState(true);
 
-    console.log(user);
 
     const defaultValues = {
         name: "",
@@ -83,7 +84,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
     try {
         existingNames = experiments.map((experiment: { name: string }) => experiment.name.toLowerCase().trim());
     } catch (error) {
-        console.log("Error fetching existing experiment names", error);
+        console.error("Error fetching existing experiment names", error);
         existingNames = [];
         return;
     }
@@ -200,7 +201,6 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                                 deferredLink: true,
                                 mediaType: formValues.type,
                             });
-                            console.log("File uploaded with ID:", fileId);
                             experimentData = { ...experimentData, fileId: fileId };
                         }
                     } catch (error) {
@@ -211,9 +211,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                 }
 
                 if (formValues.type === "image" && fileValues.type === 'image' && fileValues.dataFields instanceof Blob) {
-                    console.log("Experiment data bef:", experimentData);
                     experimentData.sampleId = formValues.sampleId;
-                    console.log("Experiment data aft:", experimentData);
                     return new Promise<void>((resolve, reject) => {
                         const reader = new FileReader();
                         reader.readAsDataURL(fileValues.dataFields);
@@ -243,7 +241,6 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                                 } else {
                                     const result = await experimentResponse.json();
 
-                                    console.log("Experiment created:", result);
                                     // If we have a file, link it to the newly created experiment
                                     if (fileId) {
                                         await linkFileToEntry(fileId, 'experiment', result.id);
@@ -259,9 +256,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                         reader.onerror = reject;
                     });
                 } else if (formValues.type === 'document' && fileValues.type === 'document') {
-                    console.log("Experiment data bef:", experimentData);
                     experimentData.sampleId = formValues.sampleId;
-                    console.log("Experiment data aft:", experimentData);
                     try {
                         const experimentResponse = await fetch(endpointexperiment, {
                             method: "POST",
@@ -423,7 +418,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                         setFiles(e.target.files);
                       }
                     } catch (error: any) {
-                      console.log("Error processing files:", error);
+                      console.error("Error processing files:", error);
                       toast.error("Error!", {
                         description: error.message,
                       });
@@ -524,19 +519,7 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                   <FormItem>
                     <FormLabel>Optional notes</FormLabel>
                     <FormControl>
-                      <textarea
-                        {...field}
-                        placeholder=" "
-                        rows={3}
-                        style={{
-                          width: "100%",
-                          resize: "vertical",
-                          minHeight: "60px",
-                          padding: "8px",
-                          boxSizing: "border-box",
-                          border: "1px solid #ccc",
-                        }}
-                      />
+                      <Textarea {...field} rows={3} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -579,24 +562,20 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                     Specimens (Auto-detected from files)
                     <InfoHover text="Each file will be assigned to its parsed specimen name. Make sure the SpecimenName in the file matches an existing sample." />
                   </FormLabel>
-                  <div className="border rounded-md p-3 bg-gray-50 space-y-2">
+                  <div className="space-y-2 rounded-md border bg-muted/40 p-3">
                     {allFileData.map((fileInfo, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm">
-                        <span className="font-medium text-gray-700">{fileInfo.filename}</span>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          fileInfo.sampleId 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-amber-100 text-amber-800'
-                        }`}>
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{fileInfo.filename}</span>
+                        <Badge variant={fileInfo.sampleId ? "green" : "orange"}>
                           {fileInfo.sampleName || 'No specimen detected'}
-                        </span>
+                        </Badge>
                       </div>
                     ))}
                   </div>
                   {allFileData.some(f => !f.sampleId) && (
-                    <div className="text-xs text-amber-600 mt-2">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       Some files do not have a matching sample. Please ensure specimen names in files match existing sample names.
-                    </div>
+                    </p>
                   )}
                 </div>
               )}
@@ -625,21 +604,15 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                     {allFileData.map((fileInfo, index) => (
                       <div
                         key={index}
-                        className="p-3 bg-gray-50 rounded border text-sm"
+                        className="rounded border bg-muted/40 p-3 text-sm"
                       >
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="mb-2 flex items-start justify-between">
                           <span className="font-medium">
                             {fileInfo.filename || `File ${index + 1}`}
                           </span>
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              fileInfo.type === "experiment_data"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
+                          <Badge variant={fileInfo.type === "experiment_data" ? "green" : "secondary"}>
                             {fileInfo.type}
-                          </span>
+                          </Badge>
                         </div>
 
                         {fileInfo.type === "experiment_data" &&
@@ -693,7 +666,6 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                             sampleName,
                             samples
                           );
-                          console.log("Sample ID:", sampleId);
                           form.setValue("sampleId", sampleId);
                           setFormState({
                             ...formState,
@@ -728,7 +700,6 @@ export function ProfileFormExperiments({ users, samples, user, experiments, defa
                             sampleName,
                             samples
                           );
-                          console.log("Sample ID:", sampleId);
                           form.setValue("sampleId", sampleId);
                           setFormState({
                             ...formState,

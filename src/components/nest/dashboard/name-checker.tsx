@@ -77,7 +77,6 @@ export const NameCheckerCard = () => {
                     }}
                     onValidated={handleValidated}
                     placeholder="Enter scientific name"
-                    source="auto"
                     autoCorrect={true}
                     validationMode="fullTaxaInfo"
                     className=""

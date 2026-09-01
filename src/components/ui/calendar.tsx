@@ -79,7 +79,7 @@ function Calendar({
         nav: "flex items-start",
         month_grid: "mt-4",
         week: "flex w-full mt-2",
-        day: "p-0 size-8 text-sm flex-1 flex items-center justify-center has-[button]:hover:!bg-accent rounded-md has-[button]:hover:aria-selected:!bg-primary has-[button]:hover:text-accent-foreground has-[button]:hover:aria-selected:text-primary-foreground",
+        day: "p-0 size-8 text-sm flex-1 flex items-center justify-center has-[button]:hover:!bg-muted rounded-md has-[button]:hover:aria-selected:!bg-primary has-[button]:hover:text-foreground has-[button]:hover:aria-selected:text-primary-foreground",
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
           "size-8 p-0 font-normal transition-none hover:bg-transparent hover:text-inherit aria-selected:opacity-100"
@@ -88,12 +88,12 @@ function Calendar({
         range_end: "day-range-end rounded-e-md",
         selected:
           "bg-primary text-primary-foreground hover:!bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        today: "bg-accent text-accent-foreground",
+        today: "bg-primary/10 text-primary font-medium",
         outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+          "day-outside text-muted-foreground opacity-50 aria-selected:bg-muted/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
         disabled: "text-muted-foreground opacity-50",
         range_middle:
-          "aria-selected:bg-accent hover:aria-selected:!bg-accent rounded-none aria-selected:text-accent-foreground hover:aria-selected:text-accent-foreground",
+          "aria-selected:bg-muted hover:aria-selected:!bg-muted rounded-none aria-selected:text-foreground hover:aria-selected:text-foreground",
         hidden: "invisible",
         ...classNames,
       }}
@@ -264,7 +264,7 @@ function Calendar({
                         className={cn(
                           "h-7 w-full text-sm font-normal text-foreground",
                           displayYears.from + i === new Date().getFullYear() &&
-                            "bg-accent font-medium text-accent-foreground"
+                            "bg-muted font-medium text-foreground"
                         )}
                         variant="ghost"
                         onClick={() => {

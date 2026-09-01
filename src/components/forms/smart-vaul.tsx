@@ -1,140 +1,144 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useMediaQuery } from '@react-hook/media-query'
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Plus } from "lucide-react";
+import { useSession } from "next-auth/react";
+
+import { useIsMobile } from "@/hooks/use-mobile";
+import { getUserByProviderId } from "@/hooks/userHooks";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { ProfileFormTraits } from "./profile-form-traits"
-import { ProfileFormSamples } from "./profile-form-samples"
-import { ProfileFormUsers } from "./profile-form-users"
-import { ProfileFormExperiments } from "./profile-form-experiments"
-import { PiPlusBold } from "react-icons/pi"
-import { useSession } from "next-auth/react"
-import { getUserByProviderId } from "@/hooks/userHooks"
+} from "@/components/ui/drawer";
+import { ProfileFormTraits } from "./profile-form-traits";
+import { ProfileFormSamples } from "./profile-form-samples";
+import { ProfileFormUsers } from "./profile-form-users";
+import { ProfileFormExperiments } from "./profile-form-experiments";
 
-// SmartVaul component updated
+type FormType = "traits" | "samples" | "users" | "experiments";
+
 interface SmartVaulProps {
-  formType: 'traits' | 'samples' | 'users' | 'pisaura' | 'experiments';
-  users?: any;
-  samples?: any;
-  traits?: any;
+  formType: FormType;
+  users?: unknown;
+  samples?: unknown;
+  traits?: unknown;
+  experiments?: unknown;
   id?: string | number;
-  size?: any;
+  size?: React.ComponentProps<typeof Button>["size"];
   className?: string;
   page?: string;
-  experiments?: any;
   customTrigger?: React.ReactNode;
   children?: React.ReactNode;
 }
 
-export function SmartVaul({ 
-  formType, 
-  users, 
-  samples, 
-  traits, 
-  id, 
-  size, 
-  className, 
-  experiments, 
+const TITLES: Record<FormType, string> = {
+  samples: "New sample",
+  users: "New user",
+  traits: "New trait",
+  experiments: "New experiment",
+};
+
+export function SmartVaul({
+  formType,
+  users,
+  samples,
+  traits,
+  experiments,
+  id,
+  size,
+  className,
   page,
   customTrigger,
   children,
-  ...props 
 }: SmartVaulProps) {
-  const [open, setOpen] = React.useState(false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
-  const { data: authUser, status } = useSession()
+  const [open, setOpen] = React.useState(false);
+  const isMobile = useIsMobile();
+  const { data: authUser, status } = useSession();
 
-  if (status == 'loading') return <div>Loading user</div>
-  const user = getUserByProviderId(authUser?.user?.sub, users)
+  const user =
+    status === "authenticated" ? getUserByProviderId(authUser?.user?.sub, users) : undefined;
 
-  let usersForm = users
+  const title = TITLES[formType];
+  const description = `Fill in the details for the ${title.replace("New ", "")}.`;
 
-  const renderForm = () => {
-    switch (formType) {
-      case 'samples':
-        return <ProfileFormSamples users={usersForm} samples={samples} id={id} user={user} page={page} {...props} />
-      case 'users':
-        return <ProfileFormUsers {...props} />
-      case 'traits':
-        return <ProfileFormTraits users={usersForm} samples={samples} user={user} {...props} />
-      case 'experiments':
-        return <ProfileFormExperiments users={usersForm} samples={samples} user={user} experiments={experiments} {...props} />
-      default:
-        return null
-    }
-  }
+  const trigger = customTrigger ||
+    children || (
+      <Button size={size} className={className}>
+        <Plus /> Add {title.replace("New ", "")}
+      </Button>
+    );
 
-  const defaultTrigger = (
-    <Button size={size} className={className}>
-      <PiPlusBold /> Add New {formType.charAt(0).toUpperCase() + formType.slice(1)}
-    </Button>
-  )
+  const body =
+    status !== "authenticated" ? (
+      <div className="space-y-3 p-4">
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-2/3" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+    ) : formType === "traits" ? (
+      <ProfileFormTraits users={users} samples={samples} user={user} />
+    ) : formType === "samples" ? (
+      <ProfileFormSamples users={users} samples={samples} id={id} user={user} page={page} />
+    ) : formType === "experiments" ? (
+      <ProfileFormExperiments
+        users={users}
+        samples={samples}
+        user={user}
+        experiments={experiments}
+      />
+    ) : (
+      <ProfileFormUsers />
+    );
 
-  const triggerElement = customTrigger || children || defaultTrigger
-
-  const dialogTitle = () => {
-    switch (formType) {
-      case 'samples':
-        return "New Sample"
-      case 'users':
-        return "New User"
-      case 'traits':
-        return "New Trait"
-      case 'experiments':
-        return "New Experiment"
-      default:
-        return "New Form"
-    }
-  }
-
-  if (isDesktop) {
+  if (isMobile) {
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          {triggerElement}
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] p-8">
-          <DialogHeader>
-            <DialogTitle>{dialogTitle()}</DialogTitle>
-          </DialogHeader>
-          {renderForm()}
-        </DialogContent>
-      </Dialog>
-    )
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+        <DrawerContent className="max-h-[92vh]">
+          <DrawerHeader className="text-left">
+            <DrawerTitle>{title}</DrawerTitle>
+            <DrawerDescription>{description}</DrawerDescription>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4">{body}</div>
+          <DrawerFooter className="pt-2">
+            <DrawerClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        {triggerElement}
-      </DrawerTrigger>
-      <DrawerContent className="h-full font-size: 1rem">
-        <DrawerHeader className="text-left">
-          <DrawerTitle>{dialogTitle()}</DrawerTitle>
-        </DrawerHeader>
-        {renderForm()}
-        <DrawerFooter className="pt-2">
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  )
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {/* Anchored near the top, not vertically centred: the form's tabs have
+          different heights, and a centred dialog re-centres on every switch,
+          moving the tab bar out from under the pointer. */}
+      <DialogContent className="top-[7vh] translate-y-0 max-h-[86vh] overflow-y-auto sm:max-w-2xl data-[state=open]:slide-in-from-top-4 data-[state=closed]:slide-out-to-top-4">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        {body}
+      </DialogContent>
+    </Dialog>
+  );
 }

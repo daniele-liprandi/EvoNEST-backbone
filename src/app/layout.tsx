@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Atkinson_Hyperlegible_Next } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/themeprovider";
+import { IconProvider } from "@/components/icon-provider";
 import { Toaster } from "@/components/ui/sonner"
 import { Providers } from "./providers";
-import { Fira_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/ui/custom/footer";
 import SWRProvider from "./providers/swr-provider";
 
-const inter = Inter({ subsets: ["latin"] });
-
-const fira_sans = Fira_Sans({
-  weight: "400",
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-fira_sans',
-})
+const atkinson = Atkinson_Hyperlegible_Next({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-atkinson",
+  // Next has no capsize metrics for this face yet, so skip the auto-generated
+  // size-adjust fallback and name a plain stack instead.
+  adjustFontFallback: false,
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "EvoNEST",
@@ -30,24 +31,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(
-        "min-h-screen bg-background flex flex-col",
-        fira_sans.variable)
-      }>
+      <body className={cn("min-h-screen bg-background flex flex-col", atkinson.variable)}>
         <Providers>
           <ThemeProvider
             attribute="data-theme"
             defaultTheme="evonest"
+            themes={["evonest", "sepia", "edge", "dark"]}
             enableSystem={false}
             disableTransitionOnChange
           >
-            <SWRProvider>
-              <Toaster richColors />
-              <div className="flex-grow">
-                {children}
-              </div>
-              <Footer />
-            </SWRProvider>
+            <IconProvider>
+              <SWRProvider>
+                <Toaster richColors />
+                <div className="flex-grow">
+                  {children}
+                </div>
+                <Footer />
+              </SWRProvider>
+            </IconProvider>
           </ThemeProvider>
         </Providers>
       </body>

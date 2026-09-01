@@ -4,24 +4,18 @@ import * as React from "react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import {
-  PiBugBeetleBold,
-  PiButterflyDuotone,
-  PiBellBold,
-  PiDatabaseBold,
-  PiHouseBold,
-  PiRulerBold,
-  PiUserBold,
-  PiUserCircleBold,
-  PiWrenchBold,
-  PiMagnifyingGlassBold,
-  PiHamburgerBold,
-  PiMathOperationsBold,
-  PiChatBold,
-} from "react-icons/pi";
-import { RxHamburgerMenu } from "react-icons/rx";
+  BugBeetle,
+  Bell,
+  Database,
+  Ruler,
+  User,
+  UserCircle,
+  Wrench,
+  MathOperations,
+  List,
+} from "@phosphor-icons/react";
 import { cn, prepend_path } from "@/lib/utils";
 import {
   NavigationMenu,
@@ -32,8 +26,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { ModeToggle } from "../ui/custom/mode-toggle";
-import { Check } from "lucide-react";
+import { ThemeMenu } from "../ui/custom/theme-menu";
 import { EvoNestLogo } from "../ui/custom/evonest-logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -49,7 +42,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DeveloperNewsCard } from "@/components/developer-cards/developer-news";
+import { DeveloperNewsCard, useDeveloperNotifications } from "@/components/developer-cards/developer-news";
 
 import {
   Select,
@@ -60,75 +53,9 @@ import {
 } from "@/components/ui/select";
 import { useConfigTypes } from "@/hooks/useConfigTypes";
 
-const THEME_LIST = [
-  { id: "evonest", label: "EvoNEST", note: "Warm paper", swatch: "#fffdfb", ink: "#d68500" },
-  { id: "sepia",   label: "Sepia",   note: "Parchment",  swatch: "#efe6d3", ink: "#d68500" },
-  { id: "edge",    label: "Edge",    note: "Square · hard shadow", swatch: "#ffffff", ink: "#1a1410" },
-  { id: "dark",    label: "Dark",    note: "Warm near-black",      swatch: "#161310", ink: "#d68500" },
-];
-
-function ThemeMenu() {
-  const { theme, setTheme } = useTheme();
-  const [open, setOpen] = React.useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
-
-  const cur = THEME_LIST.find((t) => t.id === theme) ?? THEME_LIST[0];
-
-  return (
-    <div ref={ref} className="relative">
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-8 w-8"
-        onClick={() => setOpen((o) => !o)}
-        title={`Theme: ${cur.label}`}
-      >
-        <span
-          className="block h-4 w-4 rounded-full"
-          style={{ background: cur.swatch, boxShadow: `inset 0 0 0 1.5px ${cur.ink}` }}
-        />
-        <span className="sr-only">Theme</span>
-      </Button>
-      {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[200px] rounded-md border border-border bg-popover p-1 shadow-lg">
-          <p className="px-2 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">Theme</p>
-          {THEME_LIST.map((t) => (
-            <button
-              key={t.id}
-              className={cn(
-                "flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-                t.id === theme ? "text-primary" : "text-foreground"
-              )}
-              onClick={() => { setTheme(t.id); setOpen(false); }}
-            >
-              <span
-                className="h-4 w-4 shrink-0 rounded-full"
-                style={{ background: t.swatch, boxShadow: `inset 0 0 0 1.5px ${t.ink}` }}
-              />
-              <span className="flex flex-col leading-tight">
-                <b className="text-[13px] font-semibold">{t.label}</b>
-                <em className="text-[11px] not-italic text-muted-foreground">{t.note}</em>
-              </span>
-              {t.id === theme && <Check className="ml-auto h-3.5 w-3.5 text-primary" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 const usersProps = {
   label: "Users",
-  icon: <PiUserBold size={60} />, // Replace with the actual icon component
+  icon: <User size={60} />, // Replace with the actual icon component
   description: "All the users in the NEST",
   options: [],
   href: "/users",
@@ -136,7 +63,7 @@ const usersProps = {
 
 const experimentsProps = {
   label: "Experiments",
-  icon: <PiMathOperationsBold size={60} />,
+  icon: <MathOperations size={60} />,
   description: "All the experiments collected in the NEST",
   options: [
     {
@@ -150,7 +77,7 @@ const experimentsProps = {
 
 const traitsProps = {
   label: "Traits",
-  icon: <PiRulerBold size={60} />,
+  icon: <Ruler size={60} />,
   description: "Traits in the NEST",
   options: [
     {
@@ -164,7 +91,7 @@ const traitsProps = {
 
 const settingsProps = {
   label: "Settings",
-  icon: <PiWrenchBold size={60} />,
+  icon: <Wrench size={60} />,
   description: "Settings for the NEST",
   options: [
     {
@@ -240,12 +167,17 @@ export function NavBar() {
   const [userDatabases, setUserDatabases] = useState<string[]>([]);
   const [activeDatabase, setActiveDatabase] = useState<string>("");
 
+  // Owned here (not inside DeveloperNewsCard) so the bell's badge and the
+  // popover's list agree on the same fetch and the same dismissals.
+  const { notifications: devNotifications, dismiss: dismissDevNotification, unreadCount: devUnreadCount } =
+    useDeveloperNotifications();
+
   // Get configuration types from database or defaults
   const { sampletypes } = useConfigTypes();
 
   const samplesProps = {
     label: "Samples",
-    icon: <PiBugBeetleBold size={60} />, // Replace with the actual icon component
+    icon: <BugBeetle size={60} />, // Replace with the actual icon component
     description: "All the samples collected in the NEST",
     options: [
       ...sampletypes.map((sampletype) => ({
@@ -391,7 +323,7 @@ export function NavBar() {
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-            <RxHamburgerMenu className="h-5 w-5" />
+            <List className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
@@ -500,13 +432,18 @@ export function NavBar() {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <PiBellBold className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="relative h-8 w-8">
+              <Bell className="h-5 w-5" />
+              {devUnreadCount > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground">
+                  {devUnreadCount > 9 ? "9+" : devUnreadCount}
+                </span>
+              )}
               <span className="sr-only">Developer news</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-80 p-0">
-            <DeveloperNewsCard />
+            <DeveloperNewsCard notifications={devNotifications} onDismiss={dismissDevNotification} />
           </PopoverContent>
         </Popover>
 
@@ -515,7 +452,7 @@ export function NavBar() {
         {session?.user && (
           <Select value={activeDatabase} onValueChange={handleDatabaseChange}>
             <SelectTrigger className="hidden w-10 md:flex md:w-[150px]">
-              <PiDatabaseBold className="h-5 w-5" />
+              <Database className="h-5 w-5" />
               <SelectValue placeholder="Select database" />
             </SelectTrigger>
             <SelectContent>
@@ -542,7 +479,7 @@ export function NavBar() {
               </Avatar>
             ) : (
               <Button variant="outline" size="icon">
-                <PiUserCircleBold className="h-8 w-8" />
+                <UserCircle className="h-8 w-8" />
               </Button>
             )}
           </DropdownMenuTrigger>
