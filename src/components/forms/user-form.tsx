@@ -35,7 +35,7 @@ const formSchema = z.object({
     databases: z.array(z.string()).min(1, { message: "At least one database must be selected" }),
 })
 
-export function ProfileFormUsers({}) {
+export function UserForm({}) {
     const { isAdmin } = useCurrentUser();
     const { databases, isDatabasesLoading, databasesError } = useDatabases();
     

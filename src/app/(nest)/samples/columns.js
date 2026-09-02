@@ -59,9 +59,6 @@ export const SAMPLE_COLUMN_KEYS = Object.keys(PALETTE)
 // value entered on the form is a `fields` entry, named by key in the list.
 export const COLUMN_WIDGET_KINDS = ["counter", "progress"]
 
-// Kept for the Settings column editor until it moves to the fields registry.
-export const CUSTOM_COLUMN_KINDS = COLUMN_WIDGET_KINDS
-
 // Used when a type does not name its own `columns` list.
 const DEFAULT_COLUMNS = ["name", "responsible", "recentChange", "date", "type", "parent", "location"]
 

@@ -40,6 +40,7 @@ import {
 import { ConfigSetup } from "@/components/config-setup";
 import { checkConfigExists } from "@/utils/config-utils";
 import { ColumnEditor } from "./column-editor";
+import { FieldEditor } from "./field-editor";
 
 interface LabelType {
   value: string;
@@ -433,10 +434,16 @@ export default function TypesPage() {
             configType="sampletypes"
             onRefresh={refreshConfig}
             renderRowExtra={(item) => (
-              <ColumnEditor
-                type={item as unknown as React.ComponentProps<typeof ColumnEditor>["type"]}
-                onSaved={refreshConfig}
-              />
+              <>
+                <FieldEditor
+                  type={item as unknown as React.ComponentProps<typeof FieldEditor>["type"]}
+                  onSaved={refreshConfig}
+                />
+                <ColumnEditor
+                  type={item as unknown as React.ComponentProps<typeof ColumnEditor>["type"]}
+                  onSaved={refreshConfig}
+                />
+              </>
             )}
           />
 
