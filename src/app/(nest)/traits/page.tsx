@@ -1,39 +1,24 @@
 "use client" // Enables client-side rendering in Next.js
 
-import Link from 'next/link';
-import { Suspense, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
-import { X } from 'lucide-react';
+import { Suspense, useMemo, useState } from 'react';
+import { ArrowsLeftRight, CircleNotch } from '@phosphor-icons/react';
+import type { Table as TanstackTable } from '@tanstack/react-table';
 
-import { NlFilterBar } from '@/components/nest/NlFilterBar';
 import { DataTable } from '@/components/tables/data-table';
-import { Badge } from '@/components/ui/badge';
+import { DataTableToolbar } from '@/components/tables/data-table-toolbar';
 import { Button } from '@/components/ui/button';
-import { getParentIdbyId, getSampleNamebyId, getSampleSubtypebyId, getSampletypebyId } from '@/hooks/sampleHooks';
-import { getUserIdByName, getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
+import { tableSwrConfig } from '@/hooks/swrConfig';
 import { prepend_path } from "@/lib/utils";
-import { SetStateAction, useState, } from 'react';
-import { mutate } from "swr";
 import { baseColumns } from './columns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import { handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait, handleExportAllTraitsRelated, handleConvertAllUnits, previewUnitConversion } from '@/utils/handlers/traitHandlers';
+import { handleBulkDeleteTraits, handleBulkUpdateTraitFields, handleDeleteTrait, handleStatusChangeTrait, handleStatusIncrementTrait, handleExportAllTraitsRelated, handleConvertAllUnits, previewUnitConversion, handleUpdateTraitFields } from '@/utils/handlers/traitHandlers';
+import { traitEditFields } from '@/components/tables/edit-fields';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { useTraitData } from '@/hooks/useTraitData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, ArrowLeftRight } from 'lucide-react';
-import { ReloadIcon } from "@radix-ui/react-icons";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -47,69 +32,52 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 function TraitsPageContent() {
-    const pathname = usePathname();
-    const { filters, filterData, hasFilters, buildUrlWithoutFilter } = useUrlFilters();
+    const { filterData } = useUrlFilters();
     const [showConversionDialog, setShowConversionDialog] = useState(false);
     const [conversionPreview, setConversionPreview] = useState<any>(null);
     const [isConverting, setIsConverting] = useState(false);
-    
-    // Add debugging to SWR config
-    const { traitsData, traitsError, isValidating: traitsValidating } = useTraitData(prepend_path, true, undefined, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        keepPreviousData: true,
-        dedupingInterval: 3600000, // Cache for 1 hour
-        onSuccess: (data : any) => console.log('Traits loaded, size:', data?.length)
-    });
 
-    const { samplesData, samplesError, isValidating: samplesValidating } = useSampleData(prepend_path, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        keepPreviousData: true,
-        dedupingInterval: 3600000,
-    });
+    const { traitsData, traitsError, isValidating: traitsValidating } = useTraitData(prepend_path, true, undefined, tableSwrConfig);
+    const { samplesData, samplesError, isValidating: samplesValidating } = useSampleData(prepend_path, tableSwrConfig);
+    const { usersData, usersError } = useUserData(prepend_path, tableSwrConfig);
 
-    const { usersData, usersError } = useUserData(prepend_path, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        dedupingInterval: 3600000,
-    });
-
-    // Create lookup maps for better performance
-    const sampleLookup = useMemo(() => {
-        if (!samplesData) return new Map();
-        return new Map(samplesData.map((sample: { _id: any; }) => [sample._id, sample]));
-    }, [samplesData]);
-
-    const userLookup = useMemo(() => {
-        if (!usersData) return new Map();
-        return new Map(usersData.map((user: { _id: any; }) => [user._id, user]));
-    }, [usersData]);
+    // Index samples and users by id once, so the per-trait lookups below are O(1)
+    // instead of a linear scan of every sample for every trait.
+    const sampleById = useMemo(
+        () => new Map<string, any>((samplesData ?? []).map((sample: any) => [sample._id, sample])),
+        [samplesData],
+    );
+    const userById = useMemo(
+        () => new Map<string, any>((usersData ?? []).map((user: any) => [user._id, user])),
+        [usersData],
+    );
 
     const dataTableData = useMemo(() => {
         if (!traitsData || !samplesData || !usersData) {
             return [];
         }
 
-        const sortedTraits = [...traitsData].sort((a: { date: string | number | Date; }, b: { date: string | number | Date; }) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const sortedTraits = [...traitsData].sort(
+            (a: { date: string | number | Date }, b: { date: string | number | Date }) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
 
         return filterData(
-            sortedTraits.map((trait: { sampleId: any; responsible: any; }) => ({
-                ...trait,
-                sampleName: getSampleNamebyId(trait.sampleId, samplesData),
-                responsibleName: getUserNameById(trait.responsible, usersData),
-                sampleType: getSampletypebyId(trait.sampleId, samplesData),
-                sampleSubType: getSampleSubtypebyId(trait.sampleId, samplesData),
-                animalId: getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId,
-                animalName: getSampleNamebyId(getParentIdbyId(trait.sampleId, samplesData) || trait.sampleId, samplesData),
-            }))
+            sortedTraits.map((trait: { sampleId: any; responsible: any }) => {
+                const sample = sampleById.get(trait.sampleId);
+                const animalId = sample?.parentId || trait.sampleId;
+                return {
+                    ...trait,
+                    sampleName: sample?.name ?? '',
+                    responsibleName: userById.get(trait.responsible)?.name ?? '',
+                    sampleType: sample?.type ?? '',
+                    sampleSubType: sample?.subsampletype ?? '',
+                    animalId,
+                    animalName: sampleById.get(animalId)?.name ?? '',
+                };
+            }),
         );
-    }, [traitsData, samplesData, usersData, filterData]);
-
-    const filterColumns = useMemo(
-        () => (dataTableData.length ? Object.keys(dataTableData[0]) : []),
-        [dataTableData]
-    );
+    }, [traitsData, samplesData, usersData, filterData, sampleById, userById]);
 
     // Show loading states
     const isLoading = !traitsData || !samplesData || !usersData;
@@ -117,28 +85,22 @@ function TraitsPageContent() {
     const isValidating = traitsValidating || samplesValidating;
 
     if (isError) {
-        return <div>Error loading data</div>;
+        return <p className="p-6 text-sm text-destructive">Could not load traits.</p>;
     }
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full">
-                <Skeleton className="w-64 h-8 mb-4" />
-                <Skeleton className="w-full h-48 mb-4" />
-                <Skeleton className="w-full h-48 mb-4" />
-                <Skeleton className="w-full h-48 mb-4" />
+            <div className="flex flex-col gap-4">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-96 w-full rounded-xl" />
             </div>
         );
     }
 
     const handleConversionClick = async () => {
-        try {
-            const preview = await previewUnitConversion();
-            setConversionPreview(preview);
-            setShowConversionDialog(true);
-        } catch (error) {
-            // Error already handled in previewUnitConversion
-        }
+        const preview = await previewUnitConversion();
+        setConversionPreview(preview);
+        setShowConversionDialog(true);
     };
 
     const handleConfirmConversion = async () => {
@@ -146,94 +108,51 @@ function TraitsPageContent() {
         try {
             await handleConvertAllUnits();
             setShowConversionDialog(false);
-        } catch (error) {
-            // Error already handled in handleConvertAllUnits
         } finally {
             setIsConverting(false);
         }
     };
 
+    const actions = (
+        <>
+            <Button variant="outline" size="sm" onClick={handleConversionClick}>
+                <ArrowsLeftRight /> Convert units
+            </Button>
+            <SmartVaul formType="traits" users={usersData} samples={samplesData} traits={traitsData} size="sm" />
+        </>
+    );
+
     return (
         <div>
-            <Card className="xl:col-span-2">
-                <CardHeader className="flex flex-row items-center">
-                    <div className="grid gap-2">
-                        <CardTitle>Traits</CardTitle>
-                        <CardDescription>
-                            The collection of traits in the NEST
-                            {isValidating && " (Refreshing...)"}
-                        </CardDescription>
-                    </div>
-                    <div className="ml-auto flex gap-2 items-center">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="gap-1"
-                            onClick={handleConversionClick}
-                            title="Convert all traits to their default units using SI prefix conversion"
-                        >
-                            <ArrowLeftRight className="h-4 w-4" />
-                            Convert to Default Units
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-1"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Export (with related)
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Export Format</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleExportAllTraitsRelated('json')}>
-                                    JSON
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleExportAllTraitsRelated('csv')}>
-                                    CSV (flattened)
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <SmartVaul 
-                            formType='traits' 
-                            users={usersData} 
-                            samples={samplesData} 
-                            traits={traitsData} 
-                            size="sm" 
-                            className="gap-1" 
-                        />
-                    </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Traits</CardTitle>
+                    <CardDescription>
+                        Every trait in the NEST{isValidating && ", refreshing"}.
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <NlFilterBar columns={filterColumns} />
-
-                    {hasFilters && (
-                        <div className="flex flex-wrap gap-2 items-center mb-3 text-sm">
-                            <span className="text-muted-foreground">Filtered by:</span>
-                            {filters.map(({ key, values }) => (
-                                <Badge key={key} variant="secondary" className="gap-1 pr-1">
-                                    {key}: {values.join(', ')}
-                                    <Link href={buildUrlWithoutFilter(key, pathname)}>
-                                        <X className="h-3 w-3 cursor-pointer" />
-                                    </Link>
-                                </Badge>
-                            ))}
-                            <Link href={pathname}>
-                                <Button variant="ghost" size="sm" className="h-6 text-xs">Clear all</Button>
-                            </Link>
-                        </div>
-                    )}
-
-                    <DataTable 
-                        columns={baseColumns} 
-                        data={dataTableData} 
-                        onDelete={handleDeleteTrait} 
-                        onEdit={null} 
-                        onStatusChange={handleStatusChangeTrait} 
+                    <DataTable
+                        columns={baseColumns}
+                        data={dataTableData}
+                        onDelete={handleDeleteTrait}
+                        onEdit={null}
+                        onStatusChange={handleStatusChangeTrait}
                         onIncrement={handleStatusIncrementTrait}
+                        onUpdateFields={handleUpdateTraitFields}
+                        onBulkDelete={handleBulkDeleteTraits}
+                        onBulkUpdateFields={handleBulkUpdateTraitFields}
+                        bulkEditFields={traitEditFields}
+                        bulkEntityLabel="trait"
+                        renderToolbar={(table: TanstackTable<any>) => (
+                            <DataTableToolbar
+                                table={table}
+                                entity="traits"
+                                onExportRelated={handleExportAllTraitsRelated}
+                            >
+                                {actions}
+                            </DataTableToolbar>
+                        )}
                     />
                 </CardContent>
             </Card>
@@ -317,7 +236,7 @@ function TraitsPageContent() {
                         >
                             {isConverting ? (
                                 <>
-                                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                                    <CircleNotch className="mr-2 size-4 animate-spin" />
                                     Converting...
                                 </>
                             ) : (
@@ -333,7 +252,7 @@ function TraitsPageContent() {
 
 export default function TraitsPage() {
     return (
-        <Suspense fallback={<Skeleton className="w-full h-[500px] rounded-xl" />}>
+        <Suspense fallback={<Skeleton className="h-96 w-full rounded-xl" />}>
             <TraitsPageContent />
         </Suspense>
     );
