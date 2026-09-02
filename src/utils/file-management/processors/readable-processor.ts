@@ -1,7 +1,7 @@
 /*
 readable-processor.ts
 
-This file contains the logic to process plain text files, including JSON and other text formats, to extract machine readable files and update the form from profile-form-experiments.tsx.
+This file contains the logic to process plain text files, including JSON and other text formats, to extract machine readable files and update the form from experiment-form.tsx.
 */
 
 import { getSampleIdbyName } from "@/hooks/sampleHooks";

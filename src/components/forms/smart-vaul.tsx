@@ -26,10 +26,10 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ProfileFormTraits } from "./profile-form-traits";
-import { ProfileFormSamples } from "./profile-form-samples";
-import { ProfileFormUsers } from "./profile-form-users";
-import { ProfileFormExperiments } from "./profile-form-experiments";
+import { TraitForm } from "./trait-form";
+import { SampleForm } from "./sample-form";
+import { UserForm } from "./user-form";
+import { ExperimentForm } from "./experiment-form";
 
 type FormType = "traits" | "samples" | "users" | "experiments";
 
@@ -92,18 +92,18 @@ export function SmartVaul({
         <Skeleton className="h-9 w-full" />
       </div>
     ) : formType === "traits" ? (
-      <ProfileFormTraits users={users} samples={samples} user={user} />
+      <TraitForm users={users} samples={samples} user={user} />
     ) : formType === "samples" ? (
-      <ProfileFormSamples users={users} samples={samples} id={id} user={user} page={page} />
+      <SampleForm users={users} samples={samples} id={id} user={user} page={page} />
     ) : formType === "experiments" ? (
-      <ProfileFormExperiments
+      <ExperimentForm
         users={users}
         samples={samples}
         user={user}
         experiments={experiments}
       />
     ) : (
-      <ProfileFormUsers />
+      <UserForm />
     );
 
   if (isMobile) {
