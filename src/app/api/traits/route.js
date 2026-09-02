@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { get_database_user } from "../utils/get_database_user";
 import { get_name_authuser } from "../utils/get_database_user";
 import { isObjectIdString } from "../utils/objectId";
+import { userCan } from "../utils/permissions";
 
 /**
  * @swagger
@@ -962,6 +963,10 @@ export async function POST(req) {
 
 export async function DELETE(req) {
   try {
+    if (!(await userCan("traits.delete"))) {
+      return new NextResponse(JSON.stringify({ error: "Not allowed to delete traits" }), { status: 403 });
+    }
+
     // Parse the request body to get the trait ID
     const { id } = await req.json();
 

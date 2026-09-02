@@ -2,7 +2,17 @@
 
 export const DEFAULT_CONFIGS = {
   sampletypes: [
-    { label: "Animal", value: "animal", description: "Animal individual", shortened: "an" },
+    // `columns` is the sample table's column set for this type (keys from the
+    // palette in samples/columns.js). Admins edit it; other types fall back to a
+    // generic set. The default here is the arthropod husbandry layout.
+    {
+      label: "Animal", value: "animal", description: "Animal individual", shortened: "an",
+      columns: [
+        "name", "responsible", "recentChange", "date", "location",
+        "family", "genus", "species",
+        "sex", "lifestage", "lifestatus", "hungry", "fed", "molted", "eggsac",
+      ],
+    },
     { label: "Blood", value: "blood", description: "Blood sample", shortened: "bl" },
     { label: "DNA extract", value: "dna_extract", description: "DNA extract", shortened: "dna" },
     { label: "Tissue", value: "tissue", description: "Tissue sample", shortened: "ti" },

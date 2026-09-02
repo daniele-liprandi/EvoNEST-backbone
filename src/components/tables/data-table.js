@@ -30,18 +30,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import Papa from "papaparse";
 import { useState } from "react";
-import {
-  MdChevronLeft,
-  MdChevronRight,
-  MdKeyboardDoubleArrowLeft,
-  MdKeyboardDoubleArrowRight,
-} from "react-icons/md";
-import * as XLSX from "xlsx";
+import { CaretLeft, CaretRight, CaretDoubleLeft, CaretDoubleRight } from "@phosphor-icons/react";
+
+import { BulkActionsBar } from "@/components/tables/bulk-actions-bar";
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
-  // Rank the item
   const itemRank = rankItem(row.getValue(columnId), value);
 
   // Store the itemRank info
@@ -49,18 +43,40 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
     itemRank,
   });
 
-  // Return if the item should be filtered in/out
   return itemRank.passed;
 };
 
+/**
+ * @param {{
+ *   columns: any[],
+ *   data: any[],
+ *   onDelete?: Function | null,
+ *   onEdit?: Function | null,
+ *   onStatusChange?: Function | null,
+ *   onIncrement?: Function | null,
+ *   onUpdateFields?: ((id: string, changes: Record<string, any>) => Promise<any> | any) | null,
+ *   onBulkDelete?: ((ids: string[]) => Promise<any> | any) | null,
+ *   onBulkUpdateFields?: ((ids: string[], changes: Record<string, any>) => Promise<any> | any) | null,
+ *   bulkEditFields?: any[],
+ *   bulkEntityLabel?: string,
+ *   renderToolbar?: ((table: any) => any) | null,
+ *   renderBulkActions?: ((table: any) => any) | null,
+ * }} props
+ */
 export function DataTable({
   columns,
   data,
-  onDelete,
-  onEdit,
-  onStatusChange,
-  onIncrement,
-  enableDownload = true,
+  onDelete = null,
+  onEdit = null,
+  onStatusChange = null,
+  onIncrement = null,
+  onUpdateFields = null,
+  onBulkDelete = null,
+  onBulkUpdateFields = null,
+  bulkEditFields = [],
+  bulkEntityLabel = "row",
+  renderToolbar = null,
+  renderBulkActions = null,
 }) {
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
@@ -79,6 +95,7 @@ export function DataTable({
       onEdit,
       onStatusChange,
       onIncrement,
+      onUpdateFields,
     },
     filterFns: {
       fuzzy: fuzzyFilter,
@@ -106,97 +123,21 @@ export function DataTable({
     },
   });
 
-  const handleDownloadCSV = () => {
-    const csvData = Papa.unparse(
-      table.getFilteredRowModel().rows.map((row) => row.original)
-    );
-    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "samples_data.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleDownloadExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      table.getFilteredRowModel().rows.map((row) => row.original)
-    );
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "data.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleDownloadJSON = () => {
-    const json = JSON.stringify(
-      table.getFilteredRowModel().rows.map((row) => row.original),
-      null,
-      2
-    );
-    const blob = new Blob([json], { type: "application/json" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "data.json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
-    <div className="rounded-md border">
-      {enableDownload && (
-        <>
-          {/* On medium or below screens, the download buttons will be hidden show only Excel, CSV, and JSON as text */}
-          <div className="hidden lg:flex">
-            <div className="flex items-center justify-between py-4 px-4">
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleDownloadExcel}
-                >
-                  Download Excel
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
-                  Download CSV
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadJSON}
-                >
-                  Download JSON
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div className="flex lg:hidden items-center justify-between py-4 px-4">
-            <div className="flex items-center space-x-2">
-              <Button variant="default" size="sm" onClick={handleDownloadExcel}>
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
-                CSV
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleDownloadJSON}>
-                JSON
-              </Button>
-            </div>
-          </div>
-        </>
+    <div className="flex flex-col gap-3">
+      {renderToolbar?.(table)}
+      {(onBulkDelete || onBulkUpdateFields || renderBulkActions) && (
+        <BulkActionsBar
+          table={table}
+          onBulkDelete={onBulkDelete}
+          onBulkUpdateFields={onBulkUpdateFields}
+          bulkEditFields={bulkEditFields}
+          entityLabel={bulkEntityLabel}
+        >
+          {renderBulkActions?.(table)}
+        </BulkActionsBar>
       )}
-      <div>
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -246,8 +187,13 @@ export function DataTable({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 py-2">
+        <p className="mr-auto text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length > 0
+            ? `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} selected`
+            : `${table.getFilteredRowModel().rows.length} row${table.getFilteredRowModel().rows.length === 1 ? "" : "s"}`}
+        </p>
+        <div className="flex items-center gap-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
@@ -273,7 +219,7 @@ export function DataTable({
           onClick={() => table.firstPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          <MdKeyboardDoubleArrowLeft />
+          <CaretDoubleLeft />
         </Button>
         <Button
           variant="outline"
@@ -281,7 +227,7 @@ export function DataTable({
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          <MdChevronLeft />
+          <CaretLeft />
         </Button>
         <Button
           variant="outline"
@@ -289,7 +235,7 @@ export function DataTable({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          <MdChevronRight />
+          <CaretRight />
         </Button>
         <Button
           variant="outline"
@@ -297,12 +243,8 @@ export function DataTable({
           onClick={() => table.lastPage()}
           disabled={!table.getCanNextPage()}
         >
-          <MdKeyboardDoubleArrowRight />
+          <CaretDoubleRight />
         </Button>
-      </div>
-      <div className="flex-1 text-sm text-muted-foreground">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
     </div>
   );

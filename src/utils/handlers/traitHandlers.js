@@ -16,13 +16,85 @@ export const handleDeleteTrait = async (traitId) => {
     mutate(`${prepend_path}/api/traits`);
 };
 
+export const handleBulkDeleteTraits = async (traitIds) => {
+    const results = await Promise.allSettled(
+        traitIds.map((id) =>
+            fetch(`${prepend_path}/api/traits`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            }).then((res) => {
+                if (!res.ok) throw new Error(id);
+            })
+        )
+    );
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    mutate(`${prepend_path}/api/traits`);
+    if (failed) {
+        toast.error(`${failed} of ${traitIds.length} traits could not be deleted`);
+    } else {
+        toast.message(`Deleted ${traitIds.length} traits`);
+    }
+};
+
+// One setfield request per field against a single trait. Returns the names of
+// the fields that failed. No toast, no revalidation — the callers below own that.
+const setTraitFields = async (traitId, changes) => {
+    const entries = Object.entries(changes);
+    const results = await Promise.allSettled(
+        entries.map(([field, value]) =>
+            fetch(`${prepend_path}/api/traits`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ method: 'setfield', id: traitId, field, value }),
+            }).then((res) => {
+                if (!res.ok) throw new Error(field);
+            })
+        )
+    );
+    const failed = [];
+    results.forEach((r, i) => {
+        if (r.status === 'rejected') failed.push(entries[i][0]);
+    });
+    return failed;
+};
+
+// Write only the fields the caller passes (row edit dialog).
+export const handleUpdateTraitFields = async (traitId, changes) => {
+    if (Object.keys(changes).length === 0) return;
+    const failed = await setTraitFields(traitId, changes);
+    mutate(`${prepend_path}/api/traits`);
+    if (failed.length) {
+        toast.error(`Could not update: ${failed.join(', ')}`);
+    } else {
+        toast.message('Trait updated');
+    }
+};
+
+// Same change applied to many traits (bulk edit).
+export const handleBulkUpdateTraitFields = async (traitIds, changes) => {
+    if (Object.keys(changes).length === 0) return;
+    const perTrait = await Promise.all(traitIds.map((id) => setTraitFields(id, changes)));
+    const failed = perTrait.filter((f) => f.length > 0).length;
+    mutate(`${prepend_path}/api/traits`);
+    if (failed) {
+        toast.error(`${failed} of ${traitIds.length} traits could not be updated`);
+    } else {
+        toast.message(`Updated ${traitIds.length} traits`);
+    }
+};
+
+// No success toast: called on every click of an inline control; only failures surface.
 const debouncedHandleStatusChangeTrait = debounce(async (traitId, field, value, withmutate = false) => {
-    await fetch(`${prepend_path}/api/traits`, {
+    const res = await fetch(`${prepend_path}/api/traits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: "setfield", id: traitId, field: field, value: value })
     });
-    toast.message("Status changed");
+    if (!res.ok) {
+        toast.error("Could not save the change");
+        return;
+    }
     if (withmutate) {
         mutate(`${prepend_path}/api/traits`);
     }
@@ -34,12 +106,15 @@ export const handleStatusChangeTrait = (traitId, field, value, withmutate = fals
 
 
 export const handleStatusIncrementTrait = debounce(async (traitId, field, withmutate = false) => {
-    await fetch(`${prepend_path}/api/traits`, {
+    const res = await fetch(`${prepend_path}/api/traits`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ method: "incrementfield", id: traitId, field: field })
     });
-    toast.message("increment");
+    if (!res.ok) {
+        toast.error("Could not save the change");
+        return;
+    }
     if (withmutate) {
         mutate(`${prepend_path}/api/traits`);
     }

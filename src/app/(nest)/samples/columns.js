@@ -1,162 +1,104 @@
-import { MdDelete, MdMoreHoriz } from "react-icons/md"
-
-import { Button } from "@/components/ui/button"
-
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  boxColumn,
+  dateColumn,
+  eggsacButtonColumn,
+  familyColumn,
+  fedButtonColumn,
+  genusColumn,
+  hungryProgressbarColumn,
+  lifestageColumn,
+  lifestatusColumn,
+  locationColumn,
+  moltedButtonColumn,
+  sampleNameColumn,
+  parentColumn,
+  recentChangeDateColumn,
+  responsibleColumn,
+  rowActionsColumn,
+  selectColumn,
+  sexButtonColumn,
+  slotColumn,
+  speciesColumn,
+  typeColumn,
+  sortableFilterableColumn,
+  customColumn,
+} from "@/components/tables/columns"
+import { sampleEditFields } from "@/components/tables/edit-fields"
 
-import { boxColumn, collectionColumn, dateColumn, eggsacButtonColumn, familyColumn, fedButtonColumn, genusColumn, hungryProgressbarColumn, latColumn, lifestageColumn, lifestatusColumn, locationColumn, lonColumn, moltedButtonColumn, sampleNameColumn, parentColumn, recentChangeDateColumn, responsibleColumn, selectColumn, sexButtonColumn, slotColumn, speciesColumn, typeColumn, sortableFilterableColumn } from "@/components/tables/columns"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
 
-export const baseColumns = [
-  selectColumn(),
-  sampleNameColumn(),
-  responsibleColumn(),
-  recentChangeDateColumn(),
-  dateColumn(),
-  typeColumn(),
-  parentColumn(),
-  locationColumn(),
-  {
-    accessorKey: "Actions",
-    cell: info => {
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
-      return (
-        <div >
+// The built-in columns a sample table can show, by key. A sample type's config
+// `columns` list is a mix of these keys and custom column objects
+// ({ key, label, kind, ... } — see customColumn); the admin edits the list.
+const PALETTE = {
+  name: sampleNameColumn,
+  responsible: responsibleColumn,
+  recentChange: recentChangeDateColumn,
+  date: dateColumn,
+  type: typeColumn,
+  parent: parentColumn,
+  location: locationColumn,
+  box: boxColumn,
+  slot: slotColumn,
+  family: familyColumn,
+  genus: genusColumn,
+  species: speciesColumn,
+  subsampletype: () => sortableFilterableColumn("subsampletype", "Subsample Type"),
+  sex: sexButtonColumn,
+  lifestage: lifestageColumn,
+  lifestatus: lifestatusColumn,
+  hungry: hungryProgressbarColumn,
+  fed: fedButtonColumn,
+  molted: moltedButtonColumn,
+  eggsac: eggsacButtonColumn,
+}
 
-          <DropdownMenu>
-            <AlertDialog>
-              <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete sample {sample.name}?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(sample._id)}>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MdMoreHoriz className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(sample.name)}
-              >
-                Copy Sample Name
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {/*<DropdownMenuItem>Action placeholder</DropdownMenuItem>*/}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+/** Every built-in column key a sample type may list. */
+export const SAMPLE_COLUMN_KEYS = Object.keys(PALETTE)
 
-      )
-    },
-  },
-]
+/** The `kind` values a custom column may have. */
+export const CUSTOM_COLUMN_KINDS = ["counter", "toggle", "progress", "text", "number", "date"]
 
-const animalColumns = [
-  sampleNameColumn(),
-  familyColumn(),
-  genusColumn(),
-  speciesColumn(),
-  recentChangeDateColumn(),
-  dateColumn(),
-  locationColumn(),
-  sexButtonColumn(),
-  lifestageColumn(),
-  lifestatusColumn(),
-  hungryProgressbarColumn(),
-  fedButtonColumn(),
-  moltedButtonColumn(),
-  eggsacButtonColumn(),
-  {
-    accessorKey: "Actions",
-    cell: info => {
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
-      return (
-        <div >
-          <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete sample {sample.name}?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(sample._id)}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      )
-    },
-  },
-]
+// Used when a sample type does not name its own `columns`.
+const DEFAULT_COLUMNS = ["name", "responsible", "recentChange", "date", "type", "parent", "location"]
 
-const subsampleColumns = [
-  sampleNameColumn(),
-  parentColumn(),
-  recentChangeDateColumn(),
-  dateColumn(),
-  sortableFilterableColumn("subsampletype", "Subsample Type"),
-  boxColumn(),
-  slotColumn(),
-  locationColumn(),
-  {
-    accessorKey: "Actions",
-    cell: info => {
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
-      return (
-        <div >
-          <AlertDialog>
-            <AlertDialogTrigger><MdDelete className="h-4 w-4" /></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete sample {sample.name}?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(sample._id)}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      )
-    },
-  },
-]
+// Fallbacks for the two types the app has always special-cased, so an install
+// that has not configured `columns` yet behaves exactly as before.
+const BUILTIN_TYPE_COLUMNS = {
+  animal: [
+    "name", "responsible", "recentChange", "date", "location",
+    "family", "genus", "species",
+    "sex", "lifestage", "lifestatus", "hungry", "fed", "molted", "eggsac",
+  ],
+  subsample: ["name", "parent", "recentChange", "date", "subsampletype", "box", "slot", "location"],
+}
 
-export const typeColumns = {
-  "animal": animalColumns,
-  "subsample": subsampleColumns,
-  // Add more types as needed
-};
+/**
+ * The column list a type falls back to when it has not configured its own —
+ * what the Settings editor seeds a fresh type's list from.
+ */
+export function defaultColumnsForType(type) {
+  return BUILTIN_TYPE_COLUMNS[type] || DEFAULT_COLUMNS
+}
 
+/**
+ * Column set for one sample type's table, from its config `columns` list (or a
+ * sensible fallback). `typeConfig` is the config entry — `{ value, columns? }`.
+ * Each list entry is a built-in key (string) or a custom column object.
+ */
+export function buildSampleColumns(typeConfig) {
+  const type = typeof typeConfig === "string" ? typeConfig : typeConfig?.value
+  const entries =
+    (Array.isArray(typeConfig?.columns) && typeConfig.columns.length && typeConfig.columns) ||
+    BUILTIN_TYPE_COLUMNS[type] ||
+    DEFAULT_COLUMNS
+  const cols = entries.flatMap((entry) => {
+    if (typeof entry === "string") return PALETTE[entry] ? [PALETTE[entry]()] : []
+    if (entry && entry.key && entry.kind) return [customColumn(entry)]
+    return []
+  })
+  return [selectColumn(), ...cols, actions]
+}
+
+// The general samples table has no single type; it uses the default set.
+export const baseColumns = buildSampleColumns()

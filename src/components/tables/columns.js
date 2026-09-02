@@ -2,12 +2,23 @@
 import Link from "next/link";
 import React from "react";
 
-import { ClipboardList } from "lucide-react"; // Using lucide for the icon
-import { MdFemale, MdMale } from "react-icons/md";
-import { PiBug, PiCarrotBold, PiEggBold, PiShieldBold, PiTestTube, PiXBold } from "react-icons/pi";
+import { ClipboardText, GenderFemale, GenderMale, Bug, Carrot, Egg, Shield, TestTube, Trash, X, ArrowClockwise, UploadSimple } from "@phosphor-icons/react";
 
 import { SampleHoverCard } from "@/components/sample-hover-card";
 import { DataTableColumnHeader } from "@/components/tables/column-header";
+import { RowEditDialog } from "@/components/tables/row-edit-dialog";
+import { ToggleField } from "@/components/tables/toggle-field";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,46 +27,14 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { prepend_path } from "@/lib/utils";
 import { uploadFiles } from '@/utils/handlers/fileHandlers';
-import { ReloadIcon, UploadIcon } from "@radix-ui/react-icons";
 import { useRef, useState } from 'react';
 import { toast } from "sonner";
 import { mutate } from 'swr';
 import { Label } from "@/components/ui/label";
 import { handleFileDownloads } from "@/utils/handlers/experimentHandlers";
-
-// A new component for rendering the cell content
-const SampleSexCell = ({ sample, onStatusChange }) => {
-  const [value, setValue] = React.useState(sample.sex);
-
-  React.useEffect(() => {
-    setValue(sample.sex);
-  }, [sample.sex]);
-
-  const handleStatusChange = (newValue) => {
-    setValue(newValue);
-    onStatusChange(sample._id, "sex", newValue);
-  };
-
-  return (
-    <ToggleGroup type="single"
-      value={value}
-      onValueChange={handleStatusChange}
-      size="lg"
-    >
-      <ToggleGroupItem value="female"><MdFemale /></ToggleGroupItem>
-      <ToggleGroupItem value="male"><MdMale /></ToggleGroupItem>
-      <ToggleGroupItem value="unknown">U</ToggleGroupItem>
-    </ToggleGroup>
-  );
-};
-
-/* ---------------------------------- 
-          General columns
- ------------------------------------*/
 
  export const editableColumn = (key, label) => (
   {
@@ -107,7 +86,7 @@ export const logbookColumn = (key, label) => ({
         return (
             <HoverCard>
                 <HoverCardTrigger asChild>
-                    <ClipboardList className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground" />
+                    <ClipboardText className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                     <ScrollArea className="h-72">
@@ -172,10 +151,6 @@ export const sortableFilterableNumericColumn = (key, label) => ({
 });
 
 
-/* ---------------------------------- 
-          Specific columns
- ------------------------------------*/
-
 export const selectColumn = () => (
   {
     id: "select",
@@ -200,6 +175,53 @@ export const selectColumn = () => (
     enableHiding: false,
   }
 );
+
+/**
+ * Standard trailing column: an Edit dialog (when the page passes editFields and
+ * an onUpdateFields handler) and a Delete confirmation. Replaces the per-page
+ * hand-rolled "Actions" cells so every table row acts the same way.
+ */
+export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "name" }) => ({
+  id: "actions",
+  enableSorting: false,
+  enableHiding: false,
+  cell: function Cell(info) {
+    const row = info.row.original;
+    const { onDelete, onUpdateFields } = info.table.options.meta;
+    const label = row?.[titleField] || `this ${entityLabel}`;
+    return (
+      <div className="flex items-center gap-1">
+        {editFields.length > 0 && onUpdateFields ? (
+          <RowEditDialog
+            rows={[row]}
+            fields={editFields}
+            entityLabel={entityLabel}
+            onSubmit={(ids, changes) => onUpdateFields(ids[0], changes)}
+          />
+        ) : null}
+        {onDelete ? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label={`Delete ${entityLabel}`}>
+                <Trash className="size-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
+                <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(row._id)}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        ) : null}
+      </div>
+    );
+  },
+});
 
 export const nameColumn = () => (
   {
@@ -429,169 +451,90 @@ export const speciesColumn = () => (
     header: "Species",
   }
 );
-export const lifestageColumn = () => (
-  {
-    accessorKey: "lifestage",
-    header: "Life Stage",
-    cell: function Cell(info) {
+const LIFESTAGE_OPTIONS = [
+  { value: "egg", label: "Egg", icon: <Egg /> },
+  { value: "juvenile", label: "Juvenile", icon: "J" },
+  { value: "sub-adult", label: "Sub-adult", icon: "S" },
+  { value: "adult", label: "Adult", icon: "A" },
+];
 
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange } = info.table.options.meta;
+const LIFESTATUS_OPTIONS = [
+  { value: "alive", label: "Alive", icon: <Bug /> },
+  { value: "preserved", label: "Preserved", icon: <TestTube /> },
+  { value: "nonpreserved", label: "Lost", icon: <X /> },
+];
 
-      const [value, setValue] = React.useState(sample.lifestage);
+const SEX_OPTIONS = [
+  { value: "female", label: "Female", icon: <GenderFemale /> },
+  { value: "male", label: "Male", icon: <GenderMale /> },
+  { value: "unknown", label: "Unknown", icon: "U" },
+];
 
-      React.useEffect(() => {
-        setValue(sample.lifestage);
-      }, [sample.lifestage]);
-
-
-      return (
-        <ToggleGroup type="single"
-          value={value}
-          onValueChange={(value) => {
-            if (value) setValue(value);
-          }}
-          size="lg"
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestage", "egg")} value="egg"><PiEggBold /></ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Egg</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestage", "juvenile")} value="juvenile">J</ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Juvenile</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestage", "sub-adult")} value="sub-adult">S</ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Sub-adult</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestage", "adult")} value="adult">A</ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Adult</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </ToggleGroup>
+// Column whose cell is a single-select ToggleField writing `key` via onStatusChange.
+const toggleFieldColumn = (key, header, options, { filter = false } = {}) => ({
+  accessorKey: key,
+  header: filter
+    ? ({ column, table }) => (
+        <div>
+          <DataTableColumnHeader column={column} title={header} />
+          <Filter column={column} table={table} />
+        </div>
       )
-    }
-  }
-);
+    : header,
+  ...(filter ? { filterFn: "equals" } : {}),
+  cell: function Cell(info) {
+    const row = info.row.original;
+    const { onStatusChange } = info.table.options.meta;
+    return (
+      <ToggleField
+        value={row[key]}
+        options={options}
+        onChange={(value) => onStatusChange(row._id, key, value)}
+      />
+    );
+  },
+});
 
-export const listToggleColumn = (key, label, possibleValues) => (
-  {
-    accessorKey: key,
-    header: ({ column, table }) => (
-      <div>
-        <DataTableColumnHeader column={column} title={label} />
-        <Filter column={column} table={table} />
-      </div>
-    ),
-    cell: function Cell(info) {
-      const object = info.row.original;
-      const { onStatusChange } = info.table.options.meta;
+export const lifestageColumn = () => toggleFieldColumn("lifestage", "Life Stage", LIFESTAGE_OPTIONS);
+export const lifestatusColumn = () => toggleFieldColumn("lifestatus", "Status", LIFESTATUS_OPTIONS);
+export const listToggleColumn = (key, label, possibleValues) =>
+  toggleFieldColumn(
+    key,
+    label,
+    possibleValues.map((value) => ({ value, label: value })),
+    { filter: true },
+  );
+// A counter field bumped by one on each click (fed / molted / egg sac). Shows
+// the current count next to the icon so the click needs no toast to confirm.
+const incrementButtonColumn = (field, header, Icon, tooltip) => ({
+  accessorKey: field,
+  header,
+  cell: function Cell(info) {
+    const sample = info.row.original;
+    const { onIncrement } = info.table.options.meta;
+    const count = Number(sample[field]) || 0;
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={tooltip}
+              onClick={() => onIncrement(sample._id, field)}
+            >
+              <Icon className="size-4" />
+              {count > 0 ? <span className="tabular-nums">{count}</span> : null}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{tooltip}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  },
+});
 
-      const [value, setValue] = React.useState(object[key]);
-
-      React.useEffect(() => {
-        setValue(object[key]);
-      }, [object[key]]);
-
-      return (
-        <ToggleGroup type="single"
-          value={value}
-          onValueChange={(value) => {
-            if (value) setValue(value);
-          }}
-          size="lg"
-        >
-          {possibleValues.map((possibleValue) => (
-            <ToggleGroupItem key={possibleValue} onClick={() => onStatusChange(object._id, key, possibleValue)} value={possibleValue}>{possibleValue}</ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      )
-    }
-  }
-);  
-
-
-export const lifestatusColumn = () => (
-  {
-    accessorKey: "lifestatus",
-    header: "Status",
-    cell: function Cell(info) {
-
-      const sample = info.row.original;
-      const { onStatusChange } = info.table.options.meta;
-
-      const [value, setValue] = React.useState(sample.lifestatus);
-
-      React.useEffect(() => {
-        setValue(sample.lifestatus);
-      }, [sample.lifestatus]);
-
-
-      return (
-        <ToggleGroup type="single"
-          value={value}
-          onValueChange={(value) => {
-            if (value) setValue(value);
-          }}
-          size="lg"
-        >
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "alive")} value="alive"><PiBug /></ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Alive</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "preserved")} value="preserved"><PiTestTube /></ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Preserved</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <ToggleGroupItem onClick={() => onStatusChange(sample._id, "lifestatus", "nonpreserved")} value="nonpreserved"><PiXBold /></ToggleGroupItem>
-              </TooltipTrigger>
-              <TooltipContent>Lost</TooltipContent>
-            </Tooltip>
-          </TooltipProvider >
-        </ToggleGroup>
-      )
-    }
-  }
-);
-export const fedButtonColumn = () => (
-  {
-    accessorKey: "fed",
-    header: "Feed",
-    cell: function Cell(info) {
-
-      const sample = info.row.original;
-      const { onIncrement } = info.table.options.meta;
-
-      const [value, setValue] = React.useState(sample.fed);
-      return (
-
-        <Button value={value} onValueChange={(value) => {
-          if (value) setValue(value);
-        }}
-          onClick={() => onIncrement(sample._id, "fed")}
-        ><PiCarrotBold /></Button>
-      )
-    },
-  }
-);
+export const fedButtonColumn = () => incrementButtonColumn("fed", "Feed", Carrot, "Record a feeding");
 export const hungryProgressbarColumn = () => (
   {
     accessorKey: "lastFed",
@@ -615,65 +558,87 @@ export const hungryProgressbarColumn = () => (
   }
 );
 
-export const moltedButtonColumn = () => (
-  {
-    accessorKey: "molted",
-    header: "Molted",
-    cell: function Cell(info) {
+export const moltedButtonColumn = () => incrementButtonColumn("molted", "Molted", Shield, "Record a moult");
+export const eggsacButtonColumn = () => incrementButtonColumn("eggsac", "Egg sac", Egg, "Record an egg sac");
+export const sexButtonColumn = () => toggleFieldColumn("sex", "Sex", SEX_OPTIONS, { filter: true });
 
-      const sample = info.row.original;
-      const { onIncrement } = info.table.options.meta;
+// --- Custom columns ---------------------------------------------------------
+// A sample type can define its own columns in the config as
+// { key, label, kind, ...opts } instead of a built-in palette key. These render
+// through the same generic machinery as the built-ins.
 
-      const [value, setValue] = React.useState(sample.fed);
-      return (
+function ProgressFromDate({ value, days }) {
+  const then = new Date(value).getTime();
+  if (!value || Number.isNaN(then)) return <Progress value={0} />;
+  const elapsed = (Date.now() - then) / (1000 * 60 * 60 * 24);
+  const remaining = Math.max(0, Math.min(100, 100 - (elapsed / (days || 7)) * 100));
+  return <Progress value={Math.round(remaining)} />;
+}
 
-        <Button value={value} onValueChange={(value) => {
-          if (value) setValue(value);
-        }}
-          onClick={() => onIncrement(sample._id, "molted")}
-        ><PiShieldBold /></Button>
-      )
-    },
+function formatCell(kind, value) {
+  if (value == null || value === "") return "";
+  if (kind === "date") {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString();
   }
-);
-export const eggsacButtonColumn = () => (
-  {
-    accessorKey: "eggsac",
-    header: "with Egg Sac",
-    cell: function Cell(info) {
+  return String(value);
+}
 
-      const sample = info.row.original;
-      const { onDelete, onEdit, onStatusChange, onIncrement } = info.table.options.meta;
+/**
+ * Build a column from a config-defined custom column.
+ * @param {{ key: string, label: string, kind: "counter"|"toggle"|"progress"|"text"|"number"|"date",
+ *           icon?: string, options?: {value:string,label:string}[], field?: string, days?: number }} def
+ */
+export function customColumn(def) {
+  const { key, label, kind } = def;
 
-      const [value, setValue] = React.useState(sample.eggsac);
-      return (
-
-        <Button value={value} onValueChange={(value) => {
-          if (value) setValue(value);
-        }}
-          onClick={() => onIncrement(sample._id, "eggsac")}
-        ><PiEggBold /></Button>
-      )
-    },
+  if (kind === "counter") {
+    return {
+      accessorKey: key,
+      header: label,
+      cell: function Cell(info) {
+        const row = info.row.original;
+        const { onIncrement } = info.table.options.meta;
+        const count = Number(row[key]) || 0;
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Record ${label}`}
+            onClick={() => onIncrement?.(row._id, key)}
+          >
+            <span aria-hidden>{def.icon || "+"}</span>
+            {count > 0 ? <span className="tabular-nums">{count}</span> : null}
+          </Button>
+        );
+      },
+    };
   }
-);
-export const sexButtonColumn = () => (
-  {
-    accessorKey: "sex",
+
+  if (kind === "toggle") {
+    return toggleFieldColumn(key, label, def.options ?? [], { filter: true });
+  }
+
+  if (kind === "progress") {
+    return {
+      accessorKey: def.field || key,
+      header: label,
+      cell: (info) => <ProgressFromDate value={info.row.original[def.field || key]} days={def.days} />,
+    };
+  }
+
+  // text | number | date — plain, sortable, filterable display column
+  return {
+    accessorKey: key,
     header: ({ column, table }) => (
       <div>
-        <DataTableColumnHeader column={column} title="Sex" />
+        <DataTableColumnHeader column={column} title={label} />
         <Filter column={column} table={table} />
       </div>
     ),
-    filterFn: "equals",
-    cell: info => {
-      const sample = info.row.original;
-      const { onStatusChange } = info.table.options.meta;
-      return <SampleSexCell sample={sample} onStatusChange={onStatusChange} />;
-    }
-  }
-);
+    cell: (info) => formatCell(kind, info.getValue()),
+  };
+}
 
 export const imageColumn = (imagefield) => ({
   accessorKey: imagefield,
@@ -1035,9 +1000,9 @@ export const fileUploadColumn = () => ({
           >
             <span>
               {isUploading ? (
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <ArrowClockwise className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <UploadIcon className="mr-2 h-4 w-4" />
+                <UploadSimple className="mr-2 h-4 w-4" />
               )}
               Upload
             </span>

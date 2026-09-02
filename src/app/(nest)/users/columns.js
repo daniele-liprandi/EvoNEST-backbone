@@ -1,7 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/tables/column-header"
-import { MdDelete } from "react-icons/md"
-import { Database } from "lucide-react"
+import { Trash, Database } from "@phosphor-icons/react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { ChangeDatabasesDialog } from "@/components/forms/change-databases-dialog"
@@ -87,7 +86,7 @@ export const getColumns = (isAdmin) => [
           <AlertDialog>
             <AlertDialogTrigger>
               <Button variant="outline" size="sm">
-                <MdDelete className="h-4 w-4" />
+                <Trash className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
