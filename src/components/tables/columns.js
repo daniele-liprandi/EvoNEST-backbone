@@ -471,7 +471,7 @@ const SEX_OPTIONS = [
 ];
 
 // Column whose cell is a single-select ToggleField writing `key` via onStatusChange.
-const toggleFieldColumn = (key, header, options, { filter = false } = {}) => ({
+export const toggleFieldColumn = (key, header, options, { filter = false } = {}) => ({
   accessorKey: key,
   header: filter
     ? ({ column, table }) => (

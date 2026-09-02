@@ -317,6 +317,32 @@ export async function POST(req) {
     const db = client.db(dbname);
     const samples = db.collection("samples");
 
+    // A sample type's config `fields` list can name admin-defined fields. Only
+    // those keys, for the sample's own type, are accepted from `data.fields` —
+    // never a core column or a protected field.
+    async function configuredCustomFields(type) {
+        if (!type || !data.fields || typeof data.fields !== "object") return {};
+        const core = new Set([
+            "_id", "name", "type", "parentId", "family", "genus", "species",
+            "nomenclature", "responsible", "date", "location", "lat", "lon",
+            "sex", "box", "slot", "subsampletype", "notes", "logbook",
+            "filesId", "createdDate", "recentChangeDate",
+        ]);
+        const cfg = await db.collection("config").findOne({ type: "sampletypes" });
+        const typeCfg = cfg?.data?.find((t) => t.value === type);
+        const allowed = Array.isArray(typeCfg?.fields)
+            ? typeCfg.fields
+                .filter((f) => f && typeof f === "object" && f.key && f.kind)
+                .map((f) => f.key)
+                .filter((k) => !core.has(k))
+            : [];
+        const out = {};
+        for (const key of allowed) {
+            if (data.fields[key] !== undefined) out[key] = data.fields[key];
+        }
+        return out;
+    }
+
     // if data contains the field "id", check if it can be found in the database
     let sample = null;
     if (data.id) {
@@ -377,7 +403,8 @@ export async function POST(req) {
             slot: data.slot,
             notes: data.notes,
             subsampletype: data.subsampletype,
-            recentChangeDate: new Date().toISOString()
+            recentChangeDate: new Date().toISOString(),
+            ...(await configuredCustomFields(data.type)),
         };
 
         const result = await samples.updateOne(
@@ -504,7 +531,8 @@ export async function POST(req) {
         notes: data.notes,
         _id: data._id,
         recentChangeDate: new Date().toISOString(),
-        logbook: [[`${new Date().toISOString()}`, `Uploaded sample ${data.name} by ${authuser}`]]
+        logbook: [[`${new Date().toISOString()}`, `Uploaded sample ${data.name} by ${authuser}`]],
+        ...(await configuredCustomFields(data.type)),
     };
 
     {

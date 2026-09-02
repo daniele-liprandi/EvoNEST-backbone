@@ -1,43 +1,64 @@
-import { buildSampleColumns, SAMPLE_COLUMN_KEYS, CUSTOM_COLUMN_KINDS, defaultColumnsForType } from "@/app/(nest)/samples/columns";
+import {
+  buildSampleColumns,
+  SAMPLE_COLUMN_KEYS,
+  COLUMN_WIDGET_KINDS,
+  defaultColumnsForType,
+} from "@/app/(nest)/samples/columns";
 import { customColumn } from "@/components/tables/columns";
 
 const keyOf = (col: any) => col.id ?? col.accessorKey;
+const inner = (cols: any[]) => cols.slice(1, -1).map(keyOf);
 
 describe("buildSampleColumns", () => {
-  test("renders a type's built-in column list, wrapped in select + actions", () => {
+  test("built-in keys resolve, wrapped in select + actions", () => {
     const cols = buildSampleColumns({ value: "plant", columns: ["name", "genus", "species", "location"] });
     expect(keyOf(cols[0])).toBe("select");
     expect(keyOf(cols.at(-1))).toBe("actions");
-    expect(cols.slice(1, -1).map(keyOf)).toEqual(["name", "genus", "species", "location"]);
+    expect(inner(cols)).toEqual(["name", "genus", "species", "location"]);
   });
 
-  test("unknown built-in keys are skipped", () => {
+  test("unknown keys are skipped", () => {
     const cols = buildSampleColumns({ value: "x", columns: ["name", "totallyMadeUp", "location"] });
-    expect(cols.slice(1, -1).map(keyOf)).toEqual(["name", "location"]);
+    expect(inner(cols)).toEqual(["name", "location"]);
   });
 
-  test("a custom column object is built via customColumn", () => {
+  test("a column entry that names one of the type's fields renders that field", () => {
     const cols = buildSampleColumns({
       value: "crop",
-      columns: ["name", { key: "growthStage", label: "Growth stage", kind: "toggle", options: [{ value: "seedling", label: "Seedling" }] }],
+      fields: [
+        { key: "plot", label: "Plot", kind: "text" },
+        { key: "stage", label: "Stage", kind: "select", options: [{ value: "a", label: "A" }] },
+      ],
+      columns: ["name", "plot", "stage"],
     });
-    expect(cols.slice(1, -1).map(keyOf)).toEqual(["name", "growthStage"]);
+    expect(inner(cols)).toEqual(["name", "plot", "stage"]);
   });
 
-  test("falls back to the animal built-in layout when nothing is configured", () => {
-    const cols = buildSampleColumns({ value: "animal" });
-    const keys = cols.map(keyOf);
-    expect(keys).toEqual(expect.arrayContaining(["sex", "lifestage", "molted", "eggsac"]));
+  test("a field key with no matching field definition is skipped", () => {
+    const cols = buildSampleColumns({ value: "crop", fields: [], columns: ["name", "plot"] });
+    expect(inner(cols)).toEqual(["name"]);
   });
 
-  test("an unconfigured, unknown type gets the generic default set", () => {
+  test("counter and progress widget objects are built via customColumn", () => {
+    const cols = buildSampleColumns({
+      value: "crop",
+      columns: [
+        "name",
+        { key: "watered", label: "Watered", kind: "counter" },
+        { key: "toHarvest", label: "To harvest", kind: "progress", field: "sownDate", days: 90 },
+      ],
+    });
+    expect(inner(cols)).toEqual(["name", "watered", "sownDate"]);
+  });
+
+  test("an unconfigured type gets the generic default set", () => {
     const cols = buildSampleColumns({ value: "whatever" });
-    expect(cols.map(keyOf)).not.toEqual(expect.arrayContaining(["molted"]));
     expect(cols.map(keyOf)).toEqual(expect.arrayContaining(["name", "date", "type", "location"]));
+    expect(cols.map(keyOf)).not.toEqual(expect.arrayContaining(["molted"]));
   });
 });
 
-describe("customColumn", () => {
+describe("customColumn widgets", () => {
   test("counter uses the key as accessor", () => {
     expect(keyOf(customColumn({ key: "watered", label: "Watered", kind: "counter" }))).toBe("watered");
   });
@@ -45,35 +66,16 @@ describe("customColumn", () => {
   test("progress reads from `field` when given", () => {
     expect(keyOf(customColumn({ key: "dryness", label: "Dryness", kind: "progress", field: "lastWatered", days: 5 }))).toBe("lastWatered");
   });
-
-  test("text/number/date all produce a column for their key", () => {
-    for (const kind of ["text", "number", "date"] as const) {
-      expect(keyOf(customColumn({ key: `f_${kind}`, label: kind, kind }))).toBe(`f_${kind}`);
-    }
-  });
-
-  test("exports the palette keys and the custom kinds", () => {
-    expect(SAMPLE_COLUMN_KEYS).toEqual(expect.arrayContaining(["name", "sex", "molted"]));
-    expect(CUSTOM_COLUMN_KINDS).toEqual(["counter", "toggle", "progress", "text", "number", "date"]);
-  });
 });
 
-describe("defaultColumnsForType", () => {
-  test("special-cased types get their own layout", () => {
-    expect(defaultColumnsForType("animal")).toContain("eggsac");
-    expect(defaultColumnsForType("subsample")).toContain("subsampletype");
+describe("metadata", () => {
+  test("exposes the palette keys and the widget kinds", () => {
+    expect(SAMPLE_COLUMN_KEYS).toEqual(expect.arrayContaining(["name", "sex", "molted"]));
+    expect(COLUMN_WIDGET_KINDS).toEqual(["counter", "progress"]);
   });
 
-  test("any other type gets the generic set", () => {
-    expect(defaultColumnsForType("plant")).toEqual(defaultColumnsForType("whatever"));
-    expect(defaultColumnsForType("plant")).toContain("name");
-  });
-
-  test("every default key is a real built-in the editor offers", () => {
-    for (const type of ["animal", "subsample", "plant"]) {
-      for (const key of defaultColumnsForType(type)) {
-        expect(SAMPLE_COLUMN_KEYS).toContain(key);
-      }
-    }
+  test("defaultColumnsForType is a generic set, not type-specific", () => {
+    expect(defaultColumnsForType("animal")).toEqual(defaultColumnsForType("plant"));
+    expect(defaultColumnsForType("animal")).toContain("name");
   });
 });

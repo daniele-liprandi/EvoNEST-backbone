@@ -2,21 +2,45 @@
 
 export const DEFAULT_CONFIGS = {
   sampletypes: [
-    // `columns` is the sample table's column set for this type (keys from the
-    // palette in samples/columns.js). Admins edit it; other types fall back to a
-    // generic set. The default here is the arthropod husbandry layout.
+    // `fields` is the type's data field list (see samples/fields.js) — it drives
+    // the create form and the row edit dialog. `columns` is the sample table's
+    // column set (built-in keys from samples/columns.js, this type's own field
+    // keys, and counter/progress widgets). A type with neither falls back to a
+    // generic set.
     {
       label: "Animal", value: "animal", description: "Animal individual", shortened: "an",
+      fields: ["taxonomy", "sex", "responsible", "date", "location"],
       columns: [
         "name", "responsible", "recentChange", "date", "location",
         "family", "genus", "species",
         "sex", "lifestage", "lifestatus", "hungry", "fed", "molted", "eggsac",
       ],
     },
-    { label: "Blood", value: "blood", description: "Blood sample", shortened: "bl" },
-    { label: "DNA extract", value: "dna_extract", description: "DNA extract", shortened: "dna" },
-    { label: "Tissue", value: "tissue", description: "Tissue sample", shortened: "ti" },
-    { label: "Secretion", value: "secretion", description: "Secretion sample", shortened: "se" }
+    {
+      label: "Subsample", value: "subsample", description: "A part of another sample", shortened: "sub",
+      fields: ["parent", "taxonomy", "subsampletype", "box", "slot", "responsible", "date", "location"],
+      columns: ["name", "parent", "recentChange", "date", "subsampletype", "box", "slot", "location"],
+    },
+    {
+      label: "Blood", value: "blood", description: "Blood sample", shortened: "bl",
+      fields: ["parent", "responsible", "date", "box", "slot", "location"],
+      columns: ["name", "parent", "responsible", "recentChange", "date", "box", "slot", "location"],
+    },
+    {
+      label: "DNA extract", value: "dna_extract", description: "DNA extract", shortened: "dna",
+      fields: ["parent", "responsible", "date", "box", "slot"],
+      columns: ["name", "parent", "responsible", "recentChange", "date", "box", "slot"],
+    },
+    {
+      label: "Tissue", value: "tissue", description: "Tissue sample", shortened: "ti",
+      fields: ["parent", "responsible", "date", "box", "slot", "location"],
+      columns: ["name", "parent", "responsible", "recentChange", "date", "box", "slot", "location"],
+    },
+    {
+      label: "Secretion", value: "secretion", description: "Secretion sample", shortened: "se",
+      fields: ["parent", "responsible", "date", "box", "slot"],
+      columns: ["name", "parent", "responsible", "recentChange", "date", "box", "slot"],
+    }
   ],
   traittypes: [
     { value: "mass", label: "Mass", unit: "g", description: "Mass of the sample measured using a microbalance" },

@@ -2,8 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useEffect, useMemo } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Calendar } from "@/components/ui/calendar";
@@ -11,9 +11,9 @@ import { CalendarDays } from "lucide-react";
 import { format } from "date-fns";
 
 import { ComboFormBox } from "@/components/forms/combo-form-box";
+import { CustomSampleField } from "@/components/forms/custom-sample-field";
 import { TaxonomicHierarchy } from "@/components/ui/custom/TaxonomicHierarchy";
-
-import { useCallback } from "react";
+import { buildSampleFields } from "@/app/(nest)/samples/fields";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,12 +34,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserIdByName } from "@/hooks/userHooks";
 import { prepend_path } from "@/lib/utils";
 import { useConfigTypes } from "@/hooks/useConfigTypes";
 import { useMainSettings } from "@/hooks/useMainSettings";
-import { useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { mutate } from "swr";
 
@@ -61,8 +59,9 @@ const formSchema = z.object({
   slot: z.string().optional(),
   subsampletype: z.string().optional(),
   includeSubsampleShortened: z.boolean().optional(),
-  fibretype: z.string().optional(),
   notes: z.string().optional(),
+  // Values for the type's admin-defined fields, keyed by field key.
+  custom: z.record(z.string(), z.any()).optional(),
 });
 
 const sexOptions = [
@@ -84,14 +83,7 @@ export function ProfileFormSamples({
   user: any;
   page?: string;
 }) {
-  // Fetching sample types and subsample types from the config
-  const {
-    sampletypes,
-    samplesubtypes,
-    loading: configLoading,
-  } = useConfigTypes();
-
-  // Fetching main settings for ID generation
+  const { sampletypes, samplesubtypes } = useConfigTypes();
   const { idGeneration, labInfo, loading: settingsLoading } = useMainSettings();
 
   //Check if the user is using Safari or Chrome and only for chrome check if the user has granted permission
@@ -223,38 +215,37 @@ export function ProfileFormSamples({
       date: new Date(),
       responsible: getUserIdByName(user?.name, users),
       includeSubsampleShortened: true,
+      custom: {},
     },
   });
 
-  const selectedType = useWatch({
-    control: form.control,
-    name: "type",
-  });
-
-  const selectedParentId = useWatch({
-    control: form.control,
-    name: "parentId",
-  });
-
+  const selectedType = useWatch({ control: form.control, name: "type" });
+  const selectedParentId = useWatch({ control: form.control, name: "parentId" });
   const selectedSubsampleType = useWatch({
     control: form.control,
     name: "subsampletype",
   });
-
   const includeSubsampleShortened = useWatch({
     control: form.control,
     name: "includeSubsampleShortened",
   });
+  const selectedGenus = useWatch({ control: form.control, name: "genus" });
+  const selectedSpecies = useWatch({ control: form.control, name: "species" });
 
-  const selectedGenus = useWatch({
-    control: form.control,
-    name: "genus",
-  });
-
-  const selectedSpecies = useWatch({
-    control: form.control,
-    name: "species",
-  });
+  // The field list for the chosen type, from its config or a built-in fallback.
+  const typeConfig = useMemo(
+    () => sampletypes.find((t: any) => t.value === selectedType),
+    [sampletypes, selectedType]
+  );
+  const fields = useMemo(
+    () => buildSampleFields(typeConfig || selectedType),
+    [typeConfig, selectedType]
+  );
+  const fieldKeys = useMemo(
+    () => new Set(fields.map((f: any) => f.key)),
+    [fields]
+  );
+  const hasTaxonomy = fieldKeys.has("taxonomy");
 
   type SampleJsonBody = {
     method: string;
@@ -274,6 +265,7 @@ export function ProfileFormSamples({
     box?: string;
     slot?: string;
     subsampletype?: string;
+    fields?: Record<string, unknown>;
     _id?: number | string;
     notes?: string;
   };
@@ -302,6 +294,7 @@ export function ProfileFormSamples({
         slot: values.slot,
         subsampletype: values.subsampletype,
         notes: values.notes,
+        fields: values.custom,
       };
 
       if (id !== undefined) {
@@ -484,7 +477,7 @@ export function ProfileFormSamples({
   );
 
   const generateNameAnimal = useCallback(
-    (form: any, parentname?: string) => {
+    (form: any) => {
       const values = form.getValues();
       const genus = values.genus || "";
       const species = values.species || "";
@@ -494,7 +487,7 @@ export function ProfileFormSamples({
         return ""; // Return empty string while loading
       }
 
-      const baseId = generateBaseID(genus, species, "animal");
+      const baseId = generateBaseID(genus, species, values.type);
       if (!baseId) return "";
 
       // Get all existing samples with same genus, species, and type
@@ -543,14 +536,12 @@ export function ProfileFormSamples({
 
       // Add subtype identifiers if not an animal sample and checkbox is checked
       if (values.includeSubsampleShortened && values.subsampletype) {
-        // Find the subsample type configuration to get the shortened version
+        // Use the configured short code for the subtype if it is a known one,
+        // otherwise fall back to the entered text.
         const subsampleConfig = samplesubtypes.find(
-          (subtype) => subtype.value === values.subsampletype
+          (subtype: { value: string }) => subtype.value === values.subsampletype
         );
-
-        if (subsampleConfig && subsampleConfig.shortened) {
-          id += "_" + subsampleConfig.shortened;
-        }
+        id += "_" + (subsampleConfig?.shortened || values.subsampletype);
       }
 
       // Get all samples with same parent and subsample type
@@ -569,7 +560,7 @@ export function ProfileFormSamples({
 
       // Use the same numbering strategy as animal samples
       const startingNumber = idGeneration.startingNumber;
-      
+
       // Find the first available number using the same padding strategy
       const numberPadding = idGeneration.numberPadding;
       const formatNumber = (num: number) =>
@@ -580,7 +571,7 @@ export function ProfileFormSamples({
       const existingNames = matchingSamples.map(
         (sample: { name: string }) => sample.name
       );
-      
+
       let count = startingNumber;
       while (existingNames.includes(id + formatNumber(count))) {
         count++;
@@ -589,6 +580,24 @@ export function ProfileFormSamples({
       return (id + formatNumber(count)) as string;
     },
     [samples, idGeneration, settingsLoading, samplesubtypes]
+  );
+
+  // Regenerate the sample name from whatever identifying fields are set: a
+  // parent makes it a subsample-style name, otherwise it is derived from the
+  // taxonomy like an animal.
+  const regenerateName = useCallback(
+    (form: any) => {
+      const parentId = form.getValues("parentId");
+      if (parentId) {
+        const parent = samples.find((s: { _id: any }) => s._id === parentId);
+        if (parent) {
+          form.setValue("name", generateNameSubsample(form, parent.name));
+        }
+        return;
+      }
+      form.setValue("name", generateNameAnimal(form));
+    },
+    [samples, generateNameSubsample, generateNameAnimal]
   );
 
   useEffect(() => {
@@ -601,8 +610,7 @@ export function ProfileFormSamples({
         form.setValue("genus", parent.genus);
         form.setValue("species", parent.species);
         form.setValue("nomenclature", `${parent.genus} ${parent.species}`);
-        const id = generateNameSubsample(form, parent.name);
-        form.setValue("name", id);
+        form.setValue("name", generateNameSubsample(form, parent.name));
       } else {
         toast.error("Parent sample not found");
       }
@@ -621,8 +629,7 @@ export function ProfileFormSamples({
         (sample: { _id: any }) => sample._id === selectedParentId
       );
       if (parent) {
-        const id = generateNameSubsample(form, parent.name);
-        form.setValue("name", id);
+        form.setValue("name", generateNameSubsample(form, parent.name));
       } else {
         toast.error("Please select a parent animal sample first");
       }
@@ -636,84 +643,185 @@ export function ProfileFormSamples({
     generateNameSubsample,
   ]);
 
+  // A type with no taxonomy field carries no species; keep the required
+  // taxonomy columns filled so name generation and the schema still work.
   useEffect(() => {
-    if (selectedType === "artificial") {
+    if (selectedType && !hasTaxonomy) {
       form.setValue("family", "N/A");
       form.setValue("genus", "N/A");
       form.setValue("species", "N/A");
       form.setValue("nomenclature", "N/A");
     }
-  }, [selectedType, form]);
+  }, [selectedType, hasTaxonomy, form]);
 
-  
   useEffect(() => {
-    if (selectedType && selectedGenus && selectedSpecies) {
-      const id = generateNameAnimal(form);
-      form.setValue("name", id);
+    if (hasTaxonomy && selectedType && selectedGenus && selectedSpecies) {
+      form.setValue("name", generateNameAnimal(form));
     }
-  }, [samples, selectedType, selectedGenus, selectedSpecies, form, generateNameAnimal]);
+  }, [
+    samples,
+    hasTaxonomy,
+    selectedType,
+    selectedGenus,
+    selectedSpecies,
+    form,
+    generateNameAnimal,
+  ]);
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <Tabs
-          defaultValue={
-            page === "subsample"
-              ? "details"
-              : page === "animal"
-              ? "details"
-              : "general"
-          }
-          className="w-full"
-        >
-          <TabsList>
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            {selectedType === "animal" && (
-              <TabsTrigger value="animal">Animal</TabsTrigger>
-            )}
-            {selectedType !== "animal" && (
-              <TabsTrigger value="subsample">{selectedType}</TabsTrigger>
-            )}
-          </TabsList>
-          <TabsContent value="general" className="flex flex-col space-y-4">
-            <ComboFormBox
-              control={form.control}
-              setValue={form.setValue}
-              name="type"
-              options={sampletypes.map((type) => ({
-                value: type.value,
-                label: type.label,
-              }))}
-              fieldlabel={"Sample type"}
-              description={""}
-            />
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Optional notes</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} rows={3} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </TabsContent>
+  const parentOptions = samples
+    .filter((sample: { type: string }) => sample.type === "animal")
+    .map((sample: { _id: any; name: any }) => ({
+      value: sample._id,
+      label: sample.name,
+    }));
 
-          <TabsContent value="details" className="space-y-4">
-            <ComboFormBox
-              control={form.control}
-              setValue={form.setValue}
-              name="responsible"
-              options={users.map((user: { _id: any; name: any }) => ({
-                value: user._id,
-                label: user.name,
-              }))}
-              fieldlabel={"Responsible"}
-              description={""}
-            />
+  function renderField(field: any) {
+    if (!field.builtin) {
+      return (
+        <CustomSampleField
+          key={field.key}
+          control={form.control}
+          field={field}
+        />
+      );
+    }
+
+    switch (field.key) {
+      case "taxonomy":
+        return (
+          <TaxonomicHierarchy
+            key="taxonomy"
+            values={{
+              family: form.watch("family") || "",
+              genus: form.watch("genus") || "",
+              species: form.watch("species") || "",
+            }}
+            onChange={(values: {
+              family: string;
+              genus: string;
+              species: string | undefined;
+            }) => {
+              form.setValue("family", values.family);
+              form.setValue("genus", values.genus);
+              form.setValue("species", values.species);
+              form.setValue(
+                "nomenclature",
+                `${values.genus} ${values.species}`
+              );
+              regenerateName(form);
+            }}
+            onValidated={(
+              correctedValues: {
+                family: string;
+                genus: string;
+                species: string | undefined;
+              },
+              _source: any,
+              fullName: string
+            ) => {
+              form.setValue("family", correctedValues.family);
+              form.setValue("genus", correctedValues.genus);
+              form.setValue("species", correctedValues.species);
+              form.setValue("nomenclature", fullName);
+              regenerateName(form);
+            }}
+            autoCorrect={true}
+            disabled={false}
+            fieldProps={{}}
+          />
+        );
+
+      case "parent":
+        return (
+          <ComboFormBox
+            key="parent"
+            control={form.control}
+            setValue={form.setValue}
+            name="parentId"
+            options={parentOptions}
+            fieldlabel={"Parent sample"}
+            description={"Parent sample from which this sample is derived"}
+          />
+        );
+
+      case "responsible":
+        return (
+          <ComboFormBox
+            key="responsible"
+            control={form.control}
+            setValue={form.setValue}
+            name="responsible"
+            options={users.map((u: { _id: any; name: any }) => ({
+              value: u._id,
+              label: u.name,
+            }))}
+            fieldlabel={"Responsible"}
+            description={""}
+          />
+        );
+
+      case "sex":
+        return (
+          <ComboFormBox
+            key="sex"
+            control={form.control}
+            setValue={form.setValue}
+            name="sex"
+            options={sexOptions}
+            fieldlabel={"Sex"}
+            description={""}
+          />
+        );
+
+      case "date":
+        return (
+          <FormField
+            key="date"
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Date of collection</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        type="button"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarDays className="ml-auto size-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+
+      case "location":
+        return (
+          <div key="location" className="space-y-4">
             <FormField
               control={form.control}
               name="location"
@@ -724,7 +832,6 @@ export function ProfileFormSamples({
                     <Input
                       placeholder="City, State"
                       {...field}
-                     
                       onBlur={async () => {
                         if (!form.getValues().location) return;
                         const coord = await fetchCoordinates(form.getValues());
@@ -782,253 +889,102 @@ export function ProfileFormSamples({
                 Lab location
               </Button>
             </div>
+          </div>
+        );
 
+      case "subsampletype":
+        return (
+          <div
+            key="subsampletype"
+            className="flex flex-row items-center justify-between space-x-2"
+          >
             <FormField
               control={form.control}
-              name="date"
+              name="subsampletype"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date of collection</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          type="button"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarDays className="ml-auto size-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <ComboFormBox
-              control={form.control}
-              setValue={form.setValue}
-              name="parentId"
-              options={samples
-                .filter((sample: { type: string }) => sample.type === "animal")
-                .map((sample: { _id: any; name: any }) => ({
-                  value: sample._id,
-                  label: sample.name,
-                }))}
-              fieldlabel={"Parent Sample"}
-              description={""}
-            />
-          </TabsContent>
-          <TabsContent value="animal" className="space-y-4">
-            <TaxonomicHierarchy
-              values={{
-                family: form.watch("family") || "",
-                genus: form.watch("genus") || "",
-                species: form.watch("species") || ""
-              }}
-              onChange={(values: { family: string; genus: string; species: string | undefined; }) => {
-                form.setValue("family", values.family);
-                form.setValue("genus", values.genus);
-                form.setValue("species", values.species);
-                form.setValue("nomenclature", `${values.genus} ${values.species}`);
-                
-                // Generate ID when taxonomic data changes
-                const id = generateNameAnimal(form);
-                form.setValue("name", id);
-              }}
-              onValidated={(correctedValues: { family: string; genus: string; species: string | undefined; }, source: any, fullName: string) => {
-                // Handle validated taxonomy with corrections
-                form.setValue("family", correctedValues.family);
-                form.setValue("genus", correctedValues.genus);
-                form.setValue("species", correctedValues.species);
-                form.setValue("nomenclature", fullName);
-                
-                // Generate ID with corrected values
-                const id = generateNameAnimal(form);
-                form.setValue("name", id);
-              }}
-              autoCorrect={true}
-              disabled={false}
-              fieldProps={{}}
-            />
-            <ComboFormBox
-              control={form.control}
-              setValue={form.setValue}
-              name="sex"
-              options={sexOptions.map(
-                (sexOption: { value: any; label: any }) => ({
-                  value: sexOption.value,
-                  label: sexOption.label,
-                })
-              )}
-              fieldlabel={"Sex"}
-              description={""}
-            />
-          </TabsContent>
-          <TabsContent value="subsample" className="space-y-4">
-            <ComboFormBox
-              control={form.control}
-              setValue={form.setValue}
-              name="parentId"
-              options={samples
-                .filter((sample: { type: string }) => sample.type === "animal")
-                .map((sample: { _id: any; name: any }) => ({
-                  value: sample._id,
-                  label: sample.name,
-                }))}
-              fieldlabel={"Parent Sample"}
-              description={
-                "Parent sample from which the current sample is derived"
-              }
-            />
-            <TaxonomicHierarchy
-              values={{
-                family: form.watch("family") || "",
-                genus: form.watch("genus") || "",
-                species: form.watch("species") || ""
-              }}
-              onChange={(values: { family: string; genus: string; species: string | undefined; }) => {
-                form.setValue("family", values.family);
-                form.setValue("genus", values.genus);
-                form.setValue("species", values.species);
-                form.setValue("nomenclature", `${values.genus} ${values.species}`);
-                
-                // Generate ID when taxonomic data changes (for subsample)
-                const parent = samples.find(
-                  (sample: { _id: any }) => sample._id === form.watch("parentId")
-                );
-                if (parent) {
-                  const id = generateNameSubsample(form, parent.name);
-                  form.setValue("name", id);
-                }
-              }}
-              onValidated={(correctedValues: { family: string; genus: string; species: string | undefined; }, source: any, fullName: string) => {
-                // Handle validated taxonomy with corrections
-                form.setValue("family", correctedValues.family);
-                form.setValue("genus", correctedValues.genus);
-                form.setValue("species", correctedValues.species);
-                form.setValue("nomenclature", fullName);
-                
-                // Generate ID with corrected values
-                const parent = samples.find(
-                  (sample: { _id: any }) => sample._id === form.watch("parentId")
-                );
-                if (parent) {
-                  const id = generateNameSubsample(form, parent.name);
-                  form.setValue("name", id);
-                }
-              }}
-              autoCorrect={true}
-              disabled={false}
-              fieldProps={{}}
-            />
-            <div className="flex flex-row items-center space-x-2 justify-between">
-              <FormField
-                control={form.control}
-                name="subsampletype"
-                render={({ field }) => (
-                  <FormItem className="flex flex-1 flex-col">
-                    <FormLabel>Subsample type</FormLabel>
-                    <FormControl>
-                      <Input type="text" {...field} />
-                    </FormControl>
-                    <FormDescription>Type of subsample</FormDescription>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="includeSubsampleShortened"
-                render={({ field }) => (
-                  <FormItem className="flex shrink-0 flex-row items-center gap-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked);
-                          // Regenerate ID when checkbox changes
-                          if (selectedParentId) {
-                            const parent = samples.find(
-                              (sample: { _id: any }) =>
-                                sample._id === selectedParentId
-                            );
-                            if (parent) {
-                              const id = generateNameSubsample(form, parent.name);
-                              form.setValue("name", id);
-                            }
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      In ID
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="box"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Box</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Box" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="slot"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slot</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Slot" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </TabsContent>
-          <TabsContent value="artificial" className="space-y-4">
-            <FormField
-              control={form.control}
-              name="fibretype"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fibre type</FormLabel>
+                <FormItem className="flex flex-1 flex-col">
+                  <FormLabel>Subsample type</FormLabel>
                   <FormControl>
                     <Input type="text" {...field} />
                   </FormControl>
-                  <FormDescription>Type of artificial fibre</FormDescription>
+                  <FormDescription>Type of subsample</FormDescription>
                 </FormItem>
               )}
             />
-          </TabsContent>
-        </Tabs>
+            <FormField
+              control={form.control}
+              name="includeSubsampleShortened"
+              render={({ field }) => (
+                <FormItem className="flex shrink-0 flex-row items-center gap-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        regenerateName(form);
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>In ID</FormDescription>
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case "box":
+      case "slot":
+        return (
+          <FormField
+            key={field.key}
+            control={form.control}
+            name={field.key}
+            render={({ field: f }) => (
+              <FormItem>
+                <FormLabel>{field.label}</FormLabel>
+                <FormControl>
+                  <Input placeholder={field.label} {...f} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <ComboFormBox
+          control={form.control}
+          setValue={form.setValue}
+          name="type"
+          options={sampletypes.map((type: { value: any; label: any }) => ({
+            value: type.value,
+            label: type.label,
+          }))}
+          fieldlabel={"Sample type"}
+          description={""}
+        />
+
+        {fields.map((field: any) => renderField(field))}
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Optional notes</FormLabel>
+              <FormControl>
+                <Textarea {...field} rows={3} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="name"
@@ -1040,7 +996,9 @@ export function ProfileFormSamples({
                 <FormControl>
                   <Input type="text" {...field} />
                 </FormControl>
-                <FormDescription>Unique identifier for the sample</FormDescription>
+                <FormDescription>
+                  Unique identifier for the sample
+                </FormDescription>
               </FormItem>
             </div>
           )}

@@ -1,189 +1,145 @@
 import { DEFAULT_CONFIGS } from "./default-types";
 
 // A lab preset is a partial override of DEFAULT_CONFIGS applied at first setup.
-// It only names the config types that differ (usually sampletypes / traittypes);
-// everything it does not name falls back to the shipped default. Admins edit all
-// of it afterwards under Settings.
+// It names only the config types that differ (usually sampletypes / traittypes);
+// the rest falls back to the shipped default. Admins edit all of it afterwards.
 
-// --- Sample-table column layouts -------------------------------------------
-// Each sample type carries the `columns` list its table shows (see
-// buildSampleColumns). Entries are either a built-in palette key or a custom
-// column object { key, label, kind, ... }. These lists are what makes a preset
-// feel purpose-built rather than a bag of fields.
+// --- Per-type field and column layouts -----------------------------------
+// `fields` is the type's data field list: built-in keys (see samples/fields.js)
+// and custom { key, label, kind, options? } objects. It drives the create form
+// and the row edit dialog. `columns` is the table layout: built-in column keys,
+// this type's own field keys, and counter / progress widget objects. A field is
+// defined once in `fields` and named by key in `columns`.
+
+const STORAGE_FIELDS = ["parent", "responsible", "date", "box", "slot", "location"];
+const SUBSAMPLE_FIELDS = ["parent", "taxonomy", "subsampletype", "box", "slot", "responsible", "date", "location"];
+const SILK_FIELDS = ["parent", "responsible", "date", "location"];
+const ANIMAL_FIELDS = ["taxonomy", "sex", "responsible", "date", "location"];
+const PLANT_FIELDS = ["taxonomy", "responsible", "date", "location"];
 
 const IDENTITY = ["name", "responsible", "recentChange", "date", "location"];
 const TAXONOMY = ["family", "genus", "species"];
-const STORAGE_COLUMNS = ["name", "responsible", "parent", "recentChange", "date", "box", "slot", "location"];
+const STORAGE_COLUMNS = ["name", "parent", "responsible", "recentChange", "date", "box", "slot", "location"];
 const SUBSAMPLE_COLUMNS = ["name", "parent", "recentChange", "date", "subsampletype", "box", "slot", "location"];
-
+const SILK_COLUMNS = ["name", "responsible", "parent", "recentChange", "date", "location"];
 const ANIMAL_COLUMNS = [
   ...IDENTITY, ...TAXONOMY,
   "sex", "lifestage", "lifestatus", "hungry", "fed", "molted", "eggsac",
 ];
-
-const SILK_COLUMNS = ["name", "responsible", "parent", "recentChange", "date", "location"];
-
 const PLANT_COLUMNS = [...IDENTITY, ...TAXONOMY];
 
-const CROP_COLUMNS = [
-  "name", "responsible", "recentChange", "date", "location",
-  "genus", "species",
+const OPT = (...values) => values.map((v) => ({ value: v, label: v[0].toUpperCase() + v.slice(1) }));
+const GROWTH_STAGE = OPT("seedling", "vegetative", "flowering", "fruiting", "senescent");
+const PHENOLOGY = OPT("sterile", "budding", "flowering", "fruiting");
+const MOUNTING = OPT("pressed", "mounted", "filed");
+const PREPARATION = OPT("skin", "skeleton", "fluid", "mount");
+const LOAN = [
+  { value: "in-collection", label: "In collection" },
+  { value: "on-loan", label: "On loan" },
+  { value: "missing", label: "Missing" },
+];
+const CONDITION = OPT("good", "fair", "poor");
+const LIBPREP = OPT("queued", "prepped", "failed");
+const QC = OPT("pending", "pass", "fail", "repeat");
+const CONTAMINATION = OPT("clean", "suspect", "contaminated");
+
+const CROP_FIELDS = [
+  "taxonomy", "responsible", "date", "location",
   { key: "plot", label: "Plot", kind: "text" },
   { key: "treatment", label: "Treatment", kind: "text" },
-  {
-    key: "growthStage",
-    label: "Growth stage",
-    kind: "toggle",
-    options: [
-      { value: "seedling", label: "Seedling" },
-      { value: "vegetative", label: "Vegetative" },
-      { value: "flowering", label: "Flowering" },
-      { value: "fruiting", label: "Fruiting" },
-      { value: "senescent", label: "Senescent" },
-    ],
-  },
-  { key: "watered", label: "Watered", kind: "counter", icon: "💧" },
-  { key: "fertilised", label: "Fertilised", kind: "counter", icon: "🌱" },
+  { key: "growthStage", label: "Growth stage", kind: "select", options: GROWTH_STAGE },
   { key: "sownDate", label: "Sown", kind: "date" },
-  { key: "maturity", label: "To harvest", kind: "progress", field: "sownDate", days: 120 },
   { key: "harvestDate", label: "Harvested", kind: "date" },
 ];
+const CROP_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location", "genus", "species",
+  "plot", "treatment", "growthStage",
+  { key: "watered", label: "Watered", kind: "counter", icon: "💧" },
+  { key: "fertilised", label: "Fertilised", kind: "counter", icon: "🌱" },
+  "sownDate",
+  { key: "maturity", label: "To harvest", kind: "progress", field: "sownDate", days: 120 },
+  "harvestDate",
+];
 
-const HERBARIUM_COLUMNS = [
-  "name", "responsible", "recentChange", "date", "location",
-  ...TAXONOMY,
+const HERBARIUM_FIELDS = [
+  "taxonomy", "responsible", "date", "location",
   { key: "collector", label: "Collector", kind: "text" },
   { key: "accession", label: "Accession", kind: "text" },
   { key: "collectedDate", label: "Collected", kind: "date" },
-  {
-    key: "phenology",
-    label: "Phenology",
-    kind: "toggle",
-    options: [
-      { value: "sterile", label: "Sterile" },
-      { value: "budding", label: "Budding" },
-      { value: "flowering", label: "Flowering" },
-      { value: "fruiting", label: "Fruiting" },
-    ],
-  },
+  { key: "phenology", label: "Phenology", kind: "select", options: PHENOLOGY },
   { key: "determiner", label: "Det. by", kind: "text" },
-  {
-    key: "mounting",
-    label: "Mounting",
-    kind: "toggle",
-    options: [
-      { value: "pressed", label: "Pressed" },
-      { value: "mounted", label: "Mounted" },
-      { value: "filed", label: "Filed" },
-    ],
-  },
+  { key: "mounting", label: "Mounting", kind: "select", options: MOUNTING },
+];
+const HERBARIUM_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location", ...TAXONOMY,
+  "collector", "accession", "collectedDate", "phenology", "determiner", "mounting",
 ];
 
-const SPECIMEN_COLUMNS = [
-  "name", "responsible", "recentChange", "date", "location",
-  ...TAXONOMY,
+const SPECIMEN_FIELDS = [
+  "taxonomy", "sex", "responsible", "date", "location",
   { key: "catalogue", label: "Catalogue no.", kind: "text" },
-  {
-    key: "preparation",
-    label: "Preparation",
-    kind: "toggle",
-    options: [
-      { value: "skin", label: "Skin" },
-      { value: "skeleton", label: "Skeleton" },
-      { value: "fluid", label: "Fluid" },
-      { value: "mount", label: "Mount" },
-    ],
-  },
+  { key: "preparation", label: "Preparation", kind: "select", options: PREPARATION },
   { key: "collector", label: "Collector", kind: "text" },
   { key: "collectedDate", label: "Collected", kind: "date" },
-  "sex", "lifestage",
-  {
-    key: "loan",
-    label: "Loan",
-    kind: "toggle",
-    options: [
-      { value: "in-collection", label: "In collection" },
-      { value: "on-loan", label: "On loan" },
-      { value: "missing", label: "Missing" },
-    ],
-  },
-  {
-    key: "condition",
-    label: "Condition",
-    kind: "toggle",
-    options: [
-      { value: "good", label: "Good" },
-      { value: "fair", label: "Fair" },
-      { value: "poor", label: "Poor" },
-    ],
-  },
+  { key: "loan", label: "Loan", kind: "select", options: LOAN },
+  { key: "condition", label: "Condition", kind: "select", options: CONDITION },
+];
+const SPECIMEN_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location", ...TAXONOMY,
+  "catalogue", "preparation", "collector", "collectedDate",
+  "sex", "lifestage", "loan", "condition",
 ];
 
-const SEQ_COLUMNS = [
-  "name", "responsible", "parent", "recentChange", "date",
+const SEQ_FIELDS = [
+  "parent", "responsible", "date",
   { key: "extractionDate", label: "Extracted", kind: "date" },
-  {
-    key: "libPrep",
-    label: "Library prep",
-    kind: "toggle",
-    options: [
-      { value: "queued", label: "Queued" },
-      { value: "prepped", label: "Prepped" },
-      { value: "failed", label: "Failed" },
-    ],
-  },
+  { key: "libPrep", label: "Library prep", kind: "select", options: LIBPREP },
   { key: "run", label: "Run", kind: "text" },
-  {
-    key: "qc",
-    label: "QC",
-    kind: "toggle",
-    options: [
-      { value: "pending", label: "Pending" },
-      { value: "pass", label: "Pass" },
-      { value: "fail", label: "Fail" },
-      { value: "repeat", label: "Repeat" },
-    ],
-  },
+  { key: "qc", label: "QC", kind: "select", options: QC },
   { key: "barcode", label: "Index", kind: "text" },
-  { key: "turnaround", label: "Turnaround", kind: "progress", field: "extractionDate", days: 30 },
   { key: "concentration", label: "ng/µl", kind: "number" },
 ];
+const SEQ_COLUMNS = [
+  "name", "responsible", "parent", "recentChange", "date",
+  "extractionDate", "libPrep", "run", "qc", "barcode",
+  { key: "turnaround", label: "Turnaround", kind: "progress", field: "extractionDate", days: 30 },
+  "concentration",
+];
 
-const STRAIN_COLUMNS = [
-  "name", "responsible", "recentChange", "date", "location",
-  "genus", "species",
+const STRAIN_FIELDS = [
+  "taxonomy", "responsible", "date", "location",
   { key: "strainId", label: "Strain ID", kind: "text" },
   { key: "medium", label: "Medium", kind: "text" },
   { key: "isolationSource", label: "Source", kind: "text" },
-  { key: "passage", label: "Passage", kind: "counter" },
-  { key: "cryovials", label: "Cryovials", kind: "counter", icon: "🧊" },
-  {
-    key: "contamination",
-    label: "Contamination",
-    kind: "toggle",
-    options: [
-      { value: "clean", label: "Clean" },
-      { value: "suspect", label: "Suspect" },
-      { value: "contaminated", label: "Contaminated" },
-    ],
-  },
+  { key: "contamination", label: "Contamination", kind: "select", options: CONTAMINATION },
   { key: "revivedDate", label: "Last revived", kind: "date" },
 ];
+const STRAIN_COLUMNS = [
+  "name", "responsible", "recentChange", "date", "location", "genus", "species",
+  "strainId", "medium", "isolationSource",
+  { key: "passage", label: "Passage", kind: "counter" },
+  { key: "cryovials", label: "Cryovials", kind: "counter", icon: "🧊" },
+  "contamination", "revivedDate",
+];
+
+const T = (value, label, description, shortened, fields, columns) => ({
+  value, label, description, shortened, fields, columns,
+});
 
 const SAMPLE_TYPES = {
-  animal: { value: "animal", label: "Animal", description: "Animal individual", shortened: "an", columns: ANIMAL_COLUMNS },
-  subsample: { value: "subsample", label: "Subsample", description: "A part of another sample", shortened: "sub", columns: SUBSAMPLE_COLUMNS },
-  silk: { value: "silk", label: "Silk", description: "Silk fibre or structure", shortened: "si", columns: SILK_COLUMNS },
-  plant: { value: "plant", label: "Plant", description: "Plant individual", shortened: "pl", columns: PLANT_COLUMNS },
-  crop: { value: "crop", label: "Crop plant", description: "A crop plant or plot followed through a season", shortened: "cr", columns: CROP_COLUMNS },
-  blood: { value: "blood", label: "Blood", description: "Blood sample", shortened: "bl", columns: STORAGE_COLUMNS },
-  tissue: { value: "tissue", label: "Tissue", description: "Tissue sample", shortened: "ti", columns: STORAGE_COLUMNS },
-  dna_extract: { value: "dna_extract", label: "DNA extract", description: "DNA extract", shortened: "dna", columns: STORAGE_COLUMNS },
-  secretion: { value: "secretion", label: "Secretion", description: "Secretion sample", shortened: "se", columns: STORAGE_COLUMNS },
-  herbarium: { value: "herbarium", label: "Herbarium specimen", description: "A pressed, mounted plant specimen", shortened: "hb", columns: HERBARIUM_COLUMNS },
-  specimen: { value: "specimen", label: "Museum specimen", description: "A prepared, catalogued specimen", shortened: "sp", columns: SPECIMEN_COLUMNS },
-  seqsample: { value: "seqsample", label: "Sequencing sample", description: "An extract moving through library prep and sequencing", shortened: "seq", columns: SEQ_COLUMNS },
-  strain: { value: "strain", label: "Strain", description: "A microbial strain or isolate", shortened: "st", columns: STRAIN_COLUMNS },
+  animal: T("animal", "Animal", "Animal individual", "an", ANIMAL_FIELDS, ANIMAL_COLUMNS),
+  subsample: T("subsample", "Subsample", "A part of another sample", "sub", SUBSAMPLE_FIELDS, SUBSAMPLE_COLUMNS),
+  silk: T("silk", "Silk", "Silk fibre or structure", "si", SILK_FIELDS, SILK_COLUMNS),
+  plant: T("plant", "Plant", "Plant individual", "pl", PLANT_FIELDS, PLANT_COLUMNS),
+  crop: T("crop", "Crop plant", "A crop plant or plot followed through a season", "cr", CROP_FIELDS, CROP_COLUMNS),
+  blood: T("blood", "Blood", "Blood sample", "bl", STORAGE_FIELDS, STORAGE_COLUMNS),
+  tissue: T("tissue", "Tissue", "Tissue sample", "ti", STORAGE_FIELDS, STORAGE_COLUMNS),
+  dna_extract: T("dna_extract", "DNA extract", "DNA extract", "dna", STORAGE_FIELDS, STORAGE_COLUMNS),
+  secretion: T("secretion", "Secretion", "Secretion sample", "se", STORAGE_FIELDS, STORAGE_COLUMNS),
+  herbarium: T("herbarium", "Herbarium specimen", "A pressed, mounted plant specimen", "hb", HERBARIUM_FIELDS, HERBARIUM_COLUMNS),
+  specimen: T("specimen", "Museum specimen", "A prepared, catalogued specimen", "sp", SPECIMEN_FIELDS, SPECIMEN_COLUMNS),
+  seqsample: T("seqsample", "Sequencing sample", "An extract moving through library prep and sequencing", "seq", SEQ_FIELDS, SEQ_COLUMNS),
+  strain: T("strain", "Strain", "A microbial strain or isolate", "st", STRAIN_FIELDS, STRAIN_COLUMNS),
 };
 
 const TRAIT = (value, label, unit, description) => ({ value, label, unit, description });

@@ -21,15 +21,14 @@ import {
   speciesColumn,
   typeColumn,
   sortableFilterableColumn,
+  toggleFieldColumn,
   customColumn,
 } from "@/components/tables/columns"
-import { sampleEditFields } from "@/components/tables/edit-fields"
+import { buildEditFields, customFieldMap } from "./fields"
 
-const actions = rowActionsColumn({ entityLabel: "sample", editFields: sampleEditFields })
-
-// The built-in columns a sample table can show, by key. A sample type's config
-// `columns` list is a mix of these keys and custom column objects
-// ({ key, label, kind, ... } — see customColumn); the admin edits the list.
+// The built-in columns a sample table can show, by key. A type's `columns` list
+// mixes these keys, the keys of the type's own custom fields (resolved against
+// its `fields` list), and table-only widget objects — see COLUMN_WIDGET_KINDS.
 const PALETTE = {
   name: sampleNameColumn,
   responsible: responsibleColumn,
@@ -56,46 +55,52 @@ const PALETTE = {
 /** Every built-in column key a sample type may list. */
 export const SAMPLE_COLUMN_KEYS = Object.keys(PALETTE)
 
-/** The `kind` values a custom column may have. */
-export const CUSTOM_COLUMN_KINDS = ["counter", "toggle", "progress", "text", "number", "date"]
+// A custom column object is only for a table-only widget. Anything that holds a
+// value entered on the form is a `fields` entry, named by key in the list.
+export const COLUMN_WIDGET_KINDS = ["counter", "progress"]
 
-// Used when a sample type does not name its own `columns`.
+// Kept for the Settings column editor until it moves to the fields registry.
+export const CUSTOM_COLUMN_KINDS = COLUMN_WIDGET_KINDS
+
+// Used when a type does not name its own `columns` list.
 const DEFAULT_COLUMNS = ["name", "responsible", "recentChange", "date", "type", "parent", "location"]
 
-// Fallbacks for the two types the app has always special-cased, so an install
-// that has not configured `columns` yet behaves exactly as before.
-const BUILTIN_TYPE_COLUMNS = {
-  animal: [
-    "name", "responsible", "recentChange", "date", "location",
-    "family", "genus", "species",
-    "sex", "lifestage", "lifestatus", "hungry", "fed", "molted", "eggsac",
-  ],
-  subsample: ["name", "parent", "recentChange", "date", "subsampletype", "box", "slot", "location"],
+/** The column list the Settings editor seeds a fresh type's list from. */
+export function defaultColumnsForType(_type) {
+  return DEFAULT_COLUMNS
 }
 
-/**
- * The column list a type falls back to when it has not configured its own —
- * what the Settings editor seeds a fresh type's list from.
- */
-export function defaultColumnsForType(type) {
-  return BUILTIN_TYPE_COLUMNS[type] || DEFAULT_COLUMNS
+// A column for one of the type's custom fields: a select is an inline-editable
+// cell (same options as the form), everything else is a sortable display cell.
+function columnForField(def) {
+  if (def.kind === "select") {
+    return toggleFieldColumn(def.key, def.label, def.options, { filter: true })
+  }
+  return sortableFilterableColumn(def.key, def.label)
 }
 
 /**
  * Column set for one sample type's table, from its config `columns` list (or a
- * sensible fallback). `typeConfig` is the config entry — `{ value, columns? }`.
- * Each list entry is a built-in key (string) or a custom column object.
+ * sensible default). `typeConfig` is the config entry (or a bare type string).
+ * A list entry is a built-in key, a custom field key, or a widget object.
  */
 export function buildSampleColumns(typeConfig) {
-  const type = typeof typeConfig === "string" ? typeConfig : typeConfig?.value
   const entries =
     (Array.isArray(typeConfig?.columns) && typeConfig.columns.length && typeConfig.columns) ||
-    BUILTIN_TYPE_COLUMNS[type] ||
     DEFAULT_COLUMNS
+  const fields = customFieldMap(typeConfig)
   const cols = entries.flatMap((entry) => {
-    if (typeof entry === "string") return PALETTE[entry] ? [PALETTE[entry]()] : []
-    if (entry && entry.key && entry.kind) return [customColumn(entry)]
+    if (typeof entry === "string") {
+      if (PALETTE[entry]) return [PALETTE[entry]()]
+      if (fields[entry]) return [columnForField(fields[entry])]
+      return []
+    }
+    if (entry && COLUMN_WIDGET_KINDS.includes(entry.kind)) return [customColumn(entry)]
     return []
+  })
+  const actions = rowActionsColumn({
+    entityLabel: "sample",
+    editFields: buildEditFields(typeConfig),
   })
   return [selectColumn(), ...cols, actions]
 }
