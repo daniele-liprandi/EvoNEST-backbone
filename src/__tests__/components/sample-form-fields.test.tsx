@@ -5,7 +5,7 @@ import { ProfileFormSamples } from "@/components/forms/profile-form-samples";
 
 // The form pulls its type list from the config and its ID rules from settings.
 const sampletypes = [
-  { value: "animal", label: "Animal" },
+  { value: "animal", label: "Animal", fields: ["taxonomy", "sex", "responsible", "date", "location"] },
   {
     value: "crop",
     label: "Crop",
@@ -44,7 +44,7 @@ jest.mock("@/components/ui/custom/TaxonomicHierarchy", () => ({
 const props = { users: [{ _id: "u1", name: "admin" }], samples: [], user: { name: "admin" } };
 
 describe("ProfileFormSamples field rendering", () => {
-  test("animal falls back to its built-in layout: taxonomy and sex, no crop fields", () => {
+  test("a type renders its configured built-in fields: taxonomy and sex, no crop fields", () => {
     render(<ProfileFormSamples {...props} page="animal" />);
     expect(screen.getByTestId("taxonomy-widget")).toBeInTheDocument();
     expect(screen.getByText("Sex")).toBeInTheDocument();

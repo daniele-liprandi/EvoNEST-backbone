@@ -11,13 +11,13 @@ import { DataTableToolbar } from '@/components/tables/data-table-toolbar';
 import { prepend_path } from "@/lib/utils";
 import { Skeleton } from '@/components/ui/skeleton';
 import { buildSampleColumns } from '../columns';
+import { buildEditFields } from '../fields';
 import { useConfigTypes } from '@/hooks/useConfigTypes';
 import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { tableSwrConfig } from '@/hooks/swrConfig';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SmartVaul } from '@/components/forms/smart-vaul';
 import { handleBulkDeleteSamples, handleBulkUpdateSampleFields, handleDeleteSample, handleEditSample, handleStatusChangeSample, handleStatusIncrementSample, handleExportAllSamplesRelated, handleUpdateSampleFields } from '@/utils/handlers/sampleHandlers';
-import { sampleEditFields } from '@/components/tables/edit-fields';
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -37,6 +37,10 @@ function TypePageContent() {
 
     const columns = useMemo(
         () => buildSampleColumns(typeConfig ?? { value: type }),
+        [sampletypes, type],
+    );
+    const editFields = useMemo(
+        () => buildEditFields(typeConfig ?? { value: type }),
         [sampletypes, type],
     );
 
@@ -97,7 +101,7 @@ function TypePageContent() {
                         onUpdateFields={handleUpdateSampleFields}
                         onBulkDelete={handleBulkDeleteSamples}
                         onBulkUpdateFields={handleBulkUpdateSampleFields}
-                        bulkEditFields={sampleEditFields}
+                        bulkEditFields={editFields}
                         bulkEntityLabel="sample"
                         columns={columns}
                         data={dataTableData}

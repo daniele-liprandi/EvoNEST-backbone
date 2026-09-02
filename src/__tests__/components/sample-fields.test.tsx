@@ -1,5 +1,7 @@
 import {
   buildSampleFields,
+  buildEditFields,
+  customFieldMap,
   customFieldKeys,
   defaultFieldsForType,
   fieldLabel,
@@ -9,12 +11,25 @@ import {
 
 const keys = (list: any[]) => list.map((f) => f.key);
 
+const crop = {
+  value: "crop",
+  fields: [
+    "taxonomy",
+    "responsible",
+    { key: "plot", label: "Plot", kind: "text" },
+    {
+      key: "stage",
+      label: "Growth stage",
+      kind: "select",
+      options: [{ value: "seedling", label: "Seedling" }],
+    },
+    { key: "sown", label: "Sown", kind: "date" },
+  ],
+};
+
 describe("buildSampleFields", () => {
-  test("renders a type's configured built-in list, in order", () => {
-    const list = buildSampleFields({
-      value: "plant",
-      fields: ["responsible", "date", "location"],
-    });
+  test("renders the configured list in order, built-ins flagged", () => {
+    const list = buildSampleFields({ value: "x", fields: ["responsible", "date", "location"] });
     expect(keys(list)).toEqual(["responsible", "date", "location"]);
     expect(list.every((f) => f.builtin)).toBe(true);
   });
@@ -27,74 +42,53 @@ describe("buildSampleFields", () => {
     expect(keys(list)).toEqual(["responsible", "date"]);
   });
 
-  test("a custom field object is passed through with its kind and options", () => {
-    const list = buildSampleFields({
-      value: "crop",
-      fields: [
-        "responsible",
-        {
-          key: "growthStage",
-          label: "Growth stage",
-          kind: "select",
-          options: [{ value: "seedling", label: "Seedling" }],
-        },
-      ],
-    });
-    expect(keys(list)).toEqual(["responsible", "growthStage"]);
-    expect(list[1]).toMatchObject({
-      builtin: false,
-      kind: "select",
-      options: [{ value: "seedling", label: "Seedling" }],
-    });
+  test("custom fields pass through with kind and options", () => {
+    const list = buildSampleFields(crop);
+    expect(keys(list)).toEqual(["taxonomy", "responsible", "plot", "stage", "sown"]);
+    expect(list[3]).toMatchObject({ builtin: false, kind: "select" });
   });
 
   test("a custom field with an unsupported kind is dropped", () => {
-    const list = buildSampleFields({
-      value: "crop",
-      fields: [{ key: "x", label: "X", kind: "wysiwyg" }],
+    expect(buildSampleFields({ value: "x", fields: [{ key: "a", label: "A", kind: "wysiwyg" }] })).toEqual([]);
+  });
+
+  test("a type with no fields list gets the generic default", () => {
+    expect(keys(buildSampleFields({ value: "animal" }))).toEqual(defaultFieldsForType());
+    expect(keys(buildSampleFields("whatever"))).toEqual(defaultFieldsForType());
+  });
+});
+
+describe("buildEditFields", () => {
+  test("name and notes always, taxonomy and parent never", () => {
+    const list = buildEditFields(crop);
+    expect(list[0]).toEqual({ key: "name", label: "Name", type: "text" });
+    expect(list.at(-1)).toEqual({ key: "notes", label: "Notes", type: "textarea" });
+    expect(keys(list)).not.toContain("taxonomy");
+    expect(keys(list)).not.toContain("parent");
+  });
+
+  test("editable built-ins and every custom field come through with a type", () => {
+    const list = buildEditFields(crop);
+    expect(keys(list)).toEqual(["name", "plot", "stage", "sown", "notes"]);
+    expect(list.find((f) => f.key === "stage")).toMatchObject({ type: "select", options: expect.any(Array) });
+    expect(list.find((f) => f.key === "sown")).toMatchObject({ type: "date" });
+  });
+
+  test("responsible is create-only, box/slot/date/location/sex are editable", () => {
+    const list = buildEditFields({
+      value: "x",
+      fields: ["responsible", "date", "location", "sex", "box", "slot"],
     });
-    expect(list).toEqual([]);
-  });
-
-  test("falls back to the animal layout when nothing is configured", () => {
-    expect(keys(buildSampleFields({ value: "animal" }))).toEqual(
-      defaultFieldsForType("animal"),
-    );
-    expect(keys(buildSampleFields("animal"))).toContain("taxonomy");
-    expect(keys(buildSampleFields("animal"))).toContain("sex");
-  });
-
-  test("an unconfigured unknown type gets the generic default set", () => {
-    expect(keys(buildSampleFields("whatever"))).toEqual(
-      defaultFieldsForType("whatever"),
-    );
-    expect(keys(buildSampleFields("whatever"))).not.toContain("sex");
+    expect(keys(list)).toEqual(["name", "date", "location", "sex", "box", "slot", "notes"]);
   });
 });
 
-describe("defaultFieldsForType", () => {
-  test("special-cased types keep their own layout", () => {
-    expect(defaultFieldsForType("subsample")).toContain("subsampletype");
-    expect(defaultFieldsForType("animal")).toContain("sex");
-  });
-
-  test("every default key is a real built-in the form knows", () => {
-    for (const type of ["animal", "subsample", "plant"]) {
-      for (const key of defaultFieldsForType(type)) {
-        expect(SAMPLE_FIELD_KEYS).toContain(key);
-      }
-    }
-  });
-});
-
-describe("customFieldKeys", () => {
-  test("lists only the custom entries", () => {
-    expect(
-      customFieldKeys({
-        value: "crop",
-        fields: ["responsible", { key: "plot", label: "Plot", kind: "text" }],
-      }),
-    ).toEqual(["plot"]);
+describe("customFieldMap / customFieldKeys", () => {
+  test("maps custom keys to descriptors, ignores built-ins", () => {
+    const map = customFieldMap(crop);
+    expect(Object.keys(map)).toEqual(["plot", "stage", "sown"]);
+    expect(map.stage).toMatchObject({ kind: "select", label: "Growth stage" });
+    expect(customFieldKeys(crop)).toEqual(["plot", "stage", "sown"]);
   });
 
   test("a type with no fields list has none", () => {
