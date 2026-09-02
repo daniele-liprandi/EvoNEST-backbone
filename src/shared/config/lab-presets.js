@@ -170,20 +170,47 @@ const STRAIN_COLUMNS = [
   { key: "revivedDate", label: "Last revived", kind: "date" },
 ];
 
+// --- Create-form field layouts -------------------------------------------
+// The `fields` list a sample type shows in the create form (see
+// buildSampleFields). It reuses the type's `columns` so a custom column and its
+// form input stay in step: every typed-in custom column becomes a field.
+// Counters and progress bars are computed or incremented from the table, so they
+// are not asked for at creation.
+
+const ANIMAL_FIELDS = ["taxonomy", "sex", "responsible", "date", "location"];
+const SUBSAMPLE_FIELDS = ["parent", "taxonomy", "subsampletype", "box", "slot", "responsible", "date", "location"];
+const STORAGE_FIELDS = ["parent", "responsible", "date", "box", "slot", "location"];
+const SILK_FIELDS = ["parent", "responsible", "date", "location"];
+const PLANT_FIELDS = ["taxonomy", "responsible", "date", "location"];
+
+const FORM_KIND = { text: "text", number: "number", date: "date", toggle: "select" };
+
+function formFields(builtins, columns) {
+  const custom = columns
+    .filter((c) => c && typeof c === "object" && FORM_KIND[c.kind])
+    .map((c) => ({
+      key: c.key,
+      label: c.label,
+      kind: FORM_KIND[c.kind],
+      ...(c.options ? { options: c.options } : {}),
+    }));
+  return [...builtins, ...custom];
+}
+
 const SAMPLE_TYPES = {
-  animal: { value: "animal", label: "Animal", description: "Animal individual", shortened: "an", columns: ANIMAL_COLUMNS },
-  subsample: { value: "subsample", label: "Subsample", description: "A part of another sample", shortened: "sub", columns: SUBSAMPLE_COLUMNS },
-  silk: { value: "silk", label: "Silk", description: "Silk fibre or structure", shortened: "si", columns: SILK_COLUMNS },
-  plant: { value: "plant", label: "Plant", description: "Plant individual", shortened: "pl", columns: PLANT_COLUMNS },
-  crop: { value: "crop", label: "Crop plant", description: "A crop plant or plot followed through a season", shortened: "cr", columns: CROP_COLUMNS },
-  blood: { value: "blood", label: "Blood", description: "Blood sample", shortened: "bl", columns: STORAGE_COLUMNS },
-  tissue: { value: "tissue", label: "Tissue", description: "Tissue sample", shortened: "ti", columns: STORAGE_COLUMNS },
-  dna_extract: { value: "dna_extract", label: "DNA extract", description: "DNA extract", shortened: "dna", columns: STORAGE_COLUMNS },
-  secretion: { value: "secretion", label: "Secretion", description: "Secretion sample", shortened: "se", columns: STORAGE_COLUMNS },
-  herbarium: { value: "herbarium", label: "Herbarium specimen", description: "A pressed, mounted plant specimen", shortened: "hb", columns: HERBARIUM_COLUMNS },
-  specimen: { value: "specimen", label: "Museum specimen", description: "A prepared, catalogued specimen", shortened: "sp", columns: SPECIMEN_COLUMNS },
-  seqsample: { value: "seqsample", label: "Sequencing sample", description: "An extract moving through library prep and sequencing", shortened: "seq", columns: SEQ_COLUMNS },
-  strain: { value: "strain", label: "Strain", description: "A microbial strain or isolate", shortened: "st", columns: STRAIN_COLUMNS },
+  animal: { value: "animal", label: "Animal", description: "Animal individual", shortened: "an", columns: ANIMAL_COLUMNS, fields: ANIMAL_FIELDS },
+  subsample: { value: "subsample", label: "Subsample", description: "A part of another sample", shortened: "sub", columns: SUBSAMPLE_COLUMNS, fields: SUBSAMPLE_FIELDS },
+  silk: { value: "silk", label: "Silk", description: "Silk fibre or structure", shortened: "si", columns: SILK_COLUMNS, fields: SILK_FIELDS },
+  plant: { value: "plant", label: "Plant", description: "Plant individual", shortened: "pl", columns: PLANT_COLUMNS, fields: PLANT_FIELDS },
+  crop: { value: "crop", label: "Crop plant", description: "A crop plant or plot followed through a season", shortened: "cr", columns: CROP_COLUMNS, fields: formFields(PLANT_FIELDS, CROP_COLUMNS) },
+  blood: { value: "blood", label: "Blood", description: "Blood sample", shortened: "bl", columns: STORAGE_COLUMNS, fields: STORAGE_FIELDS },
+  tissue: { value: "tissue", label: "Tissue", description: "Tissue sample", shortened: "ti", columns: STORAGE_COLUMNS, fields: STORAGE_FIELDS },
+  dna_extract: { value: "dna_extract", label: "DNA extract", description: "DNA extract", shortened: "dna", columns: STORAGE_COLUMNS, fields: STORAGE_FIELDS },
+  secretion: { value: "secretion", label: "Secretion", description: "Secretion sample", shortened: "se", columns: STORAGE_COLUMNS, fields: STORAGE_FIELDS },
+  herbarium: { value: "herbarium", label: "Herbarium specimen", description: "A pressed, mounted plant specimen", shortened: "hb", columns: HERBARIUM_COLUMNS, fields: formFields(PLANT_FIELDS, HERBARIUM_COLUMNS) },
+  specimen: { value: "specimen", label: "Museum specimen", description: "A prepared, catalogued specimen", shortened: "sp", columns: SPECIMEN_COLUMNS, fields: formFields([...PLANT_FIELDS, "sex"], SPECIMEN_COLUMNS) },
+  seqsample: { value: "seqsample", label: "Sequencing sample", description: "An extract moving through library prep and sequencing", shortened: "seq", columns: SEQ_COLUMNS, fields: formFields(["parent", "responsible", "date"], SEQ_COLUMNS) },
+  strain: { value: "strain", label: "Strain", description: "A microbial strain or isolate", shortened: "st", columns: STRAIN_COLUMNS, fields: formFields(PLANT_FIELDS, STRAIN_COLUMNS) },
 };
 
 const TRAIT = (value, label, unit, description) => ({ value, label, unit, description });

@@ -124,3 +124,34 @@ describe("preset sample-column lists", () => {
     }
   });
 });
+
+const FIELD_KINDS = ["text", "number", "date", "select", "textarea"];
+
+describe("preset create-form field lists", () => {
+  const sampleTypes = LAB_PRESETS.flatMap((p) => p.overrides.sampletypes ?? []);
+
+  test("every custom field entry is well formed", () => {
+    for (const type of sampleTypes) {
+      for (const entry of type.fields ?? []) {
+        if (typeof entry === "string") continue;
+        expect(entry.key).toBeTruthy();
+        expect(entry.label).toBeTruthy();
+        expect(FIELD_KINDS).toContain(entry.kind);
+        if (entry.kind === "select") expect(Array.isArray(entry.options)).toBe(true);
+      }
+    }
+  });
+
+  test("the crop preset asks for plot, treatment and growth stage at creation", () => {
+    const crop = resolvePreset("crop-field-trial")?.sampletypes.find(
+      (s: any) => s.value === "crop",
+    );
+    const keys = crop.fields.map((f: any) => (typeof f === "string" ? f : f.key));
+    expect(keys).toEqual(expect.arrayContaining(["taxonomy", "plot", "treatment", "growthStage"]));
+    // the growth-stage toggle column becomes a select field
+    expect(crop.fields.find((f: any) => f.key === "growthStage").kind).toBe("select");
+    // counters and progress bars are not entered at creation
+    expect(keys).not.toContain("watered");
+    expect(keys).not.toContain("maturity");
+  });
+});
