@@ -1,5 +1,5 @@
 /*
-profile-form-experiments.tsx
+experiment-form.tsx
 
 This form is spawned by smart-vaul.tsx
 
@@ -45,7 +45,7 @@ import { linkFileToEntry, uploadFile } from "@/utils/handlers/fileHandlers"
 import { ParserPreview } from "./ParserPreview"
 import { DataFormatPreview } from "./DataFormatPreview"
 
-export function ProfileFormExperiments({ users, samples, user, experiments, defaultFileList }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList }) {
+export function ExperimentForm({ users, samples, user, experiments, defaultFileList }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList }) {
     const [allFileData, setAllFileData] = useState<Array<Partial<ExperimentFormValues>>>([]);
     const [files, setFiles] = useState<FileList | null>(null);
     const [checkSaveFile, setCheckSaveFile] = useState(true);

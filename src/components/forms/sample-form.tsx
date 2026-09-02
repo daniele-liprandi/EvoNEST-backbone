@@ -70,7 +70,7 @@ const sexOptions = [
   { value: "unknown", label: "Unknown" },
 ];
 
-export function ProfileFormSamples({
+export function SampleForm({
   users,
   samples,
   id,
