@@ -1,7 +1,7 @@
 /** @jest-environment jsdom */
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { ProfileFormSamples } from "@/components/forms/profile-form-samples";
+import { SampleForm } from "@/components/forms/sample-form";
 
 // The form pulls its type list from the config and its ID rules from settings.
 const sampletypes = [
@@ -43,16 +43,16 @@ jest.mock("@/components/ui/custom/TaxonomicHierarchy", () => ({
 
 const props = { users: [{ _id: "u1", name: "admin" }], samples: [], user: { name: "admin" } };
 
-describe("ProfileFormSamples field rendering", () => {
+describe("SampleForm field rendering", () => {
   test("a type renders its configured built-in fields: taxonomy and sex, no crop fields", () => {
-    render(<ProfileFormSamples {...props} page="animal" />);
+    render(<SampleForm {...props} page="animal" />);
     expect(screen.getByTestId("taxonomy-widget")).toBeInTheDocument();
     expect(screen.getByText("Sex")).toBeInTheDocument();
     expect(screen.queryByText("Plot number")).not.toBeInTheDocument();
   });
 
   test("a configured type renders exactly its fields list", () => {
-    render(<ProfileFormSamples {...props} page="crop" />);
+    render(<SampleForm {...props} page="crop" />);
     expect(screen.getByText("Plot number")).toBeInTheDocument();
     expect(screen.getByText("Growth stage")).toBeInTheDocument();
     expect(screen.getByText("Responsible")).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe("ProfileFormSamples field rendering", () => {
   });
 
   test("the type picker, notes and name are always present", () => {
-    render(<ProfileFormSamples {...props} page="crop" />);
+    render(<SampleForm {...props} page="crop" />);
     expect(screen.getByText("Sample type")).toBeInTheDocument();
     expect(screen.getByText("Optional notes")).toBeInTheDocument();
     expect(screen.getByText("Sample name / ID")).toBeInTheDocument();

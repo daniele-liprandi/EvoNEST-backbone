@@ -53,7 +53,7 @@ const formSchema = z.object({
 
 
 
-export function ProfileFormTraits({ users, samples, user }: { users: any, samples: any, user: any }) {
+export function TraitForm({ users, samples, user }: { users: any, samples: any, user: any }) {
     const [files, setFiles] = useState<FileList | null>(null);
     const [selectedTypeFeatures, setSelectedTypeFeatures] = useState<LabelType>();
     const { traittypes, equipmenttypes } = useConfigTypes();
