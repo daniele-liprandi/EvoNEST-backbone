@@ -65,4 +65,3 @@ export function SubsampleCard({ sample, handleChange }) {
 SubsampleCard.displayName = 'SubsampleCard';
 SubsampleCard.supportedTypes = ['subsample'];
 SubsampleCard.position = 'sidebar';
-SubsampleCard.shouldRender = (sample) => sample.type === 'subsample';

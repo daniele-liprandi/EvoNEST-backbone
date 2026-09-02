@@ -66,4 +66,3 @@ export function SilkCard({ sample, handleChange }) {
 SilkCard.displayName = 'SilkCard';
 SilkCard.supportedTypes = ['silk'];
 SilkCard.position = 'main';
-SilkCard.shouldRender = (sample) => sample.type === 'silk';

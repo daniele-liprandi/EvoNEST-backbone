@@ -122,8 +122,9 @@ const STRAIN_COLUMNS = [
   "contamination", "revivedDate",
 ];
 
-const T = (value, label, description, shortened, fields, columns) => ({
+const T = (value, label, description, shortened, fields, columns, cards) => ({
   value, label, description, shortened, fields, columns,
+  ...(cards ? { cards } : {}),
 });
 
 const SAMPLE_TYPES = {
@@ -131,7 +132,7 @@ const SAMPLE_TYPES = {
   subsample: T("subsample", "Subsample", "A part of another sample", "sub", SUBSAMPLE_FIELDS, SUBSAMPLE_COLUMNS),
   silk: T("silk", "Silk", "Silk fibre or structure", "si", SILK_FIELDS, SILK_COLUMNS),
   plant: T("plant", "Plant", "Plant individual", "pl", PLANT_FIELDS, PLANT_COLUMNS),
-  crop: T("crop", "Crop plant", "A crop plant or plot followed through a season", "cr", CROP_FIELDS, CROP_COLUMNS),
+  crop: T("crop", "Crop plant", "A crop plant or plot followed through a season", "cr", CROP_FIELDS, CROP_COLUMNS, ["PlantCard"]),
   blood: T("blood", "Blood", "Blood sample", "bl", STORAGE_FIELDS, STORAGE_COLUMNS),
   tissue: T("tissue", "Tissue", "Tissue sample", "ti", STORAGE_FIELDS, STORAGE_COLUMNS),
   dna_extract: T("dna_extract", "DNA extract", "DNA extract", "dna", STORAGE_FIELDS, STORAGE_COLUMNS),

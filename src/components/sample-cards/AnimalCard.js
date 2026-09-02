@@ -93,4 +93,3 @@ AnimalCard.displayName = 'AnimalCard';
 AnimalCard.supportedTypes = ['animal'];
 AnimalCard.position = 'sidebar';
 AnimalCard.dependencies = ['samplesData'];
-AnimalCard.shouldRender = (sample) => sample.type === 'animal';

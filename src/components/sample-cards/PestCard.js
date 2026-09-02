@@ -122,4 +122,3 @@ PestCard.displayName = 'PestCard';
 PestCard.supportedTypes = ['pest'];
 PestCard.position = 'main';
 PestCard.dependencies = ['handleStatusIncrementSample'];
-PestCard.shouldRender = (sample) => sample.type === 'pest';

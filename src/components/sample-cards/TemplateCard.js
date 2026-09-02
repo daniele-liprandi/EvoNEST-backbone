@@ -184,8 +184,7 @@ TemplateCard.priority = 100;
  * ✅ 6. Add proper prop validation
  * ✅ 7. Handle loading states with Skeleton
  * ✅ 8. Test with your sample type
- * ✅ 9. Add to registry.js imports
- * ✅ 10. Update SAMPLE_CARDS object in registry.js
+ * ✅ 9. Add the import and the component to ALL_CARDS in registry.js
  */
 
 /**
@@ -195,6 +194,5 @@ TemplateCard.priority = 100;
  * 2. Replace "Template" with "MyNew" throughout
  * 3. Update supportedTypes: ['my-sample-type']
  * 4. Implement your card content
- * 5. Add import to registry.js
- * 6. Add to SAMPLE_CARDS object
+ * 5. Add the import and the component to ALL_CARDS in registry.js
  */

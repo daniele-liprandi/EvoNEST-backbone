@@ -1,7 +1,8 @@
-// Card registry for modular sample cards
-// This file automatically discovers and loads sample-specific cards
+// Sample detail cards. A card declares which sample types it is built for with
+// `supportedTypes` (['*'] means every type). A sample type's config can also
+// opt into a card built for another type through its `cards` list. There is no
+// map keyed by literal type names, so a new type needs no edit here.
 
-// Type-specific cards
 import { PlantCard } from './PlantCard';
 import { SoilCard } from './SoilCard';
 import { FertilizerCard } from './FertilizerCard';
@@ -10,7 +11,6 @@ import { SilkCard } from './SilkCard';
 import { AnimalCard } from './AnimalCard';
 import { SubsampleCard } from './SubsampleCard';
 
-// Universal cards that appear for all sample types
 import { EditFieldsCard } from './EditFieldsCard';
 import { FeedCard } from './FeedCard';
 import { PreservationCard } from './PreservationCard';
@@ -19,81 +19,55 @@ import { GalleryCard } from './GalleryCard';
 import { PositionCard } from './PositionCard';
 import { LabelSampleCard } from './LabelSampleCard';
 
-// Card registry organized by sample type
-export const SAMPLE_CARDS = {
-  // Type-specific cards
-  plant: [PlantCard],
-  soil: [SoilCard],
-  fertilizer: [FertilizerCard],
-  pest: [PestCard],
-  silk: [SilkCard],
-  animal: [AnimalCard],
-  subsample: [SubsampleCard],
-  
-  // Universal cards (will be filtered by conditions)
-  '*': [
-    EditFieldsCard,
-    FeedCard,
-    PreservationCard,
-    HierarchyCard,
-    GalleryCard,
-    PositionCard,
-    LabelSampleCard,
-  ]
+// Add a new card here and nowhere else.
+export const ALL_CARDS = [
+  PlantCard,
+  SoilCard,
+  FertilizerCard,
+  PestCard,
+  SilkCard,
+  AnimalCard,
+  SubsampleCard,
+  EditFieldsCard,
+  FeedCard,
+  PreservationCard,
+  HierarchyCard,
+  GalleryCard,
+  PositionCard,
+  LabelSampleCard,
+];
+
+const byName = new Map(ALL_CARDS.map((card) => [card.displayName, card]));
+
+/** The card component with this displayName, or null. */
+export const getCardByName = (name) => byName.get(name) || null;
+
+// A card shows for a sample type if it is universal, names the type in
+// `supportedTypes`, or the type's config opts into it by name.
+const cardAppliesTo = (card, type, typeConfig) => {
+  const supported = card.supportedTypes || [];
+  if (supported.includes('*') || supported.includes(type)) return true;
+  const optIn = Array.isArray(typeConfig?.cards) ? typeConfig.cards : [];
+  return optIn.includes(card.displayName);
 };
 
-// Get all cards for a specific sample type
-export const getSampleCards = (sampleType, position = null) => {
-  const typeSpecificCards = SAMPLE_CARDS[sampleType] || [];
-  const universalCards = SAMPLE_CARDS['*'] || [];
-  
-  const allCards = [...typeSpecificCards, ...universalCards];
-  
-  if (position) {
-    return allCards.filter(Card => 
-      !Card.position || Card.position === position
-    );
-  }
-  
-  return allCards;
-};
-
-// Get cards for main content area
-export const getMainCards = (sampleType) => {
-  return getSampleCards(sampleType, 'main');
-};
-
-// Get cards for sidebar
-export const getSidebarCards = (sampleType) => {
-  return getSampleCards(sampleType, 'sidebar');
-};
-
-// Filter cards based on sample conditions
-export const getFilteredCards = (cards, sample) => {
-  return cards.filter(Card => {
-    // Check if card should render based on sample conditions
-    if (Card.shouldRender && !Card.shouldRender(sample)) {
-      return false;
-    }
-    
-    // Check if card supports this sample type
-    if (Card.supportedTypes && !Card.supportedTypes.includes(sample.type) && !Card.supportedTypes.includes('*')) {
-      return false;
-    }
-    
+/**
+ * Cards for one sample type, optionally narrowed to a layout position.
+ * `typeConfig` is the sample type's config entry (for its `cards` opt-in list).
+ */
+export const getSampleCards = (type, typeConfig = null, position = null) =>
+  ALL_CARDS.filter((card) => {
+    if (!cardAppliesTo(card, type, typeConfig)) return false;
+    if (position && card.position && card.position !== position) return false;
     return true;
   });
-};
 
-// Register a new card dynamically
-export const registerCard = (sampleType, CardComponent) => {
-  if (!SAMPLE_CARDS[sampleType]) {
-    SAMPLE_CARDS[sampleType] = [];
-  }
-  SAMPLE_CARDS[sampleType].push(CardComponent);
-};
+export const getMainCards = (type, typeConfig = null) =>
+  getSampleCards(type, typeConfig, 'main');
 
-// Get all registered sample types
-export const getRegisteredTypes = () => {
-  return Object.keys(SAMPLE_CARDS).filter(type => type !== '*');
-};
+export const getSidebarCards = (type, typeConfig = null) =>
+  getSampleCards(type, typeConfig, 'sidebar');
+
+/** Drop cards whose runtime `shouldRender(sample)` condition is not met. */
+export const getFilteredCards = (cards, sample) =>
+  cards.filter((card) => !card.shouldRender || card.shouldRender(sample));

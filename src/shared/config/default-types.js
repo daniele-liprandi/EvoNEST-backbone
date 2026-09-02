@@ -5,8 +5,9 @@ export const DEFAULT_CONFIGS = {
     // `fields` is the type's data field list (see samples/fields.js) — it drives
     // the create form and the row edit dialog. `columns` is the sample table's
     // column set (built-in keys from samples/columns.js, this type's own field
-    // keys, and counter/progress widgets). A type with neither falls back to a
-    // generic set.
+    // keys, and counter/progress widgets). An optional `cards` list opts the
+    // type into detail-page cards built for another type (by displayName, see
+    // sample-cards/registry.js). A type with none falls back to a generic set.
     {
       label: "Animal", value: "animal", description: "Animal individual", shortened: "an",
       fields: ["taxonomy", "sex", "responsible", "date", "location"],

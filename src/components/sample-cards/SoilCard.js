@@ -82,8 +82,7 @@ export function SoilCard({ sample, handleChange }) {
       </CardContent>
       <CardFooter>
         <Button size="sm" variant="outline" onClick={() => {
-          // This would typically open a dialog to add soil analysis results
-          // For now, just add a logbook entry
+          // Records the request in the logbook; there is no results-entry dialog yet.
           const newEntry = [new Date().toISOString(), "Soil analysis requested by user"];
           handleChange("logbook", [...(sample.logbook || []), newEntry]);
         }}>
@@ -98,4 +97,3 @@ export function SoilCard({ sample, handleChange }) {
 SoilCard.displayName = 'SoilCard';
 SoilCard.supportedTypes = ['soil'];
 SoilCard.position = 'main';
-SoilCard.shouldRender = (sample) => sample.type === 'soil';
