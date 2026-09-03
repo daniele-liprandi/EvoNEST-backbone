@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, KeyboardEvent } from 'react'
-import { Loader2, Send } from 'lucide-react'
+import { CircleNotch, PaperPlaneTilt } from '@phosphor-icons/react';
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -44,7 +44,7 @@ export function CommandBar({ onSend, loading }: Props) {
         size="icon"
         className="h-10 w-10 shrink-0"
       >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        {loading ? <CircleNotch className="h-4 w-4 animate-spin" /> : <PaperPlaneTilt className="h-4 w-4" />}
       </Button>
     </div>
   )

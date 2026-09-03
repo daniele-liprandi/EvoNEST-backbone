@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2, Sparkles } from "lucide-react";
+import { CircleNotch, Sparkle } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ export function NlFilterBar({ columns }: NlFilterBarProps) {
   return (
     <div className="hidden lg:flex flex-col gap-1 mb-3">
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
+        <Sparkle className="h-4 w-4 text-muted-foreground shrink-0" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -69,7 +69,7 @@ export function NlFilterBar({ columns }: NlFilterBarProps) {
           className="h-8 shrink-0"
           disabled={loading || !query.trim()}
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Filter"}
+          {loading ? <CircleNotch className="h-4 w-4 animate-spin" /> : "Filter"}
         </Button>
       </form>
       {error && <p className="text-xs text-destructive pl-6">{error}</p>}

@@ -3,7 +3,7 @@
 import { Button, buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { differenceInCalendarDays } from "date-fns"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import * as React from "react"
 import {
   DayPicker,
@@ -99,7 +99,7 @@ function Calendar({
       }}
       components={{
         Chevron: ({ orientation }) => {
-          const Icon = orientation === "left" ? ChevronLeft : ChevronRight
+          const Icon = orientation === "left" ? CaretLeft : CaretRight
           return <Icon className="h-4 w-4" />
         },
         Nav: ({ className, children, ...props }) => {
@@ -197,7 +197,7 @@ function Calendar({
                 }
                 onClick={handlePreviousClick}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <CaretLeft className="h-4 w-4" />
               </Button>
 
               <Button
@@ -215,7 +215,7 @@ function Calendar({
                 }
                 onClick={handleNextClick}
               >
-                <ChevronRight className="h-4 w-4" />
+                <CaretRight className="h-4 w-4" />
               </Button>
             </nav>
           )

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Database } from "lucide-react"
+import { Database, Plus } from "@phosphor-icons/react";
 import { toast } from "sonner"
 import { useDatabases } from "@/hooks/useDatabases"
 import { useCurrentUser } from "@/hooks/useCurrentUser"

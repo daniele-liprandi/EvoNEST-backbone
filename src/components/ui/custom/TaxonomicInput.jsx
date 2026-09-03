@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { SearchIcon, CheckIcon, AlertCircleIcon } from 'lucide-react';
+import { Check as CheckIcon, MagnifyingGlass as SearchIcon, WarningCircle as AlertCircleIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useTaxonomicValidation } from '@/hooks/useTaxonomicValidation';
 import { cn } from '@/lib/utils';

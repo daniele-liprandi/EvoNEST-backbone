@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { CalendarDays } from "lucide-react";
+import { CalendarDots } from "@phosphor-icons/react";
 import type { Control } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -85,7 +85,7 @@ export function CustomSampleField({
                     )}
                   >
                     {field.value ? format(new Date(field.value), "PPP") : "Pick a date"}
-                    <CalendarDays className="ml-auto size-4 opacity-50" />
+                    <CalendarDots className="ml-auto size-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
