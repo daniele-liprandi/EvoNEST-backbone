@@ -1,33 +1,37 @@
 import { createTool } from '@mastra/core/tools'
 import { z } from 'zod'
-import { serviceAuthHeader } from '../lib/serviceHeaders.js'
-
-const baseUrl = process.env.NEXTJS_BASE_URL ?? 'http://node:3000'
+import { fetchLabSchema } from '../lib/labSchema.js'
 
 export const getSchema = createTool({
   id: 'getSchema',
-  description: 'Fetch live filterable column names for each entity type for a specific user database.',
+  description:
+    "Fetch this lab's record model: the filterable columns per section, and the configured sample types, trait types and subsample types (with the fields each sample type uses). Call before creating records so you use the lab's real types and fields.",
   inputSchema: z.object({
     dbName: z.string().describe('The user database name (provided in system context)'),
   }),
   outputSchema: z.object({
-    routes: z.array(z.object({
-      label: z.string(),
-      path: z.string(),
-      columns: z.array(z.string()),
-    })),
+    routes: z.array(
+      z.object({
+        label: z.string(),
+        path: z.string(),
+        columns: z.array(z.string()),
+      }),
+    ),
+    sampleTypes: z.array(
+      z.object({ value: z.string(), label: z.string(), fields: z.array(z.string()) }),
+    ),
+    traitTypes: z.array(
+      z.object({ value: z.string(), label: z.string(), unit: z.string().nullable() }),
+    ),
+    subsampleTypes: z.array(z.object({ value: z.string(), label: z.string() })),
   }),
   execute: async ({ dbName }) => {
-    const res = await fetch(`${baseUrl}/api/schema?dbName=${encodeURIComponent(dbName)}`, {
-      headers: serviceAuthHeader(),
-    })
-    if (!res.ok) {
-      throw new Error(`schema API error ${res.status}: ${(await res.text()).slice(0, 200)}`)
+    const schema = await fetchLabSchema(dbName)
+    return {
+      routes: schema.routes,
+      sampleTypes: schema.sampleTypes,
+      traitTypes: schema.traitTypes,
+      subsampleTypes: schema.subsampleTypes,
     }
-    const data = await res.json()
-    if (!Array.isArray(data?.routes)) {
-      throw new Error(`schema API returned invalid payload: ${JSON.stringify(data).slice(0, 200)}`)
-    }
-    return { routes: data.routes }
   },
 })
