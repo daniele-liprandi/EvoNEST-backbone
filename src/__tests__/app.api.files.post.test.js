@@ -1,138 +1,119 @@
 /** @jest-environment node */
-import { POST } from '@/app/api/files/route';
-import { ObjectId } from 'mongodb';
 
-// Mock the MongoDB client and database utilities
-jest.mock('@/app/api/utils/mongodbClient', () => ({
-  get_or_create_client: jest.fn(),
-}));
+const os = require("os");
+const realFs = require("fs");
+const nodePath = require("path");
 
-// Mock the database user utility
-jest.mock('@/app/api/utils/get_database_user', () => ({
-  get_database_user: jest.fn().mockResolvedValue('testdb'),
-}));
+const STORAGE_ROOT = realFs.mkdtempSync(nodePath.join(os.tmpdir(), "evonest-files-"));
+process.env.STORAGE_PATH = STORAGE_ROOT;
 
-// Mock filesystem operations. Next's build resolves route.js's
-// `import { writeFile } from "fs/promises"` to the "node:fs/promises"
-// specifier — a different module registry entry to Jest than the bare
-// "fs/promises" one, so it needs its own mock. Point it at the same mock
-// object (rather than a second, independent one) so the assertions below,
-// which read the mock via the bare specifier, see the calls either way.
-jest.mock('fs/promises', () => ({
-  writeFile: jest.fn().mockResolvedValue(undefined),
-  mkdir: jest.fn().mockResolvedValue(undefined),
-  access: jest.fn().mockRejectedValue(new Error('Directory does not exist')), // Mock access to fail so mkdir gets called
-}));
-jest.mock('node:fs/promises', () => require('fs/promises'));
+const { Effect } = require("effect");
+const { ObjectId } = require("mongodb");
+const { runRoute } = require("@/lib/effect");
+const { setupTestMongo } = require("./helpers/mongo");
+const { uploadFile, listFiles } = require("@/app/api/files/handlers");
 
-// Mock fs for the ensureDirectoryExists function
-jest.mock('fs', () => ({
-  promises: {
-    access: jest.fn().mockRejectedValue(new Error('Directory does not exist')), // Mock access to fail so mkdir gets called
-    mkdir: jest.fn().mockResolvedValue(undefined),
-  }
-}));
+jest.setTimeout(60_000);
 
-// Mock path utilities
-jest.mock('path', () => ({
-  join: (...args) => args.join('/'),
-  dirname: (path) => path.split('/').slice(0, -1).join('/'),
-}));
+let mongo;
+let responsible;
 
-// Set storage path environment variable
-process.env.STORAGE_PATH = '/storage';
+beforeAll(async () => {
+  mongo = await setupTestMongo();
+  responsible = await mongo.seedUser();
+});
+afterAll(async () => {
+  await mongo.stop();
+  realFs.rmSync(STORAGE_ROOT, { recursive: true, force: true });
+});
+beforeEach(async () => {
+  await Promise.all(["files", "samples"].map((c) => mongo.db.collection(c).deleteMany({})));
+  jest.spyOn(console, "error").mockImplementation(() => {});
+});
+afterEach(() => jest.restoreAllMocks());
 
-describe('Files API POST endpoint - Basic Operations', () => {
-  let mockCollection;
-  let mockDb;
-  let mockClient;
-  let fsPromises;
-  let fs;
+const upload = (parts) => {
+  const form = new FormData();
+  for (const [k, v] of Object.entries(parts)) form.append(k, v);
+  return runRoute(
+    uploadFile(new Request("http://x/api/files", { method: "POST", body: form })).pipe(
+      Effect.provide(mongo.layer),
+    ),
+  );
+};
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+const makeSample = async () => {
+  const _id = new ObjectId();
+  await mongo.db.collection("samples").insertOne({ _id, name: "S1", logbook: [], responsible });
+  return _id;
+};
 
-    // Get reference to mocked modules
-    fsPromises = require('fs/promises');
-    fs = require('fs');
+const textFile = (name = "notes.txt") => new File(["col1,col2\n1,2\n"], name, { type: "text/plain" });
 
-    // Setup mock collection
-    mockCollection = {
-      insertOne: jest.fn().mockResolvedValue({ insertedId: new ObjectId() }),
-      findOne: jest.fn().mockResolvedValue({ _id: new ObjectId() }),
-      updateOne: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
-    };
+describe("POST /api/files", () => {
+  test("uploads a file, writes it under the storage root and links the entry", async () => {
+    const sampleId = await makeSample();
+    const res = await upload({
+      file: textFile(),
+      type: "documents",
+      metadata: JSON.stringify({ entryType: "sample", entryId: sampleId.toHexString() }),
+    });
+    expect(res.status).toBe(200);
+    const { fileId } = await res.json();
 
-    // Setup mock db
-    mockDb = {
-      collection: jest.fn().mockReturnValue(mockCollection),
-    };
+    const doc = await mongo.db.collection("files").findOne({ _id: new ObjectId(fileId) });
+    expect(doc.path).toContain(`${STORAGE_ROOT}/testdb/documents/sample/${sampleId.toHexString()}/notes.txt`);
+    expect(realFs.readFileSync(doc.path, "utf8")).toContain("col1,col2");
+    expect(doc.metadata.isTemporary).toBe(false);
 
-    // Setup mock client
-    mockClient = {
-      db: jest.fn().mockReturnValue(mockDb),
-    };
-
-    // Setup database client connection
-    const { get_or_create_client } = require('@/app/api/utils/mongodbClient');
-    get_or_create_client.mockResolvedValue(mockClient);
+    const sample = await mongo.db.collection("samples").findOne({ _id: sampleId });
+    expect(sample.filesId).toContain(fileId);
+    expect(sample.logbook.at(-1)[1]).toMatch(/Uploaded file notes.txt/);
   });
 
-  it('should handle successful file upload with direct linking', async () => {
-    // Create mock file
-    const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
-    const formData = new FormData();
-    const mockEntryId = new ObjectId().toString();
-    
-    // Setup form data
-    formData.append('file', file);
-    formData.append('type', 'documents');
-    formData.append('metadata', JSON.stringify({
-        entryType: 'sample',
-        entryId: mockEntryId,
-    }));
-
-    // Send request
-    const response = await POST(new Request('http://localhost', {
-        method: 'POST',
-        body: formData,
-    }));
-
-    // Verify response
-    const result = await response.json();
-    expect(response.status).toBe(200);
-    expect(result).toHaveProperty('fileId');
-    
-    // Verify filesystem operations
-    expect(fs.promises.access).toHaveBeenCalled(); // Should be called to check directory
-    expect(fs.promises.mkdir).toHaveBeenCalledWith(
-        expect.stringContaining(`/testdb/documents/sample/${mockEntryId}`),
-        expect.objectContaining({ recursive: true })
-    );
-    expect(fsPromises.writeFile).toHaveBeenCalledWith(
-        expect.stringContaining(`/testdb/documents/sample/${mockEntryId}/test.txt`),
-        expect.any(Buffer)
-    );
-    
-    // Verify database operations
-    expect(mockCollection.insertOne).toHaveBeenCalledTimes(1);
-    expect(mockCollection.updateOne).toHaveBeenCalledTimes(1);
+  test("a deferred upload lands in temp/ and is not linked", async () => {
+    const res = await upload({ file: textFile(), type: "img", metadata: JSON.stringify({ deferredLink: true }) });
+    expect(res.status).toBe(200);
+    const { fileId } = await res.json();
+    const doc = await mongo.db.collection("files").findOne({ _id: new ObjectId(fileId) });
+    expect(doc.path).toContain(`/img/temp/${fileId}/notes.txt`);
+    expect(doc.metadata.isTemporary).toBe(true);
   });
 
-  it('should handle missing file', async () => {
-    const formData = new FormData();
-    
-    const response = await POST(new Request('http://localhost', {
-      method: 'POST',
-      body: formData,
-    }));
+  test("missing file is 400 and writes nothing", async () => {
+    const res = await upload({ type: "x", metadata: "{}" });
+    expect(res.status).toBe(400);
+    expect(await mongo.db.collection("files").countDocuments()).toBe(0);
+  });
 
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: 'No files received.' });
-    
-    // Verify no operations occurred
-    expect(mockCollection.insertOne).not.toHaveBeenCalled();
-    expect(fsPromises.writeFile).not.toHaveBeenCalled();
-    expect(fsPromises.mkdir).not.toHaveBeenCalled();
+  test("an unsupported mime type is 400", async () => {
+    const res = await upload({
+      file: new File(["x"], "a.bin", { type: "application/octet-stream" }),
+      metadata: JSON.stringify({ deferredLink: true }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  test("invalid metadata JSON is 400", async () => {
+    const res = await upload({ file: textFile(), metadata: "{not json" });
+    expect(res.status).toBe(400);
+  });
+
+  test("linking to a missing entry is 404 and rolls the upload back", async () => {
+    const res = await upload({
+      file: textFile(),
+      type: "documents",
+      metadata: JSON.stringify({ entryType: "sample", entryId: new ObjectId().toHexString() }),
+    });
+    expect(res.status).toBe(404);
+    expect(await mongo.db.collection("files").countDocuments()).toBe(0);
+  });
+});
+
+describe("GET /api/files", () => {
+  test("lists the file documents", async () => {
+    await mongo.db.collection("files").insertOne({ _id: new ObjectId(), name: "a", path: "/x" });
+    const res = await runRoute(listFiles.pipe(Effect.provide(mongo.layer)));
+    expect((await res.json())).toHaveLength(1);
   });
 });
