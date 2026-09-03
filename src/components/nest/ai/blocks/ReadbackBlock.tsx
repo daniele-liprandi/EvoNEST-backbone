@@ -27,12 +27,19 @@ function formatCellValue(value: unknown): string {
 export function ReadbackBlock({ block, onConfirm, onFix, confirming, saved }: Props) {
   const { records, entity } = block
 
+  // Flatten a `fields` bag into its own columns for the readback table; the
+  // records passed to onConfirm are left untouched (the API reads `fields`).
+  const flatRecords = records.map((record) => {
+    const { fields, ...rest } = record as Record<string, unknown>
+    return fields && typeof fields === 'object' ? { ...rest, ...(fields as Record<string, unknown>) } : record
+  })
+
   const columns = Array.from(new Set(
-    records.flatMap((record) => Object.keys(record).filter((k) => k !== '_id'))
+    flatRecords.flatMap((record) => Object.keys(record).filter((k) => k !== '_id'))
   ))
 
   const effectiveColumns = columns.length ? columns : ['record']
-  const displayRows = records.map((row, index) => {
+  const displayRows = flatRecords.map((row, index) => {
     if (columns.length) {
       return row
     }

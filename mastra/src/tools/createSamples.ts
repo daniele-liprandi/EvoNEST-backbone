@@ -3,25 +3,37 @@ import { z } from 'zod'
 import { Effect, Ref } from 'effect'
 import { getDb } from '../db/client.js'
 import { serviceAuthHeader } from '../lib/serviceHeaders.js'
+import { fetchLabSchema, allowedSampleFields, type LabSchema } from '../lib/labSchema.js'
 
 const baseUrl = process.env.NEXTJS_BASE_URL ?? 'http://node:3000'
 const TAXONOMY_TIMEOUT_MS = 10000
 
-const SampleRecordInputSchema = z.object({
-  name: z.string().optional().describe('Sample identifier — auto-generated from genus+species if omitted'),
-  type: z.enum(['animal', 'silk', 'subsample', 'plant', 'preserved', 'artificial']),
-  genus: z.string().optional(),
-  species: z.string().optional(),
-  family: z.string().optional(),
-  location: z.string().optional(),
-  lat: z.number().optional(),
-  lon: z.number().optional(),
-  date: z.string().optional().describe('ISO date string YYYY-MM-DD'),
-  sex: z.enum(['male', 'female', 'unknown']).optional(),
-  box: z.string().optional(),
-  slot: z.string().optional(),
-  notes: z.string().optional(),
-})
+const FieldValue = z.union([z.string(), z.number(), z.boolean(), z.null()])
+
+// `type` and `fields` are not a fixed set — they come from the lab's config
+// (see getSchema). Kept loose here; validated against the live config in execute.
+const SampleRecordInputSchema = z
+  .object({
+    name: z.string().optional().describe('Sample identifier — auto-generated from genus+species if omitted'),
+    type: z.string().describe('A sample type configured for this lab (getSchema.sampleTypes)'),
+    genus: z.string().optional(),
+    species: z.string().optional(),
+    family: z.string().optional(),
+    location: z.string().optional(),
+    lat: z.number().optional(),
+    lon: z.number().optional(),
+    date: z.string().optional().describe('ISO date string YYYY-MM-DD'),
+    sex: z.enum(['male', 'female', 'unknown']).optional(),
+    box: z.string().optional(),
+    slot: z.string().optional(),
+    subsampletype: z.string().optional(),
+    notes: z.string().optional(),
+    fields: z
+      .record(z.string(), FieldValue)
+      .optional()
+      .describe("Type-specific fields for this sample type (getSchema.sampleTypes[].fields)"),
+  })
+  .passthrough()
 
 const SampleRecordOutputSchema = SampleRecordInputSchema.extend({
   name: z.string(),
@@ -140,17 +152,80 @@ const fetchTaxonomy = (taxa: string, family: string | undefined): Effect.Effect<
   }).pipe(Effect.orElse(() => Effect.succeed<TaxInfo | null>(null)))
 }
 
+// ─── Schema validation ───────────────────────────────────────────────────────
+
+const KNOWN_TOP_LEVEL = new Set([
+  'name', 'type', 'genus', 'species', 'family', 'location', 'lat', 'lon',
+  'date', 'sex', 'box', 'slot', 'subsampletype', 'notes', 'fields',
+])
+
+/**
+ * Fold the record into { ...core, fields } against the lab's config: unknown
+ * top-level keys move into the `fields` bag, and anything the type doesn't
+ * declare is warned about (the nest drops it, but the researcher should know).
+ */
+const normaliseToSchema = (
+  r: RecordInput,
+  index: number,
+  schema: LabSchema,
+  warningsRef: Ref.Ref<string[]>,
+): Effect.Effect<RecordOutput, never> =>
+  Effect.gen(function* () {
+    const warn = (m: string) => Ref.update(warningsRef, (ws) => [...ws, m])
+
+    const configuredTypes = schema.sampleTypes.map((t) => t.value)
+    if (configuredTypes.length > 0 && !configuredTypes.includes(r.type)) {
+      yield* warn(
+        `Record ${index + 1}: sample type "${r.type}" is not configured for this lab (${configuredTypes.join(', ')}).`,
+      )
+    }
+
+    const bag: Record<string, unknown> = { ...(r.fields ?? {}) }
+    for (const [k, v] of Object.entries(r)) {
+      if (!KNOWN_TOP_LEVEL.has(k)) bag[k] = v
+    }
+
+    const allowed = allowedSampleFields(schema, r.type)
+    for (const key of Object.keys(bag)) {
+      if (!allowed.has(key)) {
+        yield* warn(
+          `Record ${index + 1}: field "${key}" is not configured for "${r.type}" samples and will be ignored.`,
+        )
+      }
+    }
+
+    const core: RecordOutput = {
+      name: r.name ?? '',
+      type: r.type,
+      ...(r.genus !== undefined && { genus: r.genus }),
+      ...(r.species !== undefined && { species: r.species }),
+      ...(r.family !== undefined && { family: r.family }),
+      ...(r.location !== undefined && { location: r.location }),
+      ...(r.lat !== undefined && { lat: r.lat }),
+      ...(r.lon !== undefined && { lon: r.lon }),
+      ...(r.date !== undefined && { date: r.date }),
+      ...(r.sex !== undefined && { sex: r.sex }),
+      ...(r.box !== undefined && { box: r.box }),
+      ...(r.slot !== undefined && { slot: r.slot }),
+      ...(r.subsampletype !== undefined && { subsampletype: r.subsampletype }),
+      ...(r.notes !== undefined && { notes: r.notes }),
+      ...(Object.keys(bag).length > 0 && { fields: bag as RecordOutput['fields'] }),
+    }
+    return core
+  })
+
 // ─── Single record processing ─────────────────────────────────────────────────
 
 const processRecord = (
-  r: RecordInput,
+  input: RecordInput,
   index: number,
   dbName: string,
+  schema: LabSchema,
   reservedRef: Ref.Ref<Set<string>>,
   warningsRef: Ref.Ref<string[]>,
 ): Effect.Effect<RecordOutput, never> =>
   Effect.gen(function* () {
-    const rec: RecordOutput = { ...r, name: r.name ?? '' }
+    const rec = yield* normaliseToSchema(input, index, schema, warningsRef)
 
     // Date normalisation
     if (rec.date && !rec.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -237,7 +312,8 @@ const processRecord = (
 
 export const createSamples = createTool({
   id: 'createSamples',
-  description: 'Validate and stage sample records for user confirmation. Handles taxonomy verification and name auto-generation internally. Does NOT write to the database.',
+  description:
+    "Validate and stage sample records for user confirmation. The sample `type` and the keys allowed in `fields` come from this lab's config (call getSchema first). Handles taxonomy verification and name auto-generation internally. Does NOT write to the database.",
   inputSchema: z.object({
     records: z.array(SampleRecordInputSchema).min(1).describe('Proposed sample records to create. Omit name — it will be generated automatically.'),
     dbName: z.string().describe('The user database name, required for name generation'),
@@ -252,9 +328,18 @@ export const createSamples = createTool({
         const warningsRef = yield* Ref.make<string[]>([])
         const reservedRef = yield* Ref.make<Set<string>>(new Set())
 
+        const schema = yield* Effect.tryPromise(() => fetchLabSchema(dbName)).pipe(
+          Effect.orElseSucceed(() => ({
+            routes: [],
+            sampleTypes: [],
+            traitTypes: [],
+            subsampleTypes: [],
+          }) satisfies LabSchema),
+        )
+
         const stagedRecords = yield* Effect.forEach(
           records,
-          (r, index) => processRecord(r, index, dbName, reservedRef, warningsRef),
+          (r, index) => processRecord(r, index, dbName, schema, reservedRef, warningsRef),
           { concurrency: 1 },
         )
 
