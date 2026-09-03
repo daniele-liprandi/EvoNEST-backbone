@@ -2,8 +2,8 @@
 
 jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
 jest.mock("@/app/api/auth/[...nextauth]/options", () => ({ authOptions: {} }));
-jest.mock("@/app/api/utils/verifyServiceKey", () => ({ isServiceRequest: () => true }));
 
+const { getServerSession } = require("next-auth");
 import { POST } from "@/app/api/checknames/route";
 
 const realFetch = global.fetch;
@@ -22,7 +22,10 @@ const body = (obj: unknown) =>
     body: JSON.stringify(obj),
   });
 
-beforeEach(() => jest.spyOn(console, "error").mockImplementation(() => {}));
+beforeEach(() => {
+  jest.spyOn(console, "error").mockImplementation(() => {});
+  getServerSession.mockResolvedValue({ user: { sub: "u1", name: "Tester" } });
+});
 afterEach(() => {
   global.fetch = realFetch;
   jest.restoreAllMocks();
