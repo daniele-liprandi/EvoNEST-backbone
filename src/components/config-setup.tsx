@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import useSWR from "swr"
 import { toast } from "sonner"
-import { Check, ChevronLeft } from "lucide-react"
+import { Check, CaretLeft } from "@phosphor-icons/react"
 
 import { prepend_path } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -135,7 +135,7 @@ function Wizard({ onComplete }: { onComplete: () => void }) {
           </div>
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(0)}>
-              <ChevronLeft className="size-4" /> Back
+              <CaretLeft className="size-4" /> Back
             </Button>
             <Button onClick={apply} disabled={submitting}>
               {submitting ? "Setting up…" : "Set up my NEST"}

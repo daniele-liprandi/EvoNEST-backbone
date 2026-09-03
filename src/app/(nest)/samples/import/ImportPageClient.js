@@ -20,7 +20,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, AlertTriangle, Check, X, Plus } from "lucide-react";
+import { Check, Plus, UploadSimple, Warning, X } from "@phosphor-icons/react";
 import { Progress } from "@/components/ui/progress";
 import { DataTable } from "@/components/tables/data-table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -930,7 +930,7 @@ const ImportPage = () => {
                                     onChange={handleFileUpload}
                                     disabled={isLoading}
                                 />
-                                <Upload className="w-4 h-4 mr-2" />
+                                <UploadSimple className="w-4 h-4 mr-2" />
                                 Select CSV File
                             </Button>
                             {isLoading && <Progress value={progress} className="w-[200px]" />}
@@ -1020,7 +1020,7 @@ const ImportPage = () => {
                         {/* Validation Errors */}
                         {validationErrors.length > 0 && (
                             <Alert variant="destructive">
-                                <AlertTriangle className="w-4 h-4" />
+                                <Warning className="w-4 h-4" />
                                 <AlertDescription>
                                     <ul className="list-disc pl-4">
                                         {validationErrors.map((error, index) => (

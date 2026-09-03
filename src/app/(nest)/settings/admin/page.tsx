@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import useSWR from "swr"
 import { toast } from "sonner"
-import { Trash2 } from "lucide-react"
+import { Trash } from "@phosphor-icons/react"
 
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useUserData } from "@/hooks/useUserData"
@@ -120,7 +120,7 @@ function RolesEditor({ roles, onSaved }: { roles: Role[]; onSaved: () => void })
               disabled={role.value === "admin"}
               onClick={() => setDraft((d) => d.filter((_, j) => j !== i))}
             >
-              <Trash2 className="size-4" />
+              <Trash className="size-4" />
             </Button>
           </div>
         ))}

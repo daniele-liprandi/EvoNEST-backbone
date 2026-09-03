@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { Trash2Icon, X } from "lucide-react";
+import { Trash, X } from "@phosphor-icons/react";
 import { prepend_path } from "@/lib/utils";
 import { useState } from 'react';
 import { toast } from "sonner";
@@ -94,7 +94,7 @@ export function GalleryCard({ sample, setSample }) {
                       setDeletingImage(fileId);
                     }}
                   >
-                    <Trash2Icon className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

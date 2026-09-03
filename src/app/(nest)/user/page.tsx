@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
-import { Copy, Eye, EyeOff, Trash2, Plus, Key } from "lucide-react";
+import { Copy, Eye, EyeSlash, Key, Plus, Trash } from "@phosphor-icons/react";
 import { toast } from "sonner";
 
 import { prepend_path } from "@/lib/utils";
@@ -119,7 +119,7 @@ function GeneratedKeyNotice({ value, onDone }: { value: string; onDone: () => vo
               {shown ? value : "•".repeat(32)}
             </code>
             <Button size="icon-sm" variant="ghost" onClick={() => setShown((s) => !s)}>
-              {shown ? <EyeOff /> : <Eye />}
+              {shown ? <EyeSlash /> : <Eye />}
             </Button>
             <Button
               size="icon-sm"
@@ -179,7 +179,7 @@ function KeyRow({
           onClick={() => onRevoke(apiKey.id)}
           aria-label={`Revoke ${apiKey.name}`}
         >
-          <Trash2 />
+          <Trash />
         </Button>
       )}
     </div>

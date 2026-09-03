@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpenIcon, Github, FileTextIcon } from "lucide-react";
+import { BookOpen, FileText, GithubLogo } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -10,7 +10,7 @@ const resources = [
     title: "Documentation",
     description:
       "Guides for users and developers. Learn how to use EvoNEST and contribute to the platform.",
-    icon: BookOpenIcon,
+    icon: BookOpen,
     href: "https://daniele-liprandi.github.io/EvoNEST-backbone/",
     buttonText: "Read the Docs",
     variant: "default" as const,
@@ -19,7 +19,7 @@ const resources = [
     title: "GitHub Repository",
     description:
       "Explore the source code, report issues, contribute features, and stay updated with the latest development.",
-    icon: Github,
+    icon: GithubLogo,
     href: "https://github.com/daniele-liprandi/EvoNEST-backbone",
     buttonText: "View on GitHub",
     variant: "outline" as const,
@@ -28,7 +28,7 @@ const resources = [
     title: "Research Paper",
     description:
       "Read the peer-reviewed publication describing EvoNEST's architecture, features, and use cases.",
-    icon: FileTextIcon,
+    icon: FileText,
     href: "https://doi.org/10.7717/peerj-cs.3186",
     buttonText: "Read the Paper",
     variant: "secondary" as const,
