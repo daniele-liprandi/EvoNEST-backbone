@@ -1,7 +1,6 @@
 import express from 'express'
 import { evonestAgent } from './agent.js'
-import { createAgent } from './agents/createAgent.js'
-import { findCreateToolResult, findQueryToolResult } from './lib/toolResults.js'
+import { findCreateToolResult, findQueryToolResult, findTreemapToolResult } from './lib/toolResults.js'
 
 const SERVICE_SECRET = process.env.MASTRA_SERVICE_SECRET
 if (!SERVICE_SECRET) throw new Error('MASTRA_SERVICE_SECRET is required')
@@ -20,12 +19,6 @@ app.use((req, res, next) => {
   next()
 })
 
-function classifyIntent(message: string): 'create' | 'query' {
-  return /\b(add|create|insert|submit|save|upload|collect|collected|record|recorded|log|logged|register|registered|stage)\b/i.test(message)
-    ? 'create'
-    : 'query'
-}
-
 app.post('/chat', async (req, res) => {
   const { message, threadId, dbName } = req.body as {
     message: string
@@ -38,65 +31,73 @@ app.post('/chat', async (req, res) => {
   }
 
   const contextualMessage = `[context: dbName="${dbName}"]\n\n${message}`
-  const intent = classifyIntent(message)
 
   try {
-    if (intent === 'create') {
-      const result = await createAgent.generate(contextualMessage)
-      const toolResult = findCreateToolResult(result)
-      if (!toolResult) {
-        console.warn('[create] findCreateToolResult returned null — result keys:', Object.keys(result),
-          '| steps:', result.steps?.length, '| toolResults:', result.toolResults?.length)
+    // One agent owns both tool sets and decides query vs create. The response
+    // block is built from whichever tool actually ran, never from the model text.
+    // Memory is keyed by threadId (per browser session) and scoped to the database.
+    const result = await evonestAgent.generate(contextualMessage, {
+      memory: { thread: threadId, resource: dbName },
+    })
+    const summary = typeof result.text === 'string' ? result.text.trim() : ''
+
+    const created = findCreateToolResult(result)
+    if (created && created.records.length > 0) {
+      const blocks: any[] = [{ type: 'text', content: summary || 'Records staged for confirmation.' }]
+      if (created.warnings.length > 0) {
+        blocks.push({ type: 'text', content: created.warnings.join('\n') })
       }
-      const summary = typeof result.text === 'string' ? result.text.trim() : ''
-
-      const blocks: any[] = [
-        { type: 'text', content: summary || 'Records staged for confirmation.' },
-      ]
-
-      if (toolResult && toolResult.records.length > 0) {
-        if (toolResult.warnings.length > 0) {
-          blocks.push({ type: 'text', content: toolResult.warnings.join('\n') })
-        }
-        blocks.push({
-          type: 'readback',
-          entity: toolResult.toolName === 'createSamples' ? 'samples' : 'traits',
-          records: toolResult.records,
-          pendingCreate: true,
-        })
-      } else {
-        blocks[0].content = summary || 'Could not stage the records. Please check the details and try again.'
-      }
-
+      blocks.push({
+        type: 'readback',
+        entity: created.toolName === 'createSamples' ? 'samples' : 'traits',
+        records: created.records,
+        pendingCreate: true,
+      })
       return res.json({ blocks })
     }
 
-    // Query path: model writes a plain-text summary; table is built server-side from real tool output
-    const result = await evonestAgent.generate(contextualMessage)
-    const summary = typeof result.text === 'string' ? result.text.trim() : ''
-
-    const queryToolResult = findQueryToolResult(result)
-    if (!queryToolResult) {
-      console.warn('[query] findQueryToolResult returned null — result keys:', Object.keys(result),
-        '| steps:', result.steps?.length,
-        '| toolResults:', result.toolResults?.length)
+    const treemap = findTreemapToolResult(result)
+    if (treemap) {
       return res.json({
-        blocks: [{ type: 'text', content: summary || 'No results found.' }],
+        blocks: [
+          { type: 'text', content: summary || treemap.title },
+          {
+            type: 'chart',
+            chartType: 'treemap',
+            title: treemap.title,
+            data: treemap.ids.map((id, i) => ({
+              id,
+              label: treemap.labels[i],
+              parent: treemap.parents[i],
+              value: treemap.values[i],
+            })),
+            config: { branchvalues: 'total' },
+          },
+        ],
       })
     }
 
-    const blocks: any[] = [
-      { type: 'text', content: summary || `Found ${queryToolResult.totalCount} matching records.` },
-      {
-        type: 'table',
-        entity: queryToolResult.entity,
-        data: queryToolResult.data,
-        totalCount: queryToolResult.totalCount,
-        filterUrl: queryToolResult.filterUrl,
-      },
-    ]
+    const query = findQueryToolResult(result)
+    if (query) {
+      return res.json({
+        blocks: [
+          { type: 'text', content: summary || `Found ${query.totalCount} matching records.` },
+          {
+            type: 'table',
+            entity: query.entity,
+            data: query.data,
+            totalCount: query.totalCount,
+            filterUrl: query.filterUrl,
+          },
+        ],
+      })
+    }
 
-    return res.json({ blocks })
+    console.warn('[chat] no recognised tool result — result keys:', Object.keys(result),
+      '| steps:', result.steps?.length, '| toolResults:', result.toolResults?.length)
+    return res.json({
+      blocks: [{ type: 'text', content: summary || 'No results found.' }],
+    })
   } catch (err: any) {
     console.error('Agent error:', err)
     return res.status(500).json({

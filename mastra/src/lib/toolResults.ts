@@ -92,3 +92,31 @@ export function findQueryToolResult(result: any): QueryToolResult | null {
     return null
   })
 }
+
+export interface TreemapToolResult {
+  ids: string[]
+  labels: string[]
+  parents: string[]
+  values: number[]
+  title: string
+}
+
+export function findTreemapToolResult(result: any): TreemapToolResult | null {
+  return walkToolResults(result, (toolName, tr) => {
+    if (
+      toolName === 'generateTreemap' &&
+      Array.isArray(tr?.ids) &&
+      Array.isArray(tr?.values) &&
+      typeof tr?.title === 'string'
+    ) {
+      return {
+        ids: tr.ids as string[],
+        labels: tr.labels as string[],
+        parents: tr.parents as string[],
+        values: tr.values as number[],
+        title: tr.title as string,
+      }
+    }
+    return null
+  })
+}
