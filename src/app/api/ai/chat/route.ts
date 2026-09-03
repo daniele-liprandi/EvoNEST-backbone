@@ -1,46 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/options'
-import { get_database_user } from '@/app/api/utils/get_database_user'
+/**
+ * @swagger
+ * /api/ai/chat:
+ *   post:
+ *     summary: Proxy a chat turn to the Mastra service
+ *     tags: [Utilities]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [message, threadId]
+ *             properties:
+ *               message: { type: string }
+ *               threadId: { type: string }
+ *     responses:
+ *       200: { description: The assistant's reply (or a graceful unreachable message) }
+ *       400: { description: message and threadId are required }
+ *       401: { description: Unauthorized }
+ *       502: { description: The Mastra service returned an error }
+ *       503: { description: The AI service is not configured }
+ */
 
-const MASTRA_URL = process.env.MASTRA_URL ?? 'http://localhost:4111'
+import { runRoute } from "@/lib/effect";
+import { proxyChat } from "./handlers";
 
-export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const body = await request.json()
-  const { message, threadId } = body
-
-  if (!message || !threadId) {
-    return NextResponse.json({ error: 'message and threadId are required' }, { status: 400 })
-  }
-
-  let dbName: string
-  try {
-    dbName = await get_database_user()
-  } catch {
-    return NextResponse.json({ error: 'Could not resolve user database' }, { status: 500 })
-  }
-
-  const serviceKey = process.env.MASTRA_SERVICE_SECRET
-  if (!serviceKey) {
-    return NextResponse.json({ error: 'AI service is not configured' }, { status: 503 })
-  }
-
-  try {
-    const mastraRes = await fetch(`${MASTRA_URL}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-service-key': serviceKey },
-      body: JSON.stringify({ message, threadId, dbName }),
-    })
-    const data = await mastraRes.json()
-    return NextResponse.json(data, { status: mastraRes.ok ? 200 : 502 })
-  } catch {
-    return NextResponse.json({
-      blocks: [{ type: 'text', content: 'Could not reach the AI service. Please try again.' }],
-    }, { status: 200 })
-  }
-}
+export const POST = (request: Request) => runRoute(proxyChat(request));
