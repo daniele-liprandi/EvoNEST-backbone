@@ -4,14 +4,15 @@
  *   get:
  *     summary: The live filterable columns per section
  *     description: >
- *       Samples every collection (30 docs) and returns the union of their keys,
- *       minus internal fields, plus the computed columns. Consumed by the
- *       natural-language filter. Service requests must pass `?dbName=`.
+ *       The live filterable columns per section (union of 30 sampled docs'
+ *       keys, minus internal fields), plus the lab's configured `sampleTypes`,
+ *       `traitTypes` and `subsampleTypes`. Consumed by the natural-language
+ *       filter and the AI create tools. Service requests must pass `?dbName=`.
  *     tags: [Utilities]
  *     parameters:
  *       - { in: query, name: dbName, schema: { type: string } }
  *     responses:
- *       200: { description: "{ routes: [{ label, path, columns }] }" }
+ *       200: { description: "{ routes, sampleTypes, traitTypes, subsampleTypes }" }
  *       400: { description: dbName missing on a service request }
  *       401: { description: Unauthorized }
  */

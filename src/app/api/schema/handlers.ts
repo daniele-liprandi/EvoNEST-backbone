@@ -33,6 +33,22 @@ const liveColumns = (dbName: string, collection: string) =>
     return [...keys].filter((key) => !EXCLUDE_FIELDS.has(key));
   });
 
+type ConfigEntry = { value?: string; label?: string; unit?: string; fields?: unknown };
+
+const configData = (dbName: string, type: string) =>
+  Effect.map(
+    Effect.flatMap(Mongo, (mongo) => mongo.findOne(dbName, "config", { type })),
+    (doc) => (Array.isArray(doc?.data) ? (doc!.data as ConfigEntry[]) : []),
+  );
+
+/** A sample type's configured `fields` list, flattened to key names (`{key}` objects included). */
+const fieldKeys = (fields: unknown): string[] =>
+  Array.isArray(fields)
+    ? fields
+        .map((f) => (typeof f === "string" ? f : (f as { key?: string })?.key))
+        .filter((k): k is string => !!k)
+    : [];
+
 export const getSchema = (request: Request) =>
   Effect.gen(function* () {
     const dbParam = new URL(request.url).searchParams.get("dbName");
@@ -50,11 +66,15 @@ export const getSchema = (request: Request) =>
       dbName = dbParam ?? (yield* currentDatabase);
     }
 
-    const [sampleCols, traitCols, experimentCols] = yield* Effect.all([
-      liveColumns(dbName, "samples"),
-      liveColumns(dbName, "traits"),
-      liveColumns(dbName, "experiments"),
-    ]);
+    const [sampleCols, traitCols, experimentCols, sampleTypesCfg, traitTypesCfg, subsampleTypesCfg] =
+      yield* Effect.all([
+        liveColumns(dbName, "samples"),
+        liveColumns(dbName, "traits"),
+        liveColumns(dbName, "experiments"),
+        configData(dbName, "sampletypes"),
+        configData(dbName, "traittypes"),
+        configData(dbName, "samplesubtypes"),
+      ]);
 
     const sampleSection = (label: string, path: string) => ({
       label,
@@ -78,5 +98,16 @@ export const getSchema = (request: Request) =>
           columns: [...experimentCols, ...COMPUTED.experiments],
         },
       ],
+      // The lab's configured record model — the source of truth for what
+      // sample/trait types and fields a create operation may use.
+      sampleTypes: sampleTypesCfg
+        .filter((t) => t.value)
+        .map((t) => ({ value: t.value!, label: t.label ?? t.value!, fields: fieldKeys(t.fields) })),
+      traitTypes: traitTypesCfg
+        .filter((t) => t.value)
+        .map((t) => ({ value: t.value!, label: t.label ?? t.value!, unit: t.unit ?? null })),
+      subsampleTypes: subsampleTypesCfg
+        .filter((t) => t.value)
+        .map((t) => ({ value: t.value!, label: t.label ?? t.value! })),
     });
   });
