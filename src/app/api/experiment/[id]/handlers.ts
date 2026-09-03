@@ -2,23 +2,6 @@ import { Effect } from "effect";
 import { ObjectId } from "mongodb";
 import { ok, currentDatabase, Mongo, attempt, requireFound, ValidationError } from "@/lib/effect";
 
-/**
- * @swagger
- * /api/experiment/{id}:
- *   get:
- *     summary: One experiment by id
- *     tags: [Experiments]
- *     parameters:
- *       - { in: path, name: id, required: true, schema: { type: string } }
- *       - { in: query, name: includeRawData, schema: { type: boolean } }
- *       - { in: query, name: includeOriginalData, schema: { type: boolean } }
- *     responses:
- *       200: { description: Experiment }
- *       400: { description: Invalid id }
- *       401: { description: Unauthorized }
- *       404: { description: Not found }
- */
-
 const EXPERIMENTS = "experiments";
 
 export const getExperiment = (request: Request) =>

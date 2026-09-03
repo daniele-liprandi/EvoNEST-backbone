@@ -1,26 +1,6 @@
 import { Effect, Schema } from "effect";
 import { ok, decodeBody, currentSession, Mongo, requireFound } from "@/lib/effect";
 
-/**
- * @swagger
- * /api/user:
- *   get:
- *     summary: The current user's record
- *     tags: [Users]
- *     responses:
- *       200: { description: User document }
- *       401: { description: Unauthorized }
- *       404: { description: User not found }
- *   post:
- *     summary: Update a field on the current user's record
- *     tags: [Users]
- *     responses:
- *       200: { description: Updated }
- *       400: { description: Invalid method or field }
- *       401: { description: Unauthorized }
- *       404: { description: User not found }
- */
-
 const USERS_DB = "usersdb";
 const USERS = "users";
 

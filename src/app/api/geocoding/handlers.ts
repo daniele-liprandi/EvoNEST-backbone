@@ -1,18 +1,6 @@
 import { Effect, Schema } from "effect";
 import { ok, decodeBody, sessionOrService, NotFoundError, InternalError } from "@/lib/effect";
 
-/**
- * @swagger
- * /api/geocoding:
- *   post:
- *     summary: Geocode a location name via OpenStreetMap Nominatim
- *     tags: [Utilities]
- *     responses:
- *       200: { description: "{ coordinates, attribution }" }
- *       401: { description: Unauthorized }
- *       404: { description: Location not found }
- */
-
 const REQUEST_TIMEOUT_MS = 8_000;
 const NOMINATIM_MIN_INTERVAL_MS = 1_000;
 let lastRequestAt = 0;

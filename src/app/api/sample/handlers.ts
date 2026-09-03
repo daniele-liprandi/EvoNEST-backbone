@@ -1,19 +1,6 @@
 import { Effect, Schema } from "effect";
 import { ok, decodeBody, currentDatabase, Mongo, requireFound, ObjectIdFromHex } from "@/lib/effect";
 
-/**
- * @swagger
- * /api/sample:
- *   post:
- *     summary: Retrieve one sample by name, id, and/or type
- *     tags: [Sample]
- *     responses:
- *       200: { description: The sample }
- *       400: { description: No query field, or an invalid id }
- *       401: { description: Unauthorized }
- *       404: { description: Not found }
- */
-
 const Body = Schema.Struct({
   name: Schema.optional(Schema.String),
   id: Schema.optional(ObjectIdFromHex),

@@ -2,18 +2,6 @@ import { Effect, Schema } from "effect";
 import { ok, decodeBody, currentDatabase, Mongo, ObjectIdFromHex, InternalError } from "@/lib/effect";
 import { analyzeTraitConversion } from "@/utils/unitConversion";
 
-/**
- * @swagger
- * /api/traits/convert-units/preview:
- *   post:
- *     summary: Preview unit conversions without writing (first 10)
- *     tags: [Traits]
- *     responses:
- *       200: { description: "{ totalTraits, willConvert, willSkip, preview }" }
- *       400: { description: Invalid body or trait id }
- *       401: { description: Unauthorized }
- */
-
 const PREVIEW_LIMIT = 10;
 
 const Body = Schema.Struct({ traitIds: Schema.optional(Schema.Array(ObjectIdFromHex)) });
