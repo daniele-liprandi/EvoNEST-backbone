@@ -136,3 +136,31 @@ describe("Auth test layers", () => {
     expect(body.code).toBe("forbidden");
   });
 });
+
+describe("Layer.effect + Effect.cached scoping (the AuthLive memoisation pattern)", () => {
+  // AuthLive caches the session and user lookups inside its Layer.effect. This
+  // proves the cache lives for one Effect.provide (one request), not globally,
+  // so a request cannot read the previous request's user.
+  test("cache collapses repeats within a build and resets on the next", async () => {
+    let calls = 0;
+    const layer = Layer.effect(
+      Mongo,
+      Effect.gen(function* () {
+        const lookup = yield* Effect.cached(Effect.sync(() => ++calls));
+        return { findOne: () => lookup.pipe(Effect.as(null)) } as unknown as never;
+      }),
+    );
+
+    const program = Effect.gen(function* () {
+      const m = yield* Mongo;
+      yield* m.findOne("d", "c", {});
+      yield* m.findOne("d", "c", {});
+      yield* m.findOne("d", "c", {});
+    });
+
+    await Effect.runPromise(program.pipe(Effect.provide(layer)));
+    await Effect.runPromise(program.pipe(Effect.provide(layer)));
+
+    expect(calls).toBe(2);
+  });
+});
