@@ -25,6 +25,7 @@ import {
   customColumn,
 } from "@/components/tables/columns"
 import { buildEditFields, customFieldMap } from "./fields"
+import { sampleRegenerateOn } from "@/components/tables/edit-fields"
 
 // The built-in columns a sample table can show, by key. A type's `columns` list
 // mixes these keys, the keys of the type's own custom fields (resolved against
@@ -98,6 +99,7 @@ export function buildSampleColumns(typeConfig) {
   const actions = rowActionsColumn({
     entityLabel: "sample",
     editFields: buildEditFields(typeConfig),
+    regenerateOn: sampleRegenerateOn,
   })
   return [selectColumn(), ...cols, actions]
 }

@@ -58,6 +58,7 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
  *   onBulkDelete?: ((ids: string[]) => Promise<any> | any) | null,
  *   onBulkUpdateFields?: ((ids: string[], changes: Record<string, any>) => Promise<any> | any) | null,
  *   bulkEditFields?: any[],
+ *   bulkRegenerateOn?: { fields: string[], label: string },
  *   bulkEntityLabel?: string,
  *   renderToolbar?: ((table: any) => any) | null,
  *   renderBulkActions?: ((table: any) => any) | null,
@@ -74,6 +75,7 @@ export function DataTable({
   onBulkDelete = null,
   onBulkUpdateFields = null,
   bulkEditFields = [],
+  bulkRegenerateOn = undefined,
   bulkEntityLabel = "row",
   renderToolbar = null,
   renderBulkActions = null,
@@ -132,6 +134,7 @@ export function DataTable({
           onBulkDelete={onBulkDelete}
           onBulkUpdateFields={onBulkUpdateFields}
           bulkEditFields={bulkEditFields}
+          bulkRegenerateOn={bulkRegenerateOn}
           entityLabel={bulkEntityLabel}
         >
           {renderBulkActions?.(table)}

@@ -13,6 +13,7 @@ import {
   requireCapability,
 } from "@/lib/effect";
 import { sampleChain } from "@/app/api/utils/sampleChain";
+import { DEFAULT_ID_GENERATION, regenerateSampleNames } from "@/shared/config/sample-names";
 
 const SAMPLES = "samples";
 const PROTECTED_SETFIELDS = new Set(["_id", "createdDate", "recentChangeDate", "logbook", "filesId"]);
@@ -117,9 +118,12 @@ export const listSamples = (request: Request) =>
 const PostBody = Schema.Struct(
   {
     method: Schema.optional(
-      Schema.Literal("create", "update", "setfield", "incrementfield", "get-schema"),
+      Schema.Literal("create", "update", "setfield", "incrementfield", "get-schema", "retaxon"),
     ),
     id: Schema.optional(Schema.String),
+    ids: Schema.optional(Schema.Array(Schema.String)),
+    changes: Schema.optional(Schema.Record({ key: Schema.String, value: Schema.Unknown })),
+    regenerateNames: Schema.optional(Schema.Boolean),
     parentId: Schema.optional(Schema.Unknown),
     field: Schema.optional(Schema.String),
     value: Schema.optional(Schema.Unknown),
@@ -180,6 +184,73 @@ export const handleSamplePost = (request: Request) =>
 
     if (data.method === "get-schema") {
       return yield* ok(yield* inferSchema(dbName));
+    }
+
+    // Change family / genus / species on one or many samples at once, and
+    // optionally regenerate the derived names in a single race-free pass — a
+    // bulk of parallel setfield writes would collide on the sequential number.
+    if (data.method === "retaxon") {
+      const ids = data.ids ?? [];
+      const allowed = ["family", "genus", "species"] as const;
+      const taxonChanges: Record<string, unknown> = {};
+      for (const key of allowed) {
+        if (data.changes && key in data.changes) taxonChanges[key] = data.changes[key];
+      }
+      if (ids.length === 0 || Object.keys(taxonChanges).length === 0) {
+        return yield* Effect.fail(
+          new ValidationError({ message: "retaxon needs ids and family/genus/species changes" }),
+        );
+      }
+
+      const objectIds = ids.map((id) => (ObjectId.isValid(id) ? new ObjectId(id) : id));
+      const targetsRaw = yield* mongo.find(dbName, SAMPLES, { _id: { $in: objectIds } as never });
+      if (targetsRaw.length === 0) {
+        return yield* Effect.fail(new NotFoundError({ resource: "Sample" }));
+      }
+
+      const targets = targetsRaw.map((s) => ({
+        _id: s._id,
+        type: s.type,
+        name: s.name,
+        family: taxonChanges.family ?? s.family,
+        genus: taxonChanges.genus ?? s.genus,
+        species: taxonChanges.species ?? s.species,
+      }));
+
+      let newNames = new Map<string, string>();
+      if (data.regenerateNames) {
+        const settings = yield* mongo.findOne(dbName, "settings", { type: "main" });
+        const idGeneration = settings?.idGeneration ?? DEFAULT_ID_GENERATION;
+        const allSamples = yield* mongo.find(dbName, SAMPLES);
+        // The collision context must already reflect the new taxonomy.
+        const byId = new Map(targets.map((t) => [String(t._id), t]));
+        const context = allSamples.map((s) => byId.get(String(s._id)) ?? s);
+        newNames = regenerateSampleNames(targets as never, context as never, idGeneration);
+      }
+
+      const now = stamp();
+      const renamed: Array<{ id: string; from: string; to: string }> = [];
+      const ops = targets.map((t) => {
+        const set: Record<string, unknown> = { ...taxonChanges, recentChangeDate: now };
+        const parts = allowed.filter((k) => k in taxonChanges).map((k) => `${k}=${taxonChanges[k]}`);
+        let message = `Set ${parts.join(", ")} by ${authName}`;
+        const newName = newNames.get(String(t._id));
+        if (newName && newName !== t.name) {
+          set.name = newName;
+          renamed.push({ id: String(t._id), from: t.name, to: newName });
+          message += `; name ${t.name} -> ${newName}`;
+        }
+        return {
+          updateOne: {
+            filter: { _id: t._id },
+            update: { $set: set, $push: { logbook: logbook(message) } },
+          },
+        };
+      });
+
+      const collection = yield* mongo.collection(dbName, SAMPLES);
+      yield* attempt(() => collection.bulkWrite(ops as never), "samples.bulkWrite retaxon");
+      return yield* ok({ updated: ops.length, renamed });
     }
 
     if (data.method === "update") {

@@ -14,6 +14,7 @@ import { ComboFormBox } from "@/components/forms/combo-form-box";
 import { CustomSampleField } from "@/components/forms/custom-sample-field";
 import { TaxonomicHierarchy } from "@/components/ui/custom/TaxonomicHierarchy";
 import { buildSampleFields } from "@/app/(nest)/samples/fields";
+import { nextNameFor } from "@/shared/config/sample-names";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -432,90 +433,19 @@ export function SampleForm({
     }
   }
 
-  // Unified ID generation function that uses settings
-  const generateBaseID = useCallback(
-    (genus: string, species: string, sampleType: string) => {
-      // Wait for settings to load
-      if (settingsLoading || !idGeneration) {
-        return null; // Return null while loading
-      }
-
-      const combinations = idGeneration.combinations;
-
-      // Function to generate base ID with variable lengths
-      const generateBaseId = (genusLen: number, speciesLen: number) => {
-        const genusPrefix = genus.slice(0, Math.min(genusLen, genus.length));
-        const speciesPrefix = species.slice(
-          0,
-          Math.min(speciesLen, species.length)
-        );
-        return genusPrefix + speciesPrefix;
-      };
-
-      // Check if base ID has collision with different genus/species combinations
-      const hasCollisionWithDifferentSpecies = (baseId: string) => {
-        return samples.some((sample: any) => {
-          if (sample.type !== sampleType) return false;
-          if (sample.genus === genus && sample.species === species)
-            return false; // Same species, not a collision
-
-          // Extract the base part of the sample name (without numbers)
-          const sampleBasePart = sample.name.replace(/\d+$/, "");
-          return sampleBasePart === baseId;
-        });
-      };
-
-      // Find the first combination that doesn't have collisions
-      for (const [genusLen, speciesLen] of combinations) {
-        const candidateId = generateBaseId(genusLen, speciesLen);
-        if (!hasCollisionWithDifferentSpecies(candidateId)) {
-          return candidateId;
-        }
-      }
-    },
-    [samples, idGeneration, settingsLoading]
-  );
-
+  // Name generation uses the shared rules in @/shared/config/sample-names, so
+  // the server's taxon-rename regeneration produces identical names.
   const generateNameAnimal = useCallback(
     (form: any) => {
+      if (settingsLoading || !idGeneration) return "";
       const values = form.getValues();
-      const genus = values.genus || "";
-      const species = values.species || "";
-
-      // Wait for settings to load
-      if (settingsLoading || !idGeneration) {
-        return ""; // Return empty string while loading
-      }
-
-      const baseId = generateBaseID(genus, species, values.type);
-      if (!baseId) return "";
-
-      // Get all existing samples with same genus, species, and type
-      const existingNames = samples
-        .filter(
-          (sample: { genus: any; species: any; type: string }) =>
-            sample.genus === genus &&
-            sample.species === species &&
-            sample.type === values.type
-        )
-        .map((sample: { name: string }) => sample.name);
-
-      // Find the first available number
-      const startingNumber = idGeneration.startingNumber;
-      const numberPadding = idGeneration.numberPadding;
-      const formatNumber = (num: number) =>
-        numberPadding > 0
-          ? num.toString().padStart(numberPadding, "0")
-          : num.toString();
-
-      let count = startingNumber;
-      while (existingNames.includes(baseId + formatNumber(count))) {
-        count++;
-      }
-
-      return (baseId + formatNumber(count)) as string;
+      return nextNameFor(
+        { genus: values.genus || "", species: values.species || "", type: values.type },
+        samples,
+        idGeneration
+      );
     },
-    [samples, idGeneration, settingsLoading, generateBaseID]
+    [samples, idGeneration, settingsLoading]
   );
 
   const generateNameSubsample = useCallback(

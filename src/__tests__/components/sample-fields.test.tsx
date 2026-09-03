@@ -59,17 +59,20 @@ describe("buildSampleFields", () => {
 });
 
 describe("buildEditFields", () => {
-  test("name and notes always, taxonomy and parent never", () => {
+  test("name, taxonomy and notes always, parent never", () => {
     const list = buildEditFields(crop);
     expect(list[0]).toEqual({ key: "name", label: "Name", type: "text" });
     expect(list.at(-1)).toEqual({ key: "notes", label: "Notes", type: "textarea" });
+    // family/genus/species are editable so a mis-identified sample can be fixed
+    // (and its name regenerated); the composite `taxonomy` and `parent` are not.
+    expect(keys(list)).toEqual(expect.arrayContaining(["family", "genus", "species"]));
     expect(keys(list)).not.toContain("taxonomy");
     expect(keys(list)).not.toContain("parent");
   });
 
   test("editable built-ins and every custom field come through with a type", () => {
     const list = buildEditFields(crop);
-    expect(keys(list)).toEqual(["name", "plot", "stage", "sown", "notes"]);
+    expect(keys(list)).toEqual(["name", "family", "genus", "species", "plot", "stage", "sown", "notes"]);
     expect(list.find((f) => f.key === "stage")).toMatchObject({ type: "select", options: expect.any(Array) });
     expect(list.find((f) => f.key === "sown")).toMatchObject({ type: "date" });
   });
@@ -79,7 +82,9 @@ describe("buildEditFields", () => {
       value: "x",
       fields: ["responsible", "date", "location", "sex", "box", "slot"],
     });
-    expect(keys(list)).toEqual(["name", "date", "location", "sex", "box", "slot", "notes"]);
+    expect(keys(list)).toEqual([
+      "name", "family", "genus", "species", "date", "location", "sex", "box", "slot", "notes",
+    ]);
   });
 });
 

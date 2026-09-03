@@ -115,7 +115,14 @@ export function buildSampleFields(typeConfig) {
  * (text | number | date | textarea | select).
  */
 export function buildEditFields(typeConfig) {
-  const out = [{ key: "name", label: "Name", type: "text" }];
+  // Taxonomy is set once in the create form but can be corrected later; a change
+  // here can regenerate the derived name (see sampleRegenerateOn).
+  const out = [
+    { key: "name", label: "Name", type: "text" },
+    { key: "family", label: "Family", type: "text" },
+    { key: "genus", label: "Genus", type: "text" },
+    { key: "species", label: "Species", type: "text" },
+  ];
   for (const entry of fieldList(typeConfig)) {
     if (typeof entry === "string") {
       if (BUILTIN_EDITABLE[entry]) {

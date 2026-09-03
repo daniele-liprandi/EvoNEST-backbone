@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PencilSimple } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -38,18 +39,24 @@ function toDateInput(value) {
  * In bulk mode (`rows` has more than one entry) inputs start empty and a field
  * left untouched is not applied; a field the user sets is applied to every row.
  *
+ * `regenerateOn` surfaces an inline checkbox when one of its `fields` has been
+ * changed (e.g. a taxon field, where the sample name is derived from it). The
+ * checkbox state is passed to `onSubmit` as `{ regenerate }`.
+ *
  * @param {{
  *   rows: Record<string, any>[],
  *   fields: { key: string, label: string, type?: "text"|"number"|"date"|"textarea"|"select", options?: {value:string,label:string}[] }[],
  *   entityLabel: string,
- *   onSubmit: (ids: string[], changes: Record<string, any>) => Promise<any> | any,
+ *   onSubmit: (ids: string[], changes: Record<string, any>, opts: { regenerate: boolean }) => Promise<any> | any,
+ *   regenerateOn?: { fields: string[], label: string },
  *   trigger?: import("react").ReactNode,
  * }} props
  */
-export function RowEditDialog({ rows, fields, entityLabel, onSubmit, trigger }) {
+export function RowEditDialog({ rows, fields, entityLabel, onSubmit, regenerateOn, trigger }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({});
   const [saving, setSaving] = useState(false);
+  const [regenerate, setRegenerate] = useState(true);
 
   const bulk = rows.length > 1;
   const ids = rows.map((row) => row._id ?? row.id);
@@ -77,12 +84,18 @@ export function RowEditDialog({ rows, fields, entityLabel, onSubmit, trigger }) 
   }
   const changedCount = Object.keys(changes).length;
 
-  const reset = () => setDraft({});
+  const regenApplies =
+    regenerateOn && regenerateOn.fields.some((f) => f in changes);
+
+  const reset = () => {
+    setDraft({});
+    setRegenerate(true);
+  };
 
   async function save() {
     setSaving(true);
     try {
-      await onSubmit(ids, changes);
+      await onSubmit(ids, changes, { regenerate: Boolean(regenApplies && regenerate) });
       setOpen(false);
       reset();
     } finally {
@@ -158,6 +171,17 @@ export function RowEditDialog({ rows, fields, entityLabel, onSubmit, trigger }) 
             );
           })}
         </div>
+
+        {regenApplies ? (
+          <label className="flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-sm">
+            <Checkbox
+              checked={regenerate}
+              onCheckedChange={(v) => setRegenerate(Boolean(v))}
+              className="mt-0.5"
+            />
+            <span>{regenerateOn.label}</span>
+          </label>
+        ) : null}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
