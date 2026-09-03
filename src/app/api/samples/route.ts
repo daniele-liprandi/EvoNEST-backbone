@@ -18,6 +18,8 @@
  *     description: >
  *       Body without `method`, or `method: create`, creates a sample.
  *       `method: update | setfield | incrementfield` modifies one.
+ *       `method: retaxon` changes family/genus/species on a batch of `ids` and,
+ *       with `regenerateNames`, regenerates the derived names in one pass.
  *       `method: get-schema` returns the inferred sample schema. A type's
  *       configured `fields` are read from the `fields` bag on create and update.
  *     tags: [Samples]
