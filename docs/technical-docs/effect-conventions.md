@@ -14,7 +14,9 @@ Everything is in `src/lib/effect`.
 
 ### Tagged errors (`errors.ts`)
 
-`ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `InternalError`. A route Effect's error channel is a union of these. Anything else that throws is a defect and becomes a bare 500 with nothing leaked.
+`ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `UnprocessableEntityError`, `BadGatewayError`, `ServiceUnavailableError`, `InternalError`. A route Effect's error channel is a union of these. Anything else that throws is a defect and becomes a bare 500 with nothing leaked.
+
+Reach for `BadGatewayError` when an upstream service (GNames, an LLM endpoint, Nominatim, the Mastra service) is unreachable or answers with an error; `ServiceUnavailableError` when such a dependency is not configured; `UnprocessableEntityError` when it answers with content this route cannot use. Their messages *are* returned — keep them free of internals.
 
 ```ts
 Effect.fail(new NotFoundError({ resource: "Trait", id }))
@@ -32,6 +34,9 @@ Effect.fail(new ValidationError({ message: "measurement must be positive" }))
 | ForbiddenError | 403 | `forbidden` |
 | NotFoundError | 404 | `not_found` |
 | ConflictError | 409 | `conflict` |
+| UnprocessableEntityError | 422 | `unprocessable_entity` |
+| BadGatewayError | 502 | `bad_gateway` |
+| ServiceUnavailableError | 503 | `service_unavailable` |
 | InternalError / defect | 500 | `internal_error` |
 
 Error body shape: `{ "error": "message", "code": "not_found", "issues"?: [...] }`. `error` is kept flat so existing `result.error` reads on the client keep working; `code` is the stable machine-readable value.
