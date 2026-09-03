@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getUserNameById } from "@/hooks/userHooks";
 import { useSampleData } from '@/hooks/useSampleData';
 import { useUserData } from '@/hooks/useUserData';
+import { useConfigTypes } from '@/hooks/useConfigTypes';
 import { prepend_path } from "@/lib/utils";
 import { handleDeleteSample, handleStatusChangeSample, handleStatusIncrementSample } from "@/utils/handlers/sampleHandlers";
 import { Scanner } from '@yudiel/react-qr-scanner';
@@ -30,6 +31,7 @@ export default function IdPage() {
   const sampleId = usePathname().split('/').pop();
   const { samplesData, samplesError } = useSampleData(prepend_path);
   const { usersData, usersError } = useUserData(prepend_path);
+  const { sampletypes } = useConfigTypes();
   const [notes, setNotes] = useState("");
   const [sample, setSample] = useState(null);
   const [searchInput, setSearchInput] = useState("");
@@ -50,8 +52,9 @@ export default function IdPage() {
   }, [samplesData, sampleId, router]);
 
   // Get cards for this sample type
-  const mainCards = sample ? getFilteredCards(getMainCards(sample.type), sample) : [];
-  const sidebarCards = sample ? getFilteredCards(getSidebarCards(sample.type), sample) : [];
+  const typeConfig = sample ? sampletypes.find((t) => t.value === sample.type) : null;
+  const mainCards = sample ? getFilteredCards(getMainCards(sample.type, typeConfig), sample) : [];
+  const sidebarCards = sample ? getFilteredCards(getSidebarCards(sample.type, typeConfig), sample) : [];
 
   // Common props for all cards
   const cardProps = {

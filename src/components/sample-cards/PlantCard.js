@@ -123,4 +123,3 @@ PlantCard.displayName = 'PlantCard';
 PlantCard.supportedTypes = ['plant'];
 PlantCard.position = 'main';
 PlantCard.dependencies = ['handleStatusIncrementSample', 'setSample'];
-PlantCard.shouldRender = (sample) => sample.type === 'plant';

@@ -113,4 +113,3 @@ export function FertilizerCard({ sample, handleChange }) {
 FertilizerCard.displayName = 'FertilizerCard';
 FertilizerCard.supportedTypes = ['fertilizer'];
 FertilizerCard.position = 'main';
-FertilizerCard.shouldRender = (sample) => sample.type === 'fertilizer';
