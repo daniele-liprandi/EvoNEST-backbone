@@ -21,7 +21,7 @@ describe("card metadata", () => {
   });
 
   test("type-specific cards no longer carry a redundant type-check shouldRender", () => {
-    for (const card of ALL_CARDS) {
+    for (const card of ALL_CARDS as any[]) {
       if (card.supportedTypes.includes("*") || !card.shouldRender) continue;
       // a real condition inspects a field, not just sample.type
       expect(card.shouldRender.toString()).not.toMatch(/sample\.type ===/);
@@ -45,7 +45,7 @@ describe("getSampleCards", () => {
   });
 
   test("a type config can opt into a card built for another type", () => {
-    const got = names(getSampleCards("crop", { value: "crop", cards: ["PlantCard"] }));
+    const got = names(getSampleCards("crop", { value: "crop", cards: ["PlantCard"] } as any));
     expect(got).toContain("PlantCard");
   });
 

@@ -16,7 +16,7 @@ describe("resolvePreset", () => {
 
   test("the crop field-trial preset carries a growth-stage field, watered counter and yield trait", () => {
     const resolved = resolvePreset("crop-field-trial");
-    const crop = resolved?.sampletypes.find((s: any) => s.value === "crop");
+    const crop = resolved?.sampletypes.find((s: any) => s.value === "crop") as any;
     expect(crop.fields).toEqual(
       expect.arrayContaining([expect.objectContaining({ key: "growthStage", kind: "select" })]),
     );
@@ -34,7 +34,7 @@ describe("resolvePreset", () => {
     ["microbial-culture", "strain", "contamination"],
   ])("the %s preset defines %s's %s as a field, referenced from columns", (preset, typeValue, customKey) => {
     const resolved = resolvePreset(preset);
-    const type = resolved?.sampletypes.find((s: any) => s.value === typeValue);
+    const type = resolved?.sampletypes.find((s: any) => s.value === typeValue) as any;
     expect(type).toBeTruthy();
     expect(type.fields.some((f: any) => typeof f === "object" && f.key === customKey)).toBe(true);
     expect(type.columns).toContain(customKey);
@@ -94,7 +94,7 @@ describe("preset create-form field lists", () => {
   });
 
   test("the crop preset asks for plot, treatment and growth stage at creation", () => {
-    const crop = resolvePreset("crop-field-trial")?.sampletypes.find((s: any) => s.value === "crop");
+    const crop = resolvePreset("crop-field-trial")?.sampletypes.find((s: any) => s.value === "crop") as any;
     const keys = crop.fields.map((f: any) => (typeof f === "string" ? f : f.key));
     expect(keys).toEqual(expect.arrayContaining(["taxonomy", "plot", "treatment", "growthStage"]));
     expect(crop.fields.find((f: any) => f.key === "growthStage").kind).toBe("select");

@@ -31,7 +31,7 @@ describe("buildSampleFields", () => {
   test("renders the configured list in order, built-ins flagged", () => {
     const list = buildSampleFields({ value: "x", fields: ["responsible", "date", "location"] });
     expect(keys(list)).toEqual(["responsible", "date", "location"]);
-    expect(list.every((f) => f.builtin)).toBe(true);
+    expect(list.every((f: any) => f.builtin)).toBe(true);
   });
 
   test("unknown and always-shown keys are dropped", () => {
@@ -92,7 +92,7 @@ describe("customFieldMap / customFieldKeys", () => {
   test("maps custom keys to descriptors, ignores built-ins", () => {
     const map = customFieldMap(crop);
     expect(Object.keys(map)).toEqual(["plot", "stage", "sown"]);
-    expect(map.stage).toMatchObject({ kind: "select", label: "Growth stage" });
+    expect((map as any).stage).toMatchObject({ kind: "select", label: "Growth stage" });
     expect(customFieldKeys(crop)).toEqual(["plot", "stage", "sown"]);
   });
 
