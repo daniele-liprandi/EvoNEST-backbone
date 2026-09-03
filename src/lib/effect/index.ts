@@ -3,5 +3,6 @@ export * from "./http";
 export * from "./db";
 export * from "./auth";
 export * from "./apikey";
+export * from "./permissions";
 export * from "./schema";
 export * from "./request";

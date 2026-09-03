@@ -1,5 +1,9 @@
 /** @jest-environment node */
 
+// The samples and traits DELETE routes are on the Effect line; their delete
+// gate is covered by the *.integration tests. This file covers the one route
+// still on the callback stack: experiments.
+
 jest.mock("@/app/api/utils/mongodbClient", () => ({ get_or_create_client: jest.fn() }));
 jest.mock("@/app/api/utils/get_database_user", () => ({
   get_database_user: jest.fn().mockResolvedValue("labdb"),
@@ -9,8 +13,6 @@ jest.mock("@/app/api/utils/get_database_user", () => ({
 jest.mock("@/app/api/utils/permissions", () => ({ userCan: jest.fn() }));
 
 import { ObjectId } from "mongodb";
-import { DELETE as deleteSample } from "@/app/api/samples/route";
-import { DELETE as deleteTrait } from "@/app/api/traits/route";
 import { DELETE as deleteExperiment } from "@/app/api/experiments/route";
 
 const { get_or_create_client } = require("@/app/api/utils/mongodbClient");
@@ -29,8 +31,8 @@ beforeEach(() => {
   });
 });
 
-const req = (url: string, id: string) =>
-  new Request(url, {
+const req = (id: string) =>
+  new Request("http://x/api/experiments", {
     method: "DELETE",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ id }),
@@ -38,30 +40,24 @@ const req = (url: string, id: string) =>
 
 const id = new ObjectId().toHexString();
 
-const cases = [
-  ["samples", deleteSample, "http://x/api/samples"],
-  ["traits", deleteTrait, "http://x/api/traits"],
-  ["experiments", deleteExperiment, "http://x/api/experiments"],
-] as const;
-
-describe.each(cases)("%s DELETE permission gate", (label, handler, url) => {
-  test("a role without the capability is refused with 403 and nothing is deleted", async () => {
+describe("experiments DELETE permission gate", () => {
+  test("a role without experiments.delete is refused with 403 and nothing is deleted", async () => {
     userCan.mockResolvedValue(false);
-    const res = await handler(req(url, id));
+    const res = await deleteExperiment(req(id));
     expect(res.status).toBe(403);
     expect(deleteOne).not.toHaveBeenCalled();
   });
 
   test("a role with the capability is allowed through the gate", async () => {
     userCan.mockResolvedValue(true);
-    const res = await handler(req(url, id));
+    const res = await deleteExperiment(req(id));
     expect(res.status).not.toBe(403);
     expect(deleteOne).toHaveBeenCalled();
   });
 
-  test(`the gate asks userCan for ${label}.delete`, async () => {
+  test("the gate asks userCan for experiments.delete", async () => {
     userCan.mockResolvedValue(true);
-    await handler(req(url, id));
-    expect(userCan).toHaveBeenCalledWith(`${label}.delete`);
+    await deleteExperiment(req(id));
+    expect(userCan).toHaveBeenCalledWith("experiments.delete");
   });
 });
