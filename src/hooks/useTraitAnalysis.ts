@@ -8,7 +8,9 @@ export interface AnalysisFilters {
 
 export interface AnalysisRequest {
     traitType: string;
-    groupBy: 'all' | 'family' | 'genus' | 'species' | 'fullSpecies' | 'sampleSubTypes' | 'fullSpeciesSubsampletype';
+    /** A built-in grouping (`all`, `family`, `genus`, `species`, `fullSpecies`,
+     *  `subsampletype`, `fullSpeciesSubsampletype`) or any configured sample field key. */
+    groupBy: string;
     filters?: AnalysisFilters;
     unitConversion?: boolean;
 }
@@ -36,10 +38,16 @@ export interface AnalysisResponse {
     };
 }
 
+export interface GroupByOption {
+    value: string;
+    label: string;
+}
+
 export interface FilterOptions {
     traitTypes: string[];
     sampleSubTypes: string[];
     nfibres: string[];
+    groupByOptions: GroupByOption[];
 }
 
 export function useTraitAnalysis() {

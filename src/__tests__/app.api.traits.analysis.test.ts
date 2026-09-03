@@ -15,7 +15,7 @@ beforeAll(async () => {
 });
 afterAll(() => mongo.stop());
 beforeEach(async () => {
-  await Promise.all(["traits", "samples"].map((c) => mongo.db.collection(c).deleteMany({})));
+  await Promise.all(["traits", "samples", "config"].map((c) => mongo.db.collection(c).deleteMany({})));
   jest.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => jest.restoreAllMocks());
@@ -27,60 +27,121 @@ const post = (body: unknown) =>
     ),
   );
 
-const seed = async () => {
+const seedConfig = () =>
+  mongo.db.collection("config").insertOne({
+    type: "traittypes",
+    data: [
+      { value: "mass", label: "Mass", unit: "g" },
+      { value: "diameter", label: "Diameter", unit: "mm" },
+    ],
+  });
+
+const seedSamples = async () => {
   const s1 = new ObjectId();
   const s2 = new ObjectId();
   await mongo.db.collection("samples").insertMany([
-    { _id: s1, genus: "Araneus", species: "diadematus", silktype: "dragline" },
-    { _id: s2, genus: "Nephila", species: "clavipes", silktype: "dragline" },
+    { _id: s1, genus: "Araneus", species: "diadematus", subsampletype: "dragline", sex: "female" },
+    { _id: s2, genus: "Nephila", species: "clavipes", silktype: "dragline", sex: "male" },
   ]);
-  await mongo.db.collection("traits").insertMany([
-    { type: "stressAtBreak", measurement: 1_000_000_000, sampleId: s1.toHexString(), nfibres: "1" },
-    { type: "stressAtBreak", measurement: 2_000_000_000, sampleId: s1.toHexString(), nfibres: "1" },
-    { type: "stressAtBreak", measurement: 3_000_000_000, sampleId: s2.toHexString(), nfibres: "2" },
-    { type: "diameter", measurement: 4, sampleId: s1.toHexString() },
-  ]);
+  return { s1, s2 };
 };
 
-describe("POST /api/traits/analysis", () => {
+describe("POST /api/traits/analysis — config-driven units (#164)", () => {
   test("400 when traitType is missing", async () => {
     expect((await post({})).status).toBe(400);
   });
 
-  test("groupBy all: converts Pa->GPa and reports the stats + display unit", async () => {
-    await seed();
-    const res = await post({ traitType: "stressAtBreak", groupBy: "all" });
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.unit).toBe("GPa");
-    expect(body.results).toHaveLength(1);
-    expect(body.results[0].mean).toBe(2); // (1 + 2 + 3) / 3 GPa
-    expect(body.results[0].count).toBe(3);
-    expect(body.metadata.totalTraits).toBe(3);
+  test("converts each trait from its stored unit to the type's configured unit", async () => {
+    await seedConfig();
+    const { s1 } = await seedSamples();
+    // config says mass is in `g`; these are stored in mg and kg
+    await mongo.db.collection("traits").insertMany([
+      { type: "mass", measurement: 2000, unit: "mg", sampleId: s1.toHexString() }, // -> 2 g
+      { type: "mass", measurement: 0.004, unit: "kg", sampleId: s1.toHexString() }, // -> 4 g
+    ]);
+
+    const body = await (await post({ traitType: "mass", groupBy: "all" })).json();
+    expect(body.unit).toBe("g");
+    expect(body.results[0].mean).toBe(3); // (2 + 4) / 2
+    expect(body.results[0].min).toBe(2);
+    expect(body.results[0].max).toBe(4);
   });
 
-  test("groupBy species splits the values per group", async () => {
-    await seed();
-    const body = await (await post({ traitType: "stressAtBreak", groupBy: "species" })).json();
-    const byName = Object.fromEntries(body.results.map((r: { name: string; mean: number }) => [r.name, r.mean]));
-    expect(byName.diadematus).toBe(1.5);
-    expect(byName.clavipes).toBe(3);
+  test("a trait already in the target unit, or with an incompatible unit, is left alone", async () => {
+    await seedConfig();
+    const { s1 } = await seedSamples();
+    await mongo.db.collection("traits").insertMany([
+      { type: "mass", measurement: 5, unit: "g", sampleId: s1.toHexString() }, // already g
+      { type: "mass", measurement: 9, unit: "m", sampleId: s1.toHexString() }, // incompatible -> as-is
+    ]);
+    const body = await (await post({ traitType: "mass", groupBy: "all" })).json();
+    expect(body.results[0].values ?? [body.results[0].min, body.results[0].max]).toBeTruthy();
+    expect(body.results[0].min).toBe(5);
+    expect(body.results[0].max).toBe(9);
   });
 
-  test("unitConversion:false leaves the raw measurement and an empty unit", async () => {
-    await seed();
-    const body = await (await post({ traitType: "stressAtBreak", groupBy: "all", unitConversion: false })).json();
+  test("unitConversion:false leaves raw values and an empty unit badge", async () => {
+    await seedConfig();
+    const { s1 } = await seedSamples();
+    await mongo.db.collection("traits").insertOne({ type: "mass", measurement: 2000, unit: "mg", sampleId: s1.toHexString() });
+    const body = await (await post({ traitType: "mass", groupBy: "all", unitConversion: false })).json();
     expect(body.unit).toBe("");
-    expect(body.results[0].mean).toBe(2000000000);
+    expect(body.results[0].mean).toBe(2000);
+  });
+
+  test("no configured unit for the trait type: values pass through, empty unit", async () => {
+    const { s1 } = await seedSamples();
+    await mongo.db.collection("traits").insertOne({ type: "custom", measurement: 7, unit: "widget", sampleId: s1.toHexString() });
+    const body = await (await post({ traitType: "custom", groupBy: "all" })).json();
+    expect(body.unit).toBe("");
+    expect(body.results[0].mean).toBe(7);
+  });
+});
+
+describe("POST /api/traits/analysis — generic grouping (#164)", () => {
+  test("groupBy any sample field", async () => {
+    await seedConfig();
+    const { s1, s2 } = await seedSamples();
+    await mongo.db.collection("traits").insertMany([
+      { type: "mass", measurement: 1, unit: "g", sampleId: s1.toHexString() },
+      { type: "mass", measurement: 3, unit: "g", sampleId: s2.toHexString() },
+    ]);
+    const body = await (await post({ traitType: "mass", groupBy: "sex" })).json();
+    const byName = Object.fromEntries(body.results.map((r: { name: string; mean: number }) => [r.name, r.mean]));
+    expect(byName).toEqual({ female: 1, male: 3 });
+  });
+
+  test("groupBy subsampletype falls back to the legacy silktype field", async () => {
+    await seedConfig();
+    const { s1, s2 } = await seedSamples(); // s1 has subsampletype, s2 has only silktype
+    await mongo.db.collection("traits").insertMany([
+      { type: "mass", measurement: 1, unit: "g", sampleId: s1.toHexString() },
+      { type: "mass", measurement: 3, unit: "g", sampleId: s2.toHexString() },
+    ]);
+    const body = await (await post({ traitType: "mass", groupBy: "subsampletype" })).json();
+    // both samples' subtype resolves to "dragline"
+    expect(body.results).toHaveLength(1);
+    expect(body.results[0]).toMatchObject({ name: "dragline", count: 2, mean: 2 });
   });
 });
 
 describe("GET /api/traits/analysis (filter options)", () => {
-  test("returns the distinct trait types, silk types and nfibres", async () => {
-    await seed();
+  test("returns distinct types, the union of subsampletype+silktype, and groupByOptions", async () => {
+    await mongo.db.collection("config").insertOne({
+      type: "sampletypes",
+      data: [
+        { value: "animal", fields: ["taxonomy", "sex", { key: "plot", label: "Plot" }] },
+        { value: "crop", fields: ["location"] },
+      ],
+    });
+    const { s1 } = await seedSamples();
+    await mongo.db.collection("traits").insertOne({ type: "mass", measurement: 1, unit: "g", sampleId: s1.toHexString() });
+
     const body = await (await runRoute(analysisFilterOptions.pipe(Effect.provide(mongo.layer)))).json();
-    expect(body.traitTypes).toEqual(["diameter", "stressAtBreak"]);
-    expect(body.sampleSubTypes).toEqual(["dragline"]);
-    expect(body.nfibres).toEqual(["1", "2"]);
+    expect(body.traitTypes).toEqual(["mass"]);
+    expect(body.sampleSubTypes).toEqual(["dragline"]); // s1 subsampletype + s2 silktype, deduped
+    const groupValues = body.groupByOptions.map((o: { value: string }) => o.value);
+    expect(groupValues).toEqual(expect.arrayContaining(["all", "family", "subsampletype", "sex", "plot", "location"]));
+    expect(groupValues).not.toContain("taxonomy"); // non-groupable, filtered out
   });
 });
