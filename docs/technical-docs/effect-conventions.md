@@ -71,7 +71,12 @@ yield* mongo.updateOne(dbName, "traits", { _id: id }, { $set: { note } })
 
 `decodeBody(schema)(request)` and `decodeSearchParams(schema)(request)` parse and fail with `ValidationError` carrying per-field issues. `ObjectIdHex` and `ObjectIdFromHex` handle ids.
 
-> Schema library: `effect/Schema` everywhere. zod is being removed, including the mastra tool schemas (wrapped with `Schema.standardSchemaV1`). New code must not add zod.
+> Schema library on the server: `effect/Schema`. Every API route, service and request/response type validates with it — new server code must not add zod.
+>
+> zod stays at the edges, where the ecosystem expects it and `effect/Schema` would only add an adapter and a conversion hop:
+> - **Mastra tool `inputSchema` / `outputSchema`** (`mastra/src/tools/*`). `@mastra/core` accepts Standard Schema, but `effect/Schema`'s `standardSchemaV1` omits the JSON-Schema half Mastra needs, and provider strict-mode compat round-trips through zod regardless. The tool `execute` bodies are still Effect.
+> - **The shared AI block schemas** (`mastra/src/types.ts`, `src/lib/ai-types.ts`) — `z.infer` types consumed by the chat renderer.
+> - **react-hook-form schemas** (`src/components/forms/*`, and form-bearing pages) via `zodResolver`.
 
 ## The route template
 

@@ -59,30 +59,16 @@ const getAnalysisColumns = (groupBy: string) => {
   return baseColumns;
 };
 
-const selectOptions = [
-  {
-    value: "fullSpeciesSubsampletype",
-    label: "Full species + subsample type",
-    secondary: "All selected full species with subsample types",
-  },
-  {
-    value: "fullSpecies",
-    label: "All full species (genus + species)",
-    secondary: "All selected full species",
-  },
-  { value: "all", label: "Sum of all", secondary: "Sum of all selected" },
-  {
-    value: "family",
-    label: "All families",
-    secondary: "All selected families",
-  },
-  { value: "genus", label: "All genera", secondary: "All selected genera" },
-  { value: "species", label: "All species", secondary: "All selected species" },
-  {
-    value: "sampleSubTypes",
-    label: "All sample subtypes",
-    secondary: "All selected sample subtypes",
-  },
+// Used until the API's groupByOptions (built-ins + the lab's configured sample
+// fields) arrive.
+const FALLBACK_GROUP_OPTIONS = [
+  { value: "fullSpeciesSubsampletype", label: "Full species + subsample type" },
+  { value: "fullSpecies", label: "Full species (genus + species)" },
+  { value: "all", label: "Sum of all" },
+  { value: "family", label: "Family" },
+  { value: "genus", label: "Genus" },
+  { value: "species", label: "Species" },
+  { value: "subsampletype", label: "Subsample type" },
 ];
 
 export default function TraitAnalysisPage() {
@@ -98,15 +84,10 @@ export default function TraitAnalysisPage() {
   const { traittypes, samplesubtypes } = useConfigTypes();
   // State for UI controls
   const [selectedTrait, setSelectedTrait] = useState(traittypes[0].value);
-  const [selectedGroupBy, setSelectedGroupBy] = useState<
-    | "all"
-    | "family"
-    | "genus"
-    | "species"
-    | "fullSpecies"
-    | "sampleSubTypes"
-    | "fullSpeciesSubsampletype"
-  >("fullSpeciesSubsampletype");
+  const [selectedGroupBy, setSelectedGroupBy] = useState<string>(
+    "fullSpeciesSubsampletype"
+  );
+  const groupByOptions = filterOptions?.groupByOptions ?? FALLBACK_GROUP_OPTIONS;
   // Filter states
   const [selectedSampleSubtypes, setSelectedSampleSubtypes] = useState<
     Set<string>
@@ -171,7 +152,7 @@ export default function TraitAnalysisPage() {
   };
 
   const handleGroupByChange = (value: string) => {
-    setSelectedGroupBy(value as any);
+    setSelectedGroupBy(value);
   };
 
   const handleSampleSubtypeChange = (
@@ -288,7 +269,7 @@ export default function TraitAnalysisPage() {
                     <SelectValue placeholder="Select grouping" />
                   </SelectTrigger>
                   <SelectContent>
-                    {selectOptions.map((option) => (
+                    {groupByOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
                       </SelectItem>

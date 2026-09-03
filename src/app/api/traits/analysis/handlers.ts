@@ -1,33 +1,10 @@
 import { Effect, Schema } from "effect";
 import type { Document } from "mongodb";
 import { ok, decodeBody, currentDatabase, Mongo, attempt, ValidationError } from "@/lib/effect";
+import { convertMeasurement, getDefaultUnitForTraitType } from "@/utils/unitConversion";
 
-// TODO(#164): getDisplayUnit and the Pa->GPa / x100 conversion below are
-// hard-coded to a silk-biomechanics workflow. They should read the unit from
-// the traittypes config and convert by SI prefix. groupBy is likewise limited
-// to silk fields. This conversion keeps the existing behaviour verbatim.
-
-const getDisplayUnit = (traitType: string) => {
-  switch (traitType) {
-    case "stressAtBreak":
-    case "toughness":
-    case "modulus":
-      return "GPa";
-    case "loadAtBreak":
-      return "mN";
-    case "strainAtBreak":
-      return "%";
-    case "diameter":
-      return "μm";
-    default:
-      return "";
-  }
-};
-
-const calculateStatistics = (values: unknown[]) => {
-  const valid = values.filter(
-    (v): v is number => v !== null && v !== undefined && !isNaN(v as number),
-  );
+const calculateStatistics = (values: number[]) => {
+  const valid = values.filter((v) => v !== null && v !== undefined && !isNaN(v));
   if (valid.length === 0) return null;
 
   const sorted = [...valid].sort((a, b) => a - b);
@@ -65,11 +42,22 @@ const PostBody = Schema.Struct(
   Schema.Record({ key: Schema.String, value: Schema.Unknown }),
 );
 
+// Built-in groupings, plus any configured sample field is `$sample.<key>`.
+const BUILTIN_GROUP_FIELDS: Record<string, unknown> = {
+  family: "$sample.family",
+  genus: "$sample.genus",
+  species: "$sample.species",
+  fullSpecies: "$fullSpecies",
+  subsampletype: "$sample.subsampletype",
+  // legacy alias kept for older clients
+  sampleSubTypes: "$sample.subsampletype",
+  fullSpeciesSubsampletype: "$fullSpeciesSubsampletype",
+};
+
 const buildPipeline = (
   traitType: string,
   groupBy: string,
   filters: AnalysisFilters,
-  unitConversion: boolean,
 ): Document[] => {
   const pipeline: Document[] = [
     { $match: { type: traitType } },
@@ -106,6 +94,9 @@ const buildPipeline = (
       $lookup: { from: "samples", localField: "sampleObjectId", foreignField: "_id", as: "sample" },
     },
     { $unwind: "$sample" },
+    // `silktype` is the legacy silk-only name for the generic `subsampletype`.
+    // Normalise once so every filter and grouping downstream is type-agnostic.
+    { $addFields: { "sample.subsampletype": { $ifNull: ["$sample.subsampletype", "$sample.silktype"] } } },
   ];
 
   const matchConditions: Record<string, unknown> = {};
@@ -117,22 +108,22 @@ const buildPipeline = (
     if (hasNotDeclared && regular.length > 0) {
       orConditions.push({
         $or: [
-          { "sample.silktype": { $in: regular } },
-          { "sample.silktype": null },
-          { "sample.silktype": "" },
-          { "sample.silktype": { $exists: false } },
+          { "sample.subsampletype": { $in: regular } },
+          { "sample.subsampletype": null },
+          { "sample.subsampletype": "" },
+          { "sample.subsampletype": { $exists: false } },
         ],
       });
     } else if (hasNotDeclared) {
       orConditions.push({
         $or: [
-          { "sample.silktype": null },
-          { "sample.silktype": "" },
-          { "sample.silktype": { $exists: false } },
+          { "sample.subsampletype": null },
+          { "sample.subsampletype": "" },
+          { "sample.subsampletype": { $exists: false } },
         ],
       });
     } else {
-      matchConditions["sample.silktype"] = { $in: regular };
+      matchConditions["sample.subsampletype"] = { $in: regular };
     }
   }
 
@@ -186,43 +177,32 @@ const buildPipeline = (
         $concat: [
           fullSpecies,
           " - ",
-          { $cond: { if: "$sample.silktype", then: "$sample.silktype", else: "Unknown" } },
+          { $cond: { if: "$sample.subsampletype", then: "$sample.subsampletype", else: "Unknown" } },
         ],
       },
-      convertedValue: unitConversion
-        ? {
-            $cond: {
-              if: { $in: [traitType, ["stressAtBreak", "toughness", "modulus"]] },
-              then: { $divide: ["$measurement", 1000000000] },
-              else: {
-                $cond: {
-                  if: { $eq: [traitType, "strainAtBreak"] },
-                  then: { $multiply: ["$measurement", 100] },
-                  else: "$measurement",
-                },
-              },
-            },
-          }
-        : "$measurement",
     },
   });
 
-  const groupFieldByName: Record<string, string> = {
-    family: "$sample.family",
-    genus: "$sample.genus",
-    species: "$sample.species",
-    fullSpecies: "$fullSpecies",
-    sampleSubTypes: "$sample.silktype",
-    fullSpeciesSubsampletype: "$fullSpeciesSubsampletype",
-  };
-  const groupField = groupBy === "all" ? "All" : groupFieldByName[groupBy] ?? "All";
+  const groupField =
+    groupBy === "all" ? "All" : BUILTIN_GROUP_FIELDS[groupBy] ?? `$sample.${groupBy}`;
 
   pipeline.push({
-    $group: { _id: groupField, values: { $push: "$convertedValue" }, count: { $sum: 1 } },
+    $group: {
+      _id: groupField,
+      // Convert per-document in JS afterwards: SI-prefix conversion depends on
+      // each trait's own stored unit, which a pipeline stage can't express.
+      values: { $push: { measurement: "$measurement", unit: "$unit" } },
+      count: { $sum: 1 },
+    },
   });
   pipeline.push({ $sort: { _id: 1 } });
   return pipeline;
 };
+
+interface RawValue {
+  measurement: number;
+  unit?: string;
+}
 
 export const analyseTraits = (request: Request) =>
   Effect.gen(function* () {
@@ -239,7 +219,23 @@ export const analyseTraits = (request: Request) =>
     const mongo = yield* Mongo;
     const traits = yield* mongo.collection(dbName, "traits");
 
-    const pipeline = buildPipeline(traitType, groupBy, filters, unitConversion);
+    const traitTypesConfig =
+      ((yield* mongo.findOne(dbName, "config", { type: "traittypes" }))?.data as
+        | Array<{ value: string; unit?: string }>
+        | undefined) ?? [];
+    const baseUnitsConfig = (yield* mongo.findOne(dbName, "config", { type: "baseunits" }))?.data as
+      | unknown[]
+      | undefined;
+    const targetUnit = getDefaultUnitForTraitType(traitType, traitTypesConfig);
+
+    const toDisplayValue = ({ measurement, unit }: RawValue): number => {
+      if (!unitConversion || !targetUnit || !unit || unit === targetUnit) return measurement;
+      const converted = convertMeasurement(measurement, unit, targetUnit, baseUnitsConfig);
+      // incompatible base units -> leave the value as stored
+      return converted ?? measurement;
+    };
+
+    const pipeline = buildPipeline(traitType, groupBy, filters);
     const aggregation = yield* attempt(
       () => traits.aggregate(pipeline).toArray(),
       "traits.aggregate analysis",
@@ -247,12 +243,17 @@ export const analyseTraits = (request: Request) =>
 
     const results = aggregation
       .map((group) => {
-        const stats = calculateStatistics(group.values);
+        const values = ((group.values as RawValue[]) ?? []).map(toDisplayValue);
+        const stats = calculateStatistics(values);
         const base: Record<string, unknown> = stats
           ? { name: group._id || "Unknown", ...stats }
           : { name: group._id || "Unknown", mean: 0, stddev: 0, min: 0, max: 0, median: 0, count: 0 };
 
-        if (groupBy === "fullSpeciesSubsampletype" && typeof group._id === "string" && group._id.includes(" - ")) {
+        if (
+          groupBy === "fullSpeciesSubsampletype" &&
+          typeof group._id === "string" &&
+          group._id.includes(" - ")
+        ) {
           const [speciesName, subType] = group._id.split(" - ");
           base.name = speciesName;
           base.sampleSubTypes = subType;
@@ -269,7 +270,7 @@ export const analyseTraits = (request: Request) =>
 
     return yield* ok({
       results,
-      unit: unitConversion ? getDisplayUnit(traitType) : "",
+      unit: unitConversion ? targetUnit ?? "" : "",
       metadata: {
         totalTraits,
         filteredTraits,
@@ -280,25 +281,75 @@ export const analyseTraits = (request: Request) =>
     });
   });
 
+const prettifyKey = (key: string) =>
+  key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
+
+const BUILTIN_GROUP_OPTIONS = [
+  { value: "all", label: "Sum of all" },
+  { value: "fullSpecies", label: "Full species (genus + species)" },
+  { value: "fullSpeciesSubsampletype", label: "Full species + subsample type" },
+  { value: "family", label: "Family" },
+  { value: "genus", label: "Genus" },
+  { value: "species", label: "Species" },
+  { value: "subsampletype", label: "Subsample type" },
+];
+// Sample-type field keys that make no sense as a grouping.
+const NON_GROUPABLE_FIELDS = new Set([
+  "taxonomy",
+  "parent",
+  "responsible",
+  "date",
+  "notes",
+  "nomenclature",
+  "name",
+]);
+
 export const analysisFilterOptions = Effect.gen(function* () {
   const dbName = yield* currentDatabase;
   const mongo = yield* Mongo;
   const traits = yield* mongo.collection(dbName, "traits");
   const samples = yield* mongo.collection(dbName, "samples");
 
-  const [traitTypes, sampleSubTypes, nfibresValues] = yield* Effect.all([
+  const [traitTypes, subsampletypes, silktypes, nfibresValues] = yield* Effect.all([
     attempt(() => traits.distinct("type"), "traits.distinct type"),
+    attempt(() => samples.distinct("subsampletype"), "samples.distinct subsampletype"),
     attempt(() => samples.distinct("silktype"), "samples.distinct silktype"),
     attempt(() => traits.distinct("nfibres"), "traits.distinct nfibres"),
   ]);
 
+  const sampleTypesConfig =
+    ((yield* mongo.findOne(dbName, "config", { type: "sampletypes" }))?.data as
+      | Array<{ fields?: Array<string | { key?: string; label?: string }> }>
+      | undefined) ?? [];
+
+  const fieldOptions = new Map<string, string>();
+  for (const type of sampleTypesConfig) {
+    for (const field of type.fields ?? []) {
+      const key = typeof field === "string" ? field : field?.key;
+      if (!key || NON_GROUPABLE_FIELDS.has(key)) continue;
+      if (BUILTIN_GROUP_OPTIONS.some((o) => o.value === key)) continue;
+      if (!fieldOptions.has(key)) {
+        fieldOptions.set(key, typeof field === "string" ? prettifyKey(key) : field.label ?? prettifyKey(key));
+      }
+    }
+  }
+
   const cleanNFibres = [
-    ...new Set(nfibresValues.filter(Boolean).map((v) => String(v).toLowerCase())),
+    ...new Set((nfibresValues as unknown[]).filter(Boolean).map((v) => String(v).toLowerCase())),
   ].sort();
 
   return yield* ok({
     traitTypes: (traitTypes as string[]).sort(),
-    sampleSubTypes: (sampleSubTypes as string[]).filter(Boolean).sort(),
+    sampleSubTypes: [
+      ...new Set([...(subsampletypes as string[]), ...(silktypes as string[])].filter(Boolean)),
+    ].sort(),
     nfibres: cleanNFibres,
+    groupByOptions: [
+      ...BUILTIN_GROUP_OPTIONS,
+      ...[...fieldOptions].map(([value, label]) => ({ value, label })),
+    ],
   });
 });
