@@ -31,6 +31,13 @@ function errorResponse(error: ApiError): NextResponse {
       return json({ error: `${error.resource} not found`, code: "not_found" }, 404);
     case "ConflictError":
       return json({ error: error.message, code: "conflict" }, 409);
+    case "UnprocessableEntityError":
+      return json({ error: error.message, code: "unprocessable_entity" }, 422);
+    case "BadGatewayError":
+      console.error("[api] upstream error:", error.cause ?? error.message);
+      return json({ error: error.message, code: "bad_gateway" }, 502);
+    case "ServiceUnavailableError":
+      return json({ error: error.message, code: "service_unavailable" }, 503);
     case "InternalError":
       console.error("[api] internal error:", error.cause ?? error.message);
       return json(INTERNAL, 500);

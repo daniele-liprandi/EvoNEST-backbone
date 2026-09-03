@@ -9,6 +9,10 @@ import {
   NotFoundError,
   UnauthorizedError,
   ForbiddenError,
+  ConflictError,
+  UnprocessableEntityError,
+  BadGatewayError,
+  ServiceUnavailableError,
   InternalError,
   ObjectIdHex,
   ObjectIdFromHex,
@@ -38,12 +42,27 @@ describe("runRoute", () => {
     [new ValidationError({ message: "bad" }), 400, "validation_error"],
     [new UnauthorizedError({}), 401, "unauthorized"],
     [new NotFoundError({ resource: "Trait" }), 404, "not_found"],
+    [new ConflictError({ message: "dupe" }), 409, "conflict"],
+    [new UnprocessableEntityError({ message: "unusable" }), 422, "unprocessable_entity"],
+    [new BadGatewayError({ message: "upstream down" }), 502, "bad_gateway"],
+    [new ServiceUnavailableError({ message: "not configured" }), 503, "service_unavailable"],
     [new InternalError({ message: "boom" }), 500, "internal_error"],
   ])("maps %s to %d", async (error, status, code) => {
     const res = await runRoute(Effect.fail(error).pipe(Effect.provide(noMongo)) as any);
     expect(res.status).toBe(status);
     const body = await res.json();
     expect(body.code).toBe(code);
+  });
+
+  test("BadGateway / Unprocessable messages are returned (they carry no internals)", async () => {
+    const gw = await runRoute(
+      Effect.fail(new BadGatewayError({ message: "GNames responded 503" })).pipe(Effect.provide(noMongo)) as any,
+    );
+    expect((await gw.json()).error).toBe("GNames responded 503");
+    const un = await runRoute(
+      Effect.fail(new UnprocessableEntityError({ message: "no JSON in the reply" })).pipe(Effect.provide(noMongo)) as any,
+    );
+    expect((await un.json()).error).toBe("no JSON in the reply");
   });
 
   test("a defect becomes a bare 500 without leaking the message", async () => {
@@ -134,5 +153,33 @@ describe("Auth test layers", () => {
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.code).toBe("forbidden");
+  });
+});
+
+describe("Layer.effect + Effect.cached scoping (the AuthLive memoisation pattern)", () => {
+  // AuthLive caches the session and user lookups inside its Layer.effect. This
+  // proves the cache lives for one Effect.provide (one request), not globally,
+  // so a request cannot read the previous request's user.
+  test("cache collapses repeats within a build and resets on the next", async () => {
+    let calls = 0;
+    const layer = Layer.effect(
+      Mongo,
+      Effect.gen(function* () {
+        const lookup = yield* Effect.cached(Effect.sync(() => ++calls));
+        return { findOne: () => lookup.pipe(Effect.as(null)) } as unknown as never;
+      }),
+    );
+
+    const program = Effect.gen(function* () {
+      const m = yield* Mongo;
+      yield* m.findOne("d", "c", {});
+      yield* m.findOne("d", "c", {});
+      yield* m.findOne("d", "c", {});
+    });
+
+    await Effect.runPromise(program.pipe(Effect.provide(layer)));
+    await Effect.runPromise(program.pipe(Effect.provide(layer)));
+
+    expect(calls).toBe(2);
   });
 });
