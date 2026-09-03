@@ -61,7 +61,7 @@ export const sessionOrService = (request: Request) => {
   return Effect.asVoid(currentSession);
 };
 
-const loadSession: Effect.Effect<SessionUser, UnauthorizedError> = attempt(
+const readSession: Effect.Effect<SessionUser, UnauthorizedError> = attempt(
   () => getServerSession(authOptions),
   "getServerSession",
 ).pipe(
@@ -78,25 +78,32 @@ export const AuthLive = Layer.effect(
   Effect.gen(function* () {
     const mongo = yield* Mongo;
 
-    const currentUser = Effect.gen(function* () {
-      const session = yield* loadSession;
-      const users = yield* mongo.collection("usersdb", "users");
-      const doc = yield* attempt(
-        () => users.findOne({ auth0id: session.sub }),
-        "users.findOne",
-      );
-      if (!doc) {
-        return yield* Effect.fail(new UnauthorizedError({ message: "User record not found" }));
-      }
-      return {
-        sub: session.sub,
-        name: session.name,
-        role: (doc.role as string) ?? null,
-        activeDatabase: doc.activeDatabase as string,
-        databases: (doc.databases as string[]) ?? [],
-        doc,
-      } satisfies CurrentUser;
-    });
+    // The layer is rebuilt per request, so caching here scopes to one request:
+    // a handler reading currentDatabase, currentUser and requireRole hits
+    // getServerSession and the users collection once each, not three times.
+    const loadSession = yield* Effect.cached(readSession);
+
+    const currentUser = yield* Effect.cached(
+      Effect.gen(function* () {
+        const session = yield* loadSession;
+        const users = yield* mongo.collection("usersdb", "users");
+        const doc = yield* attempt(
+          () => users.findOne({ auth0id: session.sub }),
+          "users.findOne",
+        );
+        if (!doc) {
+          return yield* Effect.fail(new UnauthorizedError({ message: "User record not found" }));
+        }
+        return {
+          sub: session.sub,
+          name: session.name,
+          role: (doc.role as string) ?? null,
+          activeDatabase: doc.activeDatabase as string,
+          databases: (doc.databases as string[]) ?? [],
+          doc,
+        } satisfies CurrentUser;
+      }),
+    );
 
     return Auth.of({
       session: loadSession,
