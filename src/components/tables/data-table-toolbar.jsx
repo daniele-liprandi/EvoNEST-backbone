@@ -20,13 +20,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// "recentChangeDate" -> "Recent change date". Column ids are the data keys;
-// most headers are JSX so there is no plain-text label to reuse.
+// "recentChangeDate" -> "Recent change date". Fallback for a column whose def
+// carries no meta.label (most headers are JSX so there is no plain-text label
+// to reuse otherwise) — see columnLabel below.
 function humanise(id) {
   return id
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
     .replace(/^./, (c) => c.toUpperCase());
+}
+
+// Prefer the column def's own label (set on custom/config-driven fields and
+// the built-ins whose title doesn't match their humanised accessor key) over
+// guessing one from the raw data key.
+function columnLabel(column) {
+  return column.columnDef.meta?.label ?? humanise(column.id);
 }
 
 function saveBlob(blob, filename) {
@@ -113,7 +121,7 @@ export function DataTableToolbar({ table, entity, onExportRelated = null, childr
                     onCheckedChange={(value) => column.toggleVisibility(!!value)}
                     onSelect={(event) => event.preventDefault()}
                   >
-                    {humanise(column.id)}
+                    {columnLabel(column)}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>

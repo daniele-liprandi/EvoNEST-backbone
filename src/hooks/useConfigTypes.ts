@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { 
+import useSWR from 'swr'
+import {
   sampletypes as defaultSampleTypes,
   traittypes as defaultTraitTypes,
   equipmenttypes as defaultEquipmentTypes,
@@ -21,79 +21,58 @@ interface UseConfigTypesResult {
   refresh: () => void
 }
 
+// Every consumer (navbar, sample pages, both forms, sample cards...) asks for
+// the same six config-type lists. useSWR dedupes by key, so as long as every
+// caller uses this hook they share one in-flight request and one cache entry
+// per type instead of each mount firing its own fetch.
+async function fetchConfigType(url: string) {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}`)
+  }
+  const config = await response.json()
+  return config?.data
+}
+
+const swrOptions = {
+  revalidateOnFocus: false,
+  revalidateIfStale: false,
+  dedupingInterval: 3_600_000,
+} as const
+
+function withFallback<T>(data: T[] | undefined, fallback: T[]): T[] {
+  return data && data.length > 0 ? data : fallback
+}
+
 /**
  * Hook to get configuration types from database with fallback to defaults
  * Can be used as a drop-in replacement for direct imports from @/utils/types
  */
 export function useConfigTypes(): UseConfigTypesResult {
-  const [configs, setConfigs] = useState({
-    sampletypes: defaultSampleTypes,
-    traittypes: defaultTraitTypes,
-    equipmenttypes: defaultEquipmentTypes,
-    samplesubtypes: defaultSampleSubtypes,
-    silkcategories: defaultSilkCategories,
-    siprefixes: defaultSIprefixes
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const sampletypes = useSWR('/api/config/types?type=sampletypes', fetchConfigType, swrOptions)
+  const traittypes = useSWR('/api/config/types?type=traittypes', fetchConfigType, swrOptions)
+  const equipmenttypes = useSWR('/api/config/types?type=equipmenttypes', fetchConfigType, swrOptions)
+  const samplesubtypes = useSWR('/api/config/types?type=samplesubtypes', fetchConfigType, swrOptions)
+  const silkcategories = useSWR('/api/config/types?type=silkcategories', fetchConfigType, swrOptions)
+  const siprefixes = useSWR('/api/config/types?type=siprefixes', fetchConfigType, swrOptions)
 
-  const fetchConfigs = async () => {
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const configTypes = ['sampletypes', 'traittypes', 'equipmenttypes', 'samplesubtypes', 'silkcategories', 'siprefixes']
-      const newConfigs = {
-        sampletypes: defaultSampleTypes,
-        traittypes: defaultTraitTypes,
-        equipmenttypes: defaultEquipmentTypes,
-        samplesubtypes: defaultSampleSubtypes,
-        silkcategories: defaultSilkCategories,
-        siprefixes: defaultSIprefixes
-      }
-
-      const results = await Promise.allSettled(
-        configTypes.map(async (configType) => {
-          const response = await fetch(`/api/config/types?type=${configType}`)
-          if (!response.ok) {
-            throw new Error(`Failed to fetch ${configType}`)
-          }
-          const config = await response.json()
-          return { configType, config }
-        })
-      )
-
-      results.forEach((result, index) => {
-        const configType = configTypes[index]
-        if (result.status === 'fulfilled') {
-          const { config } = result.value
-          if (config && config.data && config.data.length > 0) {
-            newConfigs[configType as keyof typeof newConfigs] = config.data
-          }
-        } else {
-          console.warn(`Using default ${configType}:`, result.reason)
-        }
-      })
-
-      setConfigs(newConfigs)
-    } catch (err) {
-      console.error('Error fetching configs:', err)
-      setError('Failed to fetch configuration')
-      // Keep default values on error
-    } finally {
-      setLoading(false)
-    }
+  const all = [sampletypes, traittypes, equipmenttypes, samplesubtypes, silkcategories, siprefixes]
+  const loading = all.some((r) => r.data === undefined && !r.error)
+  const error = all.some((r) => r.error) ? 'Failed to fetch configuration' : null
+  const refresh = () => {
+    all.forEach((r) => r.mutate())
   }
 
-  useEffect(() => {
-    fetchConfigs()
-  }, [])
-
   return {
-    ...configs,
+    sampletypes: withFallback(sampletypes.data, defaultSampleTypes),
+    traittypes: withFallback(traittypes.data, defaultTraitTypes),
+    equipmenttypes: withFallback(equipmenttypes.data, defaultEquipmentTypes),
+    samplesubtypes: withFallback(samplesubtypes.data, defaultSampleSubtypes),
+    silkcategories: withFallback(silkcategories.data, defaultSilkCategories),
+    siprefixes: withFallback(siprefixes.data, defaultSIprefixes),
     loading,
     error,
-    refresh: fetchConfigs
+    refresh,
   }
 }
 

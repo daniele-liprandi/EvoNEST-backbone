@@ -71,6 +71,14 @@ const sexOptions = [
   { value: "unknown", label: "Unknown" },
 ];
 
+// Nominatim's reverse-geocode address, reduced to a readable "road,
+// neighbourhood, city, county, country" line for the location field and toast.
+function formatAddress(address: Record<string, unknown> | undefined): string {
+  if (!address) return "";
+  const { road, neighbourhood, city, county, country } = address as Record<string, string | undefined>;
+  return [road, neighbourhood, city, county, country].filter(Boolean).join(", ");
+}
+
 export function SampleForm({
   users,
   samples,
@@ -119,24 +127,7 @@ export function SampleForm({
                       lon,
                     });
 
-                    // Destructuring the location object to extract necessary fields
-                    const { road, neighbourhood, city, county, country } =
-                      geodata.location;
-
-                    // Constructing the address string with safe checks
-                    const addressParts = [
-                      road,
-                      neighbourhood,
-                      city,
-                      county,
-                      country,
-                    ].filter((part) => part !== undefined); // Filters out undefined parts to avoid "undefined" in the string
-
-                    // Join the parts with a comma and space
-                    const address = addressParts.join(", ");
-
-                    // Setting the value in the form
-                    form.setValue("location", address);
+                    form.setValue("location", formatAddress(geodata.location));
                   } catch (error) {
                     console.error("Failed to fetch location data:", error);
                     toast.error("Failed to fetch location data");
@@ -176,7 +167,7 @@ export function SampleForm({
         form.setValue("lon", lon);
         fetchNameLocationFromCoordinates({ lat, lon })
           .then((geodata) => {
-            form.setValue("location", geodata.location);
+            form.setValue("location", formatAddress(geodata.location));
           })
           .catch((error) => {
             console.error("Failed to fetch location data:", error);
@@ -370,7 +361,9 @@ export function SampleForm({
 
     if (response.ok) {
       const geodata = await response.json();
-      toast.message(JSON.stringify(geodata.coordinates));
+      const found = geodata.coordinates?.display_name
+        ?? `${geodata.coordinates?.lat}, ${geodata.coordinates?.lon}`;
+      toast.message(`Location found: ${found}`);
       if (geodata.attribution) {
         toast.info(geodata.attribution);
       }
@@ -418,8 +411,7 @@ export function SampleForm({
 
       if (response.ok) {
         const geodata = await response.json();
-        // Displaying information as a message; adjust based on your UI framework's capabilities
-        toast.message(JSON.stringify(geodata));
+        toast.message(`Location found: ${formatAddress(geodata.location) || "unknown"}`);
         if (geodata.attribution) {
           toast.info(geodata.attribution);
         }

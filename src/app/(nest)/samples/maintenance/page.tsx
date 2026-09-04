@@ -132,6 +132,7 @@ export default function MaintenancePage() {
                     <AccordionContent>
                         <DataTable
                             {...sampleHandlers}
+                            tableId="alive"
                             columns={aliveColumns}
                             data={alive}
                             renderToolbar={(table: TanstackTable<any>) => (
@@ -145,6 +146,7 @@ export default function MaintenancePage() {
                     <AccordionContent>
                         <DataTable
                             {...sampleHandlers}
+                            tableId="preserved"
                             columns={deadColumns}
                             data={dead}
                             renderToolbar={(table: TanstackTable<any>) => (
@@ -158,6 +160,7 @@ export default function MaintenancePage() {
                     <AccordionContent>
                         <DataTable
                             {...sampleHandlers}
+                            tableId="position"
                             columns={positionColumns}
                             data={position}
                             renderToolbar={(table: TanstackTable<any>) => (

@@ -63,16 +63,17 @@ import { handleFileDownloads } from "@/utils/handlers/experimentHandlers";
         
         onStatusChange(dataRow._id, key, processedValue); // Send the correctly typed value
       };
-      
+
       return (
-        <Input 
-          className='flex min-w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none' 
-          value={inputValue} 
+        <Input
+          className='flex min-w-24 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+          value={inputValue}
           onChange={handleChange}
           type={typeof dataRow[key] === 'number' ? 'number' : 'text'} // Use number input for numbers
         />
       );
-    }
+    },
+    meta: { label },
   }
 );
 
@@ -128,6 +129,7 @@ export const sortableFilterableColumn = (key, label, filterFn = "includesString"
       </div>
     ),
     filterFn: filterFn,
+    meta: { label },
   }
 );
 
@@ -147,7 +149,8 @@ export const sortableFilterableNumericColumn = (key, label) => ({
     else
       return row[key];
   },
-  filterFn: "inNumberRange"
+  filterFn: "inNumberRange",
+  meta: { label },
 });
 
 
@@ -189,6 +192,22 @@ export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "n
     const row = info.row.original;
     const { onDelete, onUpdateFields } = info.table.options.meta;
     const label = row?.[titleField] || `this ${entityLabel}`;
+    const [deleting, setDeleting] = useState(false);
+
+    // The AlertDialog closes as soon as Action is clicked (Radix's own
+    // behaviour), so the pending state shows on the trash button itself,
+    // which stays visible until the row disappears on revalidation.
+    async function confirmDelete() {
+      setDeleting(true);
+      try {
+        await onDelete(row._id);
+      } catch {
+        // onDelete already reported the failure via toast.
+      } finally {
+        setDeleting(false);
+      }
+    }
+
     return (
       <div className="flex items-center gap-1">
         {editFields.length > 0 && onUpdateFields ? (
@@ -203,8 +222,8 @@ export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "n
         {onDelete ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label={`Delete ${entityLabel}`}>
-                <Trash className="size-4" />
+              <Button variant="ghost" size="icon" aria-label={`Delete ${entityLabel}`} disabled={deleting}>
+                {deleting ? <ArrowClockwise className="size-4 animate-spin" /> : <Trash className="size-4" />}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -214,7 +233,7 @@ export const rowActionsColumn = ({ entityLabel, editFields = [], titleField = "n
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(row._id)}>Delete</AlertDialogAction>
+                <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -259,6 +278,7 @@ export const responsibleColumn = () => (
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Responsible" />
     ),
+    meta: { label: "Responsible" },
   }
 );
 
@@ -282,7 +302,8 @@ export const sampleColumn = (fieldId, fieldname, label, to_traits = false) => {
           <Link href={url} target="_blank">{sampleName}</Link>
         </div>
       );
-    }
+    },
+    meta: { label },
   };
 };
 
@@ -299,6 +320,7 @@ export const recentChangeDateColumn = () => (
       const date = new Date(info.row.original.recentChangeDate);
       return date.toLocaleDateString("en-UK", { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' });
     },
+    meta: { label: "Last Change" },
   }
 );
 
@@ -494,6 +516,7 @@ export const toggleFieldColumn = (key, header, options, { filter = false } = {})
       />
     );
   },
+  meta: { label: header },
 });
 
 export const lifestageColumn = () => toggleFieldColumn("lifestage", "Life Stage", LIFESTAGE_OPTIONS);
@@ -533,6 +556,7 @@ const incrementButtonColumn = (field, header, Icon, tooltip) => ({
       </TooltipProvider>
     );
   },
+  meta: { label: header },
 });
 
 export const fedButtonColumn = () => incrementButtonColumn("fed", "Feed", Carrot, "Record a feeding");
@@ -540,6 +564,7 @@ export const hungryProgressbarColumn = () => (
   {
     accessorKey: "lastFed",
     header: "Belly",
+    meta: { label: "Belly" },
     cell: function Cell(info) {
       const sample = info.row.original;
 
@@ -613,6 +638,7 @@ export function customColumn(def) {
           </Button>
         );
       },
+      meta: { label },
     };
   }
 
@@ -625,6 +651,7 @@ export function customColumn(def) {
       accessorKey: def.field || key,
       header: label,
       cell: (info) => <ProgressFromDate value={info.row.original[def.field || key]} days={def.days} />,
+      meta: { label },
     };
   }
 
@@ -638,6 +665,7 @@ export function customColumn(def) {
       </div>
     ),
     cell: (info) => formatCell(kind, info.getValue()),
+    meta: { label },
   };
 }
 
@@ -755,7 +783,8 @@ export const silktypeColumn = () => ({
     return (
       <SilkTypeBadge silktype={sample.silktype}></SilkTypeBadge>
     );
-  }
+  },
+  meta: { label: "Type of silk" },
 });
 
 
