@@ -1,17 +1,17 @@
 // useCurrentUser.js
+// Uses the global SWRConfig fetcher (src/lib/swr-fetcher.ts), which throws on a
+// non-OK response. With a local `res.json()` fetcher a 401/403 from /api/user or
+// /api/user/role resolved with the error body as data, so a signed-in admin whose
+// request failed silently read back as a non-admin (no admin settings).
 import { useSession } from "next-auth/react";
 import useSWR from 'swr';
 
-const fetcher = url => fetch(url).then(res => res.json());
-
 export const useCurrentUser = () => {
     const { data: session, status } = useSession();
-    
+
     const { data: userData, error } = useSWR(
         session?.user ? '/api/user' : null,
-        fetcher,
         {
-            revalidateIfStale: false,
             revalidateOnFocus: false,
             dedupingInterval: 300000, // 5 minutes
         }
@@ -19,9 +19,7 @@ export const useCurrentUser = () => {
 
     const { data: roleData, error: roleError } = useSWR(
         session?.user ? '/api/user/role' : null,
-        fetcher,
         {
-            revalidateIfStale: false,
             revalidateOnFocus: false,
             dedupingInterval: 300000, // 5 minutes
         }

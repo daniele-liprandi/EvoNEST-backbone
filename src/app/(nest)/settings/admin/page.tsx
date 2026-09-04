@@ -8,6 +8,7 @@ import { Trash } from "@phosphor-icons/react"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { useUserData } from "@/hooks/useUserData"
 import { prepend_path } from "@/lib/utils"
+import { swrFetcher } from "@/lib/swr-fetcher"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -28,8 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface Role {
   value: string
@@ -316,7 +315,7 @@ export default function AdminSettingsPage() {
     roles: Role[]
     permissions: Permission[]
     capabilities: Capability[]
-  }>(isAdmin ? `${prepend_path}/api/config/roles` : null, fetcher, {
+  }>(isAdmin ? `${prepend_path}/api/config/roles` : null, swrFetcher, {
     // The editors seed their draft from this data; a focus revalidation
     // mid-edit would otherwise discard unsaved changes.
     revalidateOnFocus: false,
