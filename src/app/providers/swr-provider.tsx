@@ -2,13 +2,7 @@
 'use client';
 
 import { SWRConfig } from 'swr';
-
-// Define type for cache value
-type State<Data = any, Error = any> = {
-  data?: Data;
-  error?: Error;
-  timestamp?: number;
-};
+import { swrFetcher } from '@/lib/swr-fetcher';
 
 const SWRProvider = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -36,16 +30,7 @@ const SWRProvider = ({ children }: { children: React.ReactNode }) => {
         },
 
         // Configure fetcher globally
-        fetcher: async (url: string) => {
-          const res = await fetch(url);
-          if (!res.ok) {
-            const error = new Error('An error occurred while fetching the data.');
-            // @ts-ignore
-            error.status = res.status;
-            throw error;
-          }
-          return res.json();
-        }
+        fetcher: swrFetcher,
       }}
     >
       {children}

@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Check, CaretLeft } from "@phosphor-icons/react"
 
 import { prepend_path } from "@/lib/utils"
+import { swrFetcher } from "@/lib/swr-fetcher"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -26,8 +27,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
 interface Preset {
   value: string
   label: string
@@ -42,7 +41,7 @@ interface ConfigSetupProps {
 }
 
 function Wizard({ onComplete }: { onComplete: () => void }) {
-  const { data: presets } = useSWR<Preset[]>(`${prepend_path}/api/config/presets`, fetcher)
+  const { data: presets } = useSWR<Preset[]>(`${prepend_path}/api/config/presets`, swrFetcher)
   const [step, setStep] = useState(0)
   const [labName, setLabName] = useState("")
   const [labDescription, setLabDescription] = useState("")

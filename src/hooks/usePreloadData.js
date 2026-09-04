@@ -2,28 +2,20 @@
 import { useCallback } from 'react';
 import { preload } from 'swr';
 import { prepend_path } from '@/lib/utils';
-
-// Global fetcher function matching our SWR config
-const fetcher = async (url) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error('Failed to fetch data');
-  }
-  return res.json();
-};
+import { swrFetcher } from '@/lib/swr-fetcher';
 
 // Preload specific data types
 export const usePreloadData = () => {
   const preloadSamples = useCallback(() => {
-    preload(`${prepend_path}/api/samples`, fetcher);
+    preload(`${prepend_path}/api/samples`, swrFetcher);
   }, []);
 
   const preloadTraits = useCallback(() => {
-    preload(`${prepend_path}/api/traits`, fetcher);
+    preload(`${prepend_path}/api/traits`, swrFetcher);
   }, []);
 
   const preloadExperiments = useCallback(() => {
-    preload(`${prepend_path}/api/experiments`, fetcher);
+    preload(`${prepend_path}/api/experiments`, swrFetcher);
   }, []);
 
   // Preload all data types
