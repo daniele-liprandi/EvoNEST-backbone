@@ -742,7 +742,7 @@ export default function IDTraitPage() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDeleteTrait(trait._id)}>Continue</AlertDialogAction>
+                  <AlertDialogAction onClick={() => handleDeleteTrait(trait._id).catch(() => {})}>Continue</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -800,7 +800,7 @@ export default function IDTraitPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable columns={traitColumns} data={filteredTraits} onStatusChange={handleStatusChangeTrait}
+            <DataTable columns={traitColumns} data={filteredTraits} onStatusChange={handleStatusChangeTrait} tableId="own"
             ></DataTable>
           </CardContent>
         </Card >
@@ -811,7 +811,7 @@ export default function IDTraitPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <DataTable columns={traitColumns} data={childrenTraits} onStatusChange={handleStatusChangeTrait}
+            <DataTable columns={traitColumns} data={childrenTraits} onStatusChange={handleStatusChangeTrait} tableId="children"
             ></DataTable>
           </CardContent>
         </Card >

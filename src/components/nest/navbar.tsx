@@ -167,6 +167,10 @@ export function NavBar() {
   const router = useRouter();
   const [userDatabases, setUserDatabases] = useState<string[]>([]);
   const [activeDatabase, setActiveDatabase] = useState<string>("");
+  // Switching database now navigates with router.push instead of a full page
+  // reload (see handleDatabaseChange), so the mobile sheet no longer gets
+  // torn down for free by the reload — close it explicitly instead.
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Owned here (not inside DeveloperNewsCard) so the bell's badge and the
   // popover's list agree on the same fetch and the same dismissals.
@@ -237,9 +241,13 @@ export function NavBar() {
       toast.success("Database changed successfully");
 
       // Every cached SWR response (samples, users, traits...) belongs to the
-      // database we just left. Drop it all so mounted pages refetch under
-      // the new one instead of showing the previous database's data.
-      await mutate(() => true, undefined, { revalidate: true });
+      // database we just left. Revalidate it all in the background — not
+      // awaited, so this doesn't stall the navigation below on every
+      // in-flight request across the app — so mounted components (this
+      // navbar included, since it doesn't unmount on navigation) pick up
+      // the new database instead of keeping the previous one's data.
+      mutate(() => true, undefined, { revalidate: true });
+      setMobileMenuOpen(false);
       router.push("/home");
     } catch (error) {
       console.error("Error changing database:", error);
@@ -324,7 +332,7 @@ export function NavBar() {
       {/* -------------------------------------------------------------------------------------- */}
       {/*                                  Mobiles and Vertical                                  */}
       {/* -------------------------------------------------------------------------------------- */}
-      <Sheet>
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <List className="h-5 w-5" />

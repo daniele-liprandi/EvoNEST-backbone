@@ -5,15 +5,20 @@ import { debounce } from "@/utils/debounce";
 
 
 export const handleDeleteExperiment = async (experimentId: any) => {
-  const res = await fetch(`${prepend_path}/api/experiments`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: experimentId })
-  });
-  mutate(`${prepend_path}/api/experiments`);
-  if (!res.ok) {
+  try {
+    const res = await fetch(`${prepend_path}/api/experiments`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: experimentId })
+    });
+    if (!res.ok) throw new Error('Could not delete the experiment');
+  } catch (e) {
+    // Catches both a non-OK response and fetch() itself rejecting (offline,
+    // DNS/CORS) — either way the delete didn't happen.
     toast.error('Could not delete the experiment');
-    throw new Error('Could not delete the experiment');
+    throw e;
+  } finally {
+    mutate(`${prepend_path}/api/experiments`);
   }
 };
 

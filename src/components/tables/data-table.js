@@ -89,6 +89,7 @@ const fuzzyFilter = (row, columnId, value, addMeta) => {
  *   bulkEntityLabel?: string,
  *   renderToolbar?: ((table: any) => any) | null,
  *   renderBulkActions?: ((table: any) => any) | null,
+ *   tableId?: string,
  * }} props
  */
 export function DataTable({
@@ -106,12 +107,18 @@ export function DataTable({
   bulkEntityLabel = "row",
   renderToolbar = null,
   renderBulkActions = null,
+  // Distinguishes multiple DataTables on the same route (e.g. the tables on
+  // /samples/maintenance, or "own"/"children" on a sample's trait page) so
+  // they don't share one storage key. Pages with a single table can leave
+  // this out.
+  tableId = "",
 }) {
   const pathname = usePathname();
+  const storageKey = tableId ? `${pathname}::${tableId}` : pathname;
   // Read once per mount, not on every render.
   const storedRef = useRef(null);
   if (storedRef.current === null) {
-    storedRef.current = readStoredTableState(pathname) ?? {};
+    storedRef.current = readStoredTableState(storageKey) ?? {};
   }
   const stored = storedRef.current;
 
@@ -128,12 +135,12 @@ export function DataTable({
   // coming back to this table (or reopening a sample and returning) doesn't
   // reset them to the defaults.
   useEffect(() => {
-    writeStoredTableState(pathname, {
+    writeStoredTableState(storageKey, {
       sorting,
       columnVisibility,
       pageSize: pagination.pageSize,
     });
-  }, [pathname, sorting, columnVisibility, pagination.pageSize]);
+  }, [storageKey, sorting, columnVisibility, pagination.pageSize]);
 
   const table = useReactTable({
     data,

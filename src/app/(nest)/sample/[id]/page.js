@@ -84,6 +84,19 @@ export default function IdPage() {
     await handleStatusChangeSample(sampleId, "parentId", newParentId, true);
   }
 
+  // Shared by the desktop and mobile Delete buttons below, so the two
+  // copies of the confirm dialog can't drift in behaviour.
+  const handleDeleteAndBack = async () => {
+    try {
+      await handleDeleteSample(sample._id);
+      /* go back to previous page */
+      window.history.back();
+    } catch {
+      // handleDeleteSample already showed an error toast; stay on the page
+      // instead of navigating away from a sample that is still there.
+    }
+  };
+
   const handleSearch = (e) => {
     if (e.key === 'Enter') {
       const foundSample = samplesData.find(sample => sample.name.toLowerCase().includes(searchInput.toLowerCase()) || sample._id.includes(searchInput));
@@ -229,12 +242,7 @@ export default function IdPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => {
-                        handleDeleteSample(sample._id)
-                        /* go back to previous page */
-                        window.history.back()
-                      }
-                      }>Continue</AlertDialogAction>
+                      <AlertDialogAction onClick={handleDeleteAndBack}>Continue</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -306,12 +314,7 @@ export default function IdPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => {
-                      handleDeleteSample(sample._id)
-                      /* go back to previous page */
-                      window.history.back()
-                    }
-                    }>Continue</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDeleteAndBack}>Continue</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
