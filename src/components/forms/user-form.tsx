@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
+import { CircleNotch } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -35,7 +35,7 @@ const formSchema = z.object({
     databases: z.array(z.string()).min(1, { message: "At least one database must be selected" }),
 })
 
-export function UserForm({}) {
+export function UserForm({ onSuccess }: { onSuccess?: () => void } = {}) {
     const { isAdmin } = useCurrentUser();
     const { databases, isDatabasesLoading, databasesError } = useDatabases();
     
@@ -86,6 +86,7 @@ export function UserForm({}) {
                     description: `Created user: ${values.name} with role: ${values.role}`,
                 });
                 form.reset(); // Reset form after successful submission
+                onSuccess?.();
             } else {
                 toast.error("Failed to create user", {
                     description: result.error || "An unknown error occurred",
@@ -220,7 +221,10 @@ export function UserForm({}) {
                     )}
                 />
 
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting && <CircleNotch className="animate-spin" />}
+                    Submit
+                </Button>
             </form>
         </Form>
     )

@@ -7,7 +7,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarDots } from "@phosphor-icons/react";
+import { CalendarDots, CircleNotch } from "@phosphor-icons/react";
 import { format } from "date-fns";
 
 import { ComboFormBox } from "@/components/forms/combo-form-box";
@@ -77,12 +77,14 @@ export function SampleForm({
   id,
   user,
   page,
+  onSuccess,
 }: {
   users: any;
   samples: any;
   id?: string | number;
   user: any;
   page?: string;
+  onSuccess?: () => void;
 }) {
   const { sampletypes, samplesubtypes } = useConfigTypes();
   const { idGeneration, labInfo, loading: settingsLoading } = useMainSettings();
@@ -271,7 +273,10 @@ export function SampleForm({
     notes?: string;
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  // keepOpen distinguishes the two submit buttons: "Submit" closes the dialog
+  // via onSuccess, "Save and add another" clears the form for the next entry
+  // and leaves the dialog open.
+  async function onSubmit(values: z.infer<typeof formSchema>, keepOpen = false) {
     const method = "create";
     const endpoint = `${prepend_path}/api/samples`;
 
@@ -320,6 +325,24 @@ export function SampleForm({
       toast.success("Sample saved");
 
       mutate(`${prepend_path}/api/samples`);
+
+      if (keepOpen) {
+        // Keep type, parent and responsible: entering a run of samples of the
+        // same kind is the point of this button.
+        form.reset({
+          nomenclature: "",
+          name: "",
+          type: values.type,
+          parentId: values.parentId,
+          responsible: values.responsible,
+          sex: "unknown",
+          date: values.date,
+          includeSubsampleShortened: true,
+          custom: {},
+        });
+      } else {
+        onSuccess?.();
+      }
     } catch (error) {
       console.error("Error submitting the form", error);
       toast.error("Error!", {
@@ -887,7 +910,7 @@ export function SampleForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-4">
         <ComboFormBox
           control={form.control}
           setValue={form.setValue}
@@ -934,9 +957,21 @@ export function SampleForm({
           )}
         />
 
-        <Button key="submit" type="submit">
-          Submit
-        </Button>
+        <div className="flex gap-2">
+          <Button key="submit" type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting && <CircleNotch className="animate-spin" />}
+            Submit
+          </Button>
+          <Button
+            key="submit-and-add-another"
+            type="button"
+            variant="outline"
+            disabled={form.formState.isSubmitting}
+            onClick={form.handleSubmit((values) => onSubmit(values, true))}
+          >
+            Save and add another
+          </Button>
+        </div>
       </form>
     </Form>
   );

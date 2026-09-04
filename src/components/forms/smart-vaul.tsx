@@ -84,6 +84,12 @@ export function SmartVaul({
       </Button>
     );
 
+  // Closes the dialog once a form's submit actually succeeds, so a saved
+  // record doesn't sit there re-editable/re-submittable. Sample creation
+  // instead gets its own "Save and add another" button that resets in place
+  // for entering several samples in a row without this firing.
+  const handleSuccess = React.useCallback(() => setOpen(false), []);
+
   const body =
     status !== "authenticated" ? (
       <div className="space-y-3 p-4">
@@ -92,18 +98,19 @@ export function SmartVaul({
         <Skeleton className="h-9 w-full" />
       </div>
     ) : formType === "traits" ? (
-      <TraitForm users={users} samples={samples} user={user} />
+      <TraitForm users={users} samples={samples} user={user} onSuccess={handleSuccess} />
     ) : formType === "samples" ? (
-      <SampleForm users={users} samples={samples} id={id} user={user} page={page} />
+      <SampleForm users={users} samples={samples} id={id} user={user} page={page} onSuccess={handleSuccess} />
     ) : formType === "experiments" ? (
       <ExperimentForm
         users={users}
         samples={samples}
         user={user}
         experiments={experiments}
+        onSuccess={handleSuccess}
       />
     ) : (
-      <UserForm />
+      <UserForm onSuccess={handleSuccess} />
     );
 
   if (isMobile) {

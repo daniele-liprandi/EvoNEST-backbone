@@ -1,6 +1,7 @@
+// Uses the global SWRConfig fetcher (src/app/providers/swr-provider.tsx), which
+// throws on a non-OK response so `experimentsError`/`experimentError` actually
+// reflect a failed request instead of resolving with the error body as data.
 import useSWR from 'swr';
-
-const fetcher = url => fetch(url).then(res => res.json());
 
 export const useExperimentsData = (
     prependPath, 
@@ -17,7 +18,7 @@ export const useExperimentsData = (
     
     const url = `${prependPath}/api/experiments${params.toString() ? '?' + params.toString() : ''}`;
     
-    const { data, error, isValidating } = useSWR(url, fetcher, options);
+    const { data, error, isValidating } = useSWR(url, options);
     
     return {
         experimentsData: data,
@@ -44,7 +45,7 @@ export const useExperimentData = (
         type ? `type=${type}` : ''
     }`;
     
-    const { data, error, isValidating } = useSWR(url, fetcher, options);
+    const { data, error, isValidating } = useSWR(url, options);
     
     return {
         experimentData: data,

@@ -12,6 +12,7 @@ This form is used to upload new files, and create the required experiment entry 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
+import { CircleNotch } from "@phosphor-icons/react"
 
 import { ComboFormBox } from "@/components/forms/combo-form-box"
 import { Label } from "@/components/ui/label"
@@ -45,7 +46,7 @@ import { linkFileToEntry, uploadFile } from "@/utils/handlers/fileHandlers"
 import { ParserPreview } from "./ParserPreview"
 import { DataFormatPreview } from "./DataFormatPreview"
 
-export function ExperimentForm({ users, samples, user, experiments, defaultFileList }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList }) {
+export function ExperimentForm({ users, samples, user, experiments, defaultFileList, onSuccess }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList, onSuccess?: () => void }) {
     const [allFileData, setAllFileData] = useState<Array<Partial<ExperimentFormValues>>>([]);
     const [files, setFiles] = useState<FileList | null>(null);
     const [checkSaveFile, setCheckSaveFile] = useState(true);
@@ -105,6 +106,11 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
         const method = 'create';
         const endpointexperiment = `${prepend_path}/api/experiments`;
         let fileId: string | null = null;
+        // Some per-file branches below report a failure via toast without
+        // rejecting their promise, so Promise.all alone can't tell success
+        // from failure. Track it explicitly so the dialog only closes when
+        // every file actually made it.
+        let hadFailure = false;
 
         // Validate experiment type and data compatibility
         if (checkParserSupport(formValues.type)) {
@@ -206,6 +212,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     } catch (error) {
                         console.error("Error uploading file:", error);
                         toast.error("Failed to upload file");
+                        hadFailure = true;
                         return;
                     }
                 }
@@ -272,6 +279,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                             toast.error("Error!", {
                                 description: errorData.error || "Error submitting the form.",
                             });
+                            hadFailure = true;
                         } else {
                             const result = await experimentResponse.json();
                             // If we have a file, link it to the newly created experiment
@@ -284,6 +292,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     catch (error) {
                         console.error("Error uploading file:", error);
                         toast.error("Failed to upload file");
+                        hadFailure = true;
                     }
                 } else if (fileValues.dataFields && fileValues.dataFields.experimentData) {
                     // Handle structured experiment data with embedded traits
@@ -339,7 +348,10 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
             mutate(`${prepend_path}/api/experiments`);
             mutate(`${prepend_path}/api/traits`);
 
-            setAllFileData([]);
+            if (!hadFailure) {
+                setAllFileData([]);
+                onSuccess?.();
+            }
 
         } catch (error) {
             console.error("Error submitting the form", error);
@@ -716,8 +728,9 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
           </Tabs>
           <Button
             type="submit"
-            disabled={allFileData.length === 0}
+            disabled={allFileData.length === 0 || form.formState.isSubmitting}
           >
+            {form.formState.isSubmitting && <CircleNotch className="animate-spin" />}
             Submit
           </Button>
         </form>
