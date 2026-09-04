@@ -1,9 +1,11 @@
-// useUserData.js
+// useFilesData.js
+// Uses the global SWRConfig fetcher (src/app/providers/swr-provider.tsx), which
+// throws on a non-OK response so `filesError` actually reflects a failed
+// request instead of resolving with the error body as if it were data.
 import useSWR from 'swr';
-const fetcher = url => fetch(url).then(res => res.json());
 
 export const useFilesData = (prependPath) => {
-    const { data, error } = useSWR(`${prependPath}/api/files`, fetcher);
+    const { data, error } = useSWR(`${prependPath}/api/files`);
     return {
         filesData: data,
         filesError: error,

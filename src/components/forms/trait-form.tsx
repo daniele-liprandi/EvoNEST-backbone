@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarDots } from "@phosphor-icons/react"
+import { CalendarDots, CircleNotch } from "@phosphor-icons/react"
 import { format } from "date-fns"
 import { mutate } from "swr"
 
@@ -53,7 +53,7 @@ const formSchema = z.object({
 
 
 
-export function TraitForm({ users, samples, user }: { users: any, samples: any, user: any }) {
+export function TraitForm({ users, samples, user, onSuccess }: { users: any, samples: any, user: any, onSuccess?: () => void }) {
     const [files, setFiles] = useState<FileList | null>(null);
     const [selectedTypeFeatures, setSelectedTypeFeatures] = useState<LabelType>();
     const { traittypes, equipmenttypes } = useConfigTypes();
@@ -176,6 +176,7 @@ export function TraitForm({ users, samples, user }: { users: any, samples: any, 
                         await linkFileToEntry(fileId, 'trait', response.id);
                 });
             }
+            onSuccess?.();
         }
     }
 
@@ -308,7 +309,10 @@ export function TraitForm({ users, samples, user }: { users: any, samples: any, 
                         />
                     </TabsContent>
                 </Tabs>
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting && <CircleNotch className="animate-spin" />}
+                    Submit
+                </Button>
             </form>
         </Form >
     )
