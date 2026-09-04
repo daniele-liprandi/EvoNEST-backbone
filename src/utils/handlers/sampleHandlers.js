@@ -8,12 +8,16 @@ export const handleEditSample = async (sample, setEditingSample) => {
 };
 
 export const handleDeleteSample = async (sampleId) => {
-    await fetch(`${prepend_path}/api/samples`, {
+    const res = await fetch(`${prepend_path}/api/samples`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: sampleId })
     });
     mutate(`${prepend_path}/api/samples`);
+    if (!res.ok) {
+        toast.error('Could not delete the sample');
+        throw new Error('Could not delete the sample');
+    }
 };
 
 export const handleBulkDeleteSamples = async (sampleIds) => {

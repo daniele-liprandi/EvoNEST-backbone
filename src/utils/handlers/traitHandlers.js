@@ -8,12 +8,16 @@ export const handleEditTrait = async (trait, setEditingTrait) => {
 };
 
 export const handleDeleteTrait = async (traitId) => {
-    await fetch(`${prepend_path}/api/traits`, {
+    const res = await fetch(`${prepend_path}/api/traits`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: traitId })
     });
     mutate(`${prepend_path}/api/traits`);
+    if (!res.ok) {
+        toast.error('Could not delete the trait');
+        throw new Error('Could not delete the trait');
+    }
 };
 
 export const handleBulkDeleteTraits = async (traitIds) => {

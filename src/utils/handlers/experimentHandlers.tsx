@@ -5,13 +5,16 @@ import { debounce } from "@/utils/debounce";
 
 
 export const handleDeleteExperiment = async (experimentId: any) => {
-  // DELETE request to remove sample
-  await fetch(`${prepend_path}/api/experiments`, {
+  const res = await fetch(`${prepend_path}/api/experiments`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: experimentId })
   });
   mutate(`${prepend_path}/api/experiments`);
+  if (!res.ok) {
+    toast.error('Could not delete the experiment');
+    throw new Error('Could not delete the experiment');
+  }
 };
 
 export const handleBulkDeleteExperiments = async (experimentIds: string[]) => {

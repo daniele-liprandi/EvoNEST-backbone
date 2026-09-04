@@ -30,10 +30,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { CaretLeft, CaretRight, CaretDoubleLeft, CaretDoubleRight } from "@phosphor-icons/react";
 
 import { BulkActionsBar } from "@/components/tables/bulk-actions-bar";
+
+// Sorting, column visibility and page size are per-table preferences, kept
+// under the page's own pathname so different sample-type tables don't share
+// a setting. Page index is deliberately not persisted here: starting back at
+// page 0 is safer than reopening on a page that may no longer exist.
+const STORAGE_PREFIX = "evonest.table.";
+
+function readStoredTableState(key) {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_PREFIX + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredTableState(key, state) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(state));
+  } catch {
+    // Storage may be unavailable (private mode, quota) — the preference just
+    // doesn't persist this time.
+  }
+}
 
 const fuzzyFilter = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value);
@@ -80,14 +107,33 @@ export function DataTable({
   renderToolbar = null,
   renderBulkActions = null,
 }) {
+  const pathname = usePathname();
+  // Read once per mount, not on every render.
+  const storedRef = useRef(null);
+  if (storedRef.current === null) {
+    storedRef.current = readStoredTableState(pathname) ?? {};
+  }
+  const stored = storedRef.current;
+
   const [columnFilters, setColumnFilters] = useState([]);
-  const [sorting, setSorting] = useState([]);
+  const [sorting, setSorting] = useState(() => stored.sorting ?? []);
   const [rowSelection, setRowSelection] = useState({});
-  const [columnVisibility, setColumnVisibility] = useState({});
+  const [columnVisibility, setColumnVisibility] = useState(() => stored.columnVisibility ?? {});
   const [pagination, setPagination] = useState({
-    pageIndex: 0, //initial page index
-    pageSize: 10, //default page size
+    pageIndex: 0, //initial page index — not persisted, see readStoredTableState above
+    pageSize: stored.pageSize ?? 10,
   });
+
+  // Persist sorting/column visibility/page size per page, so leaving and
+  // coming back to this table (or reopening a sample and returning) doesn't
+  // reset them to the defaults.
+  useEffect(() => {
+    writeStoredTableState(pathname, {
+      sorting,
+      columnVisibility,
+      pageSize: pagination.pageSize,
+    });
+  }, [pathname, sorting, columnVisibility, pagination.pageSize]);
 
   const table = useReactTable({
     data,
@@ -124,6 +170,17 @@ export function DataTable({
       pagination,
     },
   });
+
+  // autoResetPageIndex is off above so sorting/revalidation don't bounce the
+  // user back to page 1, but that means a filter that shrinks the result set
+  // can leave the current page past the end ("No results." with rows sitting
+  // on an earlier page). Snap back only in that case.
+  useEffect(() => {
+    const total = table.getFilteredRowModel().rows.length;
+    if (total > 0 && pagination.pageIndex > 0 && pagination.pageIndex * pagination.pageSize >= total) {
+      table.setPageIndex(0);
+    }
+  }, [data, columnFilters, pagination.pageIndex, pagination.pageSize]);
 
   return (
     <div className="flex flex-col gap-3">

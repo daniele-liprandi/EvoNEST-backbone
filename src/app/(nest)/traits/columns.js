@@ -26,6 +26,7 @@ export const baseColumns = [
   {
     accessorKey: "std",
     header: "Standard Deviation",
+    meta: { label: "Standard Deviation" },
     // show only 4 decimal places
     cell: (info) => {
       const trait = info.row.original;
@@ -39,6 +40,7 @@ export const baseColumns = [
   {
     accessorKey: "listvals",
     header: "List of Values",
+    meta: { label: "List of Values" },
     // show only first 5 values
     cell: (info) => {
       const trait = info.row.original;
@@ -51,6 +53,7 @@ export const baseColumns = [
   {
     accessorKey: "trait_download",
     header: "Download JSON",
+    meta: { label: "Download JSON" },
     cell: (info) => {
       const trait = info.row.original;
       return (

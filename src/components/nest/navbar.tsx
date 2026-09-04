@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { mutate } from "swr";
 import {
   BugBeetle,
   Bell,
@@ -235,8 +236,11 @@ export function NavBar() {
       setActiveDatabase(data.activeDatabase);
       toast.success("Database changed successfully");
 
-      // Redirect to home page and refresh
-      window.location.href = "/home";
+      // Every cached SWR response (samples, users, traits...) belongs to the
+      // database we just left. Drop it all so mounted pages refetch under
+      // the new one instead of showing the previous database's data.
+      await mutate(() => true, undefined, { revalidate: true });
+      router.push("/home");
     } catch (error) {
       console.error("Error changing database:", error);
       toast.error("Failed to change database");
@@ -349,47 +353,39 @@ export function NavBar() {
                 ))}
               </SelectContent>
             </Select>
+            {/* Same sections as the desktop menu (samplesProps included, so a
+                lab's custom sample types and Settings show up here too),
+                just laid out as a flat list instead of dropdowns. */}
+            {[usersProps, samplesProps, experimentsProps, traitsProps, settingsProps].map((section) => (
+              <div key={section.label} className="grid gap-2">
+                <Link
+                  href={section.href}
+                  className="text-foreground hover:text-primary"
+                >
+                  {section.label}
+                </Link>
+                {section.options.length > 0 && (
+                  <div className="grid gap-2 pl-3 text-base">
+                    {section.options.map((option) => (
+                      <Link
+                        key={option.href}
+                        href={prepend_path + option.href}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        {option.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
             <Link
-              href="/users"
+              href="https://daniele-liprandi.github.io/EvoNEST-backbone/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground"
             >
-              Users
-            </Link>
-            <Link
-              href="/samples"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Samples
-            </Link>
-            <Link
-              href="/samples/maintenance"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Maintenance
-            </Link>
-            <Link
-              href="/experiments"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Experiments
-            </Link>
-            <Link
-              href="/traits"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Traits
-            </Link>
-            <Link
-              href="/traits/analysis"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Trait analysis
-            </Link>
-            <Link
-              href="/samples/qrlabels"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              QR labels
+              Documentation
             </Link>
             <Link
               href="/api-docs"
