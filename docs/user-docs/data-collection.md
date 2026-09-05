@@ -46,14 +46,14 @@ Record measurement data with optional file attachments.
 
 1. Navigate to any Traits page
 2. Click **"Add Trait"**
-3. Select trait type from configured options
+3. Select the trait quantity from configured options
 4. Enter measurement data
 5. Optionally attach images
 6. Submit with validation
 
 **Form Structure:**
 
-- **General**: Trait type and equipment selection
+- **General**: Trait quantity and equipment selection
 - **Details**: Responsible person and measurement date
 - **Values**: Sample selection, measurements, and units
 
@@ -62,7 +62,7 @@ Record measurement data with optional file attachments.
 - **Single values**: Enter one measurement
 - **Multiple values**: Enter comma, semicolon, or space-separated list
 - **Automatic calculations**: System calculates average and standard deviation
-- **Units**: Auto-populated from trait type configuration
+- **Units**: Auto-populated from trait quantity configuration
 
 **File Attachments:**
 
