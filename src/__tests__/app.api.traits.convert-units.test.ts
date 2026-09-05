@@ -32,8 +32,8 @@ describe("POST /api/traits/convert-units", () => {
         findOne: (_db, _c, filter) => Effect.succeed(config((filter as { type: string }).type)),
         find: () =>
           Effect.succeed([
-            { _id: new ObjectId(), type: "diameter", measurement: 1, unit: "mm" },
-            { _id: new ObjectId(), type: "load", measurement: 2, unit: "N" },
+            { _id: new ObjectId(), quantity: "diameter", value: 1, unit: "mm" },
+            { _id: new ObjectId(), quantity: "load", value: 2, unit: "N" },
           ]),
         updateOne,
       }),

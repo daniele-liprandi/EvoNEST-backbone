@@ -98,7 +98,7 @@ describe("export routes: API key auth", () => {
           testMongo({
             findOne: () => Effect.succeed(userDoc),
             find: () =>
-              Effect.succeed([{ _id: new ObjectId(), type: "diameter", measurement: 10, nfibres: "2" }]),
+              Effect.succeed([{ _id: new ObjectId(), quantity: "diameter", value: 10, nfibres: "2" }]),
             updateOne: () => Effect.succeed({} as never),
           }),
         ),
@@ -108,6 +108,6 @@ describe("export routes: API key auth", () => {
     const body = await res.json();
     expect(body.originalTraits).toBe(1);
     expect(body.derivedTraits).toBe(1);
-    expect(body.traits.at(-1).type).toBe("cross-section");
+    expect(body.traits.at(-1).quantity).toBe("cross-section");
   });
 });
