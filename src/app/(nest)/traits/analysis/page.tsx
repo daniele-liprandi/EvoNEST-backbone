@@ -114,7 +114,7 @@ export default function TraitAnalysisPage() {
     }
 
     const request: AnalysisRequest = {
-      traitType: selectedTrait,
+      quantity: selectedTrait,
       groupBy: selectedGroupBy,
       filters: Object.keys(filters).length > 0 ? filters : undefined,
       unitConversion: true,

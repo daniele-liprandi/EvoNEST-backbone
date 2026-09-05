@@ -1,4 +1,4 @@
-import { dateColumn, logbookColumn, measurementColumn, responsibleColumn, rowActionsColumn, sampleColumn, selectColumn, sortableFilterableColumn, unitColumn } from "@/components/tables/columns"
+import { dateColumn, logbookColumn, valueColumn, responsibleColumn, rowActionsColumn, sampleColumn, selectColumn, sortableFilterableColumn, unitColumn } from "@/components/tables/columns"
 import { traitEditFields } from "@/components/tables/edit-fields"
 import { Button } from "@/components/ui/button"
 import { handleTraitDataDownload } from "@/utils/handlers/traitHandlers"
@@ -10,13 +10,13 @@ export const baseColumns = [
   logbookColumn(),
   sampleColumn("sampleId", "sampleName", "Sample", true), // go directly to the traits page
   sampleColumn("animalId", "animalName", "Animal"),
-  sortableFilterableColumn("type", "Trait type", "equals"),
+  sortableFilterableColumn("quantity", "Quantity", "equals"),
   sortableFilterableColumn("sampleType", "Sample type", "equals"),
   sortableFilterableColumn("sampleSubType", "Sample subtype", "equals"),
   sortableFilterableColumn("detail", "Sample detail", "equals"),
   sortableFilterableColumn("responsibleName", "Responsible", "equals"),
   dateColumn(),
-  measurementColumn(),
+  valueColumn(),
   unitColumn(),
   sortableFilterableColumn("equipment", "Equipment", "equals"),
   {
@@ -63,5 +63,5 @@ export const baseColumns = [
       );
     },
   },
-  rowActionsColumn({ entityLabel: "trait", editFields: traitEditFields, titleField: "type" }),
+  rowActionsColumn({ entityLabel: "trait", editFields: traitEditFields, titleField: "quantity" }),
 ]

@@ -61,7 +61,7 @@ export const HistogramWithBins = ({ data }) => {
 export const HistogramCardWithColumnsFilter = ({ data, datacolumns }) => {
   const [selectedColumn, setSelectedColumn] = useState(datacolumns[0].value);
 
-  const filteredData = data.filter(d => d.type === selectedColumn).map(d => d.measurement);
+  const filteredData = data.filter(d => d.quantity === selectedColumn).map(d => d.value);
 
   return (
     <Card>
