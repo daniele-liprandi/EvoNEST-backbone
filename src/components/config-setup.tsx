@@ -7,6 +7,7 @@ import { Check, CaretLeft } from "@phosphor-icons/react"
 
 import { prepend_path } from "@/lib/utils"
 import { swrFetcher } from "@/lib/swr-fetcher"
+import { suggestPreset } from "@/shared/config/lab-presets"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -22,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -46,7 +48,16 @@ function Wizard({ onComplete }: { onComplete: () => void }) {
   const [labName, setLabName] = useState("")
   const [labDescription, setLabDescription] = useState("")
   const [preset, setPreset] = useState("generic")
+  const [presetTouched, setPresetTouched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+
+  const suggested = suggestPreset(labDescription)
+
+  // Follow the description's suggestion until the user picks a preset
+  // themselves; a manual choice always wins from then on.
+  useEffect(() => {
+    if (!presetTouched && suggested) setPreset(suggested)
+  }, [suggested, presetTouched])
 
   const apply = async () => {
     setSubmitting(true)
@@ -116,7 +127,10 @@ function Wizard({ onComplete }: { onComplete: () => void }) {
               <button
                 key={p.value}
                 type="button"
-                onClick={() => setPreset(p.value)}
+                onClick={() => {
+                  setPreset(p.value)
+                  setPresetTouched(true)
+                }}
                 className={cn(
                   "rounded-lg border p-3 text-left transition-colors",
                   preset === p.value
@@ -124,8 +138,13 @@ function Wizard({ onComplete }: { onComplete: () => void }) {
                     : "hover:border-primary/40 hover:bg-muted/30",
                 )}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{p.label}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="font-medium">{p.label}</span>
+                    {p.value === suggested && (
+                      <Badge variant="secondary">Suggested for you</Badge>
+                    )}
+                  </span>
                   {preset === p.value && <Check className="size-4 text-primary" />}
                 </div>
                 <p className="text-sm text-muted-foreground">{p.description}</p>
