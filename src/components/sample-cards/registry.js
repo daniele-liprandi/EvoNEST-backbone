@@ -3,7 +3,7 @@
 // opt into a card built for another type through its `cards` list. There is no
 // map keyed by literal type names, so a new type needs no edit here.
 
-import { PlantCard } from './PlantCard';
+import { CropCard } from './CropCard';
 import { SoilCard } from './SoilCard';
 import { FertilizerCard } from './FertilizerCard';
 import { PestCard } from './PestCard';
@@ -21,7 +21,7 @@ import { LabelSampleCard } from './LabelSampleCard';
 
 // Add a new card here and nowhere else.
 export const ALL_CARDS = [
-  PlantCard,
+  CropCard,
   SoilCard,
   FertilizerCard,
   PestCard,

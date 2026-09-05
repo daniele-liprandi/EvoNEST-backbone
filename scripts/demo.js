@@ -112,7 +112,7 @@ const DEMO_DATA = {
       family: "Fagaceae",
       genus: "Quercus",
       species: "robur",
-      type: "plant", // Using 'plant' type now
+      type: "crop",
       responsible:  "65f1111111111111111111111",
       date: "2024-04-05",
       location: "University Botanical Garden",
