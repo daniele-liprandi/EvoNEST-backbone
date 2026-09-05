@@ -83,17 +83,17 @@ export class MyInstrumentParser extends BaseDataFormatParser {
             // Extract traits from data
             const traits = [
                 {
-                    traitName: 'temperature_avg',
+                    method: 'create',
+                    quantity: 'temperature_avg',
                     value: this.calculateAverage(measurements, 'temperature'),
                     unit: '°C',
-                    method: 'calculated',
                     notes: 'Average temperature across all measurements'
                 },
                 {
-                    traitName: 'pressure_max',
+                    method: 'create',
+                    quantity: 'pressure_max',
                     value: this.calculateMaximum(measurements, 'pressure'),
                     unit: 'Pa',
-                    method: 'calculated',
                     notes: 'Maximum pressure recorded'
                 }
             ];

@@ -90,19 +90,19 @@ describe('createTraits', () => {
   it('fills the unit from the configured trait type when omitted', async () => {
     stubFetch()
     const res: any = await (createTraits.execute as any)({
-      records: [{ type: 'mass', measurement: 5, sampleName: 'Ara1', date: '2026-01-01' }],
+      records: [{ quantity: 'mass', value: 5, sampleName: 'Ara1', date: '2026-01-01' }],
       dbName: 'labdb',
     })
     expect(res.records[0].unit).toBe('g')
     expect(res.warnings).toContainEqual(expect.stringMatching(/using the configured unit "g"/))
   })
 
-  it('warns about an unconfigured trait type', async () => {
+  it('warns about an unconfigured trait quantity', async () => {
     stubFetch()
     const res: any = await (createTraits.execute as any)({
-      records: [{ type: 'luminance', measurement: 1, sampleName: 'Ara1', date: '2026-01-01' }],
+      records: [{ quantity: 'luminance', value: 1, sampleName: 'Ara1', date: '2026-01-01' }],
       dbName: 'labdb',
     })
-    expect(res.warnings).toContainEqual(expect.stringMatching(/Trait type "luminance" is not configured/))
+    expect(res.warnings).toContainEqual(expect.stringMatching(/Trait quantity "luminance" is not configured/))
   })
 })
