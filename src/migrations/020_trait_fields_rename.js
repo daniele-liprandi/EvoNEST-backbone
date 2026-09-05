@@ -6,6 +6,9 @@ const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27017";
 // On every NEST database:
 //  - rename trait.type -> trait.quantity and trait.measurement -> trait.value,
 //    and swap the type_1 index for quantity_1
+//  - rename the `traittypes` config document to `traitquantities`. The config
+//    enumerates the quantities a lab records; its old name collided with the
+//    word "type" now reserved for sample/experiment axes.
 //  - drop the `method` field from traits, samples, experiments and config, and
 //    from usersdb.users. `method` is the POST request verb; the handlers strip
 //    it before persisting, but older data (and the parser trait path) kept it,
@@ -41,7 +44,7 @@ async function up(testClient = null, options = {}) {
         console.log('Connected successfully to MongoDB');
     }
 
-    const summary = { databases: 0, typeRenamed: 0, measurementRenamed: 0, methodDropped: 0 };
+    const summary = { databases: 0, typeRenamed: 0, measurementRenamed: 0, methodDropped: 0, configRenamed: 0 };
 
     try {
         const dbNames = await client.db().admin().listDatabases();
@@ -75,6 +78,24 @@ async function up(testClient = null, options = {}) {
             // Stale `method` request verb on the NEST collections.
             for (const name of METHOD_COLLECTIONS) {
                 await dropMethod(db, collections, name, summary, isDryRun);
+            }
+
+            // Rename the traittypes config document to traitquantities.
+            if (collections.includes('config')) {
+                const config = db.collection('config');
+                const stale = await config.countDocuments({ type: 'traittypes' });
+                if (stale > 0) {
+                    const clash = await config.countDocuments({ type: 'traitquantities' });
+                    console.log(`Found a 'traittypes' config document`
+                        + `${clash > 0 ? ` and a 'traitquantities' one already present (leaving both)` : ''}.`);
+                    if (clash === 0) {
+                        summary.configRenamed += stale;
+                        if (!isDryRun) {
+                            await config.updateOne({ type: 'traittypes' }, { $set: { type: 'traitquantities' } });
+                            console.log(`Renamed the 'traittypes' config document to 'traitquantities'.`);
+                        }
+                    }
+                }
             }
 
             if (isDryRun) {
@@ -119,11 +140,13 @@ async function up(testClient = null, options = {}) {
         if (isDryRun) {
             console.log(`\nDRY RUN SUMMARY: ${summary.typeRenamed} traits would have 'type' renamed to 'quantity', `
                 + `${summary.measurementRenamed} would have 'measurement' renamed to 'value', `
+                + `${summary.configRenamed} 'traittypes' config documents would be renamed to 'traitquantities', `
                 + `${summary.methodDropped} records would have a stale 'method' field dropped.`);
             console.log(`Run without --dryrun to apply.`);
         } else {
             console.log(`\nLIVE RUN SUMMARY: renamed 'type' on ${summary.typeRenamed} traits, `
-                + `'measurement' on ${summary.measurementRenamed} traits, dropped 'method' from `
+                + `'measurement' on ${summary.measurementRenamed} traits, `
+                + `${summary.configRenamed} 'traittypes' config documents to 'traitquantities', dropped 'method' from `
                 + `${summary.methodDropped} records, across ${summary.databases} databases.`);
         }
 

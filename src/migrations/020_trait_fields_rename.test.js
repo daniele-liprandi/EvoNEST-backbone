@@ -68,9 +68,36 @@ describe('Trait fields rename migration (020)', () => {
         expect((await traits.find({}).toArray()).every(t => t.method === undefined)).toBe(true);
         expect((await samples.findOne({ name: 'S1' })).method).toBeUndefined();
         expect((await experiments.findOne({ name: 'E1' })).method).toBeUndefined();
-        expect((await config.findOne({ type: 'traittypes' })).method).toBeUndefined();
+        expect((await config.findOne({ type: 'traitquantities' })).method).toBeUndefined();
         expect((await users.findOne({ name: 'U1' })).method).toBeUndefined();
         expect(summary.methodDropped).toBe(7);
+    });
+
+    test('renames the traittypes config document to traitquantities', async () => {
+        await traits.insertOne({ quantity: 'mass', value: 1 });
+        await config.insertOne({ type: 'traittypes', data: [{ value: 'mass' }], version: 3 });
+
+        const summary = await up(client, { dryRun: false });
+
+        expect(await config.findOne({ type: 'traittypes' })).toBeNull();
+        const renamed = await config.findOne({ type: 'traitquantities' });
+        expect(renamed.data).toEqual([{ value: 'mass' }]);
+        expect(renamed.version).toBe(3);
+        expect(summary.configRenamed).toBe(1);
+    });
+
+    test('leaves both config documents alone when traitquantities already exists', async () => {
+        await traits.insertOne({ quantity: 'mass', value: 1 });
+        await config.insertMany([
+            { type: 'traittypes', data: [{ value: 'old' }] },
+            { type: 'traitquantities', data: [{ value: 'new' }] },
+        ]);
+
+        const summary = await up(client, { dryRun: false });
+
+        expect((await config.findOne({ type: 'traittypes' })).data).toEqual([{ value: 'old' }]);
+        expect((await config.findOne({ type: 'traitquantities' })).data).toEqual([{ value: 'new' }]);
+        expect(summary.configRenamed).toBe(0);
     });
 
     test('leaves documents without the old fields untouched', async () => {

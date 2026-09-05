@@ -22,7 +22,7 @@ const configAnd = (traits: unknown[]) =>
   testMongo({
     findOne: (_db, _c, filter) =>
       Effect.succeed(
-        ((filter as { type?: string }).type === "traittypes" ? { data: {} } : { data: null }) as never,
+        ((filter as { type?: string }).type === "traitquantities" ? { data: {} } : { data: null }) as never,
       ),
     find: () => Effect.succeed(traits as never[]),
   });

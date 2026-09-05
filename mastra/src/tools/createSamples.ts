@@ -332,7 +332,7 @@ export const createSamples = createTool({
           Effect.orElseSucceed(() => ({
             routes: [],
             sampleTypes: [],
-            traitTypes: [],
+            traitQuantities: [],
             subsampleTypes: [],
           }) satisfies LabSchema),
         )

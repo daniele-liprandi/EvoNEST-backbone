@@ -10,7 +10,7 @@
  *     responses:
  *       200: { description: "{ totalTraits, converted, skipped, details }" }
  *       401: { description: Unauthorized }
- *       500: { description: Trait type configuration missing }
+ *       500: { description: Trait quantities configuration missing }
  */
 
 import { runRoute } from "@/lib/effect";

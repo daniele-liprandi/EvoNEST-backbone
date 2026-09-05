@@ -29,7 +29,7 @@ const post = (body: unknown) =>
 
 const seedConfig = () =>
   mongo.db.collection("config").insertOne({
-    type: "traittypes",
+    type: "traitquantities",
     data: [
       { value: "mass", label: "Mass", unit: "g" },
       { value: "diameter", label: "Diameter", unit: "mm" },
@@ -138,7 +138,7 @@ describe("GET /api/traits/analysis (filter options)", () => {
     await mongo.db.collection("traits").insertOne({ quantity: "mass", value: 1, unit: "g", sampleId: s1.toHexString() });
 
     const body = await (await runRoute(analysisFilterOptions.pipe(Effect.provide(mongo.layer)))).json();
-    expect(body.traitTypes).toEqual(["mass"]);
+    expect(body.traitQuantities).toEqual(["mass"]);
     expect(body.sampleSubTypes).toEqual(["dragline"]); // s1 subsampletype + s2 silktype, deduped
     const groupValues = body.groupByOptions.map((o: { value: string }) => o.value);
     expect(groupValues).toEqual(expect.arrayContaining(["all", "family", "subsampletype", "sex", "plot", "location"]));

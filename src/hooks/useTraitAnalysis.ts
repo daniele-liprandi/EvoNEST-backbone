@@ -44,7 +44,7 @@ export interface GroupByOption {
 }
 
 export interface FilterOptions {
-    traitTypes: string[];
+    traitQuantities: string[];
     sampleSubTypes: string[];
     nfibres: string[];
     groupByOptions: GroupByOption[];

@@ -12,9 +12,9 @@ export const previewConversion = (request: Request) =>
     const { traitIds } = yield* decodeBody(Body)(request);
     const mongo = yield* Mongo;
 
-    const traitTypes = yield* mongo.findOne(dbName, "config", { type: "traittypes" });
-    if (!traitTypes?.data) {
-      return yield* Effect.fail(new InternalError({ message: "Trait types configuration not found" }));
+    const traitQuantities = yield* mongo.findOne(dbName, "config", { type: "traitquantities" });
+    if (!traitQuantities?.data) {
+      return yield* Effect.fail(new InternalError({ message: "Trait quantities configuration not found" }));
     }
     const baseUnits = (yield* mongo.findOne(dbName, "config", { type: "baseunits" }))?.data ?? null;
 
@@ -26,7 +26,7 @@ export const previewConversion = (request: Request) =>
     let willSkip = 0;
 
     for (const trait of traits) {
-      const analysis = analyzeTraitConversion(trait, traitTypes.data, baseUnits);
+      const analysis = analyzeTraitConversion(trait, traitQuantities.data, baseUnits);
       if (!analysis.needsConversion || analysis.newValue === null) {
         willSkip++;
         continue;

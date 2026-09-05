@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import {
   sampletypes as defaultSampleTypes,
-  traittypes as defaultTraitTypes,
+  traitquantities as defaultTraitQuantities,
   equipmenttypes as defaultEquipmentTypes,
   samplesubtypes as defaultSampleSubtypes,
   silkcategories as defaultSilkCategories,
@@ -11,7 +11,7 @@ import {
 
 interface UseConfigTypesResult {
   sampletypes: LabelType[]
-  traittypes: LabelType[]
+  traitquantities: LabelType[]
   equipmenttypes: LabelType[]
   samplesubtypes: LabelType[]
   silkcategories: LabelType[]
@@ -50,13 +50,13 @@ function withFallback<T>(data: T[] | undefined, fallback: T[]): T[] {
  */
 export function useConfigTypes(): UseConfigTypesResult {
   const sampletypes = useSWR('/api/config/types?type=sampletypes', fetchConfigType, swrOptions)
-  const traittypes = useSWR('/api/config/types?type=traittypes', fetchConfigType, swrOptions)
+  const traitquantities = useSWR('/api/config/types?type=traitquantities', fetchConfigType, swrOptions)
   const equipmenttypes = useSWR('/api/config/types?type=equipmenttypes', fetchConfigType, swrOptions)
   const samplesubtypes = useSWR('/api/config/types?type=samplesubtypes', fetchConfigType, swrOptions)
   const silkcategories = useSWR('/api/config/types?type=silkcategories', fetchConfigType, swrOptions)
   const siprefixes = useSWR('/api/config/types?type=siprefixes', fetchConfigType, swrOptions)
 
-  const all = [sampletypes, traittypes, equipmenttypes, samplesubtypes, silkcategories, siprefixes]
+  const all = [sampletypes, traitquantities, equipmenttypes, samplesubtypes, silkcategories, siprefixes]
   const loading = all.some((r) => r.data === undefined && !r.error)
   const error = all.some((r) => r.error) ? 'Failed to fetch configuration' : null
   const refresh = () => {
@@ -65,7 +65,7 @@ export function useConfigTypes(): UseConfigTypesResult {
 
   return {
     sampletypes: withFallback(sampletypes.data, defaultSampleTypes),
-    traittypes: withFallback(traittypes.data, defaultTraitTypes),
+    traitquantities: withFallback(traitquantities.data, defaultTraitQuantities),
     equipmenttypes: withFallback(equipmenttypes.data, defaultEquipmentTypes),
     samplesubtypes: withFallback(samplesubtypes.data, defaultSampleSubtypes),
     silkcategories: withFallback(silkcategories.data, defaultSilkCategories),
@@ -96,11 +96,11 @@ export async function getSampleTypes(): Promise<LabelType[]> {
 }
 
 /**
- * Simple function to get trait types synchronously with defaults
+ * Simple function to get trait quantities synchronously with defaults
  */
-export async function getTraitTypes(): Promise<LabelType[]> {
+export async function getTraitQuantities(): Promise<LabelType[]> {
   try {
-    const response = await fetch('/api/config/types?type=traittypes')
+    const response = await fetch('/api/config/types?type=traitquantities')
     if (response.ok) {
       const config = await response.json()
       if (config && config.data && config.data.length > 0) {
@@ -108,9 +108,9 @@ export async function getTraitTypes(): Promise<LabelType[]> {
       }
     }
   } catch (error) {
-    console.warn('Using default traittypes:', error)
+    console.warn('Using default traitquantities:', error)
   }
-  return defaultTraitTypes
+  return defaultTraitQuantities
 }
 
 /**
@@ -132,7 +132,7 @@ export async function getConfigType(type: string): Promise<LabelType[]> {
   // Return appropriate default based on type
   switch (type) {
     case 'sampletypes': return defaultSampleTypes
-    case 'traittypes': return defaultTraitTypes
+    case 'traitquantities': return defaultTraitQuantities
     case 'equipmenttypes': return defaultEquipmentTypes
     case 'samplesubtypes': return defaultSampleSubtypes
     case 'silkcategories': return defaultSilkCategories

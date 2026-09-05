@@ -8,7 +8,7 @@ export interface SampleTypeConfig {
   label: string
   fields: string[]
 }
-export interface TraitTypeConfig {
+export interface TraitQuantityConfig {
   value: string
   label: string
   unit: string | null
@@ -21,7 +21,7 @@ export interface SubsampleTypeConfig {
 export interface LabSchema {
   routes: Array<{ label: string; path: string; columns: string[] }>
   sampleTypes: SampleTypeConfig[]
-  traitTypes: TraitTypeConfig[]
+  traitQuantities: TraitQuantityConfig[]
   subsampleTypes: SubsampleTypeConfig[]
 }
 
@@ -42,7 +42,7 @@ export async function fetchLabSchema(dbName: string): Promise<LabSchema> {
   const schema: LabSchema = {
     routes: Array.isArray(data.routes) ? data.routes : [],
     sampleTypes: Array.isArray(data.sampleTypes) ? data.sampleTypes : [],
-    traitTypes: Array.isArray(data.traitTypes) ? data.traitTypes : [],
+    traitQuantities: Array.isArray(data.traitQuantities) ? data.traitQuantities : [],
     subsampleTypes: Array.isArray(data.subsampleTypes) ? data.subsampleTypes : [],
   }
   cache.set(dbName, { data: schema, at: Date.now() })

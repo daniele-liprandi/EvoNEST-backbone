@@ -5,14 +5,14 @@
  *     summary: Available filter options for trait analysis
  *     tags: [Traits]
  *     responses:
- *       200: { description: "{ traitTypes, sampleSubTypes, nfibres, groupByOptions }" }
+ *       200: { description: "{ traitQuantities, sampleSubTypes, nfibres, groupByOptions }" }
  *       401: { description: Unauthorized }
  *   post:
  *     summary: Statistical analysis of trait measurements
  *     description: >
- *       Mean, stddev, min, max, median and count of a trait type, grouped by a
- *       sample feature. Values are converted from each trait's stored unit to
- *       the type's configured unit (by SI prefix) unless unitConversion is false.
+ *       Mean, stddev, min, max, median and count of a trait quantity, grouped by
+ *       a sample feature. Values are converted from each trait's stored unit to
+ *       the quantity's configured unit (by SI prefix) unless unitConversion is false.
  *     tags: [Traits]
  *     requestBody:
  *       required: true

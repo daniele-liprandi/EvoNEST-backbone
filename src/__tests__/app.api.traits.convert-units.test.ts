@@ -19,7 +19,7 @@ const req = (body?: unknown) =>
   });
 
 const config = (type: string) =>
-  type === "traittypes" ? { type, data: [] } : { type, data: [] };
+  type === "traitquantities" ? { type, data: [] } : { type, data: [] };
 
 beforeEach(() => jest.spyOn(console, "error").mockImplementation(() => {}));
 afterEach(() => jest.restoreAllMocks());

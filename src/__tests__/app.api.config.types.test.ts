@@ -39,7 +39,7 @@ describe("POST /api/config/types", () => {
     const updateOne = jest.fn(ok1);
     const layer = Layer.merge(testMongo({ updateOne }), admin);
     const res = await runRoute(
-      handleConfigPost(req("POST", { method: "additem", type: "traittypes", item: { value: "x" } })).pipe(
+      handleConfigPost(req("POST", { method: "additem", type: "traitquantities", item: { value: "x" } })).pipe(
         Effect.provide(layer),
       ),
     );

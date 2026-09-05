@@ -1,7 +1,7 @@
 import { Effect, Schema } from "effect";
 import type { Document } from "mongodb";
 import { ok, decodeBody, currentDatabase, Mongo, attempt, ValidationError } from "@/lib/effect";
-import { convertMeasurement, getDefaultUnitForTraitType } from "@/utils/unitConversion";
+import { convertMeasurement, getDefaultUnitForQuantity } from "@/utils/unitConversion";
 
 const calculateStatistics = (values: number[]) => {
   const valid = values.filter((v) => v !== null && v !== undefined && !isNaN(v));
@@ -219,14 +219,14 @@ export const analyseTraits = (request: Request) =>
     const mongo = yield* Mongo;
     const traits = yield* mongo.collection(dbName, "traits");
 
-    const traitTypesConfig =
-      ((yield* mongo.findOne(dbName, "config", { type: "traittypes" }))?.data as
+    const traitQuantitiesConfig =
+      ((yield* mongo.findOne(dbName, "config", { type: "traitquantities" }))?.data as
         | Array<{ value: string; unit?: string }>
         | undefined) ?? [];
     const baseUnitsConfig = (yield* mongo.findOne(dbName, "config", { type: "baseunits" }))?.data as
       | unknown[]
       | undefined;
-    const targetUnit = getDefaultUnitForTraitType(quantity, traitTypesConfig);
+    const targetUnit = getDefaultUnitForQuantity(quantity, traitQuantitiesConfig);
 
     const toDisplayValue = ({ value, unit }: RawValue): number => {
       if (!unitConversion || !targetUnit || !unit || unit === targetUnit) return value;
@@ -313,7 +313,7 @@ export const analysisFilterOptions = Effect.gen(function* () {
   const traits = yield* mongo.collection(dbName, "traits");
   const samples = yield* mongo.collection(dbName, "samples");
 
-  const [traitTypes, subsampletypes, silktypes, nfibresValues] = yield* Effect.all([
+  const [quantities, subsampletypes, silktypes, nfibresValues] = yield* Effect.all([
     attempt(() => traits.distinct("quantity"), "traits.distinct quantity"),
     attempt(() => samples.distinct("subsampletype"), "samples.distinct subsampletype"),
     attempt(() => samples.distinct("silktype"), "samples.distinct silktype"),
@@ -342,7 +342,7 @@ export const analysisFilterOptions = Effect.gen(function* () {
   ].sort();
 
   return yield* ok({
-    traitTypes: (traitTypes as string[]).sort(),
+    traitQuantities: (quantities as string[]).sort(),
     sampleSubTypes: [
       ...new Set([...(subsampletypes as string[]), ...(silktypes as string[])].filter(Boolean)),
     ].sort(),
