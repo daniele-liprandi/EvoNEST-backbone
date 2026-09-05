@@ -36,8 +36,8 @@ export const previewConversion = (request: Request) =>
         preview.push({
           traitId: trait._id?.toString(),
           sampleId: trait.sampleId?.toString(),
-          type: trait.type,
-          oldValue: trait.measurement,
+          quantity: trait.quantity,
+          oldValue: trait.value,
           oldUnit: trait.unit,
           newValue: analysis.newValue,
           newUnit: analysis.newUnit,

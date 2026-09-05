@@ -137,11 +137,18 @@ const createExperiment = (dbName: string, data: PostData) =>
         logbook: data.logbook || [[now, `Created experiment ${data.name}`]],
       };
       if (Array.isArray(data.traits)) {
-        embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => ({
-          ...trait,
-          experimentId: null,
-          createdAt: now,
-        }));
+        embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
+          // A lagging parser may still emit the old `type` / `measurement` keys;
+          // remap them so the trait document carries `quantity` / `value`.
+          const { type, measurement, ...rest } = trait;
+          return {
+            ...rest,
+            ...(rest.quantity === undefined && type !== undefined ? { quantity: type } : {}),
+            ...(rest.value === undefined && measurement !== undefined ? { value: measurement } : {}),
+            experimentId: null,
+            createdAt: now,
+          };
+        });
       }
       delete experimentData.traits;
       delete experimentData.method;

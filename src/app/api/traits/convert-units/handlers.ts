@@ -39,9 +39,9 @@ export const convertUnits = (request: Request) =>
       const analysis = analyzeTraitConversion(trait, traitTypes.data, baseUnits);
       details.push({
         traitId: String(trait._id),
-        type: trait.type,
+        quantity: trait.quantity,
         converted: analysis.needsConversion,
-        oldValue: trait.measurement,
+        oldValue: trait.value,
         oldUnit: trait.unit,
         newValue: analysis.newValue,
         newUnit: analysis.newUnit,
@@ -55,9 +55,9 @@ export const convertUnits = (request: Request) =>
           TRAITS,
           { _id: trait._id },
           {
-            $set: { measurement: analysis.newValue, unit: analysis.newUnit, recentChangeDate: now },
+            $set: { value: analysis.newValue, unit: analysis.newUnit, recentChangeDate: now },
             $push: {
-              logbook: `${now}: Unit converted from ${trait.unit} to ${analysis.newUnit} (${trait.measurement} to ${analysis.newValue})`,
+              logbook: `${now}: Unit converted from ${trait.unit} to ${analysis.newUnit} (${trait.value} to ${analysis.newValue})`,
             },
           },
         );
