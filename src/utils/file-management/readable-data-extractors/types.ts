@@ -18,12 +18,11 @@ export interface DataSummary {
 /**
  * Traits extracted from parsed data. Should come as an array of objects ready to follow the structure indicated in api/traits
  * {
-    "method": "create",
-    "type": "silk_diameter",
+    "quantity": "silk_diameter",
     "sampleId": "507f1f77bcf86cd799439012",
     "responsible": "507f1f77bcf86cd799439013",
     "date": "2024-03-15",
-    "measurement": 2.5,
+    "value": 2.5,
     "unit": "μm",
     "equipment": "SEM",
     "nfibres": "1",
@@ -36,12 +35,11 @@ export interface DataSummary {
  * Individual trait data structure
  */
 export interface TraitAPIData {
-  method: "create";
-  type: string;
+  quantity: string;
   sampleId: string;
   responsible: string;
   date: string;
-  measurement: number;
+  value: number;
   unit: string;
   equipment?: string;
   nfibres?: string;

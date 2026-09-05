@@ -54,18 +54,18 @@ const area = (diameter: number, count: number) => ((Math.PI * diameter * diamete
 function withCrossSections(traits: Document[]): Document[] {
   const derived: Document[] = [];
   for (const trait of traits) {
-    if (trait.type !== "diameter" || !trait.measurement) continue;
+    if (trait.quantity !== "diameter" || !trait.value) continue;
     const fibres = parseNFibres(trait.nfibres);
     if ("error" in fibres) {
       trait.crossSection = { error: fibres.error, unit: `${trait.unit}²` };
     } else if (fibres.type === "single") {
-      trait.crossSection = { area: { single: area(trait.measurement, fibres.value) }, unit: `${trait.unit}²` };
+      trait.crossSection = { area: { single: area(trait.value, fibres.value) }, unit: `${trait.unit}²` };
     } else {
       trait.crossSection = {
         area: {
-          min: area(trait.measurement, fibres.min),
-          avg: area(trait.measurement, fibres.avg),
-          max: area(trait.measurement, fibres.max),
+          min: area(trait.value, fibres.min),
+          avg: area(trait.value, fibres.avg),
+          max: area(trait.value, fibres.max),
         },
         unit: `${trait.unit}²`,
       };
@@ -73,10 +73,10 @@ function withCrossSections(traits: Document[]): Document[] {
 
     const cs: Document = JSON.parse(JSON.stringify(trait));
     cs._id = new ObjectId();
-    cs.type = "cross_section";
-    cs.measurement = Math.PI * Math.pow(trait.measurement / 2, 2);
+    cs.quantity = "cross_section";
+    cs.value = Math.PI * Math.pow(trait.value / 2, 2);
     cs.listvals = "";
-    if (trait.std) cs.std = ((Math.PI * trait.measurement) / 2) * trait.std;
+    if (trait.std) cs.std = ((Math.PI * trait.value) / 2) * trait.std;
     cs.unit = `${trait.unit}²`;
     derived.push(cs);
   }
@@ -97,11 +97,11 @@ export const listTraits = (request: Request) =>
       return yield* ok(trait);
     }
 
-    const type = params.get("type");
+    const quantity = params.get("quantity");
     const includeSampleFeatures = params.get("includeSampleFeatures") === "true";
     const includeRelated = params.get("related") === "true";
 
-    const traits = yield* mongo.find(dbName, TRAITS, type ? { type } : {});
+    const traits = yield* mongo.find(dbName, TRAITS, quantity ? { quantity } : {});
 
     if (includeSampleFeatures) {
       const samples = yield* mongo.find(dbName, SAMPLES);
@@ -138,6 +138,7 @@ const PostBody = Schema.Struct(
     sampleId: Schema.optional(Schema.String),
     responsible: Schema.optional(Schema.Unknown),
     field: Schema.optional(Schema.String),
+    quantity: Schema.optional(Schema.Unknown),
     value: Schema.optional(Schema.Unknown),
     traits: Schema.optional(Schema.Array(Schema.Struct({ id: Schema.String, value: Schema.Unknown }, Schema.Record({ key: Schema.String, value: Schema.Unknown })))),
     conversion: Schema.optional(Schema.Unknown),
@@ -183,7 +184,7 @@ const createTrait = (dbName: string, authName: string, data: PostData) =>
     yield* stampSample(
       dbName,
       sampleOid,
-      logbook(`New trait of type ${String(data.type)} and value ${String(data.measurement)} for ${data.sampleId} by ${authName}`),
+      logbook(`New trait of quantity ${String(data.quantity)} and value ${String(data.value)} for ${data.sampleId} by ${authName}`),
     );
     return yield* ok({ success: true, id: result.insertedId });
   });
@@ -340,7 +341,7 @@ const applyConversion = (dbName: string, data: PostData) =>
         { _id: entry._id },
         {
           $set: {
-            measurement: t.value,
+            value: t.value,
             diameterConversion: {
               oldDiameters: conv.oldDiameters,
               newDiameters: conv.newDiameters,
@@ -353,7 +354,7 @@ const applyConversion = (dbName: string, data: PostData) =>
           },
           $push: {
             logbook: logbook(
-              `Converted value from ${entry.measurement} to ${String(t.value)} based on diameter change`,
+              `Converted value from ${entry.value} to ${String(t.value)} based on diameter change`,
               `Ratio: ${conv.ratio}`,
             ),
           },
@@ -409,16 +410,16 @@ const resetConversion = (dbName: string, data: PostData) =>
     for (const t of data.traits ?? []) {
       const entry = yield* mongo.findOne(dbName, TRAITS, { _id: new ObjectId(t.id) });
       if (!entry || !entry.diameterConversion) continue;
-      const original = entry.measurement / entry.diameterConversion.ratio;
+      const original = entry.value / entry.diameterConversion.ratio;
       yield* mongo.updateOne(
         dbName,
         TRAITS,
         { _id: entry._id },
         {
-          $set: { measurement: original, recentChangeDate: stamp() },
+          $set: { value: original, recentChangeDate: stamp() },
           $push: {
             logbook: logbook(
-              "Reset value to original measurement before diameter conversion",
+              "Reset value to original value before diameter conversion",
               `Previous ratio: ${entry.diameterConversion.ratio}`,
             ),
           },

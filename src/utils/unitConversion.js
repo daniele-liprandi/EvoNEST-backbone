@@ -102,13 +102,13 @@ export function getDefaultUnitForTraitType(traitType, traitTypesConfig) {
 
 /**
  * Determine if a trait needs conversion and calculate the converted value
- * @param {Object} trait - Trait object with type, measurement, and unit
+ * @param {Object} trait - Trait object with quantity, value, and unit
  * @param {Array} traitTypesConfig - Array of trait type configurations
  * @param {Array} baseUnits - Array of base unit configurations (optional)
  * @returns {{ needsConversion: boolean, newValue: number | null, newUnit: string | null, reason: string }}
  */
 export function analyzeTraitConversion(trait, traitTypesConfig, baseUnits = null) {
-  const defaultUnit = getDefaultUnitForTraitType(trait.type, traitTypesConfig);
+  const defaultUnit = getDefaultUnitForTraitType(trait.quantity, traitTypesConfig);
   
   if (!defaultUnit) {
     return {
@@ -137,7 +137,7 @@ export function analyzeTraitConversion(trait, traitTypesConfig, baseUnits = null
     };
   }
 
-  const newValue = convertMeasurement(trait.measurement, trait.unit, defaultUnit, baseUnits);
+  const newValue = convertMeasurement(trait.value, trait.unit, defaultUnit, baseUnits);
 
   return {
     needsConversion: true,

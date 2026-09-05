@@ -1977,11 +1977,11 @@
           },
           {
             "in": "query",
-            "name": "type",
+            "name": "quantity",
             "schema": {
               "type": "string"
             },
-            "description": "Filter traits by specific type",
+            "description": "Filter traits by specific quantity",
             "example": "silk_diameter"
           },
           {
@@ -2154,11 +2154,11 @@
           },
           {
             "in": "query",
-            "name": "type",
+            "name": "quantity",
             "schema": {
               "type": "string"
             },
-            "description": "Filter traits by type"
+            "description": "Filter traits by quantity"
           },
           {
             "in": "query",
@@ -2382,12 +2382,12 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "traitType"
+                  "quantity"
                 ],
                 "properties": {
-                  "traitType": {
+                  "quantity": {
                     "type": "string",
-                    "description": "Type of trait to analyze (e.g., stressAtBreak, diameter, toughness)"
+                    "description": "Quantity of trait to analyze (e.g., stressAtBreak, diameter, toughness)"
                   },
                   "groupBy": {
                     "type": "string",

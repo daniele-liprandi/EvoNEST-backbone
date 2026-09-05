@@ -139,7 +139,7 @@ export async function handleTraitConversion(traitsToUpdate, conversionData) {
             method: 'conversion',
             traits: traitsToUpdate.map(trait => ({
                 id: trait._id,
-                value: trait.measurement * conversionData.ratio
+                value: trait.value * conversionData.ratio
             })),
             conversion: {
                 oldDiameters: conversionData.oldDiameters,
@@ -179,7 +179,7 @@ export const handleTraitDataDownload = async (trait) => {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${trait.type}_data.json`;
+    a.download = `${trait.quantity}_data.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

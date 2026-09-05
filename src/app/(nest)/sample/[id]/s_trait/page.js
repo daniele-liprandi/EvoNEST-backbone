@@ -41,9 +41,9 @@ import {
 import { ChevronDownIcon } from "@radix-ui/react-icons"
 
 function CrossSectionAnalysisCard({ traits }) {
-  const diameterTraits = traits.filter(t => t.type === "diameter");
+  const diameterTraits = traits.filter(t => t.quantity === "diameter");
   const mechanicalTraits = traits.filter(t =>
-    ["stressAtBreak", "toughness", "modulus"].includes(t.type)
+    ["stressAtBreak", "toughness", "modulus"].includes(t.quantity)
   );
 
   // Group mechanical traits by experimentId for experiment-based selection
@@ -159,10 +159,10 @@ function CrossSectionAnalysisCard({ traits }) {
     });
     
     return selectedMechanicalTraits.map(trait => ({
-      type: trait.type,
+      quantity: trait.quantity,
       experimentId: trait.experimentId || 'No Experiment',
-      oldValue: `${trait.measurement.toFixed(3)} ${trait.unit}`,
-      newValue: `${(trait.measurement * totals.ratio).toFixed(3)} ${trait.unit}`,
+      oldValue: `${trait.value.toFixed(3)} ${trait.unit}`,
+      newValue: `${(trait.value * totals.ratio).toFixed(3)} ${trait.unit}`,
       percentChange: ((totals.ratio - 1) * 100).toFixed(1)
     }));
   };
@@ -202,7 +202,7 @@ function CrossSectionAnalysisCard({ traits }) {
                 {mechanicalTraits.map(trait =>
                   trait.diameterConversion ? (
                     <div key={trait._id} className="border rounded p-2 text-sm">
-                      <div className="font-medium capitalize">{trait.type}</div>
+                      <div className="font-medium capitalize">{trait.quantity}</div>
                       <div className="text-muted-foreground">
                         <div>Date: {new Date(trait.diameterConversion.date).toLocaleString()}</div>
                         <div>Cross-section: {trait.diameterConversion.oldCrossSection.toFixed(3)} → {trait.diameterConversion.newCrossSection.toFixed(3)}</div>
@@ -286,7 +286,7 @@ function CrossSectionAnalysisCard({ traits }) {
                       <TableBody>
                         {formatChanges().map((change, i) => (
                           <TableRow key={i}>
-                            <TableCell className="capitalize">{change.type}</TableCell>
+                            <TableCell className="capitalize">{change.quantity}</TableCell>
                             <TableCell>{change.experimentId}</TableCell>
                             <TableCell>{change.oldValue}</TableCell>
                             <TableCell>{change.newValue}</TableCell>
@@ -443,7 +443,7 @@ function CrossSectionAnalysisCard({ traits }) {
                     <TableCell>{trait.silktype || 'Unknown'}</TableCell>
                     <TableCell>{trait.equipment}</TableCell>
                     <TableCell>
-                      {trait.measurement} {trait.unit} (n={trait.nfibres})
+                      {trait.value} {trait.unit} (n={trait.nfibres})
                       {trait.crossSection?.area && (
                         <div className="text-sm text-muted-foreground">
                           {trait.crossSection.area.single !== undefined &&
@@ -531,7 +531,7 @@ function CrossSectionAnalysisCard({ traits }) {
                           {experimentId !== 'ungrouped' ? experimentId : 'No Experiment'}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          Properties: {traits.map(t => t.type).join(', ')}
+                          Properties: {traits.map(t => t.quantity).join(', ')}
                         </div>
                       </div>
                     </div>
@@ -607,17 +607,17 @@ function CrossSectionAnalysisCard({ traits }) {
                     .map((trait, index) => (
                     <TableRow key={index}>
                       <TableCell className="font-medium capitalize">
-                        {trait.type}
+                        {trait.quantity}
                       </TableCell>
                       <TableCell>
                         {trait.experimentId || 'No Experiment'}
                       </TableCell>
                       <TableCell>
-                        {trait.measurement.toFixed(3)} {trait.unit}
+                        {trait.value.toFixed(3)} {trait.unit}
                       </TableCell>
                       <TableCell>
                         {totals.compared.area.single === 0 ? "-" :
-                          `${(trait.measurement * totals.ratio).toFixed(3)} ${trait.unit}`
+                          `${(trait.value * totals.ratio).toFixed(3)} ${trait.unit}`
                         }
                       </TableCell>
                     </TableRow>
@@ -708,7 +708,7 @@ export default function IDTraitPage() {
 
   const traitColumns = [
     sampleColumn("sampleId", "sampleName", "Sample"),
-    sortableFilterableColumn("type", "Type", "equals"),
+    sortableFilterableColumn("quantity", "Quantity", "equals"),
     responsibleColumn(),
     editableColumn("subsampletype", "Trait Subsample Type"),
     {
@@ -717,7 +717,7 @@ export default function IDTraitPage() {
     },
     dateColumn(),
     editableColumn("notes", "Notes"),
-    editableColumn("measurement", "Measurement"),
+    editableColumn("value", "Value"),
     editableColumn("unit", "Unit"),
     editableColumn("std", "Standard Deviation"),
     editableColumn("listvals", "List of Values"),

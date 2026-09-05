@@ -38,7 +38,7 @@ describe('Setup Indexes Migration', () => {
         expect(customIndexes).toHaveLength(2);
 
         // Verify specific indexes
-        expect(customIndexes.some(index => index.key.type === 1)).toBeTruthy();
+        expect(customIndexes.some(index => index.key.quantity === 1)).toBeTruthy();
         expect(customIndexes.some(index => index.key.sampleId === 1)).toBeTruthy();
     });
 

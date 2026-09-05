@@ -41,10 +41,10 @@ function crossSectionRows(trait: Document): Document[] {
         ["cross-section-max", info.max],
         ["cross-section-avg", info.avg],
       ] as const
-    ).map(([type, n]) => ({
+    ).map(([quantity, n]) => ({
       ...trait,
-      type,
-      measurement: calculateArea(trait.measurement, n),
+      quantity,
+      value: calculateArea(trait.value, n),
       unit: "μm²",
       nfibres: n.toString(),
       derivedFrom: trait._id,
@@ -54,8 +54,8 @@ function crossSectionRows(trait: Document): Document[] {
   return [
     {
       ...trait,
-      type: "cross-section",
-      measurement: calculateArea(trait.measurement, info.value),
+      quantity: "cross-section",
+      value: calculateArea(trait.value, info.value),
       unit: "μm²",
       nfibres: info.value.toString(),
       derivedFrom: trait._id,
@@ -73,12 +73,12 @@ export const exportTraits = (request: Request) =>
       return yield* Effect.fail(new ValidationError({ message: "Only JSON export is supported" }));
     }
 
-    const type = params.get("type");
+    const quantity = params.get("quantity");
     const includeSampleFeatures = params.get("includeSampleFeatures") === "true";
     const includeRelated = params.get("includeRelated") === "true";
 
     const mongo = yield* Mongo;
-    const traits = yield* mongo.find(database, "traits", type ? { type } : {});
+    const traits = yield* mongo.find(database, "traits", quantity ? { quantity } : {});
     if (traits.length === 0) {
       return yield* Effect.fail(new NotFoundError({ resource: "Traits" }));
     }
@@ -101,7 +101,7 @@ export const exportTraits = (request: Request) =>
     }
 
     const derived = traits
-      .filter((t) => t.type === "diameter" && t.measurement)
+      .filter((t) => t.quantity === "diameter" && t.value)
       .flatMap(crossSectionRows);
     const all = traits.concat(derived);
 
@@ -113,7 +113,7 @@ export const exportTraits = (request: Request) =>
         totalTraits: all.length,
         originalTraits: traits.length,
         derivedTraits: derived.length,
-        filters: { type: type ?? "all", includeSampleFeatures, includeRelated },
+        filters: { quantity: quantity ?? "all", includeSampleFeatures, includeRelated },
         traits: all,
       },
       { headers: { "Content-Disposition": `attachment; filename="traits_${database}_${stamp}.json"` } },

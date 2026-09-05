@@ -92,8 +92,8 @@ describe("experiments — a real collection workflow", () => {
       responsible: responsible.toHexString(),
       data: { channelData: [], summary: {} },
       traits: [
-        { type: "stressAtBreak", measurement: 1.2 },
-        { type: "modulus", measurement: 9 },
+        { method: "create", type: "stressAtBreak", measurement: 1.2 },
+        { quantity: "modulus", value: 9 },
       ],
     });
     expect(res.status).toBe(200);
@@ -103,6 +103,10 @@ describe("experiments — a real collection workflow", () => {
     const traits = await mongo.db.collection("traits").find({ experimentId: id }).toArray();
     expect(traits).toHaveLength(2);
     expect(traits.every((t) => t.sampleId === sampleId)).toBe(true);
+    // old-style keys are remapped, and the API-dispatch key is not persisted
+    expect(traits.map((t) => t.quantity).sort()).toEqual(["modulus", "stressAtBreak"]);
+    expect(traits.find((t) => t.quantity === "stressAtBreak")?.value).toBe(1.2);
+    expect(traits.every((t) => t.method === undefined && t.type === undefined)).toBe(true);
 
     const exp = await mongo.db.collection("experiments").findOne({ _id: new ObjectId(id) });
     expect(exp?.traits).toBeUndefined(); // embedded traits are not kept on the experiment

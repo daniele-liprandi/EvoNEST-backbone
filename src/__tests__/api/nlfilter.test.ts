@@ -53,11 +53,11 @@ describe("POST /api/nlfilter", () => {
   test("global mode returns { route, params }", async () => {
     global.fetch = jest
       .fn()
-      .mockResolvedValue(llmReply('<think>hmm</think>{"route":"/traits","params":{"type":"diameter"}}')) as any;
+      .mockResolvedValue(llmReply('<think>hmm</think>{"route":"/traits","params":{"quantity":"diameter"}}')) as any;
     const res = await POST(
-      body({ query: "diameter traits", routes: [{ label: "traits", path: "/traits", columns: ["type"] }] }),
+      body({ query: "diameter traits", routes: [{ label: "traits", path: "/traits", columns: ["quantity"] }] }),
     );
-    await expect(res.json()).resolves.toEqual({ route: "/traits", params: { type: "diameter" } });
+    await expect(res.json()).resolves.toEqual({ route: "/traits", params: { quantity: "diameter" } });
   });
 
   test("502 when the LLM request fails", async () => {
