@@ -3,11 +3,21 @@ const { MongoClient } = require('mongodb');
 // MongoDB Connection URI
 const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27017";
 
-// Rename trait.type -> trait.quantity and trait.measurement -> trait.value on the
-// traits collection of every NEST database, swap the type_1 index for quantity_1,
-// and drop the leftover `method: "create"` field that the parsers used to write
-// onto embedded traits (the API path never persisted it).
+// On every NEST database:
+//  - rename trait.type -> trait.quantity and trait.measurement -> trait.value,
+//    and swap the type_1 index for quantity_1
+//  - drop the leftover `method` field from traits, samples and experiments where
+//    it holds a dispatch verb. `method` is the POST request verb; the handlers
+//    strip it before persisting, but older data (and the parser trait path) kept
+//    it, and nothing reads it.
 // Pass { dryRun: true } to report counts without writing.
+
+// Values `method` takes as a POST dispatch verb, across the trait, sample and
+// experiment handlers. Only these are unset; a `method` holding anything else is
+// left alone.
+const DISPATCH_VERBS = ['create', 'update', 'setfield', 'incrementfield', 'conversion', 'reset', 'retaxon'];
+const METHOD_COLLECTIONS = ['traits', 'samples', 'experiments'];
+
 async function up(testClient = null, options = {}) {
     const isDryRun = options.dryRun ?? process.argv.includes('--dryrun');
     let client = testClient;
@@ -34,28 +44,41 @@ async function up(testClient = null, options = {}) {
             if (dbName === 'usersdb') continue;
 
             const db = client.db(dbName);
-            const collections = await db.listCollections().toArray();
-            if (!collections.some(col => col.name === 'traits')) {
+            const collections = (await db.listCollections().toArray()).map(c => c.name);
+            if (!collections.includes('traits')) {
                 console.log(`Database ${dbName} does not have a traits collection, skipping.`);
                 continue;
             }
 
             console.log(`\nProcessing database: ${dbName}`);
             summary.databases++;
-            const collection = db.collection('traits');
+            const traits = db.collection('traits');
 
-            const withType = await collection.countDocuments({ type: { $exists: true } });
-            const withMeasurement = await collection.countDocuments({ measurement: { $exists: true } });
-            const withMethod = await collection.countDocuments({ method: 'create' });
-            console.log(`Found ${withType} traits with a 'type' field, ${withMeasurement} with a 'measurement' field, `
-                + `${withMethod} with a leftover 'method' field.`);
+            const withType = await traits.countDocuments({ type: { $exists: true } });
+            const withMeasurement = await traits.countDocuments({ measurement: { $exists: true } });
+            console.log(`Found ${withType} traits with a 'type' field, ${withMeasurement} with a 'measurement' field.`);
 
             summary.typeRenamed += withType;
             summary.measurementRenamed += withMeasurement;
-            summary.methodDropped += withMethod;
+
+            // Stale `method` dispatch verb on traits / samples / experiments.
+            for (const name of METHOD_COLLECTIONS) {
+                if (!collections.includes(name)) continue;
+                const coll = db.collection(name);
+                const filter = { method: { $in: DISPATCH_VERBS } };
+                const withMethod = await coll.countDocuments(filter);
+                if (withMethod > 0) {
+                    console.log(`Found ${withMethod} ${name} carrying a stale 'method' verb.`);
+                    summary.methodDropped += withMethod;
+                    if (!isDryRun) {
+                        const res = await coll.updateMany(filter, { $unset: { method: '' } });
+                        console.log(`Dropped 'method' from ${res.modifiedCount} ${name}.`);
+                    }
+                }
+            }
 
             if (isDryRun) {
-                const indexes = await collection.indexes();
+                const indexes = await traits.indexes();
                 console.log(`Index type_1 present: ${indexes.some(i => i.name === 'type_1')}; `
                     + `index quantity_1 present: ${indexes.some(i => i.name === 'quantity_1')}.`);
                 continue;
@@ -63,34 +86,27 @@ async function up(testClient = null, options = {}) {
 
             // $rename is atomic and skips documents that lack the field.
             if (withType > 0) {
-                const res = await collection.updateMany(
+                const res = await traits.updateMany(
                     { type: { $exists: true } },
                     { $rename: { type: 'quantity' } },
                 );
                 console.log(`Renamed 'type' to 'quantity' on ${res.modifiedCount} traits.`);
             }
             if (withMeasurement > 0) {
-                const res = await collection.updateMany(
+                const res = await traits.updateMany(
                     { measurement: { $exists: true } },
                     { $rename: { measurement: 'value' } },
                 );
                 console.log(`Renamed 'measurement' to 'value' on ${res.modifiedCount} traits.`);
             }
-            if (withMethod > 0) {
-                const res = await collection.updateMany(
-                    { method: 'create' },
-                    { $unset: { method: '' } },
-                );
-                console.log(`Dropped the leftover 'method' field from ${res.modifiedCount} traits.`);
-            }
 
-            const indexes = await collection.indexes();
+            const indexes = await traits.indexes();
             if (indexes.some(i => i.name === 'type_1')) {
-                await collection.dropIndex('type_1');
+                await traits.dropIndex('type_1');
                 console.log(`Dropped index type_1.`);
             }
             if (!indexes.some(i => i.name === 'quantity_1')) {
-                await collection.createIndex({ quantity: 1 });
+                await traits.createIndex({ quantity: 1 });
                 console.log(`Created index quantity_1.`);
             }
         }
@@ -98,12 +114,12 @@ async function up(testClient = null, options = {}) {
         if (isDryRun) {
             console.log(`\nDRY RUN SUMMARY: ${summary.typeRenamed} traits would have 'type' renamed to 'quantity', `
                 + `${summary.measurementRenamed} would have 'measurement' renamed to 'value', `
-                + `${summary.methodDropped} would have a leftover 'method' field dropped.`);
+                + `${summary.methodDropped} records would have a stale 'method' verb dropped.`);
             console.log(`Run without --dryrun to apply.`);
         } else {
             console.log(`\nLIVE RUN SUMMARY: renamed 'type' on ${summary.typeRenamed} traits, `
                 + `'measurement' on ${summary.measurementRenamed} traits, dropped 'method' from `
-                + `${summary.methodDropped} traits, across ${summary.databases} databases.`);
+                + `${summary.methodDropped} records, across ${summary.databases} databases.`);
         }
 
         return summary;

@@ -6,12 +6,17 @@ describe('Trait fields rename migration (020)', () => {
     let mongod;
     let client;
     let traits;
+    let samples;
+    let experiments;
 
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create();
         client = new MongoClient(mongod.getUri());
         await client.connect();
-        traits = client.db('nest_testlab').collection('traits');
+        const db = client.db('nest_testlab');
+        traits = db.collection('traits');
+        samples = db.collection('samples');
+        experiments = db.collection('experiments');
     });
 
     afterAll(async () => {
@@ -20,7 +25,7 @@ describe('Trait fields rename migration (020)', () => {
     });
 
     beforeEach(async () => {
-        await traits.deleteMany({});
+        await Promise.all([traits.deleteMany({}), samples.deleteMany({}), experiments.deleteMany({})]);
         for (const name of await traits.indexes().then(ix => ix.map(i => i.name)).catch(() => [])) {
             if (name !== '_id_') await traits.dropIndex(name).catch(() => {});
         }
@@ -40,18 +45,24 @@ describe('Trait fields rename migration (020)', () => {
         expect(docs.find(d => d.quantity === 'diameter').value).toBe(2.5);
     });
 
-    test('drops the leftover method field from parser-created traits', async () => {
+    test('drops the stale method verb from traits, samples and experiments', async () => {
         await traits.insertMany([
             { type: 'diameter', measurement: 2.5, method: 'create' },
-            { quantity: 'mass', value: 1.2, method: 'calculated' },
+            { quantity: 'mass', value: 1.2, method: 'setfield' },
+            { quantity: 'strain', value: 0.1, method: 'calculated' },
         ]);
+        await samples.insertOne({ name: 'S1', method: 'update' });
+        await experiments.insertOne({ name: 'E1', method: 'create' });
 
-        await up(client, { dryRun: false });
+        const summary = await up(client, { dryRun: false });
 
-        const diameter = await traits.findOne({ quantity: 'diameter' });
-        expect(diameter.method).toBeUndefined();
-        const mass = await traits.findOne({ quantity: 'mass' });
-        expect(mass.method).toBe('calculated');
+        expect((await traits.findOne({ quantity: 'diameter' })).method).toBeUndefined();
+        expect((await traits.findOne({ quantity: 'mass' })).method).toBeUndefined();
+        // a real provenance value is not a dispatch verb, so it survives
+        expect((await traits.findOne({ quantity: 'strain' })).method).toBe('calculated');
+        expect((await samples.findOne({ name: 'S1' })).method).toBeUndefined();
+        expect((await experiments.findOne({ name: 'E1' })).method).toBeUndefined();
+        expect(summary.methodDropped).toBe(4);
     });
 
     test('leaves documents without the old fields untouched', async () => {
