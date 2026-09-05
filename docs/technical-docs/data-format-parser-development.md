@@ -86,14 +86,12 @@ export class MyInstrumentParser extends BaseDataFormatParser {
                     quantity: 'temperature_avg',
                     value: this.calculateAverage(measurements, 'temperature'),
                     unit: '°C',
-                    method: 'calculated',
                     notes: 'Average temperature across all measurements'
                 },
                 {
                     quantity: 'pressure_max',
                     value: this.calculateMaximum(measurements, 'pressure'),
                     unit: 'Pa',
-                    method: 'calculated',
                     notes: 'Maximum pressure recorded'
                 }
             ];

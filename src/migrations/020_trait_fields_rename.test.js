@@ -45,7 +45,7 @@ describe('Trait fields rename migration (020)', () => {
         expect(docs.find(d => d.quantity === 'diameter').value).toBe(2.5);
     });
 
-    test('drops the stale method verb from traits, samples and experiments', async () => {
+    test('drops the stale method field from traits, samples and experiments', async () => {
         await traits.insertMany([
             { type: 'diameter', measurement: 2.5, method: 'create' },
             { quantity: 'mass', value: 1.2, method: 'setfield' },
@@ -56,13 +56,10 @@ describe('Trait fields rename migration (020)', () => {
 
         const summary = await up(client, { dryRun: false });
 
-        expect((await traits.findOne({ quantity: 'diameter' })).method).toBeUndefined();
-        expect((await traits.findOne({ quantity: 'mass' })).method).toBeUndefined();
-        // a real provenance value is not a dispatch verb, so it survives
-        expect((await traits.findOne({ quantity: 'strain' })).method).toBe('calculated');
+        expect((await traits.find({}).toArray()).every(t => t.method === undefined)).toBe(true);
         expect((await samples.findOne({ name: 'S1' })).method).toBeUndefined();
         expect((await experiments.findOne({ name: 'E1' })).method).toBeUndefined();
-        expect(summary.methodDropped).toBe(4);
+        expect(summary.methodDropped).toBe(5);
     });
 
     test('leaves documents without the old fields untouched', async () => {

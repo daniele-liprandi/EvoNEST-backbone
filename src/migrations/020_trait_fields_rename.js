@@ -6,16 +6,12 @@ const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27017";
 // On every NEST database:
 //  - rename trait.type -> trait.quantity and trait.measurement -> trait.value,
 //    and swap the type_1 index for quantity_1
-//  - drop the leftover `method` field from traits, samples and experiments where
-//    it holds a dispatch verb. `method` is the POST request verb; the handlers
-//    strip it before persisting, but older data (and the parser trait path) kept
-//    it, and nothing reads it.
+//  - drop the `method` field from traits, samples and experiments. `method` is
+//    the POST request verb; the handlers strip it before persisting, but older
+//    data (and the parser trait path) kept it, and nothing reads it. Any stored
+//    value is a misuse of the name and is removed.
 // Pass { dryRun: true } to report counts without writing.
 
-// Values `method` takes as a POST dispatch verb, across the trait, sample and
-// experiment handlers. Only these are unset; a `method` holding anything else is
-// left alone.
-const DISPATCH_VERBS = ['create', 'update', 'setfield', 'incrementfield', 'conversion', 'reset', 'retaxon'];
 const METHOD_COLLECTIONS = ['traits', 'samples', 'experiments'];
 
 async function up(testClient = null, options = {}) {
@@ -61,14 +57,14 @@ async function up(testClient = null, options = {}) {
             summary.typeRenamed += withType;
             summary.measurementRenamed += withMeasurement;
 
-            // Stale `method` dispatch verb on traits / samples / experiments.
+            // Stale `method` request verb on traits / samples / experiments.
             for (const name of METHOD_COLLECTIONS) {
                 if (!collections.includes(name)) continue;
                 const coll = db.collection(name);
-                const filter = { method: { $in: DISPATCH_VERBS } };
+                const filter = { method: { $exists: true } };
                 const withMethod = await coll.countDocuments(filter);
                 if (withMethod > 0) {
-                    console.log(`Found ${withMethod} ${name} carrying a stale 'method' verb.`);
+                    console.log(`Found ${withMethod} ${name} carrying a stale 'method' field.`);
                     summary.methodDropped += withMethod;
                     if (!isDryRun) {
                         const res = await coll.updateMany(filter, { $unset: { method: '' } });
