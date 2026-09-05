@@ -6,13 +6,28 @@ const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27017";
 // On every NEST database:
 //  - rename trait.type -> trait.quantity and trait.measurement -> trait.value,
 //    and swap the type_1 index for quantity_1
-//  - drop the `method` field from traits, samples and experiments. `method` is
-//    the POST request verb; the handlers strip it before persisting, but older
-//    data (and the parser trait path) kept it, and nothing reads it. Any stored
-//    value is a misuse of the name and is removed.
+//  - drop the `method` field from traits, samples, experiments and config, and
+//    from usersdb.users. `method` is the POST request verb; the handlers strip
+//    it before persisting, but older data (and the parser trait path) kept it,
+//    and nothing reads it. Any stored value is a misuse of the name and is
+//    removed.
 // Pass { dryRun: true } to report counts without writing.
 
-const METHOD_COLLECTIONS = ['traits', 'samples', 'experiments'];
+const METHOD_COLLECTIONS = ['traits', 'samples', 'experiments', 'config'];
+
+async function dropMethod(db, collectionNames, name, summary, isDryRun) {
+    if (!collectionNames.includes(name)) return;
+    const coll = db.collection(name);
+    const filter = { method: { $exists: true } };
+    const count = await coll.countDocuments(filter);
+    if (count === 0) return;
+    console.log(`Found ${count} ${db.databaseName}.${name} carrying a stale 'method' field.`);
+    summary.methodDropped += count;
+    if (!isDryRun) {
+        const res = await coll.updateMany(filter, { $unset: { method: '' } });
+        console.log(`Dropped 'method' from ${res.modifiedCount} ${db.databaseName}.${name}.`);
+    }
+}
 
 async function up(testClient = null, options = {}) {
     const isDryRun = options.dryRun ?? process.argv.includes('--dryrun');
@@ -57,20 +72,9 @@ async function up(testClient = null, options = {}) {
             summary.typeRenamed += withType;
             summary.measurementRenamed += withMeasurement;
 
-            // Stale `method` request verb on traits / samples / experiments.
+            // Stale `method` request verb on the NEST collections.
             for (const name of METHOD_COLLECTIONS) {
-                if (!collections.includes(name)) continue;
-                const coll = db.collection(name);
-                const filter = { method: { $exists: true } };
-                const withMethod = await coll.countDocuments(filter);
-                if (withMethod > 0) {
-                    console.log(`Found ${withMethod} ${name} carrying a stale 'method' field.`);
-                    summary.methodDropped += withMethod;
-                    if (!isDryRun) {
-                        const res = await coll.updateMany(filter, { $unset: { method: '' } });
-                        console.log(`Dropped 'method' from ${res.modifiedCount} ${name}.`);
-                    }
-                }
+                await dropMethod(db, collections, name, summary, isDryRun);
             }
 
             if (isDryRun) {
@@ -107,10 +111,15 @@ async function up(testClient = null, options = {}) {
             }
         }
 
+        // usersdb sits outside the NEST loop.
+        const usersDb = client.db('usersdb');
+        const usersCollections = (await usersDb.listCollections().toArray()).map(c => c.name);
+        await dropMethod(usersDb, usersCollections, 'users', summary, isDryRun);
+
         if (isDryRun) {
             console.log(`\nDRY RUN SUMMARY: ${summary.typeRenamed} traits would have 'type' renamed to 'quantity', `
                 + `${summary.measurementRenamed} would have 'measurement' renamed to 'value', `
-                + `${summary.methodDropped} records would have a stale 'method' verb dropped.`);
+                + `${summary.methodDropped} records would have a stale 'method' field dropped.`);
             console.log(`Run without --dryrun to apply.`);
         } else {
             console.log(`\nLIVE RUN SUMMARY: renamed 'type' on ${summary.typeRenamed} traits, `

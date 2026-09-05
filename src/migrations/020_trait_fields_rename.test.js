@@ -8,6 +8,8 @@ describe('Trait fields rename migration (020)', () => {
     let traits;
     let samples;
     let experiments;
+    let config;
+    let users;
 
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create();
@@ -17,6 +19,8 @@ describe('Trait fields rename migration (020)', () => {
         traits = db.collection('traits');
         samples = db.collection('samples');
         experiments = db.collection('experiments');
+        config = db.collection('config');
+        users = client.db('usersdb').collection('users');
     });
 
     afterAll(async () => {
@@ -25,7 +29,10 @@ describe('Trait fields rename migration (020)', () => {
     });
 
     beforeEach(async () => {
-        await Promise.all([traits.deleteMany({}), samples.deleteMany({}), experiments.deleteMany({})]);
+        await Promise.all([
+            traits.deleteMany({}), samples.deleteMany({}), experiments.deleteMany({}),
+            config.deleteMany({}), users.deleteMany({}),
+        ]);
         for (const name of await traits.indexes().then(ix => ix.map(i => i.name)).catch(() => [])) {
             if (name !== '_id_') await traits.dropIndex(name).catch(() => {});
         }
@@ -45,7 +52,7 @@ describe('Trait fields rename migration (020)', () => {
         expect(docs.find(d => d.quantity === 'diameter').value).toBe(2.5);
     });
 
-    test('drops the stale method field from traits, samples and experiments', async () => {
+    test('drops the stale method field from traits, samples, experiments, config and users', async () => {
         await traits.insertMany([
             { type: 'diameter', measurement: 2.5, method: 'create' },
             { quantity: 'mass', value: 1.2, method: 'setfield' },
@@ -53,13 +60,17 @@ describe('Trait fields rename migration (020)', () => {
         ]);
         await samples.insertOne({ name: 'S1', method: 'update' });
         await experiments.insertOne({ name: 'E1', method: 'create' });
+        await config.insertOne({ type: 'traittypes', data: [], method: 'additem' });
+        await users.insertOne({ name: 'U1', method: 'create' });
 
         const summary = await up(client, { dryRun: false });
 
         expect((await traits.find({}).toArray()).every(t => t.method === undefined)).toBe(true);
         expect((await samples.findOne({ name: 'S1' })).method).toBeUndefined();
         expect((await experiments.findOne({ name: 'E1' })).method).toBeUndefined();
-        expect(summary.methodDropped).toBe(5);
+        expect((await config.findOne({ type: 'traittypes' })).method).toBeUndefined();
+        expect((await users.findOne({ name: 'U1' })).method).toBeUndefined();
+        expect(summary.methodDropped).toBe(7);
     });
 
     test('leaves documents without the old fields untouched', async () => {
