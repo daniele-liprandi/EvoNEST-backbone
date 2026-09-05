@@ -34,19 +34,19 @@ describe("getSampleCards", () => {
     const got = names(getSampleCards("animal"));
     expect(got).toContain("AnimalCard");
     expect(got).toContain("EditFieldsCard"); // universal
-    expect(got).not.toContain("PlantCard");
+    expect(got).not.toContain("CropCard");
   });
 
   test("an unknown type with no config gets only universal cards", () => {
     const got = names(getSampleCards("myceliUm"));
     expect(got).toContain("GalleryCard");
     expect(got).not.toContain("AnimalCard");
-    expect(got).not.toContain("PlantCard");
+    expect(got).not.toContain("CropCard");
   });
 
   test("a type config can opt into a card built for another type", () => {
-    const got = names(getSampleCards("crop", { value: "crop", cards: ["PlantCard"] } as any));
-    expect(got).toContain("PlantCard");
+    const got = names(getSampleCards("myceliUm", { value: "myceliUm", cards: ["SilkCard"] } as any));
+    expect(got).toContain("SilkCard");
   });
 
   test("position narrows the set", () => {
@@ -69,7 +69,7 @@ describe("getFilteredCards", () => {
 
 describe("getCardByName", () => {
   test("resolves a known card and returns null otherwise", () => {
-    expect(getCardByName("PlantCard")?.displayName).toBe("PlantCard");
+    expect(getCardByName("CropCard")?.displayName).toBe("CropCard");
     expect(getCardByName("NopeCard")).toBeNull();
   });
 });

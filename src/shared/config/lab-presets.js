@@ -15,7 +15,6 @@ const STORAGE_FIELDS = ["parent", "responsible", "date", "box", "slot", "locatio
 const SUBSAMPLE_FIELDS = ["parent", "taxonomy", "subsampletype", "box", "slot", "responsible", "date", "location"];
 const SILK_FIELDS = ["parent", "responsible", "date", "location"];
 const ANIMAL_FIELDS = ["taxonomy", "sex", "responsible", "date", "location"];
-const PLANT_FIELDS = ["taxonomy", "responsible", "date", "location"];
 
 const IDENTITY = ["name", "responsible", "recentChange", "date", "location"];
 const TAXONOMY = ["family", "genus", "species"];
@@ -26,7 +25,6 @@ const ANIMAL_COLUMNS = [
   ...IDENTITY, ...TAXONOMY,
   "sex", "lifestage", "lifestatus", "hungry", "fed", "molted", "eggsac",
 ];
-const PLANT_COLUMNS = [...IDENTITY, ...TAXONOMY];
 
 const OPT = (...values) => values.map((v) => ({ value: v, label: v[0].toUpperCase() + v.slice(1) }));
 const GROWTH_STAGE = OPT("seedling", "vegetative", "flowering", "fruiting", "senescent");
@@ -131,8 +129,7 @@ const SAMPLE_TYPES = {
   animal: T("animal", "Animal", "Animal individual", "an", ANIMAL_FIELDS, ANIMAL_COLUMNS),
   subsample: T("subsample", "Subsample", "A part of another sample", "sub", SUBSAMPLE_FIELDS, SUBSAMPLE_COLUMNS),
   silk: T("silk", "Silk", "Silk fibre or structure", "si", SILK_FIELDS, SILK_COLUMNS),
-  plant: T("plant", "Plant", "Plant individual", "pl", PLANT_FIELDS, PLANT_COLUMNS),
-  crop: T("crop", "Crop plant", "A crop plant or plot followed through a season", "cr", CROP_FIELDS, CROP_COLUMNS, ["PlantCard"]),
+  crop: T("crop", "Crop plant", "A crop plant or plot followed through a season", "cr", CROP_FIELDS, CROP_COLUMNS),
   blood: T("blood", "Blood", "Blood sample", "bl", STORAGE_FIELDS, STORAGE_COLUMNS),
   tissue: T("tissue", "Tissue", "Tissue sample", "ti", STORAGE_FIELDS, STORAGE_COLUMNS),
   dna_extract: T("dna_extract", "DNA extract", "DNA extract", "dna", STORAGE_FIELDS, STORAGE_COLUMNS),
@@ -194,6 +191,11 @@ export const LAB_PRESETS = [
     value: "arthropod-husbandry",
     label: "Arthropod husbandry",
     description: "A live arthropod collection: animals, subsamples, silk, and the feeding / moulting controls.",
+    keywords: [
+      "arthropod", "arthropods", "insect", "insects", "spider", "spiders",
+      "invertebrate", "invertebrates", "husbandry", "colony", "rearing",
+      "feeding", "molt", "molting", "moult", "moulting", "terrarium",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.animal, SAMPLE_TYPES.subsample, SAMPLE_TYPES.silk],
       traittypes: [TRAIT_TYPES.mass, TRAIT_TYPES.length, TRAIT_TYPES.width],
@@ -203,6 +205,10 @@ export const LAB_PRESETS = [
     value: "silk-biomechanics",
     label: "Silk biomechanics",
     description: "Fibre mechanics: silk samples, tensile properties and diameter.",
+    keywords: [
+      "silk", "spider silk", "web", "fibre", "fiber", "fibres", "fibers",
+      "tensile", "biomechanics", "mechanical properties", "dragline", "spinning",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.silk, SAMPLE_TYPES.animal, SAMPLE_TYPES.subsample],
       traittypes: [
@@ -218,6 +224,11 @@ export const LAB_PRESETS = [
     value: "vertebrate-tissue",
     label: "Vertebrate tissue bank",
     description: "Tissue and fluid samples from vertebrates, with storage-oriented subtypes.",
+    keywords: [
+      "vertebrate", "vertebrates", "tissue bank", "biobank", "blood sample",
+      "mammal", "mammals", "bird", "birds", "reptile", "reptiles",
+      "amphibian", "amphibians", "necropsy",
+    ],
     overrides: {
       sampletypes: [
         SAMPLE_TYPES.animal,
@@ -241,6 +252,11 @@ export const LAB_PRESETS = [
     label: "Crop field trial",
     description:
       "Plots of a crop across a growing season: treatment and plot, growth stage, watering and fertiliser tallies, sowing and harvest dates.",
+    keywords: [
+      "crop", "crops", "agriculture", "agronomy", "field trial", "farming",
+      "farm", "yield", "harvest", "sowing", "irrigation", "fertiliser",
+      "fertilizer", "growth stage",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.crop, SAMPLE_TYPES.subsample, SAMPLE_TYPES.tissue],
       traittypes: [
@@ -258,6 +274,10 @@ export const LAB_PRESETS = [
     label: "Herbarium collection",
     description:
       "Pressed and mounted plant specimens: collector and accession, phenology, determination history, mounting status.",
+    keywords: [
+      "herbarium", "botany", "botanical", "pressed specimen", "flora",
+      "voucher specimen", "phenology", "plant", "plants",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.herbarium, SAMPLE_TYPES.subsample, SAMPLE_TYPES.tissue],
       traittypes: [
@@ -274,6 +294,10 @@ export const LAB_PRESETS = [
     label: "Natural history collection",
     description:
       "Prepared, catalogued specimens: preparation type, collector, loan status and condition, with the standard measurements.",
+    keywords: [
+      "museum", "natural history", "catalogued specimen", "taxidermy",
+      "skeleton", "skin specimen", "voucher", "loan",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.specimen, SAMPLE_TYPES.tissue, SAMPLE_TYPES.subsample],
       traittypes: [
@@ -291,6 +315,10 @@ export const LAB_PRESETS = [
     label: "Sequencing pipeline",
     description:
       "Extracts moving through library prep and sequencing: prep and QC status, run and index, turnaround, concentration.",
+    keywords: [
+      "sequencing", "genomics", "library prep", "ngs", "next-generation sequencing",
+      "dna library", "illumina", "nanopore", "genome", "transcriptome", "barcode",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.seqsample, SAMPLE_TYPES.tissue, SAMPLE_TYPES.animal],
       traittypes: [
@@ -307,6 +335,11 @@ export const LAB_PRESETS = [
     label: "Microbial culture collection",
     description:
       "Strains and isolates: medium and isolation source, passage and cryostock tallies, contamination status, revival date.",
+    keywords: [
+      "microbial", "microbe", "microbes", "bacteria", "bacterial", "fungus",
+      "fungal", "yeast", "isolate", "isolates", "strain collection",
+      "culture collection", "cryostock",
+    ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.strain, SAMPLE_TYPES.subsample],
       traittypes: [
@@ -325,4 +358,36 @@ export function resolvePreset(value) {
   const preset = LAB_PRESETS.find((p) => p.value === value);
   if (!preset) return null;
   return { ...DEFAULT_CONFIGS, ...preset.overrides };
+}
+
+const escapeRegExp = (s) => s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+/** How many of a preset's keywords appear (whole-word) in the free text. */
+const keywordHits = (text, keywords) =>
+  keywords.reduce((count, keyword) => {
+    const pattern = new RegExp(`\\b${escapeRegExp(keyword).replace(/\s+/g, "\\s+")}\\b`, "i");
+    return pattern.test(text) ? count + 1 : count;
+  }, 0);
+
+/**
+ * Best-matching preset value for a free-text lab description, or null if
+ * nothing scores (the wizard then leaves the default "generic" selected).
+ * Deterministic keyword matching, not an LLM call — a simple, fast first
+ * pass. Ties keep whichever preset is listed first in LAB_PRESETS.
+ */
+export function suggestPreset(description) {
+  const text = (description || "").trim();
+  if (!text) return null;
+
+  let bestValue = null;
+  let bestScore = 0;
+  for (const preset of LAB_PRESETS) {
+    if (!preset.keywords?.length) continue;
+    const score = keywordHits(text, preset.keywords);
+    if (score > bestScore) {
+      bestScore = score;
+      bestValue = preset.value;
+    }
+  }
+  return bestValue;
 }

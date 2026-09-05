@@ -156,7 +156,7 @@ export function TemplateCard({
 TemplateCard.displayName = 'TemplateCard';
 
 // 🔒 REQUIRED: Which sample types this card supports
-TemplateCard.supportedTypes = ['your-sample-type']; // e.g., ['plant', 'animal']
+TemplateCard.supportedTypes = ['your-sample-type']; // e.g., ['crop', 'animal']
 
 // 🔒 REQUIRED: Card positioning ('main', 'sidebar', or 'full')
 TemplateCard.position = 'main';

@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from "@/components/ui/switch";
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, Tooltip } from 'recharts';
 
-export function PlantCard({ sample, handleChange, handleStatusIncrementSample, setSample }) {
+export function CropCard({ sample, handleChange, handleStatusIncrementSample, setSample }) {
   // Guard clause for required props
   if (!sample || typeof handleChange !== 'function') {
     return <Skeleton className="h-[200px] w-full" />;
@@ -27,7 +27,7 @@ export function PlantCard({ sample, handleChange, handleStatusIncrementSample, s
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Plant Management</CardTitle>
+        <CardTitle>Crop Management</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6">
@@ -102,11 +102,11 @@ export function PlantCard({ sample, handleChange, handleStatusIncrementSample, s
               ...prev,
               watered: (prev.watered || 0) + 1,
               lastWatered: new Date().toISOString(),
-              logbook: [...(prev.logbook || []), [new Date().toISOString(), "Plant watered by user"]]
+              logbook: [...(prev.logbook || []), [new Date().toISOString(), "Crop watered by user"]]
             }));
           }
         }}>
-          Water Plant
+          Water Crop
         </Button>
         <div className="ml-auto text-sm text-muted-foreground">
           {sample.lastWatered ?
@@ -119,7 +119,7 @@ export function PlantCard({ sample, handleChange, handleStatusIncrementSample, s
 }
 
 // Card metadata for the registry system
-PlantCard.displayName = 'PlantCard';
-PlantCard.supportedTypes = ['plant'];
-PlantCard.position = 'main';
-PlantCard.dependencies = ['handleStatusIncrementSample', 'setSample'];
+CropCard.displayName = 'CropCard';
+CropCard.supportedTypes = ['crop'];
+CropCard.position = 'main';
+CropCard.dependencies = ['handleStatusIncrementSample', 'setSample'];
