@@ -3,9 +3,9 @@ import { z } from 'zod'
 import { fetchLabSchema, type LabSchema } from '../lib/labSchema.js'
 
 const TraitRecordSchema = z.object({
-  type: z.string().describe('A trait type configured for this lab (getSchema.traitTypes)'),
-  measurement: z.number().describe('Numeric measurement value'),
-  unit: z.string().optional().describe('Unit of measurement, e.g. "mm", "MPa" — defaults to the type\'s configured unit'),
+  quantity: z.string().describe('A trait quantity configured for this lab (getSchema.traitTypes)'),
+  value: z.number().describe('Numeric trait value'),
+  unit: z.string().optional().describe('Unit of measurement, e.g. "mm", "MPa" — defaults to the quantity\'s configured unit'),
   sampleName: z.string().describe('Name of the associated sample'),
   date: z.string().optional().describe('ISO date string YYYY-MM-DD'),
   detail: z.string().optional().describe('Subtype or detail, e.g. "dragline"'),
@@ -33,14 +33,14 @@ const normaliseDate = (rec: TraitRecord, warnings: string[]): TraitRecord => {
 }
 
 const normaliseToSchema = (rec: TraitRecord, schema: LabSchema, warnings: string[]): TraitRecord => {
-  const configured = schema.traitTypes.find((t) => t.value === rec.type)
+  const configured = schema.traitTypes.find((t) => t.value === rec.quantity)
   if (schema.traitTypes.length > 0 && !configured) {
     warnings.push(
-      `Trait type "${rec.type}" is not configured for this lab (${schema.traitTypes.map((t) => t.value).join(', ')}).`,
+      `Trait quantity "${rec.quantity}" is not configured for this lab (${schema.traitTypes.map((t) => t.value).join(', ')}).`,
     )
   }
   if (!rec.unit && configured?.unit) {
-    warnings.push(`No unit for a "${rec.type}" trait — using the configured unit "${configured.unit}".`)
+    warnings.push(`No unit for a "${rec.quantity}" trait — using the configured unit "${configured.unit}".`)
     return { ...rec, unit: configured.unit }
   }
   return rec
@@ -49,7 +49,7 @@ const normaliseToSchema = (rec: TraitRecord, schema: LabSchema, warnings: string
 export const createTraits = createTool({
   id: 'createTraits',
   description:
-    "Validate and stage trait records for user confirmation. The trait `type` comes from this lab's config (call getSchema first); the unit defaults to the type's configured unit. Does NOT write to the database.",
+    "Validate and stage trait records for user confirmation. The trait `quantity` comes from this lab's config (call getSchema first); the unit defaults to the quantity's configured unit. Does NOT write to the database.",
   inputSchema: z.object({
     records: z.array(TraitRecordSchema).min(1).describe('Proposed trait records to create'),
     dbName: z.string().describe('The user database name'),

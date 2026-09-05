@@ -210,12 +210,11 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
 
         traits.push(
             {
-                method: "create",
-                type: "temperature",
+                quantity: "temperature",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: parseFloat(avgTemp.toFixed(3)),
+                value: parseFloat(avgTemp.toFixed(3)),
                 std: this.calculateStandardDeviation(temperatures),
                 min: minTemp,
                 max: maxTemp,
@@ -225,12 +224,11 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
                 detail: `Average temperature from ${temperatures.length} readings`,
             },
             {
-                method: "create",
-                type: "temp_rec_length",
+                quantity: "temp_rec_length",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: temperatures.length,
+                value: temperatures.length,
                 unit: "samples",
                 equipment: "LoggerMate",
                 detail: `Total number of temperature measurements recorded`,

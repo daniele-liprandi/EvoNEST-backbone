@@ -40,7 +40,7 @@ import { linkFileToEntry, uploadFiles } from "@/utils/handlers/fileHandlers"
 const formSchema = z.object({
     responsible: z.any(),
     sampleId: z.string(),
-    type: z.string(),
+    quantity: z.string(),
     date: z.date(),
     unit: z.string().optional(),
     detail: z.string().optional(),
@@ -73,8 +73,8 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
 
     const { watch } = form;
 
-    // Watch the 'type' field
-    const selectedType = watch("type");
+    // Watch the 'quantity' field
+    const selectedType = watch("quantity");
     
     // take the current object from traittypes, matching it using selectedType for traittype.value
     useEffect(() => {
@@ -134,7 +134,7 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
             const sampleName = getSampleNameById(values.sampleId, samples);
             const renamedFiles = renameFiles(files, sampleName);
             // Update to include entryType and entryId
-            fileResponse = await uploadFiles(renamedFiles, values.type, { deferredLink: true, mediaType: 'image/jpeg' });
+            fileResponse = await uploadFiles(renamedFiles, values.quantity, { deferredLink: true, mediaType: 'image/jpeg' });
         }        
         
         const traitResponse = await fetch(endpoint, {
@@ -144,13 +144,13 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
                 method: method,
                 sampleId: values.sampleId,
                 responsible: values.responsible,
-                type: values.type,
+                quantity: values.quantity,
                 detail: values.detail,
                 equipment: values.equipment,
                 date: values.date,
                 nfibres: values.nfibres,
                 unit: values.unit,
-                measurement: avg,
+                value: avg,
                 std: std,
                 listvals: listvals,
                 notes: values.notes,
@@ -193,7 +193,7 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
                         <ComboFormBox
                             control={form.control}
                             setValue={form.setValue}
-                            name="type"
+                            name="quantity"
                             options={traittypes.map((type) => ({ value: type.value, label: type.label }))}
                             fieldlabel={"Trait type"}
                             description={""}

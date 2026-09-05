@@ -870,21 +870,21 @@ export const slotColumn = () => ({
   }
 });
 
-export const measurementColumn = () => ({
-  accessorKey: "measurement",
+export const valueColumn = () => ({
+  accessorKey: "value",
   header: ({ column, table }) => (
     <div>
-      <DataTableColumnHeader column={column} title="Measurement" />
+      <DataTableColumnHeader column={column} title="Value" />
       <Filter column={column} table={table} />
     </div>
   ),
   cell: (info) => {
     const trait = info.row.original;
-    if (!trait.measurement) {
+    if (!trait.value) {
       return "";
     }
     else
-      return trait.measurement;
+      return trait.value;
   }
 });
 

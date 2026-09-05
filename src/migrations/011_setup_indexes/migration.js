@@ -19,13 +19,13 @@ async function up(testClient = null, dbName = "test") {
         // Create indexes for traits collection
         const traitsCollection = db.collection("traits");
         const traitsIndexes = await Promise.all([
-            traitsCollection.createIndex({ type: 1 }),
+            traitsCollection.createIndex({ quantity: 1 }),
             traitsCollection.createIndex({ sampleId: 1 })
         ]);
 
         // Log results
         console.log(`Created indexes:
-            - traits.type: ${traitsIndexes[0]}
+            - traits.quantity: ${traitsIndexes[0]}
             - traits.sampleId: ${traitsIndexes[1]}
         `);
 
@@ -55,7 +55,7 @@ async function down(testClient = null, dbName = "test") {
         const traitsCollection = db.collection("traits");
 
         await Promise.all([
-            traitsCollection.dropIndex("type_1"),
+            traitsCollection.dropIndex("quantity_1"),
             traitsCollection.dropIndex("sampleId_1")
         ]);
 

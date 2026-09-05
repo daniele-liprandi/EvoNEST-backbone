@@ -20,9 +20,9 @@
  *         application/json:
  *           schema:
  *             type: object
- *             required: [traitType]
+ *             required: [quantity]
  *             properties:
- *               traitType: { type: string }
+ *               quantity: { type: string }
  *               groupBy:
  *                 type: string
  *                 default: all
@@ -33,7 +33,7 @@
  *               unitConversion: { type: boolean, default: true }
  *     responses:
  *       200: { description: "{ results, unit, metadata }" }
- *       400: { description: traitType is required }
+ *       400: { description: quantity is required }
  *       401: { description: Unauthorized }
  */
 

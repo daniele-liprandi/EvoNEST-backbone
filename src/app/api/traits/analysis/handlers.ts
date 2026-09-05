@@ -34,7 +34,7 @@ interface AnalysisFilters {
 
 const PostBody = Schema.Struct(
   {
-    traitType: Schema.optional(Schema.String),
+    quantity: Schema.optional(Schema.String),
     groupBy: Schema.optional(Schema.String),
     filters: Schema.optional(Schema.Object),
     unitConversion: Schema.optional(Schema.Boolean),
@@ -55,12 +55,12 @@ const BUILTIN_GROUP_FIELDS: Record<string, unknown> = {
 };
 
 const buildPipeline = (
-  traitType: string,
+  quantity: string,
   groupBy: string,
   filters: AnalysisFilters,
 ): Document[] => {
   const pipeline: Document[] = [
-    { $match: { type: traitType } },
+    { $match: { quantity } },
     {
       $addFields: {
         sampleObjectId: {
@@ -191,7 +191,7 @@ const buildPipeline = (
       _id: groupField,
       // Convert per-document in JS afterwards: SI-prefix conversion depends on
       // each trait's own stored unit, which a pipeline stage can't express.
-      values: { $push: { measurement: "$measurement", unit: "$unit" } },
+      values: { $push: { value: "$value", unit: "$unit" } },
       count: { $sum: 1 },
     },
   });
@@ -200,7 +200,7 @@ const buildPipeline = (
 };
 
 interface RawValue {
-  measurement: number;
+  value: number;
   unit?: string;
 }
 
@@ -208,8 +208,8 @@ export const analyseTraits = (request: Request) =>
   Effect.gen(function* () {
     const startTime = Date.now();
     const data = yield* decodeBody(PostBody)(request);
-    const traitType = data.traitType ?? "";
-    if (!traitType) return yield* Effect.fail(new ValidationError({ message: "traitType is required" }));
+    const quantity = data.quantity ?? "";
+    if (!quantity) return yield* Effect.fail(new ValidationError({ message: "quantity is required" }));
 
     const groupBy = data.groupBy ?? "all";
     const filters = (data.filters ?? {}) as AnalysisFilters;
@@ -226,16 +226,16 @@ export const analyseTraits = (request: Request) =>
     const baseUnitsConfig = (yield* mongo.findOne(dbName, "config", { type: "baseunits" }))?.data as
       | unknown[]
       | undefined;
-    const targetUnit = getDefaultUnitForTraitType(traitType, traitTypesConfig);
+    const targetUnit = getDefaultUnitForTraitType(quantity, traitTypesConfig);
 
-    const toDisplayValue = ({ measurement, unit }: RawValue): number => {
-      if (!unitConversion || !targetUnit || !unit || unit === targetUnit) return measurement;
-      const converted = convertMeasurement(measurement, unit, targetUnit, baseUnitsConfig);
+    const toDisplayValue = ({ value, unit }: RawValue): number => {
+      if (!unitConversion || !targetUnit || !unit || unit === targetUnit) return value;
+      const converted = convertMeasurement(value, unit, targetUnit, baseUnitsConfig);
       // incompatible base units -> leave the value as stored
-      return converted ?? measurement;
+      return converted ?? value;
     };
 
-    const pipeline = buildPipeline(traitType, groupBy, filters);
+    const pipeline = buildPipeline(quantity, groupBy, filters);
     const aggregation = yield* attempt(
       () => traits.aggregate(pipeline).toArray(),
       "traits.aggregate analysis",
@@ -263,7 +263,7 @@ export const analyseTraits = (request: Request) =>
       .filter((r) => (r.count as number) > 0);
 
     const totalTraits = yield* attempt(
-      () => traits.countDocuments({ type: traitType }),
+      () => traits.countDocuments({ quantity }),
       "traits.countDocuments",
     );
     const filteredTraits = results.reduce((sum, r) => sum + (r.count as number), 0);
@@ -276,7 +276,7 @@ export const analyseTraits = (request: Request) =>
         filteredTraits,
         processingTime: `${Date.now() - startTime}ms`,
         groupBy,
-        traitType,
+        quantity,
       },
     });
   });
@@ -314,7 +314,7 @@ export const analysisFilterOptions = Effect.gen(function* () {
   const samples = yield* mongo.collection(dbName, "samples");
 
   const [traitTypes, subsampletypes, silktypes, nfibresValues] = yield* Effect.all([
-    attempt(() => traits.distinct("type"), "traits.distinct type"),
+    attempt(() => traits.distinct("quantity"), "traits.distinct quantity"),
     attempt(() => samples.distinct("subsampletype"), "samples.distinct subsampletype"),
     attempt(() => samples.distinct("silktype"), "samples.distinct silktype"),
     attempt(() => traits.distinct("nfibres"), "traits.distinct nfibres"),
