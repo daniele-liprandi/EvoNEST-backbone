@@ -4,7 +4,9 @@ const { MongoClient } = require('mongodb');
 const uri = process.env.MONGODB_URI || "mongodb://root:pass@localhost:27017";
 
 // Rename trait.type -> trait.quantity and trait.measurement -> trait.value on the
-// traits collection of every NEST database, and swap the type_1 index for quantity_1.
+// traits collection of every NEST database, swap the type_1 index for quantity_1,
+// and drop the leftover `method: "create"` field that the parsers used to write
+// onto embedded traits (the API path never persisted it).
 // Pass { dryRun: true } to report counts without writing.
 async function up(testClient = null, options = {}) {
     const isDryRun = options.dryRun ?? process.argv.includes('--dryrun');
@@ -18,7 +20,7 @@ async function up(testClient = null, options = {}) {
         console.log('Connected successfully to MongoDB');
     }
 
-    const summary = { databases: 0, typeRenamed: 0, measurementRenamed: 0 };
+    const summary = { databases: 0, typeRenamed: 0, measurementRenamed: 0, methodDropped: 0 };
 
     try {
         const dbNames = await client.db().admin().listDatabases();
@@ -44,10 +46,13 @@ async function up(testClient = null, options = {}) {
 
             const withType = await collection.countDocuments({ type: { $exists: true } });
             const withMeasurement = await collection.countDocuments({ measurement: { $exists: true } });
-            console.log(`Found ${withType} traits with a 'type' field, ${withMeasurement} with a 'measurement' field.`);
+            const withMethod = await collection.countDocuments({ method: 'create' });
+            console.log(`Found ${withType} traits with a 'type' field, ${withMeasurement} with a 'measurement' field, `
+                + `${withMethod} with a leftover 'method' field.`);
 
             summary.typeRenamed += withType;
             summary.measurementRenamed += withMeasurement;
+            summary.methodDropped += withMethod;
 
             if (isDryRun) {
                 const indexes = await collection.indexes();
@@ -71,6 +76,13 @@ async function up(testClient = null, options = {}) {
                 );
                 console.log(`Renamed 'measurement' to 'value' on ${res.modifiedCount} traits.`);
             }
+            if (withMethod > 0) {
+                const res = await collection.updateMany(
+                    { method: 'create' },
+                    { $unset: { method: '' } },
+                );
+                console.log(`Dropped the leftover 'method' field from ${res.modifiedCount} traits.`);
+            }
 
             const indexes = await collection.indexes();
             if (indexes.some(i => i.name === 'type_1')) {
@@ -85,11 +97,13 @@ async function up(testClient = null, options = {}) {
 
         if (isDryRun) {
             console.log(`\nDRY RUN SUMMARY: ${summary.typeRenamed} traits would have 'type' renamed to 'quantity', `
-                + `${summary.measurementRenamed} would have 'measurement' renamed to 'value'.`);
+                + `${summary.measurementRenamed} would have 'measurement' renamed to 'value', `
+                + `${summary.methodDropped} would have a leftover 'method' field dropped.`);
             console.log(`Run without --dryrun to apply.`);
         } else {
-            console.log(`\nLIVE RUN SUMMARY: renamed 'type' on ${summary.typeRenamed} traits and `
-                + `'measurement' on ${summary.measurementRenamed} traits across ${summary.databases} databases.`);
+            console.log(`\nLIVE RUN SUMMARY: renamed 'type' on ${summary.typeRenamed} traits, `
+                + `'measurement' on ${summary.measurementRenamed} traits, dropped 'method' from `
+                + `${summary.methodDropped} traits, across ${summary.databases} databases.`);
         }
 
         return summary;

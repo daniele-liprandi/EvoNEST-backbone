@@ -212,7 +212,6 @@ export class CSVFormatParser extends BaseDataFormatParser {
                 const value = row[column];
                 if (typeof value === 'number' && !isNaN(value)) {
                     traits.push({
-                        method: "create",
                         quantity: "measurement",
                         sampleId: sampleId,
                         responsible: "", // Will be filled by the UI

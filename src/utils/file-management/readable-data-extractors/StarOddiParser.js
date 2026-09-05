@@ -282,7 +282,6 @@ export class StarOddiParser extends BaseDataFormatParser {
         
         if (temperatures.length > 0) {
             traits.push({
-                method: "create",
                 quantity: "temperature",
                 sampleId: sampleId,
                 responsible: "",
@@ -306,7 +305,6 @@ export class StarOddiParser extends BaseDataFormatParser {
             
         if (heartRates.length > 0) {
             traits.push({
-                method: "create",
                 quantity: "heart_rate",
                 sampleId: sampleId,
                 responsible: "",
@@ -332,7 +330,6 @@ export class StarOddiParser extends BaseDataFormatParser {
             const poorCount = qualityIndices.filter(qi => qi === 3).length;
             
             traits.push({
-                method: "create",
                 quantity: "quality_index",
                 sampleId: sampleId,
                 responsible: "",

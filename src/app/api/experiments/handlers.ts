@@ -139,8 +139,10 @@ const createExperiment = (dbName: string, data: PostData) =>
       if (Array.isArray(data.traits)) {
         embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
           // A lagging parser may still emit the old `type` / `measurement` keys;
-          // remap them so the trait document carries `quantity` / `value`.
+          // remap them so the trait document carries `quantity` / `value`. `method`
+          // is an API-dispatch key, dropped here the way `createTrait` drops it.
           const { type, measurement, ...rest } = trait;
+          delete rest.method;
           return {
             ...rest,
             ...(rest.quantity === undefined && type !== undefined ? { quantity: type } : {}),

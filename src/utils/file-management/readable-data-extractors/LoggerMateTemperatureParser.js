@@ -210,7 +210,6 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
 
         traits.push(
             {
-                method: "create",
                 quantity: "temperature",
                 sampleId: sampleId,
                 responsible: "",
@@ -225,7 +224,6 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
                 detail: `Average temperature from ${temperatures.length} readings`,
             },
             {
-                method: "create",
                 quantity: "temp_rec_length",
                 sampleId: sampleId,
                 responsible: "",

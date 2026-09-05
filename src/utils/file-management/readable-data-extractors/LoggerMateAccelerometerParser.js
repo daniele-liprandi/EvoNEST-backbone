@@ -241,7 +241,6 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         const magnitudes = measurements.map(m => m.magnitude);
         const avgMagnitude = this.calculateAverage(magnitudes);
         traits.push({
-            method: "create",
             quantity: "total_acceleration",
             sampleId: sampleId,
             responsible: "",
@@ -256,7 +255,6 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         // Movement variance
         const variance = this.calculateVariance(magnitudes);
         traits.push({
-            method: "create",
             quantity: "movement_variance",
             sampleId: sampleId,
             responsible: "",
@@ -271,7 +269,6 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         // Activity periods (periods with high variance)
         const activityPeriods = this.detectActivityPeriods(measurements);
         traits.push({
-            method: "create",
             quantity: "activity_periods",
             sampleId: sampleId,
             responsible: "",
@@ -287,7 +284,6 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         const maxAcceleration = Math.max(...magnitudes);
         const maxIndex = magnitudes.indexOf(maxAcceleration);
         traits.push({
-            method: "create",
             quantity: "max_acceleration",
             sampleId: sampleId,
             responsible: "",
@@ -302,7 +298,6 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         // Recording duration
         const duration = this.getRecordingDuration(measurements);
         traits.push({
-            method: "create",
             quantity: "recording_duration",
             sampleId: sampleId,
             responsible: "",

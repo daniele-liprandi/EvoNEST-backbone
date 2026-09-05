@@ -382,7 +382,6 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
 
         if (metrics.averageAccuracy) {
             traits.push({
-                method: "create",
                 quantity: "location_accuracy",
                 sampleId: sampleId,
                 responsible: "",
@@ -397,7 +396,6 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
 
         if (metrics.trackingDuration) {
             traits.push({
-                method: "create",
                 quantity: "tracking_duration",
                 sampleId: sampleId,
                 responsible: "",
@@ -412,7 +410,6 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
 
         if (metrics.totalDistance > 0) {
             traits.push({
-                method: "create",
                 quantity: "distance_traveled",
                 sampleId: sampleId,
                 responsible: "",
@@ -427,7 +424,6 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
 
         if (metrics.averageSatellites) {
             traits.push({
-                method: "create",
                 quantity: "average_satellites",
                 sampleId: sampleId,
                 responsible: "",

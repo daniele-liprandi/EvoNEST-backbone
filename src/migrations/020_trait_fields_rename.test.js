@@ -40,6 +40,20 @@ describe('Trait fields rename migration (020)', () => {
         expect(docs.find(d => d.quantity === 'diameter').value).toBe(2.5);
     });
 
+    test('drops the leftover method field from parser-created traits', async () => {
+        await traits.insertMany([
+            { type: 'diameter', measurement: 2.5, method: 'create' },
+            { quantity: 'mass', value: 1.2, method: 'calculated' },
+        ]);
+
+        await up(client, { dryRun: false });
+
+        const diameter = await traits.findOne({ quantity: 'diameter' });
+        expect(diameter.method).toBeUndefined();
+        const mass = await traits.findOne({ quantity: 'mass' });
+        expect(mass.method).toBe('calculated');
+    });
+
     test('leaves documents without the old fields untouched', async () => {
         await traits.insertOne({ quantity: 'mass', value: 1.2, unit: 'g' });
 
@@ -71,6 +85,7 @@ describe('Trait fields rename migration (020)', () => {
 
         expect(summary.typeRenamed).toBe(2);
         expect(summary.measurementRenamed).toBe(2);
+        expect(summary.methodDropped).toBe(0);
         const doc = await traits.findOne({ type: 'diameter' });
         expect(doc.measurement).toBe(2.5);
         expect(doc.quantity).toBeUndefined();

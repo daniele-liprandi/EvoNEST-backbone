@@ -186,7 +186,6 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             if (value !== null && value !== undefined && !isNaN(value)) {
                 // Values are already converted in readTrait(), just use them directly
                 traits.push({
-                    method: "create",
                     quantity: traitTypeMap[traitName] || traitName,
                     sampleId: sampleId,
                     responsible: "", // Will be filled by the UI
