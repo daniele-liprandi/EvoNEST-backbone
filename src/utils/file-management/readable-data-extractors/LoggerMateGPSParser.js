@@ -383,11 +383,11 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
         if (metrics.averageAccuracy) {
             traits.push({
                 method: "create",
-                type: "location_accuracy",
+                quantity: "location_accuracy",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: Math.round(metrics.averageAccuracy * 100) / 100,
+                value: Math.round(metrics.averageAccuracy * 100) / 100,
                 unit: "meters",
                 equipment: "LoggerMate GPS",
                 detail: "Estimated GPS accuracy based on HDOP values",
@@ -398,11 +398,11 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
         if (metrics.trackingDuration) {
             traits.push({
                 method: "create",
-                type: "tracking_duration",
+                quantity: "tracking_duration",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: Math.round(metrics.trackingDuration * 100) / 100,
+                value: Math.round(metrics.trackingDuration * 100) / 100,
                 unit: "hours",
                 equipment: "LoggerMate GPS",
                 detail: `GPS tracking duration with ${measurements.length} position fixes`,
@@ -413,11 +413,11 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
         if (metrics.totalDistance > 0) {
             traits.push({
                 method: "create",
-                type: "distance_traveled",
+                quantity: "distance_traveled",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: Math.round(metrics.totalDistance * 100) / 100,
+                value: Math.round(metrics.totalDistance * 100) / 100,
                 unit: "meters",
                 equipment: "LoggerMate GPS",
                 detail: `Total distance with avg speed ${Math.round(metrics.averageSpeed * 100) / 100} m/s`,
@@ -428,11 +428,11 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
         if (metrics.averageSatellites) {
             traits.push({
                 method: "create",
-                type: "average_satellites",
+                quantity: "average_satellites",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: Math.round(metrics.averageSatellites * 100) / 100,
+                value: Math.round(metrics.averageSatellites * 100) / 100,
                 unit: "count",
                 equipment: "LoggerMate GPS",
                 detail: "Average number of GPS satellites used for positioning",

@@ -213,11 +213,11 @@ export class CSVFormatParser extends BaseDataFormatParser {
                 if (typeof value === 'number' && !isNaN(value)) {
                     traits.push({
                         method: "create",
-                        type: "measurement",
+                        quantity: "measurement",
                         sampleId: sampleId,
                         responsible: "", // Will be filled by the UI
                         date: date,
-                        measurement: value,
+                        value: value,
                         unit: "", // Could be enhanced to detect units from column names
                         equipment: "CSV_import",
                         detail: column,
