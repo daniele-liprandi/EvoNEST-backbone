@@ -90,32 +90,32 @@ export function convertMeasurement(value, fromUnit, toUnit, baseUnits = null) {
 }
 
 /**
- * Get the default unit for a trait type from the configuration
- * @param {string} traitType - The trait type (e.g., "mass", "length")
- * @param {Array} traitTypesConfig - Array of trait type configurations
+ * Get the default unit for a trait quantity from the configuration
+ * @param {string} quantity - The trait quantity (e.g., "mass", "length")
+ * @param {Array} traitQuantitiesConfig - Array of trait quantity configurations
  * @returns {string | null} - The default unit or null if not found
  */
-export function getDefaultUnitForTraitType(traitType, traitTypesConfig) {
-  const config = traitTypesConfig.find(t => t.value === traitType);
+export function getDefaultUnitForQuantity(quantity, traitQuantitiesConfig) {
+  const config = traitQuantitiesConfig.find(t => t.value === quantity);
   return config?.unit || null;
 }
 
 /**
  * Determine if a trait needs conversion and calculate the converted value
  * @param {Object} trait - Trait object with quantity, value, and unit
- * @param {Array} traitTypesConfig - Array of trait type configurations
+ * @param {Array} traitQuantitiesConfig - Array of trait quantity configurations
  * @param {Array} baseUnits - Array of base unit configurations (optional)
  * @returns {{ needsConversion: boolean, newValue: number | null, newUnit: string | null, reason: string }}
  */
-export function analyzeTraitConversion(trait, traitTypesConfig, baseUnits = null) {
-  const defaultUnit = getDefaultUnitForTraitType(trait.quantity, traitTypesConfig);
+export function analyzeTraitConversion(trait, traitQuantitiesConfig, baseUnits = null) {
+  const defaultUnit = getDefaultUnitForQuantity(trait.quantity, traitQuantitiesConfig);
   
   if (!defaultUnit) {
     return {
       needsConversion: false,
       newValue: null,
       newUnit: null,
-      reason: "No default unit configured for this trait type"
+      reason: "No default unit configured for this trait quantity"
     };
   }
 

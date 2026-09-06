@@ -18,7 +18,7 @@ By the end of this module, you will have:
 Before starting this module, make sure you've completed [Module 4: Configuration](/tutorial/04-configuration) and have:
 
 - ✅ Sample and subsample types configured
-- ✅ Trait types with units set up
+- ✅ Trait quantities with units set up
 - ✅ EvoNEST running and logged in
 
 ## Overview
@@ -200,7 +200,7 @@ The trait form is organized in tabs. Let's fill them:
 
 **General tab:**
 
-- **Trait Type:** Select `diameter`
+- **Quantity:** Select `diameter`
 - **Equipment:** Select `light_microscope` (or add custom equipment)
 
 **Details tab:**
@@ -231,7 +231,7 @@ EvoNEST automatically calculates:
 2. Fill in the tabs:
 
    **General tab:**
-   - **Trait Type:** `tensile_strength`
+   - **Quantity:** `tensile_strength`
    - **Equipment:** `t150_utm`
    
    **Details tab:**

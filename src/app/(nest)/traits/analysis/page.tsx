@@ -81,9 +81,9 @@ export default function TraitAnalysisPage() {
     fetchAnalysis,
     fetchFilterOptions,
   } = useTraitAnalysis();
-  const { traittypes, samplesubtypes } = useConfigTypes();
+  const { traitquantities, samplesubtypes } = useConfigTypes();
   // State for UI controls
-  const [selectedTrait, setSelectedTrait] = useState(traittypes[0].value);
+  const [selectedTrait, setSelectedTrait] = useState(traitquantities[0].value);
   const [selectedGroupBy, setSelectedGroupBy] = useState<string>(
     "fullSpeciesSubsampletype"
   );
@@ -249,7 +249,7 @@ export default function TraitAnalysisPage() {
                     <SelectValue placeholder="Select a trait" />
                   </SelectTrigger>
                   <SelectContent>
-                    {traittypes.map((trait) => (
+                    {traitquantities.map((trait) => (
                       <SelectItem key={trait.value} value={trait.value}>
                         {trait.label}
                       </SelectItem>

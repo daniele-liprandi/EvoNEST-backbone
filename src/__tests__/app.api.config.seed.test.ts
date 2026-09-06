@@ -34,7 +34,7 @@ describe("POST /api/config/types/seed", () => {
     const res = await runRoute(seedConfigs(post()).pipe(Effect.provide(Layer.merge(layer, admin))));
     expect(res.status).toBe(200);
     const seeded = replaceOne.mock.calls.map((c) => c[0].type);
-    expect(seeded).toEqual(expect.arrayContaining(["sampletypes", "traittypes", "baseunits"]));
+    expect(seeded).toEqual(expect.arrayContaining(["sampletypes", "traitquantities", "baseunits"]));
   });
 
   test("a preset overrides the types it names and keeps the rest", async () => {

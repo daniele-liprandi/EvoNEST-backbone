@@ -9,18 +9,18 @@ The analysis dashboard calculates basic statistics (mean, standard deviation, mi
 ### Getting started
 
 1. Navigate to **Traits > Analysis** in the main menu
-2. Select a trait type from the dropdown (e.g., "stressAtBreak", "diameter")
+2. Select a trait quantity from the dropdown (e.g., "stressAtBreak", "diameter")
 3. Choose how to group your data (species, sample subtypes, etc.)
 4. Apply filters if needed
 5. Results appear automatically in a table below
 
 ### Core functionality
 
-**Select Trait Type:**
+**Select Trait Quantity:**
 
 1. Use the "Select Trait" dropdown
-2. Available options depend on what trait types exist in your database
-3. Common types include: stressAtBreak, toughness, modulus, loadAtBreak, strainAtBreak, diameter
+2. Available options depend on what trait quantities exist in your database
+3. Common quantities include: stressAtBreak, toughness, modulus, loadAtBreak, strainAtBreak, diameter
 
 **Group Data:**
 
@@ -77,7 +77,7 @@ The explorer provides interactive data visualization using Graphic Walker. You c
 **Available Data Fields:**
 
 - **value** - The actual measurement value
-- **type** - Trait type (stressAtBreak, diameter, etc.)
+- **quantity** - Trait quantity (stressAtBreak, diameter, etc.)
 - **unit** - Measurement unit
 - **sample** - Sample name
 - **family, genus, species** - Taxonomic information
@@ -115,7 +115,7 @@ The explorer provides interactive data visualization using Graphic Walker. You c
 
 **Analysis Dashboard Issues:**
 
-- **No results appear:** Check if selected trait type has data in database
+- **No results appear:** Check if the selected trait quantity has data in database
 - **Filters show no options:** Database may not have the expected field values
 - **"Processing..." never finishes:** Database connection issue or very large dataset
 

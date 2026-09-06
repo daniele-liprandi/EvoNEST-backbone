@@ -56,7 +56,7 @@ const formSchema = z.object({
 export function TraitForm({ users, samples, user, onSuccess }: { users: any, samples: any, user: any, onSuccess?: () => void }) {
     const [files, setFiles] = useState<FileList | null>(null);
     const [selectedTypeFeatures, setSelectedTypeFeatures] = useState<LabelType>();
-    const { traittypes, equipmenttypes } = useConfigTypes();
+    const { traitquantities, equipmenttypes } = useConfigTypes();
     // Memoize the options to avoid re-computation on each render
     const sampleOptions = useMemo(() => {
         return samples.map((sample: { _id: any; name: any }) => ({ value: sample._id, label: sample.name }));
@@ -76,12 +76,12 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
     // Watch the 'quantity' field
     const selectedType = watch("quantity");
     
-    // take the current object from traittypes, matching it using selectedType for traittype.value
+    // take the current object from traitquantities, matching it using selectedType for the quantity value
     useEffect(() => {
-        const selectedTypeFeatures = traittypes.find((traittype) => traittype.value === selectedType);
+        const selectedTypeFeatures = traitquantities.find((quantity) => quantity.value === selectedType);
         setSelectedTypeFeatures(selectedTypeFeatures);
         form.setValue('unit', selectedTypeFeatures?.unit);
-    }, [selectedType, traittypes, form]);
+    }, [selectedType, traitquantities, form]);
         
 
     const getSampleNameById = (sampleId: string, samples: any[]) => {
@@ -194,8 +194,8 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
                             control={form.control}
                             setValue={form.setValue}
                             name="quantity"
-                            options={traittypes.map((type) => ({ value: type.value, label: type.label }))}
-                            fieldlabel={"Trait type"}
+                            options={traitquantities.map((q) => ({ value: q.value, label: q.label }))}
+                            fieldlabel={"Quantity"}
                             description={""}
                         />
                         <ComboFormBox

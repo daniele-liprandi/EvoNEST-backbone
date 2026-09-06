@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { fetchLabSchema, type LabSchema } from '../lib/labSchema.js'
 
 const TraitRecordSchema = z.object({
-  quantity: z.string().describe('A trait quantity configured for this lab (getSchema.traitTypes)'),
+  quantity: z.string().describe('A trait quantity configured for this lab (getSchema.traitQuantities)'),
   value: z.number().describe('Numeric trait value'),
   unit: z.string().optional().describe('Unit of measurement, e.g. "mm", "MPa" — defaults to the quantity\'s configured unit'),
   sampleName: z.string().describe('Name of the associated sample'),
@@ -33,10 +33,10 @@ const normaliseDate = (rec: TraitRecord, warnings: string[]): TraitRecord => {
 }
 
 const normaliseToSchema = (rec: TraitRecord, schema: LabSchema, warnings: string[]): TraitRecord => {
-  const configured = schema.traitTypes.find((t) => t.value === rec.quantity)
-  if (schema.traitTypes.length > 0 && !configured) {
+  const configured = schema.traitQuantities.find((t) => t.value === rec.quantity)
+  if (schema.traitQuantities.length > 0 && !configured) {
     warnings.push(
-      `Trait quantity "${rec.quantity}" is not configured for this lab (${schema.traitTypes.map((t) => t.value).join(', ')}).`,
+      `Trait quantity "${rec.quantity}" is not configured for this lab (${schema.traitQuantities.map((t) => t.value).join(', ')}).`,
     )
   }
   if (!rec.unit && configured?.unit) {
@@ -65,7 +65,7 @@ export const createTraits = createTool({
     try {
       schema = await fetchLabSchema(dbName)
     } catch {
-      schema = { routes: [], sampleTypes: [], traitTypes: [], subsampleTypes: [] }
+      schema = { routes: [], sampleTypes: [], traitQuantities: [], subsampleTypes: [] }
     }
 
     const stagedRecords = records.map((r) => normaliseToSchema(normaliseDate(r, warnings), schema, warnings))

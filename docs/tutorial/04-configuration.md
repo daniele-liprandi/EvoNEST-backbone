@@ -6,7 +6,7 @@ By the end of this module, you will have:
 - ✅ Created new NEST databases
 - ✅ Added new researchers to EvoNEST
 - ✅ Configured sample types for your laboratory
-- ✅ Set up trait types with units
+- ✅ Set up trait quantities with units
 - ✅ Defined equipment and measurement tools
 - ✅ Customized sample ID generation
 - ✅ Configured lab information
@@ -202,15 +202,15 @@ Example: Add "Drop-down dragline" for spider research:
 
 4. **Click "Add item"**
 
-## Step 7: Configure trait types
+## Step 7: Configure trait quantities
 
-Trait types define what you measure.
+Trait quantities define what you measure.
 
-### Add trait type with unit
+### Add a trait quantity with unit
 
 Example: Add "Tensile strength" measurement:
 
-1. **Go to "Trait Types"** section
+1. **Go to "Trait Quantities"** section
 
 2. **Click "Add Item"**
 
@@ -229,9 +229,9 @@ Example: Add "Tensile strength" measurement:
 - Use SI standard units
   :::
 
-### Practice: add measurement types
+### Practice: add measurement quantities
 
-Add trait types for your common measurements:
+Add trait quantities for your common measurements:
 
 ::: details Example: Biomechanics Measurements
 
@@ -286,7 +286,7 @@ Before moving to the next module, verify:
 - [ ] Understood how to create new NESTs and switch between them
 - [ ] Sample types configured (at least 2-3 custom types)
 - [ ] Subsample types added (relevant to your work)
-- [ ] Trait types with proper units (at least 3-5 types)
+- [ ] Trait quantities with proper units (at least 3-5)
 - [ ] Equipment list created (2-3 items)
 - [ ] Sample ID generation rules set
 - [ ] Lab information filled in

@@ -9,7 +9,7 @@ const LAB_SCHEMA = {
     { value: 'animal', label: 'Animal', fields: ['taxonomy', 'sex'] },
     { value: 'crop', label: 'Crop', fields: ['taxonomy', 'plot', 'treatment'] },
   ],
-  traitTypes: [
+  traitQuantities: [
     { value: 'mass', label: 'Mass', unit: 'g' },
     { value: 'count', label: 'Count', unit: null },
   ],

@@ -17,7 +17,7 @@ export const DEFAULT_ROLES = [
 export const CAPABILITIES = [
   { value: "users.manage", label: "Manage users (create, delete, edit, change their databases)" },
   { value: "databases.manage", label: "Add and configure databases" },
-  { value: "config.edit", label: "Edit the lab configuration (sample types, trait types, units)" },
+  { value: "config.edit", label: "Edit the lab configuration (sample types, trait quantities, units)" },
   { value: "config.seed", label: "Reset the lab configuration to defaults" },
   { value: "samples.delete", label: "Delete samples" },
   { value: "traits.delete", label: "Delete traits" },

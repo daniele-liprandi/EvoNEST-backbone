@@ -1,7 +1,7 @@
 // Import configuration from shared source to eliminate duplication
 import { 
   sampletypes as defaultSampletypes,
-  traittypes as defaultTraittypes,
+  traitquantities as defaultTraitquantities,
   equipmenttypes as defaultEquipmenttypes,
   samplesubtypes as defaultSamplesubtypes,
   silkcategories as defaultSilkcategories,
@@ -23,7 +23,7 @@ export type LabelType = {
 
 // Export the default configurations (these are used as fallbacks when the API is not available)
 export const sampletypes: LabelType[] = defaultSampletypes;
-export const traittypes: LabelType[] = defaultTraittypes;
+export const traitquantities: LabelType[] = defaultTraitquantities;
 export const equipmenttypes: LabelType[] = defaultEquipmenttypes;
 export const samplesubtypes: LabelType[] = defaultSamplesubtypes;
 export const silkcategories: LabelType[] = defaultSilkcategories;

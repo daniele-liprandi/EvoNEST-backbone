@@ -554,7 +554,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 **Solution:**
 
 1. Go to Settings → Configuration
-2. Add sample types, trait types
+2. Add sample types, trait quantities
 3. Save configuration
 4. Try creating sample again
 
@@ -577,12 +577,12 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 ### Problem: units not showing for traits
 
-**Cause:** Trait type doesn't have unit configured
+**Cause:** Trait quantity doesn't have unit configured
 
 **Solution:**
 
-1. Settings → Types → Trait Types
-2. Find the trait type
+1. Settings → Types → Trait Quantities
+2. Find the trait quantity
 3. Edit it
 4. Add Unit field (e.g., `μm`, `MPa`)
 5. Save
