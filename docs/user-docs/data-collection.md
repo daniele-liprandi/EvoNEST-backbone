@@ -4,7 +4,7 @@ Learn how to collect and input your research data into EvoNEST.
 
 ## Overview
 
-EvoNEST provides three main methods for collecting research data: manual entry forms, file uploads for experiments, and CSV bulk imports. This guide covers the actual workflows for entering sample, trait, and experiment data.
+EvoNEST provides three main methods for collecting research data: manual entry forms, attachments for photos and documents, and instrument data files that parsers read into experiments. CSV bulk import covers samples. This guide covers the workflows for entering sample, trait, and experiment data.
 
 ## Data entry methods
 
@@ -66,41 +66,39 @@ Record measurement data with optional file attachments.
 
 **File Attachments:**
 
-- **Image support**: JPG, PNG, TIFF formats
-- **Automatic renaming**: Files renamed with sample name prefix
-- **File linking**: Images automatically linked to trait records
+Images and files chosen on the trait form attach to the trait once it is saved. They show in the Files column of the sample's trait table and on the Files page. Add more later from the same column.
 
 ### Experiment data entry
 
-Upload and process experimental data files from testing equipment.
+Upload a data file from an instrument and let a parser read it into an experiment with its traits.
 
-**Supported File Types:**
+**Supported files:**
 
-- **Documents**: PDF, TXT, DOC files
-- **Images**: JPG, PNG, TIFF files  
-- **Data files**: Custom parsers for tensile testing equipment
+- Instrument output that a data format parser recognises, for example tensile testing machine files
+- Plain CSV, TSV, and text files, stored as-is when no parser claims them
 
-**File Upload Process:**
+Photos, PDFs, and other documents are not experiments. Attach them to the sample, subsample, or trait they belong to.
 
-1. Navigate to Experiments page
-2. Drag and drop files or click upload
-3. System processes files and extracts metadata
-4. Review auto-generated experiment names
-5. Select responsible person and sample
+**Upload process:**
+
+1. Navigate to the Experiments page
+2. Drag and drop the file or click upload
+3. The parser extracts the specimen name, metadata, and any measurements
+4. Review the auto-generated experiment name
+5. Select the responsible person and sample
 6. Add optional notes
-7. Submit for processing
+7. Submit
 
-**File Processing Features:**
+**Processing:**
 
-- **Automatic parsing**: Extracts specimen names and metadata
-- **Image compression**: Large images automatically compressed
-- **File size handling**: Files >10MB require manual file path entry
-- **Data extraction**: Mechanical testing data automatically parsed
+- Parsers extract specimen names, metadata, and trait measurements
+- Files over 10MB require a manual file path entry
+- Mechanical testing data is parsed into traits automatically
 
-**Current Limitations:**
+**Current limitations:**
 
-- Only basic file type detection implemented
-- We are happy to implement advanced data parsing of document if provided a template
+- Only files with a matching parser are read into traits
+- We are happy to add a parser for your instrument if you provide a template
 
 ## Bulk data import
 
