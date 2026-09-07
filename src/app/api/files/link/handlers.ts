@@ -10,9 +10,7 @@ import {
   ObjectIdFromHex,
   NotFoundError,
 } from "@/lib/effect";
-
-const entryCollectionName = (entryType: string) =>
-  entryType === "sample" ? "samples" : entryType === "trait" ? "traits" : "experiments";
+import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
 
 const Body = Schema.Struct({
   fileId: ObjectIdFromHex,
@@ -25,7 +23,7 @@ export const linkFile = (request: Request) =>
     const dbName = yield* currentDatabase;
     const { fileId, entryType, entryId } = yield* decodeBody(Body)(request);
     const mongo = yield* Mongo;
-    const collection = entryCollectionName(entryType);
+    const collection = resolveAttachmentTarget(entryType)?.collection ?? "experiments";
 
     const fileDoc = yield* mongo.findOne(dbName, "files", { _id: fileId });
     if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File" }));

@@ -11,6 +11,7 @@ import {
   NotFoundError,
 } from "@/lib/effect";
 import { requireEnv } from "@/app/api/utils/env";
+import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
 
 const STORAGE_PATH = requireEnv("STORAGE_PATH");
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
@@ -32,9 +33,6 @@ const sanitizeFilename = (filename: string) =>
     .replace(/[^a-zA-Z0-9._-]/g, "_")
     .replace(/_+/g, "_")
     .slice(0, 255);
-
-const entryCollectionName = (entryType: string) =>
-  entryType === "sample" ? "samples" : entryType === "trait" ? "traits" : "experiments";
 
 const ensureDirectoryExists = (dirPath: string) =>
   attempt(() => fs.access(dirPath), "fs.access").pipe(
@@ -127,7 +125,7 @@ export const uploadFile = (request: Request) =>
     });
 
     if (!deferredLink) {
-      const collection = entryCollectionName(entryType as string);
+      const collection = resolveAttachmentTarget(entryType as string)?.collection ?? "experiments";
       const now = new Date().toISOString();
       const linkUpdate = {
         $addToSet: { filesId: fileId.toString() },

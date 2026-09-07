@@ -27,7 +27,9 @@ afterAll(async () => {
   realFs.rmSync(STORAGE_ROOT, { recursive: true, force: true });
 });
 beforeEach(async () => {
-  await Promise.all(["files", "samples"].map((c) => mongo.db.collection(c).deleteMany({})));
+  await Promise.all(
+    ["files", "samples", "traits"].map((c) => mongo.db.collection(c).deleteMany({})),
+  );
   jest.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => jest.restoreAllMocks());
@@ -75,6 +77,24 @@ describe("POST /api/files/link", () => {
 
     const sample = await mongo.db.collection("samples").findOne({ _id: sampleId });
     expect(sample!.filesId).toContain(fileId);
+  });
+
+  test("resolves the entry collection from the target registry (trait -> traits)", async () => {
+    const fileId = await uploadDeferred();
+    const traitId = new ObjectId();
+    await mongo.db.collection("traits").insertOne({ _id: traitId, quantity: "mass", logbook: [] });
+
+    const res = await runRoute(
+      linkFile(
+        new Request("http://x/api/files/link", {
+          method: "POST",
+          body: JSON.stringify({ fileId, entryType: "trait", entryId: traitId.toHexString() }),
+        }),
+      ).pipe(Effect.provide(mongo.layer)),
+    );
+    expect(res.status).toBe(200);
+    const trait = await mongo.db.collection("traits").findOne({ _id: traitId });
+    expect(trait!.filesId).toContain(fileId);
   });
 
   test("404 when the file or the entry is missing", async () => {
