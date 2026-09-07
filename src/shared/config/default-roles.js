@@ -22,6 +22,7 @@ export const CAPABILITIES = [
   { value: "samples.delete", label: "Delete samples" },
   { value: "traits.delete", label: "Delete traits" },
   { value: "experiments.delete", label: "Delete experiments" },
+  { value: "attachments.delete", label: "Delete attachments (and the file when it was the last one)" },
 ];
 
 // Defaults chosen to preserve today's behaviour: user/database management is
@@ -35,4 +36,5 @@ export const DEFAULT_PERMISSIONS = [
   { value: "samples.delete", roles: ["researcher", "student"] },
   { value: "traits.delete", roles: ["researcher", "student"] },
   { value: "experiments.delete", roles: ["researcher", "student"] },
+  { value: "attachments.delete", roles: ["researcher", "student"] },
 ];

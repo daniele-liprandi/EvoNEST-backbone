@@ -12,6 +12,7 @@ import {
   ValidationError,
   NotFoundError,
 } from "@/lib/effect";
+import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
 
 const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
@@ -31,7 +32,10 @@ export const streamFile = (fileId: string) =>
       return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
     }
 
-    const contentType = (mime.lookup(fileDoc.path) as string) || "application/octet-stream";
+    const contentType =
+      (typeof fileDoc.contentType === "string" && fileDoc.contentType) ||
+      (mime.lookup(fileDoc.path) as string) ||
+      "application/octet-stream";
     const headers = new Headers({
       "content-type": contentType,
       "content-length": String(stats.size),
@@ -53,7 +57,7 @@ export const deleteFile = (fileId: string) =>
     if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File", id: fileId }));
 
     const { entryType, entryId } = (fileDoc.metadata ?? {}) as { entryType?: string; entryId?: string };
-    const collection = entryType === "sample" ? "samples" : "traits";
+    const collection = resolveAttachmentTarget(entryType)?.collection ?? "traits";
 
     // A missing file on disk must not block the database cleanup.
     yield* attempt(() => unlink(fileDoc.path), "fs.unlink").pipe(Effect.catchAll(() => Effect.void));

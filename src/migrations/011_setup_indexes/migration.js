@@ -23,13 +23,22 @@ async function up(testClient = null, dbName = "test") {
             traitsCollection.createIndex({ sampleId: 1 })
         ]);
 
+        // Create indexes for attachments collection (polymorphic file <-> entity join)
+        const attachmentsCollection = db.collection("attachments");
+        const attachmentsIndexes = await Promise.all([
+            attachmentsCollection.createIndex({ targetType: 1, targetId: 1 }),
+            attachmentsCollection.createIndex({ fileId: 1 })
+        ]);
+
         // Log results
         console.log(`Created indexes:
             - traits.quantity: ${traitsIndexes[0]}
             - traits.sampleId: ${traitsIndexes[1]}
+            - attachments.targetType_targetId: ${attachmentsIndexes[0]}
+            - attachments.fileId: ${attachmentsIndexes[1]}
         `);
 
-        return traitsIndexes;
+        return { traitsIndexes, attachmentsIndexes };
     } catch (error) {
         console.error("Error creating indexes:", error);
         throw error;
@@ -53,10 +62,13 @@ async function down(testClient = null, dbName = "test") {
 
         const db = client.db(dbName);
         const traitsCollection = db.collection("traits");
+        const attachmentsCollection = db.collection("attachments");
 
         await Promise.all([
             traitsCollection.dropIndex("quantity_1"),
-            traitsCollection.dropIndex("sampleId_1")
+            traitsCollection.dropIndex("sampleId_1"),
+            attachmentsCollection.dropIndex("targetType_1_targetId_1"),
+            attachmentsCollection.dropIndex("fileId_1")
         ]);
 
         console.log("Indexes dropped successfully");
