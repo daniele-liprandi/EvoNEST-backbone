@@ -131,13 +131,6 @@ export function DataFormatPreview({
               (no parsing applied)
             </div>
           )}
-
-          {fileInfo.type === "image" && (
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">Status:</span> Image processed for
-              display
-            </div>
-          )}
         </div>
       ))}
       {allFileData.length > 3 && (

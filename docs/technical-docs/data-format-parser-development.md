@@ -6,18 +6,18 @@ Learn how to create custom data format parsers that convert raw instrument data 
 
 EvoNEST uses data format parsers to convert raw files from scientific instruments into structured experiment data that can be stored and analyzed. Parsers automatically extract traits and create complete experiment records.
 
-**For file type processing (images, documents, etc.)**, see the [File Processor Development Guide](./file-processor-development.md).
+**For images, documents, and other files that attach to a record rather than
+becoming an experiment**, see [File Handling & Attachments](./file-processor-development.md).
 
 ## Current architecture
 
 ```
-Raw File → File Processor → Data Format Parser → Structured Experiment Data → API
+Raw File → Data Format Parser → Structured Experiment Data → API
 ```
 
 1. **File uploaded** through form interface
-2. **File processor** detects format and calls appropriate parser
-3. **Data format parser** converts raw data to structured experiment with embedded traits
-4. **Experiment API** stores experiment and traits in database
+2. **Data format parser** detects the format and converts raw data to a structured experiment with embedded traits
+3. **Experiment API** stores experiment and traits in database
 5. **Success notification** confirms trait generation
 
 ## Quick start

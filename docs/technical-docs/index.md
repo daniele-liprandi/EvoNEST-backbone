@@ -34,7 +34,7 @@ Extend EvoNEST functionality to match your laboratory's specific needs:
 
 - **[Sample Cards Development](./component-development.md)** – Create modular cards for sample detail pages
 - **[Data Format Parser Development](./data-format-parser-development.md)** – Build custom parsers for machine-readable files
-- **[File Processor Development](./file-processor-development.md)** – Add support for new file formats and data types
+- **[File Handling & Attachments](./file-processor-development.md)** – How uploads are routed, and how to give an entity a file gallery
 
 ### Attachments
 
