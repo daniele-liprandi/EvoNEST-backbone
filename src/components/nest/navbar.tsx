@@ -68,9 +68,9 @@ const experimentsProps = {
   description: "All the experiments collected in the NEST",
   options: [
     {
-      title: "Media",
-      href: "/experiments/media",
-      description: "Image- and video-based experiments",
+      title: "Attachments",
+      href: "/attachments",
+      description: "Images, documents, video and audio linked to any entity",
     },
   ],
   href: "/experiments",

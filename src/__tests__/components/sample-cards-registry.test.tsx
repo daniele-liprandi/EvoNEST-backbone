@@ -39,7 +39,7 @@ describe("getSampleCards", () => {
 
   test("an unknown type with no config gets only universal cards", () => {
     const got = names(getSampleCards("myceliUm"));
-    expect(got).toContain("GalleryCard");
+    expect(got).toContain("AttachmentsCard");
     expect(got).not.toContain("AnimalCard");
     expect(got).not.toContain("CropCard");
   });
