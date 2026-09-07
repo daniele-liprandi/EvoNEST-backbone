@@ -35,7 +35,8 @@ import { LabelType } from "@/utils/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useMemo, useState } from "react"
 import { getUserIdByName } from "@/hooks/userHooks"
-import { linkFileToEntry, uploadFiles } from "@/utils/handlers/fileHandlers"
+import { uploadFiles } from "@/utils/handlers/fileHandlers"
+import { createAttachment } from "@/utils/handlers/attachmentHandlers"
 
 const formSchema = z.object({
     responsible: z.any(),
@@ -154,7 +155,6 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
                 std: std,
                 listvals: listvals,
                 notes: values.notes,
-                filesId: fileResponse,
                 recentChangeDate: new Date().toISOString()
             })
         });        if (!traitResponse.ok) {
@@ -169,12 +169,21 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
             mutate(`${prepend_path}/api/traits?includeSampleFeatures=true`);
             
             toast.success("Trait saved")
-            // for each file in fileResponse, link it to the trait
+            // Attach each uploaded file to the new trait as a gallery item.
             if (fileResponse) {
-                fileResponse.forEach(async (fileId: string | null) => {
-                    if (fileId)
-                        await linkFileToEntry(fileId, 'trait', response.id);
-                });
+                await Promise.all(
+                    fileResponse
+                        .filter((fileId: string | null): fileId is string => !!fileId)
+                        .map((fileId: string) =>
+                            createAttachment({
+                                fileId,
+                                targetType: 'trait',
+                                targetId: response.id,
+                                category: 'gallery',
+                                responsible: values.responsible,
+                            }),
+                        ),
+                );
             }
             onSuccess?.();
         }
