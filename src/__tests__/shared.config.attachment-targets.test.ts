@@ -24,11 +24,19 @@ describe("kindFromMime", () => {
     ["image/png", "image"],
     ["video/mp4", "video"],
     ["audio/mpeg", "audio"],
+    ["image/svg+xml", "image"],
     ["text/csv", "data"],
+    ["text/tab-separated-values", "data"],
     ["application/json", "data"],
+    ["application/geo+json", "data"],
+    ["application/vnd.ms-excel", "data"],
+    ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "data"],
     ["application/pdf", "document"],
+    ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "document"],
     ["text/plain", "document"],
+    ["application/octet-stream", "document"],
     ["", "document"],
+    ["TEXT/CSV; charset=utf-8", "data"],
   ])("%s -> %s", (mimeType, kind) => {
     expect(kindFromMime(mimeType)).toBe(kind);
     expect(ATTACHMENT_KINDS).toContain(kind);
