@@ -53,11 +53,6 @@ export default function ExperimentsLandingPage() {
             title="General"
             description="Every experiment in the NEST, in one table."
           />
-          <NavCard
-            href="/attachments"
-            title="Attachments"
-            description="Images, documents, video and audio linked to any entity."
-          />
         </div>
       </div>
     </section>
