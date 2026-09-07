@@ -121,6 +121,9 @@ export const uploadFile = (request: Request) =>
       _id: fileId,
       name: filename,
       path: filePath,
+      // The browser-reported MIME, already checked against the allow-list above.
+      // Persisted so readers don't have to re-guess it from the filename.
+      contentType: file.type,
       metadata: { ...metadata, uploadDate: new Date(), isTemporary: !!deferredLink },
     });
 

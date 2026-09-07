@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { ObjectId, type Document } from "mongodb";
+import { ObjectId } from "mongodb";
 import fs from "fs/promises";
 import mime from "mime-types";
 import {
@@ -25,10 +25,6 @@ const FILES = "files";
 const stamp = () => new Date().toISOString();
 const isHexId = (v: unknown): v is string =>
   typeof v === "string" && ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
-
-/** The file's UI grouping bucket, inferred from its mime type when not supplied. */
-const kindFromFile = (fileDoc: Document): string =>
-  kindFromMime(String(mime.lookup(String(fileDoc.path || fileDoc.name || "")) || ""));
 
 /**
  * A target document by id. Demo data stores entry ids as strings or ObjectIds,
@@ -138,10 +134,16 @@ const createAttachment = (dbName: string, data: PostData) =>
     }
 
     const now = stamp();
+    const contentType =
+      typeof fileDoc.contentType === "string" && fileDoc.contentType
+        ? fileDoc.contentType
+        : String(mime.lookup(String(fileDoc.path || fileDoc.name || "")) || "");
+    // `kind` is the coarse filter key; `contentType` is the precise fact the UI
+    // reads for finer render choices (a PDF embeds, a .docx only links).
     const kind =
       typeof data.kind === "string" && ATTACHMENT_KINDS.includes(data.kind)
         ? data.kind
-        : kindFromFile(fileDoc);
+        : kindFromMime(contentType);
     const caption = asString(data.caption);
 
     // The file was uploaded deferred (temporary); attaching it makes it permanent.
@@ -158,6 +160,7 @@ const createAttachment = (dbName: string, data: PostData) =>
       targetId,
       category,
       kind,
+      contentType: contentType || null,
       caption,
       stepKey: asString(data.stepKey),
       order: typeof data.order === "number" ? data.order : null,

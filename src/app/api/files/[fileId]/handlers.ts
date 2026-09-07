@@ -32,7 +32,10 @@ export const streamFile = (fileId: string) =>
       return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
     }
 
-    const contentType = (mime.lookup(fileDoc.path) as string) || "application/octet-stream";
+    const contentType =
+      (typeof fileDoc.contentType === "string" && fileDoc.contentType) ||
+      (mime.lookup(fileDoc.path) as string) ||
+      "application/octet-stream";
     const headers = new Headers({
       "content-type": contentType,
       "content-length": String(stats.size),

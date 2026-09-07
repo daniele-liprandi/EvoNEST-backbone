@@ -97,6 +97,7 @@ describe("attachments — create", () => {
     expect(row?.targetType).toBe("sample");
     expect(row?.targetId).toBe(sampleId.toHexString());
     expect(row?.kind).toBe("image");
+    expect(row?.contentType).toBe("image/png");
     expect(row?.category).toBe("gallery");
     expect(row?.caption).toBe("front view");
     expect(String(row?.fileId)).toBe(fileId);
@@ -108,12 +109,29 @@ describe("attachments — create", () => {
     expect(sample?.logbook.at(-1)[1]).toMatch(/Attached image front view/);
   });
 
-  test("infers kind from the file when not supplied", async () => {
+  test("infers kind from the file's contentType when not supplied", async () => {
     const sampleId = await seedSample();
-    const pdf = await upload("report.pdf", "application/pdf");
-    const { id } = await (await create({ fileId: pdf, targetId: sampleId.toHexString() })).json();
+    const xlsx = await upload(
+      "data.xlsx",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    const { id } = await (await create({ fileId: xlsx, targetId: sampleId.toHexString() })).json();
+    const row = await mongo.db.collection("attachments").findOne({ _id: new ObjectId(id) });
+    expect(row?.kind).toBe("data");
+  });
+
+  test("falls back to the filename for a file doc with no contentType", async () => {
+    const sampleId = await seedSample();
+    const fileId = new ObjectId();
+    await mongo.db
+      .collection("files")
+      .insertOne({ _id: fileId, name: "scan.pdf", path: "/x/scan.pdf", metadata: {} });
+    const { id } = await (
+      await create({ fileId: fileId.toHexString(), targetId: sampleId.toHexString() })
+    ).json();
     const row = await mongo.db.collection("attachments").findOne({ _id: new ObjectId(id) });
     expect(row?.kind).toBe("document");
+    expect(row?.contentType).toBe("application/pdf");
   });
 
   test("rejects a missing target (404) and a missing file (404)", async () => {

@@ -64,6 +64,7 @@ describe("POST /api/files", () => {
     const doc = await mongo.db.collection("files").findOne({ _id: new ObjectId(fileId) });
     expect(doc.path).toContain(`${STORAGE_ROOT}/testdb/documents/sample/${sampleId.toHexString()}/notes.txt`);
     expect(realFs.readFileSync(doc.path, "utf8")).toContain("col1,col2");
+    expect(doc.contentType).toBe("text/plain");
     expect(doc.metadata.isTemporary).toBe(false);
 
     const sample = await mongo.db.collection("samples").findOne({ _id: sampleId });
