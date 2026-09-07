@@ -13,7 +13,11 @@ import {
   InternalError,
   attempt,
 } from "@/lib/effect";
-import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
+import {
+  resolveAttachmentTarget,
+  ATTACHMENT_KINDS,
+  kindFromMime,
+} from "@/shared/config/attachment-targets";
 
 const ATTACHMENTS = "attachments";
 const FILES = "files";
@@ -22,18 +26,9 @@ const stamp = () => new Date().toISOString();
 const isHexId = (v: unknown): v is string =>
   typeof v === "string" && ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
-const KINDS = ["image", "video", "audio", "document", "data"] as const;
-type Kind = (typeof KINDS)[number];
-
-/** UI grouping bucket, inferred from the file's mime type when not supplied. */
-const kindFromFile = (fileDoc: Document): Kind => {
-  const type = String(mime.lookup(String(fileDoc.path || fileDoc.name || "")) || "");
-  if (type.startsWith("image/")) return "image";
-  if (type.startsWith("video/")) return "video";
-  if (type.startsWith("audio/")) return "audio";
-  if (type === "text/csv" || type === "application/json") return "data";
-  return "document";
-};
+/** The file's UI grouping bucket, inferred from its mime type when not supplied. */
+const kindFromFile = (fileDoc: Document): string =>
+  kindFromMime(String(mime.lookup(String(fileDoc.path || fileDoc.name || "")) || ""));
 
 /**
  * A target document by id. Demo data stores entry ids as strings or ObjectIds,
@@ -143,8 +138,10 @@ const createAttachment = (dbName: string, data: PostData) =>
     }
 
     const now = stamp();
-    const kind: Kind =
-      KINDS.includes(data.kind as Kind) ? (data.kind as Kind) : kindFromFile(fileDoc);
+    const kind =
+      typeof data.kind === "string" && ATTACHMENT_KINDS.includes(data.kind)
+        ? data.kind
+        : kindFromFile(fileDoc);
     const caption = asString(data.caption);
 
     // The file was uploaded deferred (temporary); attaching it makes it permanent.

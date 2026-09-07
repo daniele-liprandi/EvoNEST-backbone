@@ -22,3 +22,18 @@ export function resolveAttachmentTarget(targetType) {
     capabilityPrefix: `${targetType}s`,
   };
 }
+
+// The rendering bucket for an attachment's file, a closed set the UI groups and
+// filters on. Distinct from `category` — the semantic slot ("gallery", "sop",
+// "raw-data", ...), which stays a free string each lab defines for itself.
+export const ATTACHMENT_KINDS = ["image", "video", "audio", "document", "data"];
+
+/** Map a MIME type to an {@link ATTACHMENT_KINDS} value. Unknown types are documents. */
+export function kindFromMime(mimeType) {
+  const type = typeof mimeType === "string" ? mimeType : "";
+  if (type.startsWith("image/")) return "image";
+  if (type.startsWith("video/")) return "video";
+  if (type.startsWith("audio/")) return "audio";
+  if (type === "text/csv" || type === "application/json") return "data";
+  return "document";
+}
