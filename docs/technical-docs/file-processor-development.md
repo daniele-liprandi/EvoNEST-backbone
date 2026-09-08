@@ -8,7 +8,7 @@ given its own file gallery. This page covers both.
 ```
 Text file in the experiment form
   ├─ a parser recognises the format  →  experiment + traits
-  └─ no parser matches               →  the form fills, but there is nothing to submit
+  └─ no parser matches               →  rejected, "attach it as a document instead"
 
 Any file in AttachmentPanel or POST /api/attachments
   └─ /api/files (deferred)  →  /api/attachments  →  attachments row + stored file
@@ -32,11 +32,10 @@ experiment form. The rest of this page is about them.
 
 ### Text a parser cannot place
 
-`readable-processor.ts` still reads `.txt`, `.tsv`, `.dat` and non-experiment
-`.json` files that no parser claims, and fills the experiment form from them.
-Image and document handling was removed with the attachments layer, and no submit
-path replaced it for these files, so the form fills but nothing is stored. Attach
-an unrecognised data file to the record it belongs to, or write a parser for it.
+A `.txt`, `.tsv`, `.dat` or `.json` file that no parser claims is a document, not
+an experiment. `processPlainTextFile` throws `UnrecognisedDataFileError` and the
+experiment form asks the user to attach it to a sample, trait or experiment
+instead. Write a parser if the file holds instrument data.
 
 ::: tip Images and documents are not experiments
 Before the attachments layer you uploaded a photo or a PDF as an experiment and

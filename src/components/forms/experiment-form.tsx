@@ -150,53 +150,33 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
             // Submit experiment data for each file
             const experimentRequests = allFileData.map(async (fileValues) => {
 
-                let experimentData;
-
-                // Extract experimentData from parsed results for structured data types
-                if (fileValues.dataFields && fileValues.dataFields.experimentData) {
-                    // Extract the properly structured experiment data from parsers
-                    experimentData = { ...fileValues.dataFields.experimentData };
-                    
-                    // Override critical fields from the form
-                    experimentData.responsible = formValues.responsible;
-                    
-                    // For multiple files, use individual file's sampleId if parsed, otherwise use form selection
-                    if (allFileData.length > 1) {
-                        experimentData.sampleId = fileValues.sampleId || formValues.sampleId;
-                        experimentData.name = fileValues.name || formValues.name;
-                    } else {
-                        // For single file, form selection takes precedence
-                        experimentData.sampleId = formValues.sampleId;
-                        experimentData.name = formValues.name;
-                    }
-                    
-                    // Override other form fields if they have values
-                    if (formValues.notes) experimentData.notes = formValues.notes;
-                    if (formValues.filepath) experimentData.filepath = formValues.filepath;
-                    
-                    // Ensure experiment type matches form selection
-                    experimentData.type = formValues.type;
-                    
-                } else {
-                    // Fallback for files no parser could structure (e.g. plain text)
-                    experimentData = {
-                        name: formValues.name,
-                        responsible: formValues.responsible,
-                        sampleId: formValues.sampleId,
-                        notes: formValues.notes,
-                        filepath: formValues.filepath,
-                        ...fileValues,
-                        type: formValues.type,  
-                    };
-
-                    // ensure sampleId is from form
-                    experimentData.sampleId = formValues.sampleId;
-
-                    if (allFileData.length > 1 && fileValues.name) {
-                        experimentData.name = fileValues.name;
-                        experimentData.sampleId = fileValues.sampleId;
-                    }
+                // A file only reaches allFileData once a parser has structured
+                // it. Anything else was turned away at upload with a message to
+                // attach it instead, so this guard is defensive.
+                if (!fileValues.dataFields || !fileValues.dataFields.experimentData) {
+                    toast.error("Not an experiment file", {
+                        description: `"${fileValues.filename || 'This file'}" was not parsed into an experiment. Attach it to a record instead.`,
+                    });
+                    hadFailure = true;
+                    return;
                 }
+
+                // Structured experiment data from a parser, with form fields layered on top.
+                let experimentData: any = { ...fileValues.dataFields.experimentData };
+                experimentData.responsible = formValues.responsible;
+
+                // For several files, prefer each file's parsed sample and name; for one, the form wins.
+                if (allFileData.length > 1) {
+                    experimentData.sampleId = fileValues.sampleId || formValues.sampleId;
+                    experimentData.name = fileValues.name || formValues.name;
+                } else {
+                    experimentData.sampleId = formValues.sampleId;
+                    experimentData.name = formValues.name;
+                }
+
+                if (formValues.notes) experimentData.notes = formValues.notes;
+                if (formValues.filepath) experimentData.filepath = formValues.filepath;
+                experimentData.type = formValues.type;
 
                 if (files && checkSaveFile) {
                     try {

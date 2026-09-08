@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import {
   processPlainTextFile,
   resetGeneratedNames,
+  UnrecognisedDataFileError,
   type FileProcessorParams,
 } from "./processors/index";
 
@@ -68,9 +69,13 @@ export async function handleFileSubmission(
   resetGeneratedNames();
 
   const processFile = async (file: File) => {
-    const fileType = determineFileType(file);
+    if (determineFileType(file) !== "readable") {
+      toast.error("Not an experiment file", {
+        description: `"${file.name}" is not instrument data. Attach images and documents to a sample, trait or experiment instead.`,
+      });
+      return;
+    }
 
-    // Create parameters object for processors
     const params: FileProcessorParams = {
       file,
       defaultValues,
@@ -81,15 +86,16 @@ export async function handleFileSubmission(
       setAllFileData,
     };
 
-    switch (fileType) {
-      case "readable":
-        await processPlainTextFile(params);
-        break;
-      default:
-        console.error("Unsupported file type");
-        toast.error("Unsupported file type", {
-          description: `"${file.name}" is not a data file. Images and documents attach to a sample, trait, or experiment instead.`,
+    try {
+      await processPlainTextFile(params);
+    } catch (error) {
+      if (error instanceof UnrecognisedDataFileError) {
+        toast.error("Not an experiment file", {
+          description: `No parser recognised "${file.name}". Add a parser if it holds instrument data, otherwise attach it as a document.`,
         });
+        return;
+      }
+      throw error;
     }
   };
 

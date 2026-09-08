@@ -124,13 +124,6 @@ export function DataFormatPreview({
                 )}
             </div>
           )}
-
-          {fileInfo.type === "document" && (
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">Status:</span> Stored as document
-              (no parsing applied)
-            </div>
-          )}
         </div>
       ))}
       {allFileData.length > 3 && (
