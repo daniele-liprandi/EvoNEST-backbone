@@ -25,23 +25,17 @@ its traits. Writing a parser is covered in the
 
 ### Attachments
 
-A file that belongs to a sample, trait or experiment rather than being one: a
-specimen photo, a PDF protocol, a spreadsheet, a field note. Attachments are
-uploaded through `AttachmentPanel` or the `/api/attachments` route, never the
+A file that documents a sample, trait or experiment: a specimen photo, a PDF
+protocol, a spreadsheet, a field note. Attachments are uploaded through
+`AttachmentPanel` or the `/api/attachments` route, and never through the
 experiment form. The rest of this page is about them.
 
 ### Text a parser cannot place
 
-A `.txt`, `.tsv`, `.dat` or `.json` file that no parser claims is a document, not
-an experiment. `processPlainTextFile` throws `UnrecognisedDataFileError` and the
-experiment form asks the user to attach it to a sample, trait or experiment
-instead. Write a parser if the file holds instrument data.
-
-::: tip Images and documents are not experiments
-Before the attachments layer you uploaded a photo or a PDF as an experiment and
-chose `image` or `document` as the type. Those types are gone, along with their
-processors. Attach the file to the sample, subsample or trait it documents.
-:::
+When no parser claims a `.txt`, `.tsv`, `.dat` or `.json` file,
+`processPlainTextFile` throws `UnrecognisedDataFileError` and the experiment form
+asks the user to attach the file to a sample, trait or experiment. Write a parser
+if the file holds instrument data.
 
 ## Attachments
 

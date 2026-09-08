@@ -77,7 +77,7 @@ Upload a data file from an instrument and let a parser read it into an experimen
 - Instrument output that a data format parser recognises: tensile testing machines, dataloggers, CSV column data
 - A `.csv`, `.tsv`, `.txt` or `.dat` file only becomes an experiment if a parser recognises it
 
-A file no parser recognises is a document, not an experiment. The form says so and asks you to attach it. Photos and PDFs are documents too. Attach all of these to the sample, subsample, or trait they belong to.
+When no parser recognises the file, the form says so and asks you to attach it to a sample, subsample or trait. Attach photos and PDFs the same way.
 
 **Upload process:**
 
