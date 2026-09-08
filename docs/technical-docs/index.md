@@ -36,18 +36,6 @@ Extend EvoNEST functionality to match your laboratory's specific needs:
 - **[Data Format Parser Development](./data-format-parser-development.md)** – Build custom parsers for machine-readable files
 - **[File Handling & Attachments](./file-processor-development.md)** – How uploads are routed, and how to give an entity a file gallery
 
-### Attachments
-
-Files are linked to entities through the polymorphic `attachments` collection. 
-One row joins a stored file (`fileId`) to a target by `targetType` + `targetId`. 
-`targetType` resolves to its collection and capabilities by convention (`"trait"` → `traits`, `traits.read` / `traits.delete`);
-only exceptions register in `src/shared/config/attachment-targets.js`. 
-`kind` (`image` / `video` / `audio` / `document` / `data`) is a coarse render hint derived
-from the file's MIME type; `category` is a free-string semantic slot the lab
-defines (`"gallery"`, `"raw-data"`, `"sop"`, …). Mount `<AttachmentPanel
-targetType="…" targetId="…" />` on any entity to give it an upload + gallery;
-`/attachments` lists every attachment in the NEST.
-
 ## Additional resources
 
 - **[API Documentation](/api-docs/)** – Complete REST API reference
