@@ -825,10 +825,8 @@
       "File": {
         "type": "object",
         "required": [
-          "filename",
-          "path",
-          "size",
-          "uploadDate"
+          "name",
+          "storage"
         ],
         "properties": {
           "_id": {
@@ -836,31 +834,66 @@
             "description": "MongoDB ObjectId",
             "example": "507f1f77bcf86cd799439011"
           },
-          "filename": {
+          "name": {
             "type": "string",
-            "description": "Original filename",
+            "description": "Original filename (sanitised)",
             "example": "spider_silk_image.jpg"
           },
-          "path": {
-            "type": "string",
-            "description": "File storage path",
-            "example": "/storage/507f1f77bcf86cd799439011_spider_silk_image.jpg"
-          },
-          "size": {
-            "type": "integer",
-            "description": "File size in bytes",
-            "example": 1024000
-          },
-          "mimeType": {
+          "mime": {
             "type": "string",
             "description": "MIME type of the file",
             "example": "image/jpeg"
           },
-          "uploadDate": {
+          "kind": {
+            "type": "string",
+            "enum": ["image", "video", "audio", "document", "data"],
+            "description": "Rendering bucket, derived from the MIME type"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size in bytes (absent for an unprobed external link)",
+            "example": 1024000
+          },
+          "sha256": {
+            "type": "string",
+            "description": "Content hash — GridFS-backed files only; the dedup key",
+            "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "storage": {
+            "description": "Discriminated union on `backend`",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["backend", "ref"],
+                "properties": {
+                  "backend": { "type": "string", "enum": ["gridfs"] },
+                  "ref": { "type": "string", "description": "GridFS bucket file _id" },
+                  "sha256": { "type": "string" },
+                  "importedFrom": { "type": "string", "description": "Original disk / external path, when the blob was swept in" }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["backend", "path"],
+                "properties": {
+                  "backend": { "type": "string", "enum": ["external"] },
+                  "path": { "type": "string", "description": "Where the file lives, outside the NEST" },
+                  "context": { "type": "string", "description": "Free note — e.g. \"Confocal NAS\"" },
+                  "lastCheckedAt": { "type": "string", "format": "date-time" },
+                  "lastCheckedStatus": { "type": "string", "enum": ["ok", "missing", "unknown"] }
+                }
+              }
+            ]
+          },
+          "createdAt": {
             "type": "string",
             "format": "date-time",
             "description": "When the file was uploaded",
             "example": "2024-03-15T10:30:00Z"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "Id (or sub) of the user who uploaded the file"
           },
           "entryType": {
             "type": "string",
@@ -3490,20 +3523,54 @@
     },
     "/api/files": {
       "get": {
-        "summary": "Retrieve all files",
-        "description": "Get a list of all files stored in the system with their metadata.",
+        "summary": "List file documents (newest first, paginated)",
+        "description": "Returns file documents for the active NEST, newest first. Page with `limit` + `cursor`; filter by storage `backend` or `kind`.",
         "tags": [
           "Files"
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": { "type": "integer", "default": 50, "maximum": 200 },
+            "description": "Page size (capped at 200)"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": { "type": "string" },
+            "description": "`nextCursor` from the previous page (a file `_id`)"
+          },
+          {
+            "in": "query",
+            "name": "backend",
+            "schema": { "type": "string", "enum": ["gridfs", "external"] },
+            "description": "Filter by storage backend"
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "schema": { "type": "string", "enum": ["image", "video", "audio", "document", "data"] },
+            "description": "Filter by rendering kind"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Successfully retrieved files",
+            "description": "A page of file documents",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/File"
+                  "type": "object",
+                  "properties": {
+                    "files": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/File" }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Pass as `cursor` for the next page; null on the last page"
+                    }
                   }
                 }
               }
@@ -3522,8 +3589,8 @@
         }
       },
       "post": {
-        "summary": "Upload files",
-        "description": "Upload one or more files to the system. Files are stored with metadata and can be linked to specific entries.",
+        "summary": "Upload a file, or manage an external link",
+        "description": "A `multipart/form-data` body is a file upload: a `file` part plus a JSON `metadata` part, streamed into GridFS and hashed; an upload whose sha256 already exists is dropped and the existing file id returned. `metadata.deferredLink` stores the file unlinked for a later `/api/files/link`; otherwise `metadata.entryType` + `entryId` link it immediately. Size caps: 20 MB image/document/data, 200 MB video/audio. Needs `files.upload`.\n\nAn `application/json` body with a `method` manages external links: `link-external` (`{ path, context?, mime?, name? }`, needs `files.link-external`); `check` (`{ id }` — stats the path if the server can reach it, records `lastCheckedStatus` ok/missing/unknown, never heals); `set-path` (`{ id, path }` — re-point the link, needs `files.link-external`); `import` (`{ id }` — stream the external file into GridFS once and flip the record, needs `files.upload`, `409` if the path is unreachable).",
         "tags": [
           "Files"
         ],
@@ -3533,30 +3600,32 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
+                "required": ["file"],
                 "properties": {
-                  "files": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "description": "Files to upload"
-                  },
-                  "entryType": {
+                  "file": {
                     "type": "string",
-                    "description": "Type of entry to link files to",
-                    "example": "trait"
+                    "format": "binary",
+                    "description": "The file to upload"
                   },
-                  "deferredLink": {
-                    "type": "boolean",
-                    "description": "Whether to defer linking until later",
-                    "example": true
-                  },
-                  "mediaType": {
+                  "metadata": {
                     "type": "string",
-                    "description": "Expected media type",
-                    "example": "image/jpeg"
+                    "description": "JSON: { deferredLink?: boolean, entryType?: string, entryId?: string }",
+                    "example": "{\"entryType\":\"sample\",\"entryId\":\"507f1f77bcf86cd799439012\"}"
                   }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["method"],
+                "properties": {
+                  "method": { "type": "string", "enum": ["link-external", "check", "set-path", "import"] },
+                  "id": { "type": "string", "description": "File id — for check / set-path / import" },
+                  "path": { "type": "string", "description": "External path — for link-external / set-path" },
+                  "context": { "type": "string" },
+                  "mime": { "type": "string" },
+                  "name": { "type": "string" }
                 }
               }
             }
@@ -3564,7 +3633,7 @@
         },
         "responses": {
           "200": {
-            "description": "Files uploaded successfully",
+            "description": "File stored / linked / checked / imported",
             "content": {
               "application/json": {
                 "schema": {
@@ -3574,7 +3643,37 @@
             }
           },
           "400": {
-            "description": "Invalid request or file format",
+            "description": "Missing file, unsupported type, over the size cap, bad metadata, or unknown method",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing the files.upload / files.link-external capability",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The entry to link to, or the file, was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "External file not reachable from the server (check / import)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3596,10 +3695,68 @@
         }
       }
     },
+    "/api/files/{fileId}": {
+      "get": {
+        "summary": "Stream a file by id",
+        "description": "Streams the file bytes. GridFS-backed files honour a single HTTP `Range` (partial `206` responses) and carry `Accept-Ranges`, an `ETag` (the sha256) and a long `Cache-Control`; `If-None-Match` against the ETag yields `304`.",
+        "tags": ["Files"],
+        "parameters": [
+          { "in": "path", "name": "fileId", "required": true, "schema": { "type": "string", "pattern": "^[0-9a-fA-F]{24}$" } },
+          { "in": "header", "name": "Range", "required": false, "schema": { "type": "string" }, "example": "bytes=0-1023" }
+        ],
+        "responses": {
+          "200": { "description": "The full file stream" },
+          "206": { "description": "A byte range of the file" },
+          "304": { "description": "ETag matched If-None-Match" },
+          "400": { "description": "Invalid id" },
+          "404": { "description": "Not found on the database or in storage" },
+          "409": { "description": "External file not reachable from the server" },
+          "416": { "description": "Range not satisfiable" }
+        }
+      },
+      "delete": {
+        "summary": "Delete a file by id and unlink it from its entry",
+        "description": "Removes the GridFS blob (or the disk file, for legacy records) and the file document, then pulls the id from the linked entry's `filesId`.",
+        "tags": ["Files"],
+        "parameters": [
+          { "in": "path", "name": "fileId", "required": true, "schema": { "type": "string", "pattern": "^[0-9a-fA-F]{24}$" } }
+        ],
+        "responses": {
+          "200": { "description": "{ success: true }" },
+          "400": { "description": "Invalid id" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/files/usage": {
+      "get": {
+        "summary": "Storage footprint for the active NEST",
+        "description": "Managed bytes in GridFS, the number of external links, and the total file count — drives the settings storage meter.",
+        "tags": ["Files"],
+        "responses": {
+          "200": {
+            "description": "The NEST's file storage totals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "gridfsBytes": { "type": "integer", "description": "Sum of `size` over GridFS-backed files" },
+                    "externalCount": { "type": "integer" },
+                    "fileCount": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
     "/api/files/link": {
       "post": {
         "summary": "Link a file to an entry",
-        "description": "Links a file to a specific entry (sample, trait, or experiment).\nIf the file was temporary, it will be moved to the appropriate directory structure\nand marked as permanent. The entry's logbook will be updated with the linking action.\n",
+        "description": "Links a file to a specific entry (sample, trait, or experiment). A previously deferred file is marked permanent and the entry's logbook records the link. GridFS files carry no path, so linking is a metadata-only flip.\n",
         "tags": [
           "Files"
         ],
@@ -4238,7 +4395,7 @@
     "/api/download": {
       "get": {
         "summary": "Download a file by ID",
-        "description": "Downloads a file from the server using its database ID. The file metadata is retrieved from the database and the actual file is served from the file system.",
+        "description": "Downloads a file as an attachment using its database ID. The bytes are served from GridFS, or from the file system for legacy disk-backed records.",
         "tags": [
           "Files"
         ],
@@ -4311,6 +4468,16 @@
                       "example": "File not found."
                     }
                   }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "External file not reachable from the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }

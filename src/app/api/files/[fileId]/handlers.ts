@@ -2,7 +2,8 @@ import { Effect } from "effect";
 import { NextResponse } from "next/server";
 import { createReadStream } from "fs";
 import { stat, unlink } from "fs/promises";
-import { ObjectId } from "mongodb";
+import { Readable } from "stream";
+import { ObjectId, type Document } from "mongodb";
 import mime from "mime-types";
 import {
   ok,
@@ -11,44 +12,177 @@ import {
   attempt,
   ValidationError,
   NotFoundError,
+  ConflictError,
 } from "@/lib/effect";
 import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
+import {
+  bucketFor,
+  deleteBlobIfUnreferenced,
+  gridfsBlobExists,
+  parseRangeHeader,
+} from "../gridfs";
+import { resolveExternalPath } from "../external";
 
 const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
-export const streamFile = (fileId: string) =>
+const toWebStream = (stream: Readable) =>
+  Readable.toWeb(stream) as unknown as ReadableStream;
+
+const contentTypeOf = (fileDoc: Document, fallbackName?: string) =>
+  (typeof fileDoc.mime === "string" && fileDoc.mime) ||
+  (typeof fileDoc.contentType === "string" && fileDoc.contentType) ||
+  (fallbackName && (mime.lookup(fallbackName) as string)) ||
+  "application/octet-stream";
+
+/** Stream a GridFS-backed file, honouring a single `Range` request. */
+const streamFromGridFS = (dbName: string, fileDoc: Document, request: Request) =>
   Effect.gen(function* () {
-    if (!isHexId(fileId)) return yield* Effect.fail(new ValidationError({ message: "Invalid file id" }));
-    const dbName = yield* currentDatabase;
     const mongo = yield* Mongo;
+    const db = yield* mongo.db(dbName);
+    const bucket = bucketFor(db);
+    const ref = fileDoc.storage.ref as ObjectId;
 
-    const fileDoc = yield* mongo.findOne(dbName, "files", { _id: new ObjectId(fileId) });
-    if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File" }));
+    // The old disk path stat()'d before returning a 200; do the equivalent here
+    // so a dangling ref (partial migration, manual cleanup) is a clean 404
+    // rather than a 200 whose body errors on first read.
+    const blobPresent = yield* attempt(
+      () => gridfsBlobExists(db, ref),
+      "gridfs blob exists",
+    ).pipe(Effect.catchAll(() => Effect.succeed(false)));
+    if (!blobPresent) {
+      return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
+    }
 
+    const size = typeof fileDoc.size === "number" ? fileDoc.size : null;
+    const contentType = contentTypeOf(fileDoc, fileDoc.name);
+    const hash =
+      (typeof fileDoc.sha256 === "string" && fileDoc.sha256) ||
+      (typeof fileDoc.storage?.sha256 === "string" && fileDoc.storage.sha256) ||
+      undefined;
+    const etag = hash ? `"${hash}"` : undefined;
+
+    if (etag && request.headers.get("if-none-match") === etag) {
+      return new NextResponse(null, { status: 304, headers: { etag } });
+    }
+
+    const headers: Record<string, string> = {
+      "content-type": contentType,
+      "accept-ranges": "bytes",
+      // Content-addressed by sha256 — safe to cache hard.
+      "cache-control": "public, max-age=31536000, immutable",
+    };
+    if (etag) headers.etag = etag;
+
+    const range = size != null ? parseRangeHeader(request.headers.get("range"), size) : null;
+    if (range === "unsatisfiable") {
+      return new NextResponse("Range Not Satisfiable", {
+        status: 416,
+        headers: { "content-range": `bytes */${size}` },
+      });
+    }
+
+    if (range && size != null) {
+      // GridFS `end` is exclusive; the HTTP range end is inclusive.
+      const stream = bucket.openDownloadStream(ref, { start: range.start, end: range.end + 1 });
+      return new NextResponse(toWebStream(stream), {
+        status: 206,
+        headers: {
+          ...headers,
+          "content-range": `bytes ${range.start}-${range.end}/${size}`,
+          "content-length": String(range.end - range.start + 1),
+        },
+      });
+    }
+
+    const stream = bucket.openDownloadStream(ref);
+    return new NextResponse(toWebStream(stream), {
+      headers: size != null ? { ...headers, "content-length": String(size) } : headers,
+    });
+  });
+
+/**
+ * A file on the local filesystem: a legacy disk-backed row (pre-migration 022)
+ * or a reachable external link. Honours a single `Range` request.
+ */
+const streamFromDisk = (fileDoc: Document, request?: Request) =>
+  Effect.gen(function* () {
     const stats = yield* attempt(() => stat(fileDoc.path), "fs.stat").pipe(
       Effect.catchAll(() => Effect.succeed(null)),
     );
     if (!stats || !stats.isFile()) {
       return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
     }
-
-    const contentType =
-      (typeof fileDoc.contentType === "string" && fileDoc.contentType) ||
-      (mime.lookup(fileDoc.path) as string) ||
-      "application/octet-stream";
-    const headers = new Headers({
+    const size = stats.size;
+    const contentType = contentTypeOf(fileDoc, fileDoc.path);
+    const base: Record<string, string> = {
       "content-type": contentType,
-      "content-length": String(stats.size),
-    });
+      "accept-ranges": "bytes",
+    };
     if (contentType.startsWith("image/")) {
-      headers.set("cache-control", "public, max-age=31536000");
+      base["cache-control"] = "public, max-age=31536000";
     }
-    return new NextResponse(createReadStream(fileDoc.path) as unknown as BodyInit, { headers });
+
+    const range = request ? parseRangeHeader(request.headers.get("range"), size) : null;
+    if (range === "unsatisfiable") {
+      return new NextResponse("Range Not Satisfiable", {
+        status: 416,
+        headers: { "content-range": `bytes */${size}` },
+      });
+    }
+    if (range) {
+      // fs `end` is inclusive, same as the HTTP range end.
+      return new NextResponse(
+        createReadStream(fileDoc.path, { start: range.start, end: range.end }) as unknown as BodyInit,
+        {
+          status: 206,
+          headers: {
+            ...base,
+            "content-range": `bytes ${range.start}-${range.end}/${size}`,
+            "content-length": String(range.end - range.start + 1),
+          },
+        },
+      );
+    }
+    return new NextResponse(createReadStream(fileDoc.path) as unknown as BodyInit, {
+      headers: { ...base, "content-length": String(size) },
+    });
+  });
+
+/** An external link — bytes live outside the NEST, on a share the server may reach. */
+const streamFromExternal = (fileDoc: Document, request: Request) =>
+  Effect.gen(function* () {
+    const abs = resolveExternalPath(fileDoc.storage?.path);
+    if (!abs) {
+      return yield* Effect.fail(
+        new ConflictError({ message: "external file not reachable from the server" }),
+      );
+    }
+    return yield* streamFromDisk({ ...fileDoc, path: abs }, request);
+  });
+
+export const streamFile = (fileId: string, request: Request) =>
+  Effect.gen(function* () {
+    if (!isHexId(fileId))
+      return yield* Effect.fail(new ValidationError({ message: "Invalid file id" }));
+    const dbName = yield* currentDatabase;
+    const mongo = yield* Mongo;
+
+    const fileDoc = yield* mongo.findOne(dbName, "files", { _id: new ObjectId(fileId) });
+    if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File" }));
+
+    if (fileDoc.storage?.backend === "gridfs") {
+      return yield* streamFromGridFS(dbName, fileDoc, request);
+    }
+    if (fileDoc.storage?.backend === "external") {
+      return yield* streamFromExternal(fileDoc, request);
+    }
+    return yield* streamFromDisk(fileDoc, request);
   });
 
 export const deleteFile = (fileId: string) =>
   Effect.gen(function* () {
-    if (!isHexId(fileId)) return yield* Effect.fail(new ValidationError({ message: "Invalid file id" }));
+    if (!isHexId(fileId))
+      return yield* Effect.fail(new ValidationError({ message: "Invalid file id" }));
     const dbName = yield* currentDatabase;
     const mongo = yield* Mongo;
     const _id = new ObjectId(fileId);
@@ -56,12 +190,23 @@ export const deleteFile = (fileId: string) =>
     const fileDoc = yield* mongo.findOne(dbName, "files", { _id });
     if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File", id: fileId }));
 
-    const { entryType, entryId } = (fileDoc.metadata ?? {}) as { entryType?: string; entryId?: string };
-    const collection = resolveAttachmentTarget(entryType)?.collection ?? "traits";
-
-    // A missing file on disk must not block the database cleanup.
-    yield* attempt(() => unlink(fileDoc.path), "fs.unlink").pipe(Effect.catchAll(() => Effect.void));
     yield* mongo.deleteOne(dbName, "files", { _id });
+
+    if (fileDoc.storage?.backend === "gridfs") {
+      const db = yield* mongo.db(dbName);
+      yield* Effect.promise(() => deleteBlobIfUnreferenced(db, fileDoc.storage.ref as ObjectId));
+    } else if (fileDoc.storage?.backend === "external") {
+      // The bytes are not ours — drop the row, never touch the filesystem.
+    } else if (typeof fileDoc.path === "string") {
+      // A missing file on disk must not block the database cleanup.
+      yield* attempt(() => unlink(fileDoc.path), "fs.unlink").pipe(Effect.catchAll(() => Effect.void));
+    }
+
+    const { entryType, entryId } = (fileDoc.metadata ?? {}) as {
+      entryType?: string;
+      entryId?: string;
+    };
+    const collection = resolveAttachmentTarget(entryType)?.collection ?? "traits";
 
     if (entryId) {
       const now = new Date().toISOString();

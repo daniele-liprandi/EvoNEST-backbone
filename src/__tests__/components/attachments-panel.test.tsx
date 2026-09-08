@@ -25,6 +25,10 @@ jest.mock("@/utils/handlers/attachmentHandlers", () => ({
   updateAttachmentField: (...args: any[]) => mockUpdateField(...args),
   reorderAttachments: (...args: any[]) => mockReorder(...args),
   handleDeleteAttachment: (...args: any[]) => mockDelete(...args),
+  linkExternalAndAttach: jest.fn().mockResolvedValue("ext-id"),
+  checkFileLink: jest.fn().mockResolvedValue("ok"),
+  updateFilePath: jest.fn().mockResolvedValue(true),
+  importExternalFile: jest.fn().mockResolvedValue(true),
 }));
 jest.mock("sonner", () => ({
   toast: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn(), message: jest.fn() }),

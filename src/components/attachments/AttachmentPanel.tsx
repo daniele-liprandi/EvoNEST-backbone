@@ -12,6 +12,9 @@ import {
   FileText,
   CircleNotch,
   DotsSixVertical,
+  LinkSimple,
+  MagnifyingGlass,
+  CloudArrowDown,
 } from "@phosphor-icons/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +32,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { prepend_path } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAttachmentsData, type Attachment } from "@/hooks/useAttachmentData";
@@ -38,6 +55,10 @@ import {
   updateAttachmentField,
   reorderAttachments,
   handleDeleteAttachment,
+  linkExternalAndAttach,
+  checkFileLink,
+  updateFilePath,
+  importExternalFile,
 } from "@/utils/handlers/attachmentHandlers";
 import { toast } from "sonner";
 
@@ -72,6 +93,9 @@ export function AttachmentPanel({
   const [items, setItems] = useState<Attachment[]>([]);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [externalOpen, setExternalOpen] = useState(false);
+  const [externalPath, setExternalPath] = useState("");
+  const [externalContext, setExternalContext] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -128,6 +152,32 @@ export function AttachmentPanel({
     mutateAttachments();
   };
 
+  const onLinkExternal = async () => {
+    const path = externalPath.trim();
+    if (!path) return;
+    if (!currentUser?._id) {
+      toast.error("Sign in again to link a file");
+      return;
+    }
+    setUploading(true);
+    try {
+      const id = await linkExternalAndAttach(
+        path,
+        { targetType, targetId, category: defaultCategory, responsible: currentUser._id },
+        externalContext.trim() ? { context: externalContext.trim() } : {},
+      );
+      if (id) {
+        toast.success("External file linked");
+        setExternalOpen(false);
+        setExternalPath("");
+        setExternalContext("");
+        await mutateAttachments();
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
@@ -135,19 +185,28 @@ export function AttachmentPanel({
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-        >
-          {uploading ? (
-            <CircleNotch className="mr-1 h-4 w-4 animate-spin" />
-          ) : (
-            <UploadSimple className="mr-1 h-4 w-4" />
-          )}
-          Upload
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline" disabled={uploading}>
+              {uploading ? (
+                <CircleNotch className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <UploadSimple className="mr-1 h-4 w-4" />
+              )}
+              Add file
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => inputRef.current?.click()}>
+              <UploadSimple className="mr-2 h-4 w-4" />
+              Load into the NEST
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setExternalOpen(true)}>
+              <LinkSimple className="mr-2 h-4 w-4" />
+              External link
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <input
           ref={inputRef}
           type="file"
@@ -164,7 +223,8 @@ export function AttachmentPanel({
           <Skeleton className="h-24 w-full" />
         ) : items.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No attachments yet. Use Upload to add images, documents, video or audio.
+            No attachments yet. Use Add file to load a file into the NEST or link one that
+            lives elsewhere.
           </p>
         ) : (
           <Reorder.Group axis="y" values={items} onReorder={onReorder} className="space-y-3">
@@ -176,11 +236,48 @@ export function AttachmentPanel({
                 onOpenImage={() => setPreview(attachment.fileId)}
                 onDelete={() => onDelete(attachment._id)}
                 onCaption={(caption) => onCaption(attachment._id, caption)}
+                onChanged={mutateAttachments}
               />
             ))}
           </Reorder.Group>
         )}
       </CardContent>
+
+      <Dialog open={externalOpen} onOpenChange={setExternalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Link an external file</DialogTitle>
+            <DialogDescription>
+              The file stays where it is. EvoNEST stores only the path and checks it on
+              demand.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              value={externalPath}
+              onChange={(e) => setExternalPath(e.target.value)}
+              placeholder="/mnt/instrument-pc/run-2026-09/scan.tif"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onLinkExternal();
+              }}
+            />
+            <Input
+              value={externalContext}
+              onChange={(e) => setExternalContext(e.target.value)}
+              placeholder="Where it lives (optional) — e.g. Confocal NAS"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExternalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={onLinkExternal} disabled={!externalPath.trim() || uploading}>
+              Link file
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!preview} onOpenChange={() => setPreview(null)}>
         <DialogContent className="h-[90vh] w-full max-w-7xl p-0">
@@ -205,9 +302,17 @@ interface AttachmentRowProps {
   onOpenImage: () => void;
   onDelete: () => void;
   onCaption: (caption: string) => void;
+  onChanged: () => void;
 }
 
-function AttachmentRow({ attachment, onDragEnd, onOpenImage, onDelete, onCaption }: AttachmentRowProps) {
+function AttachmentRow({
+  attachment,
+  onDragEnd,
+  onOpenImage,
+  onDelete,
+  onCaption,
+  onChanged,
+}: AttachmentRowProps) {
   const controls = useDragControls();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(attachment.caption ?? "");
@@ -216,6 +321,7 @@ function AttachmentRow({ attachment, onDragEnd, onOpenImage, onDelete, onCaption
     setDraft(attachment.caption ?? "");
   }, [attachment.caption]);
 
+  const isExternal = attachment.file?.backend === "external";
   const src = fileUrl(attachment.fileId);
 
   return (
@@ -259,6 +365,10 @@ function AttachmentRow({ attachment, onDragEnd, onOpenImage, onDelete, onCaption
               <FileText className="h-4 w-4 shrink-0" />
               {attachment.caption || attachment.contentType || "Open file"}
             </a>
+          )}
+
+          {isExternal && (
+            <ExternalControls attachment={attachment} onChanged={onChanged} />
           )}
 
           <div className="mt-2 flex items-center gap-2">
@@ -336,5 +446,104 @@ function AttachmentRow({ attachment, onDragEnd, onOpenImage, onDelete, onCaption
         </div>
       </div>
     </Reorder.Item>
+  );
+}
+
+const STATUS_STYLE: Record<string, string> = {
+  ok: "border-transparent bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  missing: "border-transparent bg-destructive/15 text-destructive",
+  unknown: "border-transparent bg-muted text-muted-foreground",
+};
+
+function ExternalControls({
+  attachment,
+  onChanged,
+}: {
+  attachment: Attachment;
+  onChanged: () => void;
+}) {
+  const file = attachment.file!;
+  const [path, setPath] = useState(file.path ?? "");
+  const [busy, setBusy] = useState(false);
+  const dirty = path.trim() !== (file.path ?? "");
+
+  useEffect(() => {
+    setPath(file.path ?? "");
+  }, [file.path]);
+
+  const status = file.lastCheckedStatus;
+
+  const run = async (fn: () => Promise<unknown>) => {
+    setBusy(true);
+    try {
+      await fn();
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-2 space-y-1.5 rounded-md border border-dashed p-2">
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="gap-1">
+          <LinkSimple className="h-3 w-3" />
+          external
+        </Badge>
+        {status && (
+          <Badge variant="outline" className={STATUS_STYLE[status]}>
+            {status === "ok" ? "reachable" : status}
+          </Badge>
+        )}
+        {file.lastCheckedAt && (
+          <span className="text-xs text-muted-foreground">
+            checked {new Date(file.lastCheckedAt).toLocaleString()}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          value={path}
+          onChange={(e) => setPath(e.target.value)}
+          className="h-7 flex-1 font-mono text-xs"
+          spellCheck={false}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && dirty) run(() => updateFilePath(attachment.fileId, path.trim()));
+          }}
+        />
+        {dirty && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
+            disabled={busy}
+            aria-label="Save path"
+            onClick={() => run(() => updateFilePath(attachment.fileId, path.trim()))}
+          >
+            <Check className="h-4 w-4" />
+          </Button>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7"
+          disabled={busy}
+          onClick={() => run(() => checkFileLink(attachment.fileId))}
+        >
+          <MagnifyingGlass className="mr-1 h-3.5 w-3.5" />
+          Check link integrity
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7"
+          disabled={busy}
+          onClick={() => run(() => importExternalFile(attachment.fileId))}
+        >
+          <CloudArrowDown className="mr-1 h-3.5 w-3.5" />
+          Load into the NEST
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -8,6 +8,7 @@ describe('Setup Indexes Migration', () => {
     let db;
     let traitsCollection;
     let attachmentsCollection;
+    let filesCollection;
 
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create();
@@ -17,11 +18,13 @@ describe('Setup Indexes Migration', () => {
         db = client.db('test');
         traitsCollection = db.collection("traits");
         attachmentsCollection = db.collection("attachments");
+        filesCollection = db.collection("files");
     });
 
     beforeEach(async () => {
         await traitsCollection.deleteMany({});
         await attachmentsCollection.deleteMany({});
+        await filesCollection.deleteMany({});
     });
 
     afterAll(async () => {
@@ -41,6 +44,21 @@ describe('Setup Indexes Migration', () => {
         expect(attachmentsIndexes).toHaveLength(2);
         expect(attachmentsIndexes.some(i => i.key.targetType === 1 && i.key.targetId === 1)).toBeTruthy();
         expect(attachmentsIndexes.some(i => i.key.fileId === 1)).toBeTruthy();
+
+        const filesIndexes = (await filesCollection.indexes()).filter(i => i.name !== '_id_');
+        expect(filesIndexes).toHaveLength(1);
+        const sha = filesIndexes.find(i => i.key.sha256 === 1);
+        expect(sha.unique).toBe(true);
+        expect(sha.partialFilterExpression).toEqual({ sha256: { $type: 'string' } });
+    });
+
+    test('files.sha256 index rejects a duplicate hash but allows many without one', async () => {
+        await up(client);
+        await filesCollection.insertOne({ name: 'a', sha256: 'abc' });
+        await expect(filesCollection.insertOne({ name: 'b', sha256: 'abc' })).rejects.toThrow();
+        await filesCollection.insertOne({ name: 'c' });
+        await filesCollection.insertOne({ name: 'd' });
+        expect(await filesCollection.countDocuments()).toBe(3);
     });
 
     test('should drop indexes successfully during down migration', async () => {

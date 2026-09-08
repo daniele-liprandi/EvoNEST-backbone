@@ -104,6 +104,64 @@ For an upload that does not go through `AttachmentPanel`, `uploadAndAttach()` an
 `createAttachment()` in `src/utils/handlers/attachmentHandlers.tsx` do both steps
 together.
 
+### Where the bytes live
+
+`/api/files` streams every upload straight into **GridFS** (one `files` bucket per
+NEST database) — no whole-file buffer — hashing it in passing. A `files` document
+is a discriminated union on `storage`:
+
+```
+{ _id, name, mime, kind, size, sha256, storage: { backend: "gridfs", ref }, createdAt, createdBy }
+```
+
+- Uploads dedup on `sha256` (a unique partial index): re-uploading identical bytes
+  drops the new copy and returns the existing id.
+- Size caps by kind: 20 MB for image/document/data, 200 MB for video/audio.
+  `video/*` and `audio/*` MIME types are accepted.
+- `GET /api/files/[id]` streams with HTTP `Range` support (`206`, `Accept-Ranges`,
+  an `ETag` of the sha256, a long `Cache-Control`) — media scrubbing does not
+  refetch the whole file. `GET /api/files` is paginated (`?limit=&cursor=`) and
+  filterable (`?backend=&kind=`).
+- Uploading needs the `files.upload` capability (`researcher` / `student` by
+  default; admins implied).
+
+`GET /api/files/usage` returns `{ gridfsBytes, externalCount, fileCount }` for the
+active NEST; **Settings → Main** shows it as a storage meter with a soft nudge
+toward external links once the managed footprint gets large.
+
+Because the bytes are in the database, a NEST's files travel with a
+`mongodump`/`mongorestore` — there is no separate storage volume to move.
+Pre-GridFS installs keep disk-backed `files` rows (a `path`, no `storage`) that
+still stream and delete correctly until migration `022_files_to_gridfs` sweeps
+them in.
+
+### External links
+
+A large dataset that should stay where it lives — on a NAS, an instrument PC — is
+registered as an **external** file instead of being copied in:
+
+```
+{ _id, name, mime, kind, storage: { backend: "external", path, context?,
+  lastCheckedAt?, lastCheckedStatus?: "ok" | "missing" | "unknown" } }
+```
+
+- One `files` row, many attachments — edit the path once (`POST /api/files`
+  `{ method: "set-path" }`) and every link follows.
+- `{ method: "link-external" }` registers one, `{ method: "set-path" }` re-points
+  it, and `{ method: "check" }` stats the path **if the server can reach it** and
+  records the result (never heals, never blocks) — all three need
+  `files.link-external`. `{ method: "import" }` streams the file into GridFS once,
+  flips the record, and keeps the old path as `storage.importedFrom` (needs
+  `files.upload`).
+- The server may only read external paths under `EXTERNAL_FILE_ROOTS` (or
+  `STORAGE_PATH`). A path outside every root still holds as a link, but
+  `check` reports `unknown` and streaming / download / import return `409` — the
+  UI then shows the path as copyable text.
+- `DELETE` drops the row and never touches the filesystem for an external file.
+- `AttachmentPanel`'s **Add file** menu offers *Load into the NEST* and
+  *External link*; external rows carry a badge, an inline-editable path, and a
+  *Check link integrity* button.
+
 ### Giving an entity a file gallery
 
 Mount the panel on the detail view:
