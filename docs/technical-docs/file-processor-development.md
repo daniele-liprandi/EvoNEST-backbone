@@ -3,12 +3,22 @@
 EvoNEST handles an uploaded file in one of three ways, and any entity type can be
 given its own file gallery. This page covers both.
 
-## The three paths
+## Overview
+
+:::info
+
+When developing EvoNEST, I imagined a file being able to be two things: either a result or a log coming out of a machine, or something you quickly want to attach to one of your entities in the NEST.
+In the first case, you probably want a parser that programmatically reads that same type of file each time, saves and processes the data.
+In the second case, maybe you want to just attach some legal documents about your sample or experiment.
+
+I decided to call the first type of files "measurement experiments", or just "experiments", and the second one "attachments".
+
+:::
 
 ```
-Text file in the experiment form
+File in the experiment form
   ├─ a parser recognises the format  →  experiment + traits
-  └─ no parser matches               →  rejected, "attach it as a document instead"
+  └─ no parser matches               →  rejected
 
 Any file in AttachmentPanel or POST /api/attachments
   └─ /api/files (deferred)  →  /api/attachments  →  attachments row + stored file
