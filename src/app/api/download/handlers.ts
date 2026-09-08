@@ -2,6 +2,7 @@ import { Effect } from "effect";
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
+import { createReadStream } from "fs";
 import { Readable } from "stream";
 import { ObjectId } from "mongodb";
 import {
@@ -10,10 +11,12 @@ import {
   attempt,
   ValidationError,
   ForbiddenError,
+  ConflictError,
   NotFoundError,
 } from "@/lib/effect";
 import { requireEnv } from "@/app/api/utils/env";
 import { bucketFor } from "@/app/api/files/gridfs";
+import { resolveExternalPath } from "@/app/api/files/external";
 
 const STORAGE_PATH = requireEnv("STORAGE_PATH");
 
@@ -63,6 +66,23 @@ export const downloadFile = (request: Request) =>
           fileDoc.name,
           typeof fileDoc.size === "number" ? fileDoc.size : undefined,
         ),
+      });
+    }
+
+    if (fileDoc.storage?.backend === "external") {
+      const abs = resolveExternalPath(fileDoc.storage.path);
+      if (!abs) {
+        return yield* Effect.fail(
+          new ConflictError({ message: "External file not reachable from the server." }),
+        );
+      }
+      const stats = yield* Effect.either(attempt(() => fs.stat(abs), "fs.stat"));
+      if (stats._tag === "Left" || !stats.right.isFile()) {
+        return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
+      }
+      return new NextResponse(createReadStream(abs) as unknown as BodyInit, {
+        status: 200,
+        headers: attachmentHeaders(fileDoc.name, stats.right.size),
       });
     }
 

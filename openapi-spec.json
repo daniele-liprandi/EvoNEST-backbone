@@ -860,13 +860,30 @@
             "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
           },
           "storage": {
-            "type": "object",
-            "description": "Discriminated union on `backend` (only `gridfs` today)",
-            "required": ["backend", "ref"],
-            "properties": {
-              "backend": { "type": "string", "enum": ["gridfs"] },
-              "ref": { "type": "string", "description": "GridFS bucket file _id" }
-            }
+            "description": "Discriminated union on `backend`",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["backend", "ref"],
+                "properties": {
+                  "backend": { "type": "string", "enum": ["gridfs"] },
+                  "ref": { "type": "string", "description": "GridFS bucket file _id" },
+                  "sha256": { "type": "string" },
+                  "importedFrom": { "type": "string", "description": "Original disk / external path, when the blob was swept in" }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["backend", "path"],
+                "properties": {
+                  "backend": { "type": "string", "enum": ["external"] },
+                  "path": { "type": "string", "description": "Where the file lives, outside the NEST" },
+                  "context": { "type": "string", "description": "Free note — e.g. \"Confocal NAS\"" },
+                  "lastCheckedAt": { "type": "string", "format": "date-time" },
+                  "lastCheckedStatus": { "type": "string", "enum": ["ok", "missing", "unknown"] }
+                }
+              }
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -3572,8 +3589,8 @@
         }
       },
       "post": {
-        "summary": "Upload a file into the NEST (GridFS)",
-        "description": "multipart/form-data with a `file` part and a JSON `metadata` part. The body is streamed straight into GridFS and hashed in passing; an upload whose sha256 already exists is dropped and the existing file id returned. `metadata.deferredLink` stores the file unlinked for a later `/api/files/link`; otherwise `metadata.entryType` + `entryId` link it immediately. Size caps: 20 MB for image/document/data, 200 MB for video/audio. Requires the `files.upload` capability.",
+        "summary": "Upload a file, or manage an external link",
+        "description": "A `multipart/form-data` body is a file upload: a `file` part plus a JSON `metadata` part, streamed into GridFS and hashed; an upload whose sha256 already exists is dropped and the existing file id returned. `metadata.deferredLink` stores the file unlinked for a later `/api/files/link`; otherwise `metadata.entryType` + `entryId` link it immediately. Size caps: 20 MB image/document/data, 200 MB video/audio. Needs `files.upload`.\n\nAn `application/json` body with a `method` manages external links: `link-external` (`{ path, context?, mime?, name? }`, needs `files.link-external`); `check` (`{ id }` — stats the path if the server can reach it, records `lastCheckedStatus` ok/missing/unknown, never heals); `set-path` (`{ id, path }` — re-point the link, needs `files.link-external`); `import` (`{ id }` — stream the external file into GridFS once and flip the record, needs `files.upload`, `409` if the path is unreachable).",
         "tags": [
           "Files"
         ],
@@ -3597,12 +3614,26 @@
                   }
                 }
               }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["method"],
+                "properties": {
+                  "method": { "type": "string", "enum": ["link-external", "check", "set-path", "import"] },
+                  "id": { "type": "string", "description": "File id — for check / set-path / import" },
+                  "path": { "type": "string", "description": "External path — for link-external / set-path" },
+                  "context": { "type": "string" },
+                  "mime": { "type": "string" },
+                  "name": { "type": "string" }
+                }
+              }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "File stored (or an existing identical blob reused)",
+            "description": "File stored / linked / checked / imported",
             "content": {
               "application/json": {
                 "schema": {
@@ -3612,7 +3643,7 @@
             }
           },
           "400": {
-            "description": "Missing file, unsupported type, over the size cap, or bad metadata",
+            "description": "Missing file, unsupported type, over the size cap, bad metadata, or unknown method",
             "content": {
               "application/json": {
                 "schema": {
@@ -3622,7 +3653,7 @@
             }
           },
           "403": {
-            "description": "Missing the files.upload capability",
+            "description": "Missing the files.upload / files.link-external capability",
             "content": {
               "application/json": {
                 "schema": {
@@ -3632,7 +3663,17 @@
             }
           },
           "404": {
-            "description": "The entry to link to was not found",
+            "description": "The entry to link to, or the file, was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "External file not reachable from the server (check / import)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3669,6 +3710,7 @@
           "304": { "description": "ETag matched If-None-Match" },
           "400": { "description": "Invalid id" },
           "404": { "description": "Not found on the database or in storage" },
+          "409": { "description": "External file not reachable from the server" },
           "416": { "description": "Range not satisfiable" }
         }
       },
@@ -4401,6 +4443,16 @@
                       "example": "File not found."
                     }
                   }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "External file not reachable from the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }

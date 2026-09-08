@@ -1,17 +1,27 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
+import { basename } from "path";
+import { stat, readFile } from "fs/promises";
+import { createHash } from "crypto";
 import { ObjectId, type Db, type Document } from "mongodb";
+import mime from "mime-types";
 import {
   ok,
+  decodeBody,
   currentDatabase,
   currentUser,
   Mongo,
+  attempt,
   requireCapability,
   ValidationError,
   NotFoundError,
+  ConflictError,
   InternalError,
 } from "@/lib/effect";
 import { resolveAttachmentTarget, kindFromMime } from "@/shared/config/attachment-targets";
-import { bucketFor, streamUploadToGridFS, UploadError } from "./gridfs";
+import { bucketFor, putBuffer, streamUploadToGridFS, UploadError } from "./gridfs";
+import { resolveExternalPath } from "./external";
+
+const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
 const DEFAULT_PAGE = 50;
 const MAX_PAGE = 200;
@@ -187,4 +197,189 @@ export const uploadFile = (request: Request) =>
     }
 
     return yield* ok({ fileId: fileId.toString(), status: 200 });
+  });
+
+// --- External links -------------------------------------------------------
+
+const FilesPostBody = Schema.Struct(
+  {
+    method: Schema.String,
+    id: Schema.optional(Schema.String),
+    path: Schema.optional(Schema.String),
+    context: Schema.optional(Schema.String),
+    mime: Schema.optional(Schema.String),
+    name: Schema.optional(Schema.String),
+  },
+  Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+);
+type FilesPostData = Schema.Schema.Type<typeof FilesPostBody>;
+
+const requireExternalDoc = (dbName: string, id: string | undefined) =>
+  Effect.gen(function* () {
+    if (!id || !isHexId(id)) {
+      return yield* Effect.fail(new ValidationError({ message: "Invalid file id" }));
+    }
+    const mongo = yield* Mongo;
+    const fileDoc = yield* mongo.findOne(dbName, "files", { _id: new ObjectId(id) });
+    if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File" }));
+    if (fileDoc.storage?.backend !== "external") {
+      return yield* Effect.fail(new ValidationError({ message: "Not an external file" }));
+    }
+    return fileDoc;
+  });
+
+/** Register a file that stays where it lives — a NAS share, an instrument PC. */
+const linkExternal = (data: FilesPostData) =>
+  Effect.gen(function* () {
+    yield* requireCapability("files.link-external");
+    const dbName = yield* currentDatabase;
+    const user = yield* currentUser;
+    const mongo = yield* Mongo;
+
+    const filePath = (data.path ?? "").trim();
+    if (!filePath) return yield* Effect.fail(new ValidationError({ message: "path is required" }));
+
+    const mimeType =
+      (typeof data.mime === "string" && data.mime) ||
+      (mime.lookup(filePath) as string) ||
+      "application/octet-stream";
+    const fileId = new ObjectId();
+    const now = new Date();
+
+    yield* mongo.insertOne(dbName, "files", {
+      _id: fileId,
+      name: (data.name ?? "").trim() || basename(filePath),
+      mime: mimeType,
+      contentType: mimeType,
+      kind: kindFromMime(mimeType),
+      storage: {
+        backend: "external",
+        path: filePath,
+        ...(data.context ? { context: String(data.context) } : {}),
+        lastCheckedStatus: "unknown",
+      },
+      createdAt: now,
+      createdBy: user.doc?._id ?? user.sub,
+      metadata: { uploadDate: now, isTemporary: false },
+    });
+
+    return yield* ok({ fileId: fileId.toString(), status: 200 });
+  });
+
+/** Stat one external path if the server can reach it. Never heals, never blocks. */
+const checkExternal = (data: FilesPostData) =>
+  Effect.gen(function* () {
+    const dbName = yield* currentDatabase;
+    const mongo = yield* Mongo;
+    const fileDoc = yield* requireExternalDoc(dbName, data.id);
+
+    const abs = resolveExternalPath(fileDoc.storage.path);
+    let status: "ok" | "missing" | "unknown" = "unknown";
+    if (abs) {
+      const stats = yield* attempt(() => stat(abs), "fs.stat").pipe(
+        Effect.catchAll(() => Effect.succeed(null)),
+      );
+      status = stats && stats.isFile() ? "ok" : "missing";
+    }
+
+    const now = new Date();
+    yield* mongo.updateOne(
+      dbName,
+      "files",
+      { _id: fileDoc._id },
+      { $set: { "storage.lastCheckedAt": now, "storage.lastCheckedStatus": status } },
+    );
+    return yield* ok({ status, checkedAt: now.toISOString() });
+  });
+
+/** Edit the path of an external file — every attachment that points at it follows. */
+const setExternalPath = (data: FilesPostData) =>
+  Effect.gen(function* () {
+    yield* requireCapability("files.link-external");
+    const dbName = yield* currentDatabase;
+    const mongo = yield* Mongo;
+    const fileDoc = yield* requireExternalDoc(dbName, data.id);
+
+    const filePath = (data.path ?? "").trim();
+    if (!filePath) return yield* Effect.fail(new ValidationError({ message: "path is required" }));
+
+    yield* mongo.updateOne(
+      dbName,
+      "files",
+      { _id: fileDoc._id },
+      {
+        $set: { "storage.path": filePath },
+        $unset: { "storage.lastCheckedAt": "", "storage.lastCheckedStatus": "" },
+      },
+    );
+    return yield* ok({ success: true });
+  });
+
+/** Pull an external file into GridFS once — stream, flip the record, keep the old path. */
+const importExternal = (data: FilesPostData) =>
+  Effect.gen(function* () {
+    yield* requireCapability("files.upload");
+    const dbName = yield* currentDatabase;
+    const mongo = yield* Mongo;
+    const db = yield* mongo.db(dbName);
+    const fileDoc = yield* requireExternalDoc(dbName, data.id);
+
+    const abs = resolveExternalPath(fileDoc.storage.path);
+    if (!abs) {
+      return yield* Effect.fail(
+        new ConflictError({ message: "External file not reachable from the server" }),
+      );
+    }
+    const buffer = yield* attempt(() => readFile(abs), "read external file").pipe(
+      Effect.catchAll(() =>
+        Effect.fail(new ConflictError({ message: "External file could not be read" })),
+      ),
+    );
+
+    const sha256 = createHash("sha256").update(buffer).digest("hex");
+    const mimeType =
+      (typeof fileDoc.mime === "string" && fileDoc.mime) ||
+      (mime.lookup(abs) as string) ||
+      "application/octet-stream";
+
+    const existing = yield* mongo.findOne(dbName, "files", { sha256 });
+    let ref: ObjectId;
+    let canonical = false;
+    if (existing?.storage?.backend === "gridfs") {
+      ref = existing.storage.ref as ObjectId;
+    } else {
+      canonical = true;
+      ref = yield* Effect.promise(() => putBuffer(db, fileDoc.name ?? "imported", buffer, mimeType));
+    }
+
+    const set: Record<string, unknown> = {
+      mime: mimeType,
+      contentType: mimeType,
+      kind: kindFromMime(mimeType),
+      size: buffer.length,
+      storage: { backend: "gridfs", ref, sha256, importedFrom: fileDoc.storage.path },
+    };
+    if (canonical) set.sha256 = sha256;
+
+    yield* mongo.updateOne(dbName, "files", { _id: fileDoc._id }, { $set: set });
+    return yield* ok({ fileId: String(fileDoc._id), status: 200 });
+  });
+
+export const handleFilesPost = (request: Request) =>
+  Effect.gen(function* () {
+    const data = yield* decodeBody(FilesPostBody)(request);
+    switch (data.method) {
+      case "link-external":
+        return yield* linkExternal(data);
+      case "check":
+        return yield* checkExternal(data);
+      case "set-path":
+        return yield* setExternalPath(data);
+      case "import":
+        return yield* importExternal(data);
+      default:
+        return yield* Effect.fail(
+          new ValidationError({ message: `Unknown method: ${data.method}` }),
+        );
+    }
   });

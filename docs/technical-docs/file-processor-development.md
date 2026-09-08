@@ -131,6 +131,32 @@ Pre-GridFS installs keep disk-backed `files` rows (a `path`, no `storage`) that
 still stream and delete correctly until migration `022_files_to_gridfs` sweeps
 them in.
 
+### External links
+
+A large dataset that should stay where it lives — on a NAS, an instrument PC — is
+registered as an **external** file instead of being copied in:
+
+```
+{ _id, name, mime, kind, storage: { backend: "external", path, context?,
+  lastCheckedAt?, lastCheckedStatus?: "ok" | "missing" | "unknown" } }
+```
+
+- One `files` row, many attachments — edit the path once (`POST /api/files`
+  `{ method: "set-path" }`) and every link follows.
+- `{ method: "link-external" }` registers one (needs `files.link-external`);
+  `{ method: "check" }` stats the path **if the server can reach it** and records
+  the result — it never heals and never blocks; `{ method: "import" }` streams
+  the file into GridFS once, flips the record, and keeps the old path as
+  `storage.importedFrom` (needs `files.upload`).
+- The server may only read external paths under `EXTERNAL_FILE_ROOTS` (or
+  `STORAGE_PATH`). A path outside every root still holds as a link, but
+  `check` reports `unknown` and streaming / download / import return `409` — the
+  UI then shows the path as copyable text.
+- `DELETE` drops the row and never touches the filesystem for an external file.
+- `AttachmentPanel`'s **Add file** menu offers *Load into the NEST* and
+  *External link*; external rows carry a badge, an inline-editable path, and a
+  *Check link integrity* button.
+
 ### Giving an entity a file gallery
 
 Mount the panel on the detail view:

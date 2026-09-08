@@ -8,6 +8,21 @@ import { toast } from "sonner";
 import { uploadFile } from "@/utils/handlers/fileHandlers";
 
 const ATTACHMENTS_URL = `${prepend_path}/api/attachments`;
+const FILES_URL = `${prepend_path}/api/files`;
+
+const revalidateAttachments = () =>
+  mutate((key) => typeof key === "string" && key.startsWith(ATTACHMENTS_URL));
+
+const filesPost = async (body: Record<string, unknown>) => {
+  const res = await fetch(FILES_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(json.error || "Request failed");
+  return json;
+};
 
 export interface CreateAttachmentInput {
   fileId: string;
@@ -124,6 +139,67 @@ export const handleBulkDeleteAttachments = async (ids: string[]): Promise<void> 
     toast.error(`${failed} of ${ids.length} attachments could not be deleted`);
   } else {
     toast.message(`Deleted ${ids.length} attachments`);
+  }
+};
+
+/** Register an external file (left where it lives) and attach it to a target. */
+export const linkExternalAndAttach = async (
+  path: string,
+  target: { targetType: string; targetId: string; category?: string; responsible: string },
+  extra: { context?: string; name?: string } = {},
+): Promise<string | null> => {
+  try {
+    const { fileId } = await filesPost({ method: "link-external", path, ...extra });
+    if (!fileId) return null;
+    return await createAttachment({
+      fileId,
+      targetType: target.targetType,
+      targetId: target.targetId,
+      category: target.category ?? "gallery",
+      responsible: target.responsible,
+    });
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : "Could not link the external file");
+    return null;
+  }
+};
+
+/** Stat an external link's path on the server; returns the recorded status. */
+export const checkFileLink = async (
+  fileId: string,
+): Promise<"ok" | "missing" | "unknown" | null> => {
+  try {
+    const { status } = await filesPost({ method: "check", id: fileId });
+    revalidateAttachments();
+    return status ?? null;
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : "Check failed");
+    return null;
+  }
+};
+
+/** Re-point an external link at a new path — every attachment that uses it follows. */
+export const updateFilePath = async (fileId: string, path: string): Promise<boolean> => {
+  try {
+    await filesPost({ method: "set-path", id: fileId, path });
+    revalidateAttachments();
+    return true;
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : "Could not update the path");
+    return false;
+  }
+};
+
+/** Pull an external file into the NEST (GridFS) once. */
+export const importExternalFile = async (fileId: string): Promise<boolean> => {
+  try {
+    await filesPost({ method: "import", id: fileId });
+    revalidateAttachments();
+    toast.success("File loaded into the NEST");
+    return true;
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : "Import failed");
+    return false;
   }
 };
 

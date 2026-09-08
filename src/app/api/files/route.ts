@@ -13,15 +13,21 @@
  *       200: { description: "{ files: [...], nextCursor: string | null }" }
  *       401: { description: Unauthorized }
  *   post:
- *     summary: Upload a file into the NEST (GridFS)
+ *     summary: Upload a file into the NEST (GridFS), or manage an external link
  *     description: >
- *       multipart/form-data with a `file` part and a JSON `metadata` part. The
- *       body is streamed into GridFS and hashed; an upload whose sha256 already
- *       exists is dropped and the existing file id returned.
- *       `metadata.deferredLink` stores the file unlinked for a later
- *       `/api/files/link`; otherwise `metadata.entryType` + `entryId` link it
- *       immediately. Size caps: 20 MB for image/document/data, 200 MB for
- *       video/audio.
+ *       A `multipart/form-data` body is a file upload: the bytes are streamed
+ *       into GridFS and hashed; an upload whose sha256 already exists is dropped
+ *       and the existing file id returned. `metadata.deferredLink` stores the
+ *       file unlinked for a later `/api/files/link`; otherwise
+ *       `metadata.entryType` + `entryId` link it immediately. Size caps: 20 MB
+ *       for image/document/data, 200 MB for video/audio.
+ *       A `application/json` body with a `method` manages external file links:
+ *       `link-external` ({ path, context?, mime?, name? } — registers a file
+ *       left where it lives, needs `files.link-external`), `check` ({ id } —
+ *       stats the path if the server can reach it, records
+ *       `lastCheckedStatus`), `set-path` ({ id, path } — re-point the link),
+ *       `import` ({ id } — stream the external file into GridFS once, needs
+ *       `files.upload`).
  *     tags: [Files]
  *     responses:
  *       200: { description: "{ fileId }" }
@@ -32,11 +38,17 @@
  */
 
 import { runRoute } from "@/lib/effect";
-import { listFiles, uploadFile } from "./handlers";
+import { listFiles, uploadFile, handleFilesPost } from "./handlers";
 
 // The upload handler reads multipart form data, which must not be statically
 // optimised.
 export const dynamic = "force-dynamic";
 
 export const GET = (request: Request) => runRoute(listFiles(request));
-export const POST = (request: Request) => runRoute(uploadFile(request));
+
+export const POST = (request: Request) => {
+  const contentType = request.headers.get("content-type") || "";
+  return contentType.includes("multipart/form-data")
+    ? runRoute(uploadFile(request))
+    : runRoute(handleFilesPost(request));
+};

@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Document } from "mongodb";
 import fs from "fs/promises";
 import mime from "mime-types";
 import {
@@ -71,7 +71,36 @@ export const listAttachments = (request: Request) =>
     const attachments = yield* mongo.find(dbName, ATTACHMENTS, filter, {
       sort: { order: 1, createdAt: 1 },
     });
-    return yield* ok(attachments);
+
+    // Join the file's storage shape so the panel can flag external links and
+    // show (and check) their path without a second round trip per row.
+    const fileIds = [
+      ...new Set(attachments.map((a) => String(a.fileId)).filter(isHexId)),
+    ].map((id) => new ObjectId(id));
+    const fileById = new Map<string, Document>();
+    if (fileIds.length > 0) {
+      for (const f of yield* mongo.find(dbName, FILES, { _id: { $in: fileIds } })) {
+        fileById.set(String(f._id), f);
+      }
+    }
+    const withFile = attachments.map((a) => {
+      const f = fileById.get(String(a.fileId));
+      const s = (f?.storage ?? {}) as Record<string, unknown>;
+      return {
+        ...a,
+        file: f
+          ? {
+              backend: s.backend ?? (typeof f.path === "string" ? "disk" : "gridfs"),
+              path: s.path ?? null,
+              context: s.context ?? null,
+              lastCheckedStatus: s.lastCheckedStatus ?? null,
+              lastCheckedAt: s.lastCheckedAt ?? null,
+              size: f.size ?? null,
+            }
+          : null,
+      };
+    });
+    return yield* ok(withFile);
   });
 
 // --- POST ----------------------------------------------------------------

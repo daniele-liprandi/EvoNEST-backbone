@@ -8,6 +8,20 @@ import { kindFromMime } from "@/shared/config/attachment-targets";
 export const BUCKET_NAME = "files";
 export const bucketFor = (db: Db) => new GridFSBucket(db, { bucketName: BUCKET_NAME });
 
+/** Store a whole buffer as a GridFS blob (migration/import paths). */
+export const putBuffer = (
+  db: Db,
+  filename: string,
+  buffer: Buffer,
+  mime: string,
+): Promise<ObjectId> =>
+  new Promise((resolve, reject) => {
+    const stream = bucketFor(db).openUploadStream(filename, { metadata: { contentType: mime } });
+    stream.on("error", reject);
+    stream.on("finish", () => resolve(stream.id as ObjectId));
+    stream.end(buffer);
+  });
+
 /**
  * Delete a GridFS blob only once no `files` document still points at it.
  * Migration 022 dedups by content, so one blob can back several file rows;

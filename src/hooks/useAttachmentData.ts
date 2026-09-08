@@ -25,6 +25,15 @@ export interface Attachment {
   responsible: string | null;
   date: string;
   createdAt: string;
+  /** The joined file's storage shape — for flagging and checking external links. */
+  file: {
+    backend: "gridfs" | "external" | "disk";
+    path: string | null;
+    context: string | null;
+    lastCheckedStatus: "ok" | "missing" | "unknown" | null;
+    lastCheckedAt: string | null;
+    size: number | null;
+  } | null;
   [key: string]: unknown;
 }
 

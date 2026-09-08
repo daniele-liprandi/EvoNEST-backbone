@@ -12,9 +12,11 @@ import {
   attempt,
   ValidationError,
   NotFoundError,
+  ConflictError,
 } from "@/lib/effect";
 import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
 import { bucketFor, deleteBlobIfUnreferenced, parseRangeHeader } from "../gridfs";
+import { resolveExternalPath } from "../external";
 
 const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
@@ -102,6 +104,18 @@ const streamFromDisk = (fileDoc: Document) =>
     return new NextResponse(createReadStream(fileDoc.path) as unknown as BodyInit, { headers });
   });
 
+/** An external link — bytes live outside the NEST, on a share the server may reach. */
+const streamFromExternal = (fileDoc: Document) =>
+  Effect.gen(function* () {
+    const abs = resolveExternalPath(fileDoc.storage?.path);
+    if (!abs) {
+      return yield* Effect.fail(
+        new ConflictError({ message: "external file not reachable from the server" }),
+      );
+    }
+    return yield* streamFromDisk({ ...fileDoc, path: abs });
+  });
+
 export const streamFile = (fileId: string, request: Request) =>
   Effect.gen(function* () {
     if (!isHexId(fileId))
@@ -114,6 +128,9 @@ export const streamFile = (fileId: string, request: Request) =>
 
     if (fileDoc.storage?.backend === "gridfs") {
       return yield* streamFromGridFS(dbName, fileDoc, request);
+    }
+    if (fileDoc.storage?.backend === "external") {
+      return yield* streamFromExternal(fileDoc);
     }
     return yield* streamFromDisk(fileDoc);
   });
@@ -134,6 +151,8 @@ export const deleteFile = (fileId: string) =>
     if (fileDoc.storage?.backend === "gridfs") {
       const db = yield* mongo.db(dbName);
       yield* Effect.promise(() => deleteBlobIfUnreferenced(db, fileDoc.storage.ref as ObjectId));
+    } else if (fileDoc.storage?.backend === "external") {
+      // The bytes are not ours — drop the row, never touch the filesystem.
     } else if (typeof fileDoc.path === "string") {
       // A missing file on disk must not block the database cleanup.
       yield* attempt(() => unlink(fileDoc.path), "fs.unlink").pipe(Effect.catchAll(() => Effect.void));

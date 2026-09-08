@@ -57,7 +57,9 @@ STORAGE_PATH='/usr/evonest/file_storage_dev'
 ```
 
 ::: tip File storage
-Uploaded files are stored in **GridFS**, inside the database, so they travel with a `mongodump`/`mongorestore`. `STORAGE_PATH` is only read by the legacy disk-to-GridFS import migration (`022_files_to_gridfs`) and, later, as an allowed root for external file links. A fresh install can point it anywhere writable.
+Uploaded files are stored in **GridFS**, inside the database, so they travel with a `mongodump`/`mongorestore`. `STORAGE_PATH` is only read by the legacy disk-to-GridFS import migration (`022_files_to_gridfs`) and as an allowed root for external file links. A fresh install can point it anywhere writable.
+
+To let the server reach external files on other mounts (a NAS, an instrument PC), set `EXTERNAL_FILE_ROOTS` to a `PATH`-style list of allowed directories. A linked path outside every root still works as a reference, but the server won't stream, download or import it.
 :::
 
 ::: warning Security Note
