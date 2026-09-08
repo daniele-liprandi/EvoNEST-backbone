@@ -150,6 +150,11 @@ export const streamUploadToGridFS = (request: Request, db: Db): Promise<UploadRe
     });
 
     bb.on("file", (_name, stream, info) => {
+      if (fileSeen) {
+        // One upload, one file part. Ignore extras rather than orphan a blob.
+        stream.resume();
+        return;
+      }
       fileSeen = true;
       const mime = normaliseMime(info.mimeType);
       const filename = sanitizeFilename(info.filename || "uploaded_file");

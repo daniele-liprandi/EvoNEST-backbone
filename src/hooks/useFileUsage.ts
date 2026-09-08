@@ -32,7 +32,8 @@ export const formatBytes = (bytes: number): string => {
   if (!bytes || bytes < 1) return "0 B";
   const exp = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), UNITS.length - 1);
   const value = bytes / 1024 ** exp;
-  return `${value.toFixed(value < 10 && exp > 0 ? 1 : 0)} ${UNITS[exp]}`;
+  // Whole numbers for bytes/KB, one decimal from MB up.
+  return `${value.toFixed(exp >= 2 ? 1 : 0)} ${UNITS[exp]}`;
 };
 
 /** Soft ceiling for managed storage — the meter nudges toward external links past this. */
