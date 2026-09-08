@@ -56,6 +56,10 @@ MONGODB_URI=mongodb://root:pass@mongo_dev:27017
 STORAGE_PATH='/usr/evonest/file_storage_dev'
 ```
 
+::: tip File storage
+Uploaded files are stored in **GridFS**, inside the database, so they travel with a `mongodump`/`mongorestore`. `STORAGE_PATH` is only read by the legacy disk-to-GridFS import migration (`022_files_to_gridfs`) and, later, as an allowed root for external file links. A fresh install can point it anywhere writable.
+:::
+
 ::: warning Security Note
 If you change the MongoDB password in `docker-compose.dev.yml`, make sure to update it in **three places**:
 1. `mongo_dev` service: `MONGO_INITDB_ROOT_PASSWORD`

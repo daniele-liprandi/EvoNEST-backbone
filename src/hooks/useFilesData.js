@@ -7,7 +7,8 @@ import useSWR from 'swr';
 export const useFilesData = (prependPath) => {
     const { data, error } = useSWR(`${prependPath}/api/files`);
     return {
-        filesData: data,
+        // GET /api/files is paginated: { files, nextCursor }.
+        filesData: data?.files,
         filesError: error,
-    };  
+    };
 };

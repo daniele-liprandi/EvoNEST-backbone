@@ -104,6 +104,33 @@ For an upload that does not go through `AttachmentPanel`, `uploadAndAttach()` an
 `createAttachment()` in `src/utils/handlers/attachmentHandlers.tsx` do both steps
 together.
 
+### Where the bytes live
+
+`/api/files` streams every upload straight into **GridFS** (one `files` bucket per
+NEST database) — no whole-file buffer — hashing it in passing. A `files` document
+is a discriminated union on `storage`:
+
+```
+{ _id, name, mime, kind, size, sha256, storage: { backend: "gridfs", ref }, createdAt, createdBy }
+```
+
+- Uploads dedup on `sha256` (a unique partial index): re-uploading identical bytes
+  drops the new copy and returns the existing id.
+- Size caps by kind: 20 MB for image/document/data, 200 MB for video/audio.
+  `video/*` and `audio/*` MIME types are accepted.
+- `GET /api/files/[id]` streams with HTTP `Range` support (`206`, `Accept-Ranges`,
+  an `ETag` of the sha256, a long `Cache-Control`) — media scrubbing does not
+  refetch the whole file. `GET /api/files` is paginated (`?limit=&cursor=`) and
+  filterable (`?backend=&kind=`).
+- Uploading needs the `files.upload` capability (`researcher` / `student` by
+  default; admins implied).
+
+Because the bytes are in the database, a NEST's files travel with a
+`mongodump`/`mongorestore` — there is no separate storage volume to move.
+Pre-GridFS installs keep disk-backed `files` rows (a `path`, no `storage`) that
+still stream and delete correctly until migration `022_files_to_gridfs` sweeps
+them in.
+
 ### Giving an entity a file gallery
 
 Mount the panel on the detail view:
