@@ -130,6 +130,17 @@ describe("/api/files/[fileId]", () => {
     expect(res.status).toBe(304);
   });
 
+  test("GET is 404 when the GridFS blob behind the document is gone", async () => {
+    const fileId = await uploadDeferred();
+    // Simulate a dangling ref (partial migration, manual cleanup).
+    await mongo.db.collection("files.files").deleteMany({});
+    await mongo.db.collection("files.chunks").deleteMany({});
+    const res = await runRoute(
+      streamFile(fileId, new Request("http://x/f")).pipe(Effect.provide(mongo.layer)),
+    );
+    expect(res.status).toBe(404);
+  });
+
   test("GET is 404 for a missing document, 400 for a bad id", async () => {
     expect(
       (

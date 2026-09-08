@@ -22,19 +22,27 @@ export const putBuffer = (
     stream.end(buffer);
   });
 
+/** Whether a GridFS blob (`_id: ref`) has any chunks — a cheap existence probe. */
+export const gridfsBlobExists = (db: Db, ref: ObjectId) =>
+  db
+    .collection(`${BUCKET_NAME}.files`)
+    .findOne({ _id: ref }, { projection: { _id: 1 } })
+    .then((doc) => doc != null);
+
 /**
  * Delete a GridFS blob only once no `files` document still points at it.
  * Migration 022 dedups by content, so one blob can back several file rows;
- * call this *after* the row that referenced it is gone.
+ * call this *after* the row that referenced it is gone. Best-effort: an
+ * orphaned blob is harmless, and a failed cleanup must not fail the delete.
  */
 export const deleteBlobIfUnreferenced = async (db: Db, ref: ObjectId) => {
-  const stillReferenced = await db
-    .collection("files")
-    .countDocuments({ "storage.ref": ref }, { limit: 1 });
-  if (stillReferenced === 0) {
-    await bucketFor(db)
-      .delete(ref)
-      .catch(() => {});
+  try {
+    const stillReferenced = await db
+      .collection("files")
+      .countDocuments({ "storage.ref": ref }, { limit: 1 });
+    if (stillReferenced === 0) await bucketFor(db).delete(ref);
+  } catch {
+    // leave the blob; nothing downstream depends on it being gone
   }
 };
 

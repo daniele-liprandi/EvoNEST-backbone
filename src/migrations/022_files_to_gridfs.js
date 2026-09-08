@@ -68,6 +68,18 @@ async function processDatabase(client, dbName, isDryRun, totals) {
   const bucket = new GridFSBucket(db, { bucketName: BUCKET_NAME });
   const recap = blankNestRecap(dbName);
 
+  // The dedup backstop `uploadFile` relies on. `011_setup_indexes` creates it on
+  // fresh installs; ensure it here too, since an upgrading operator runs this
+  // script but not 011. Idempotent when the index already matches.
+  if (!isDryRun) {
+    await files
+      .createIndex(
+        { sha256: 1 },
+        { unique: true, partialFilterExpression: { sha256: { $type: 'string' } } },
+      )
+      .catch((e) => console.warn(`  Could not ensure files.sha256 index on ${dbName}: ${e.message}`));
+  }
+
   recap.files = await files.countDocuments({});
   recap.alreadyGridfs = await files.countDocuments({ 'storage.backend': 'gridfs' });
   recap.external = await files.countDocuments({ 'storage.backend': 'external' });

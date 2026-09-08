@@ -131,6 +131,15 @@ describe('files -> GridFS migration (022)', () => {
     expect((await files.findOne({ name: 'a.txt' })).storage).toBeUndefined();
   });
 
+  test('ensures the files.sha256 dedup index', async () => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    await seedDiskFile('idx.txt', 'x');
+    await up(client);
+    const sha = (await files.indexes()).find((i) => i.key.sha256 === 1);
+    expect(sha.unique).toBe(true);
+    expect(sha.partialFilterExpression).toEqual({ sha256: { $type: 'string' } });
+  });
+
   test('re-running skips already-migrated documents', async () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
     await seedDiskFile('keep.txt', 'hello');

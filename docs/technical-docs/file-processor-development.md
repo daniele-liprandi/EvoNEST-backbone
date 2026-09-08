@@ -147,11 +147,12 @@ registered as an **external** file instead of being copied in:
 
 - One `files` row, many attachments — edit the path once (`POST /api/files`
   `{ method: "set-path" }`) and every link follows.
-- `{ method: "link-external" }` registers one (needs `files.link-external`);
-  `{ method: "check" }` stats the path **if the server can reach it** and records
-  the result — it never heals and never blocks; `{ method: "import" }` streams
-  the file into GridFS once, flips the record, and keeps the old path as
-  `storage.importedFrom` (needs `files.upload`).
+- `{ method: "link-external" }` registers one, `{ method: "set-path" }` re-points
+  it, and `{ method: "check" }` stats the path **if the server can reach it** and
+  records the result (never heals, never blocks) — all three need
+  `files.link-external`. `{ method: "import" }` streams the file into GridFS once,
+  flips the record, and keeps the old path as `storage.importedFrom` (needs
+  `files.upload`).
 - The server may only read external paths under `EXTERNAL_FILE_ROOTS` (or
   `STORAGE_PATH`). A path outside every root still holds as a link, but
   `check` reports `unknown` and streaming / download / import return `409` — the

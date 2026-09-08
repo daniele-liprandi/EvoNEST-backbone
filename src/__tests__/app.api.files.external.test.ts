@@ -136,6 +136,27 @@ describe("POST /api/files — external links", () => {
     expect(await streamed.text()).toBe("a,b\n1,2\n");
   });
 
+  test("streaming a reachable external file honours a Range request", async () => {
+    const { fileId } = await linkExternal(writeExternal("clip.txt", "0123456789"));
+    const res = await runRoute(
+      streamFile(
+        fileId,
+        new Request("http://x/f", { headers: { range: "bytes=2-5" } }),
+      ).pipe(Effect.provide(mongo.layer)),
+    );
+    expect(res.status).toBe(206);
+    expect(res.headers.get("content-range")).toBe("bytes 2-5/10");
+    expect(await res.text()).toBe("2345");
+  });
+
+  test("check needs the files.link-external capability once an admin exists", async () => {
+    const { fileId } = await linkExternal(writeExternal("gate-check.txt"));
+    await mongo.client.db("usersdb").collection("users").insertOne({ role: "admin", auth0id: "auth0|c" });
+    expect((await post({ method: "check", id: fileId }, asRole("viewer"))).status).toBe(403);
+    expect((await post({ method: "check", id: fileId }, asRole("researcher"))).status).toBe(200);
+    await mongo.client.db("usersdb").collection("users").deleteMany({ auth0id: "auth0|c" });
+  });
+
   test("import of an unreachable path is 409", async () => {
     const { fileId } = await linkExternal("/etc/nowhere/x.bin");
     expect((await post({ method: "import", id: fileId })).status).toBe(409);

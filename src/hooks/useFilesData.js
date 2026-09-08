@@ -5,9 +5,10 @@
 import useSWR from 'swr';
 
 export const useFilesData = (prependPath) => {
-    const { data, error } = useSWR(`${prependPath}/api/files`);
+    // GET /api/files is paginated ({ files, nextCursor }); the only consumer is
+    // the dashboard marquee, so a single generous page is enough.
+    const { data, error } = useSWR(`${prependPath}/api/files?limit=200`);
     return {
-        // GET /api/files is paginated: { files, nextCursor }.
         filesData: data?.files,
         filesError: error,
     };

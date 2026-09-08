@@ -15,7 +15,12 @@ import {
   ConflictError,
 } from "@/lib/effect";
 import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
-import { bucketFor, deleteBlobIfUnreferenced, parseRangeHeader } from "../gridfs";
+import {
+  bucketFor,
+  deleteBlobIfUnreferenced,
+  gridfsBlobExists,
+  parseRangeHeader,
+} from "../gridfs";
 import { resolveExternalPath } from "../external";
 
 const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
@@ -36,6 +41,18 @@ const streamFromGridFS = (dbName: string, fileDoc: Document, request: Request) =
     const db = yield* mongo.db(dbName);
     const bucket = bucketFor(db);
     const ref = fileDoc.storage.ref as ObjectId;
+
+    // The old disk path stat()'d before returning a 200; do the equivalent here
+    // so a dangling ref (partial migration, manual cleanup) is a clean 404
+    // rather than a 200 whose body errors on first read.
+    const blobPresent = yield* attempt(
+      () => gridfsBlobExists(db, ref),
+      "gridfs blob exists",
+    ).pipe(Effect.catchAll(() => Effect.succeed(false)));
+    if (!blobPresent) {
+      return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
+    }
+
     const size = typeof fileDoc.size === "number" ? fileDoc.size : null;
     const contentType = contentTypeOf(fileDoc, fileDoc.name);
     const hash =
@@ -83,8 +100,11 @@ const streamFromGridFS = (dbName: string, fileDoc: Document, request: Request) =
     });
   });
 
-/** Legacy disk-backed file (pre-migration 022). Kept until the sweep removes them. */
-const streamFromDisk = (fileDoc: Document) =>
+/**
+ * A file on the local filesystem: a legacy disk-backed row (pre-migration 022)
+ * or a reachable external link. Honours a single `Range` request.
+ */
+const streamFromDisk = (fileDoc: Document, request?: Request) =>
   Effect.gen(function* () {
     const stats = yield* attempt(() => stat(fileDoc.path), "fs.stat").pipe(
       Effect.catchAll(() => Effect.succeed(null)),
@@ -92,20 +112,44 @@ const streamFromDisk = (fileDoc: Document) =>
     if (!stats || !stats.isFile()) {
       return yield* Effect.fail(new NotFoundError({ resource: "File on the server" }));
     }
+    const size = stats.size;
     const contentType = contentTypeOf(fileDoc, fileDoc.path);
-    const headers = new Headers({
+    const base: Record<string, string> = {
       "content-type": contentType,
-      "content-length": String(stats.size),
       "accept-ranges": "bytes",
-    });
+    };
     if (contentType.startsWith("image/")) {
-      headers.set("cache-control", "public, max-age=31536000");
+      base["cache-control"] = "public, max-age=31536000";
     }
-    return new NextResponse(createReadStream(fileDoc.path) as unknown as BodyInit, { headers });
+
+    const range = request ? parseRangeHeader(request.headers.get("range"), size) : null;
+    if (range === "unsatisfiable") {
+      return new NextResponse("Range Not Satisfiable", {
+        status: 416,
+        headers: { "content-range": `bytes */${size}` },
+      });
+    }
+    if (range) {
+      // fs `end` is inclusive, same as the HTTP range end.
+      return new NextResponse(
+        createReadStream(fileDoc.path, { start: range.start, end: range.end }) as unknown as BodyInit,
+        {
+          status: 206,
+          headers: {
+            ...base,
+            "content-range": `bytes ${range.start}-${range.end}/${size}`,
+            "content-length": String(range.end - range.start + 1),
+          },
+        },
+      );
+    }
+    return new NextResponse(createReadStream(fileDoc.path) as unknown as BodyInit, {
+      headers: { ...base, "content-length": String(size) },
+    });
   });
 
 /** An external link — bytes live outside the NEST, on a share the server may reach. */
-const streamFromExternal = (fileDoc: Document) =>
+const streamFromExternal = (fileDoc: Document, request: Request) =>
   Effect.gen(function* () {
     const abs = resolveExternalPath(fileDoc.storage?.path);
     if (!abs) {
@@ -113,7 +157,7 @@ const streamFromExternal = (fileDoc: Document) =>
         new ConflictError({ message: "external file not reachable from the server" }),
       );
     }
-    return yield* streamFromDisk({ ...fileDoc, path: abs });
+    return yield* streamFromDisk({ ...fileDoc, path: abs }, request);
   });
 
 export const streamFile = (fileId: string, request: Request) =>
@@ -130,9 +174,9 @@ export const streamFile = (fileId: string, request: Request) =>
       return yield* streamFromGridFS(dbName, fileDoc, request);
     }
     if (fileDoc.storage?.backend === "external") {
-      return yield* streamFromExternal(fileDoc);
+      return yield* streamFromExternal(fileDoc, request);
     }
-    return yield* streamFromDisk(fileDoc);
+    return yield* streamFromDisk(fileDoc, request);
   });
 
 export const deleteFile = (fileId: string) =>

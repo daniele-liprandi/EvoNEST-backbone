@@ -169,10 +169,13 @@ export const uploadFile = (request: Request) =>
         fileId = candidate;
         created = true;
       } else {
-        // Lost the race — another request stored this exact blob first.
+        // Either lost the race (another request stored this exact blob first) or
+        // the insert failed for another reason — in both cases this request's
+        // freshly-streamed blob is now an orphan.
         const winner = yield* mongo.findOne(dbName, "files", { sha256: upload.sha256 });
+        yield* dropBlob(db, upload.ref);
         if (!winner) return yield* Effect.fail(inserted.left);
-        fileId = yield* reuse(winner);
+        fileId = winner._id as ObjectId;
       }
     }
 
@@ -269,6 +272,7 @@ const linkExternal = (data: FilesPostData) =>
 /** Stat one external path if the server can reach it. Never heals, never blocks. */
 const checkExternal = (data: FilesPostData) =>
   Effect.gen(function* () {
+    yield* requireCapability("files.link-external");
     const dbName = yield* currentDatabase;
     const mongo = yield* Mongo;
     const fileDoc = yield* requireExternalDoc(dbName, data.id);
