@@ -8,6 +8,22 @@ import { kindFromMime } from "@/shared/config/attachment-targets";
 export const BUCKET_NAME = "files";
 export const bucketFor = (db: Db) => new GridFSBucket(db, { bucketName: BUCKET_NAME });
 
+/**
+ * Delete a GridFS blob only once no `files` document still points at it.
+ * Migration 022 dedups by content, so one blob can back several file rows;
+ * call this *after* the row that referenced it is gone.
+ */
+export const deleteBlobIfUnreferenced = async (db: Db, ref: ObjectId) => {
+  const stillReferenced = await db
+    .collection("files")
+    .countDocuments({ "storage.ref": ref }, { limit: 1 });
+  if (stillReferenced === 0) {
+    await bucketFor(db)
+      .delete(ref)
+      .catch(() => {});
+  }
+};
+
 const MB = 1024 * 1024;
 
 // Per-kind upload ceilings. Lab video and instrument audio run large; anything

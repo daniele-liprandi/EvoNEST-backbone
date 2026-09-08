@@ -14,7 +14,7 @@ import {
   NotFoundError,
 } from "@/lib/effect";
 import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
-import { bucketFor, parseRangeHeader } from "../gridfs";
+import { bucketFor, deleteBlobIfUnreferenced, parseRangeHeader } from "../gridfs";
 
 const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
@@ -36,7 +36,11 @@ const streamFromGridFS = (dbName: string, fileDoc: Document, request: Request) =
     const ref = fileDoc.storage.ref as ObjectId;
     const size = typeof fileDoc.size === "number" ? fileDoc.size : null;
     const contentType = contentTypeOf(fileDoc, fileDoc.name);
-    const etag = typeof fileDoc.sha256 === "string" ? `"${fileDoc.sha256}"` : undefined;
+    const hash =
+      (typeof fileDoc.sha256 === "string" && fileDoc.sha256) ||
+      (typeof fileDoc.storage?.sha256 === "string" && fileDoc.storage.sha256) ||
+      undefined;
+    const etag = hash ? `"${hash}"` : undefined;
 
     if (etag && request.headers.get("if-none-match") === etag) {
       return new NextResponse(null, { status: 304, headers: { etag } });
@@ -125,18 +129,15 @@ export const deleteFile = (fileId: string) =>
     const fileDoc = yield* mongo.findOne(dbName, "files", { _id });
     if (!fileDoc) return yield* Effect.fail(new NotFoundError({ resource: "File", id: fileId }));
 
+    yield* mongo.deleteOne(dbName, "files", { _id });
+
     if (fileDoc.storage?.backend === "gridfs") {
       const db = yield* mongo.db(dbName);
-      yield* Effect.promise(() =>
-        bucketFor(db)
-          .delete(fileDoc.storage.ref as ObjectId)
-          .catch(() => {}),
-      );
+      yield* Effect.promise(() => deleteBlobIfUnreferenced(db, fileDoc.storage.ref as ObjectId));
     } else if (typeof fileDoc.path === "string") {
       // A missing file on disk must not block the database cleanup.
       yield* attempt(() => unlink(fileDoc.path), "fs.unlink").pipe(Effect.catchAll(() => Effect.void));
     }
-    yield* mongo.deleteOne(dbName, "files", { _id });
 
     const { entryType, entryId } = (fileDoc.metadata ?? {}) as {
       entryType?: string;

@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { ObjectId, type Db } from "mongodb";
+import { ObjectId, type Db, type Document } from "mongodb";
 import {
   ok,
   currentDatabase,
@@ -122,29 +122,48 @@ export const uploadFile = (request: Request) =>
     }
 
     // Content-addressed dedup: an identical blob is already stored, so drop this
-    // upload and hand back the id that already points at it.
+    // upload and hand back the id that already points at it. The `{ sha256: 1 }`
+    // unique index is the backstop for a race between the lookup and the insert.
+    const reuse = (doc: Document) =>
+      Effect.gen(function* () {
+        yield* dropBlob(db, upload.ref);
+        return doc._id as ObjectId;
+      });
+
     const existing = yield* mongo.findOne(dbName, "files", { sha256: upload.sha256 });
     let fileId: ObjectId;
+    let created = false;
     if (existing) {
-      yield* dropBlob(db, upload.ref);
-      fileId = existing._id as ObjectId;
+      fileId = yield* reuse(existing);
     } else {
-      fileId = new ObjectId();
+      const candidate = new ObjectId();
       const now = new Date();
-      yield* mongo.insertOne(dbName, "files", {
-        _id: fileId,
-        name: upload.filename,
-        mime: upload.mime,
-        // Mirrored under the old key so readers not yet moved off `contentType` keep working.
-        contentType: upload.mime,
-        kind: kindFromMime(upload.mime),
-        size: upload.size,
-        sha256: upload.sha256,
-        storage: { backend: "gridfs", ref: upload.ref },
-        createdAt: now,
-        createdBy: user.doc?._id ?? user.sub,
-        metadata: { ...metadata, uploadDate: now, isTemporary: !!deferredLink },
-      });
+      const inserted = yield* mongo
+        .insertOne(dbName, "files", {
+          _id: candidate,
+          name: upload.filename,
+          mime: upload.mime,
+          // Mirrored under the old key so readers not yet moved off `contentType` keep working.
+          contentType: upload.mime,
+          kind: kindFromMime(upload.mime),
+          size: upload.size,
+          sha256: upload.sha256,
+          storage: { backend: "gridfs", ref: upload.ref, sha256: upload.sha256 },
+          createdAt: now,
+          createdBy: user.doc?._id ?? user.sub,
+          metadata: { ...metadata, uploadDate: now, isTemporary: !!deferredLink },
+        })
+        .pipe(Effect.either);
+
+      if (inserted._tag === "Right") {
+        fileId = candidate;
+        created = true;
+      } else {
+        // Lost the race — another request stored this exact blob first.
+        const winner = yield* mongo.findOne(dbName, "files", { sha256: upload.sha256 });
+        if (!winner) return yield* Effect.fail(inserted.left);
+        fileId = yield* reuse(winner);
+      }
     }
 
     if (!deferredLink) {
@@ -157,7 +176,7 @@ export const uploadFile = (request: Request) =>
       );
       if (!linked) {
         // Only unwind a blob and a row this request actually created.
-        if (!existing) {
+        if (created) {
           yield* dropBlob(db, upload.ref);
           yield* mongo
             .deleteOne(dbName, "files", { _id: fileId })

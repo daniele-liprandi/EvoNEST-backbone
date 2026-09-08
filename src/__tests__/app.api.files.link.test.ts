@@ -149,6 +149,24 @@ describe("/api/files/[fileId]", () => {
     ).toBe(400);
   });
 
+  test("DELETE keeps a GridFS blob that another file document still shares", async () => {
+    // Migration 022 dedups by content, so two file docs can point at one blob.
+    const primaryId = await uploadDeferred("primary.png", "shared bytes");
+    const primary = await mongo.db.collection("files").findOne({ _id: new ObjectId(primaryId) });
+    const sharerId = new ObjectId();
+    await mongo.db.collection("files").insertOne({
+      _id: sharerId,
+      name: "sharer.png",
+      storage: { backend: "gridfs", ref: primary!.storage.ref, sha256: primary!.sha256 },
+    });
+
+    await runRoute(deleteFile(sharerId.toHexString()).pipe(Effect.provide(mongo.layer)));
+    expect(await mongo.db.collection("files.files").countDocuments()).toBe(1);
+
+    await runRoute(deleteFile(primaryId).pipe(Effect.provide(mongo.layer)));
+    expect(await mongo.db.collection("files.files").countDocuments()).toBe(0);
+  });
+
   test("DELETE removes the blob, its document and unlinks the entry", async () => {
     const fileId = await uploadDeferred();
     const sampleId = await seedSample();

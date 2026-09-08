@@ -18,7 +18,7 @@ import {
   ATTACHMENT_KINDS,
   kindFromMime,
 } from "@/shared/config/attachment-targets";
-import { bucketFor } from "@/app/api/files/gridfs";
+import { deleteBlobIfUnreferenced } from "@/app/api/files/gridfs";
 
 const ATTACHMENTS = "attachments";
 const FILES = "files";
@@ -276,18 +276,19 @@ export const deleteAttachment = (request: Request) =>
       if (remaining.length === 0) {
         const fileDoc = yield* mongo.findOne(dbName, FILES, { _id: fileId });
         if (fileDoc) {
+          const removed = yield* mongo.deleteOne(dbName, FILES, { _id: fileId });
+          fileDocDeleted = removed.deletedCount > 0;
+
           if (fileDoc.storage?.backend === "gridfs") {
             const db = yield* mongo.db(dbName);
             yield* Effect.promise(() =>
-              bucketFor(db).delete(fileDoc.storage.ref as ObjectId).catch(() => {}),
+              deleteBlobIfUnreferenced(db, fileDoc.storage.ref as ObjectId),
             );
           } else if (typeof fileDoc.path === "string") {
             yield* attempt(() => fs.unlink(fileDoc.path), "fs.unlink").pipe(
               Effect.catchAll(() => Effect.void),
             );
           }
-          const removed = yield* mongo.deleteOne(dbName, FILES, { _id: fileId });
-          fileDocDeleted = removed.deletedCount > 0;
           fileDeleted = fileDocDeleted;
         }
       }
