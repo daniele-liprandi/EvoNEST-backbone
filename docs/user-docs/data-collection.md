@@ -4,9 +4,41 @@ Learn how to collect and input your research data into EvoNEST.
 
 ## Overview
 
-EvoNEST provides three main methods for collecting research data: manual entry forms, attachments for photos and documents, and instrument data files that parsers read into experiments. CSV bulk import covers samples. This guide covers the workflows for entering sample, trait, and experiment data.
+EvoNEST provides four main methods for collecting research data: using a CSV to bulk import a series of samples and traits, use manual entry forms, upload attachments for photos and documents, and upload instrument data files that parsers read into measurement experiments and traits. This guide covers the workflows for entering sample, trait, and experiment data. We here cover the first two.
 
-## Data entry methods
+## Bulk data import
+
+Import multiple samples from CSV files with intelligent field mapping.
+
+**CSV Import Process:**
+
+1. Navigate to Samples → Import
+2. Upload CSV file
+3. Map CSV columns to EvoNEST fields
+4. Review validation errors
+5. Run import with progress tracking
+
+**Special Mappings:**
+
+- **Nomenclature**: Splits "Genus species" into separate fields
+- **Responsible Person**: Accepts names, emails, or user IDs
+- **Hierarchical Import**: Animals with multiple subsamples
+
+**Field Validation:**
+
+- Required fields checked automatically
+- Data type validation (dates, numbers)
+- User account verification
+- Duplicate detection
+
+**Current Import Limitations:**
+
+- Only CSV format supported
+- Limited to sample data (not traits or experiments)
+- No custom field creation during import
+- Hierarchical imports require specific column formats
+
+## Manual data entry methods
 
 ### Sample data entry
 
@@ -99,58 +131,4 @@ When no parser recognises the file, the form says so and asks you to attach it t
 
 - Only files with a matching parser are read into traits
 - We are happy to add a parser for your instrument if you provide a template
-
-## Bulk data import
-
-Import multiple samples from CSV files with intelligent field mapping.
-
-**CSV Import Process:**
-
-1. Navigate to Samples → Import
-2. Upload CSV file
-3. Map CSV columns to EvoNEST fields
-4. Review validation errors
-5. Run import with progress tracking
-
-**Special Mappings:**
-
-- **Nomenclature**: Splits "Genus species" into separate fields
-- **Responsible Person**: Accepts names, emails, or user IDs
-- **Hierarchical Import**: Animals with multiple subsamples
-
-**Field Validation:**
-
-- Required fields checked automatically
-- Data type validation (dates, numbers)
-- User account verification
-- Duplicate detection
-
-**Current Import Limitations:**
-
-- Only CSV format supported
-- Limited to sample data (not traits or experiments)
-- No custom field creation during import
-- Hierarchical imports require specific column formats
-
-## File management
-
-EvoNEST handles file storage and organization automatically.
-
-**File Storage:**
-
-- Files saved to server filesystem
-- Organized by type and entry ID
-- Automatic backup in configured storage path
-
-**File Linking:**
-
-- Files automatically linked to samples, traits, or experiments
-- Metadata stored in database
-- Download functionality available
-
-**File Size Limits:**
-
-- Standard uploads: Up to 10MB
-- Large files: Manual file path entry required
-- Image compression: Automatic for web display
 
