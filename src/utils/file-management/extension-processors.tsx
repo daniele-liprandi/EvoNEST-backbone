@@ -2,11 +2,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import {
   processPlainTextFile,
-  processImageFile,
-  processTiffFile,
-  processLosslessImageFile,
-  processDocumentFile,
   resetGeneratedNames,
+  UnrecognisedDataFileError,
   type FileProcessorParams,
 } from "./processors/index";
 
@@ -37,31 +34,8 @@ export const experimentFormSchema = z.object({
 });
 
 export function determineFileType(file: File): string {
-  if (file.type === "image/jpeg" || file.type === "image/png") {
-    return "image";
-  } else if (
-    file.type === "image/tiff" ||
-    file.type === "image/tif" ||
-    file.name.toLowerCase().endsWith(".tif") ||
-    file.name.toLowerCase().endsWith(".tiff")
-  ) {
-    return "image_tiff";
-  } else if (file.type === "image/bmp") {
-    return "image_lossless";
-  } else if (
-    file.type === "application/pdf" ||
-    file.type === "application/msword" ||
-    file.type ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-    file.type === "application/vnd.ms-excel" ||
-    file.type ===
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-    file.type === "application/vnd.ms-powerpoint" ||
-    file.type ===
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-  ) {
-    return "document";
-  } else if (
+  // Images and documents are no longer experiments — they attach via <AttachmentPanel />.
+  if (
     file.type === "text/plain" ||
     file.type === "application/json" ||
     file.name.toLowerCase().endsWith(".json") ||
@@ -95,9 +69,13 @@ export async function handleFileSubmission(
   resetGeneratedNames();
 
   const processFile = async (file: File) => {
-    const fileType = determineFileType(file);
+    if (determineFileType(file) !== "readable") {
+      toast.error("Not an experiment file", {
+        description: `"${file.name}" is not instrument data. Attach images and documents to a sample, trait or experiment instead.`,
+      });
+      return;
+    }
 
-    // Create parameters object for processors
     const params: FileProcessorParams = {
       file,
       defaultValues,
@@ -108,27 +86,16 @@ export async function handleFileSubmission(
       setAllFileData,
     };
 
-    switch (fileType) {
-      case "readable":
-        await processPlainTextFile(params);
-        break;
-      case "image":
-        await processImageFile(params);
-        break;
-      case "image_tiff":
-        await processTiffFile(params);
-        break;
-      case "image_lossless":
-        await processLosslessImageFile(params);
-        break;
-      case "document":
-        await processDocumentFile(params);
-        break;
-      default:
-        console.error("Unsupported file type");
-        toast.error("Unsupported file type", {
-          description: `The file "${file.name}" is not supported.`,
+    try {
+      await processPlainTextFile(params);
+    } catch (error) {
+      if (error instanceof UnrecognisedDataFileError) {
+        toast.error("Not an experiment file", {
+          description: `No parser recognised "${file.name}". Add a parser if it holds instrument data, otherwise attach it as a document.`,
         });
+        return;
+      }
+      throw error;
     }
   };
 

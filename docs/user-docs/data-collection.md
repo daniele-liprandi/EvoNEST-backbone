@@ -4,9 +4,41 @@ Learn how to collect and input your research data into EvoNEST.
 
 ## Overview
 
-EvoNEST provides three main methods for collecting research data: manual entry forms, file uploads for experiments, and CSV bulk imports. This guide covers the actual workflows for entering sample, trait, and experiment data.
+EvoNEST provides four main methods for collecting research data: using a CSV to bulk import a series of samples and traits, use manual entry forms, upload attachments for photos and documents, and upload instrument data files that parsers read into measurement experiments and traits. This guide covers the workflows for entering sample, trait, and experiment data. We here cover the first two.
 
-## Data entry methods
+## Bulk data import
+
+Import multiple samples from CSV files with intelligent field mapping.
+
+**CSV Import Process:**
+
+1. Navigate to Samples → Import
+2. Upload CSV file
+3. Map CSV columns to EvoNEST fields
+4. Review validation errors
+5. Run import with progress tracking
+
+**Special Mappings:**
+
+- **Nomenclature**: Splits "Genus species" into separate fields
+- **Responsible Person**: Accepts names, emails, or user IDs
+- **Hierarchical Import**: Animals with multiple subsamples
+
+**Field Validation:**
+
+- Required fields checked automatically
+- Data type validation (dates, numbers)
+- User account verification
+- Duplicate detection
+
+**Current Import Limitations:**
+
+- Only CSV format supported
+- Limited to sample data (not traits or experiments)
+- No custom field creation during import
+- Hierarchical imports require specific column formats
+
+## Manual data entry methods
 
 ### Sample data entry
 
@@ -66,93 +98,37 @@ Record measurement data with optional file attachments.
 
 **File Attachments:**
 
-- **Image support**: JPG, PNG, TIFF formats
-- **Automatic renaming**: Files renamed with sample name prefix
-- **File linking**: Images automatically linked to trait records
+Images and files chosen on the trait form attach to the trait once it is saved. They show in the Files column of the sample's trait table and on the Files page. Add more later from the same column.
 
 ### Experiment data entry
 
-Upload and process experimental data files from testing equipment.
+Upload a data file from an instrument and let a parser read it into an experiment with its traits.
 
-**Supported File Types:**
+**Supported files:**
 
-- **Documents**: PDF, TXT, DOC files
-- **Images**: JPG, PNG, TIFF files  
-- **Data files**: Custom parsers for tensile testing equipment
+- Instrument output that a data format parser recognises: tensile testing machines, dataloggers, CSV column data
+- A `.csv`, `.tsv`, `.txt` or `.dat` file only becomes an experiment if a parser recognises it
 
-**File Upload Process:**
+When no parser recognises the file, the form says so and asks you to attach it to a sample, subsample or trait. Attach photos and PDFs the same way.
 
-1. Navigate to Experiments page
-2. Drag and drop files or click upload
-3. System processes files and extracts metadata
-4. Review auto-generated experiment names
-5. Select responsible person and sample
+**Upload process:**
+
+1. Navigate to the Experiments page
+2. Drag and drop the file or click upload
+3. The parser extracts the specimen name, metadata, and any measurements
+4. Review the auto-generated experiment name
+5. Select the responsible person and sample
 6. Add optional notes
-7. Submit for processing
+7. Submit
 
-**File Processing Features:**
+**Processing:**
 
-- **Automatic parsing**: Extracts specimen names and metadata
-- **Image compression**: Large images automatically compressed
-- **File size handling**: Files >10MB require manual file path entry
-- **Data extraction**: Mechanical testing data automatically parsed
+- Parsers extract specimen names, metadata, and trait measurements
+- Files over 10MB require a manual file path entry
+- Mechanical testing data is parsed into traits automatically
 
-**Current Limitations:**
+**Current limitations:**
 
-- Only basic file type detection implemented
-- We are happy to implement advanced data parsing of document if provided a template
-
-## Bulk data import
-
-Import multiple samples from CSV files with intelligent field mapping.
-
-**CSV Import Process:**
-
-1. Navigate to Samples → Import
-2. Upload CSV file
-3. Map CSV columns to EvoNEST fields
-4. Review validation errors
-5. Run import with progress tracking
-
-**Special Mappings:**
-
-- **Nomenclature**: Splits "Genus species" into separate fields
-- **Responsible Person**: Accepts names, emails, or user IDs
-- **Hierarchical Import**: Animals with multiple subsamples
-
-**Field Validation:**
-
-- Required fields checked automatically
-- Data type validation (dates, numbers)
-- User account verification
-- Duplicate detection
-
-**Current Import Limitations:**
-
-- Only CSV format supported
-- Limited to sample data (not traits or experiments)
-- No custom field creation during import
-- Hierarchical imports require specific column formats
-
-## File management
-
-EvoNEST handles file storage and organization automatically.
-
-**File Storage:**
-
-- Files saved to server filesystem
-- Organized by type and entry ID
-- Automatic backup in configured storage path
-
-**File Linking:**
-
-- Files automatically linked to samples, traits, or experiments
-- Metadata stored in database
-- Download functionality available
-
-**File Size Limits:**
-
-- Standard uploads: Up to 10MB
-- Large files: Manual file path entry required
-- Image compression: Automatic for web display
+- Only files with a matching parser are read into traits
+- We are happy to add a parser for your instrument if you provide a template
 

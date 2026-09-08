@@ -17,7 +17,6 @@ import { CircleNotch } from "@phosphor-icons/react"
 import { ComboFormBox } from "@/components/forms/combo-form-box"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getSampleIdbyName } from "@/hooks/sampleHooks"
 import { useEffect, useState } from 'react'
 import {
     Form,
@@ -30,12 +29,11 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { getUserIdByName } from "@/hooks/userHooks"
-import { 
-    getSupportedTypes, 
-    checkParserSupport, 
-    getParserInfo, 
+import {
+    checkParserSupport,
+    getParserInfo,
     getUniqueParserOptions,
-    validateExperimentType 
+    validateExperimentType
 } from "@/utils/file-management/experimentTypeDiscovery"
 import { prepend_path } from "@/lib/utils"
 import { toast } from "sonner"
@@ -152,53 +150,33 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
             // Submit experiment data for each file
             const experimentRequests = allFileData.map(async (fileValues) => {
 
-                let experimentData;
-
-                // Extract experimentData from parsed results for structured data types
-                if (fileValues.dataFields && fileValues.dataFields.experimentData) {
-                    // Extract the properly structured experiment data from parsers
-                    experimentData = { ...fileValues.dataFields.experimentData };
-                    
-                    // Override critical fields from the form
-                    experimentData.responsible = formValues.responsible;
-                    
-                    // For multiple files, use individual file's sampleId if parsed, otherwise use form selection
-                    if (allFileData.length > 1) {
-                        experimentData.sampleId = fileValues.sampleId || formValues.sampleId;
-                        experimentData.name = fileValues.name || formValues.name;
-                    } else {
-                        // For single file, form selection takes precedence
-                        experimentData.sampleId = formValues.sampleId;
-                        experimentData.name = formValues.name;
-                    }
-                    
-                    // Override other form fields if they have values
-                    if (formValues.notes) experimentData.notes = formValues.notes;
-                    if (formValues.filepath) experimentData.filepath = formValues.filepath;
-                    
-                    // Ensure experiment type matches form selection
-                    experimentData.type = formValues.type;
-                    
-                } else {
-                    // Fallback for non-structured data (images, documents)
-                    experimentData = {
-                        name: formValues.name,
-                        responsible: formValues.responsible,
-                        sampleId: formValues.sampleId,
-                        notes: formValues.notes,
-                        filepath: formValues.filepath,
-                        ...fileValues,
-                        type: formValues.type,  
-                    };
-
-                    // ensure sampleId is from form
-                    experimentData.sampleId = formValues.sampleId;
-
-                    if (allFileData.length > 1 && fileValues.name) {
-                        experimentData.name = fileValues.name;
-                        experimentData.sampleId = fileValues.sampleId;
-                    }
+                // A file only reaches allFileData once a parser has structured
+                // it. Anything else was turned away at upload with a message to
+                // attach it instead, so this guard is defensive.
+                if (!fileValues.dataFields || !fileValues.dataFields.experimentData) {
+                    toast.error("Not an experiment file", {
+                        description: `"${fileValues.filename || 'This file'}" was not parsed into an experiment. Attach it to a record instead.`,
+                    });
+                    hadFailure = true;
+                    return;
                 }
+
+                // Structured experiment data from a parser, with form fields layered on top.
+                let experimentData: any = { ...fileValues.dataFields.experimentData };
+                experimentData.responsible = formValues.responsible;
+
+                // For several files, prefer each file's parsed sample and name; for one, the form wins.
+                if (allFileData.length > 1) {
+                    experimentData.sampleId = fileValues.sampleId || formValues.sampleId;
+                    experimentData.name = fileValues.name || formValues.name;
+                } else {
+                    experimentData.sampleId = formValues.sampleId;
+                    experimentData.name = formValues.name;
+                }
+
+                if (formValues.notes) experimentData.notes = formValues.notes;
+                if (formValues.filepath) experimentData.filepath = formValues.filepath;
+                experimentData.type = formValues.type;
 
                 if (files && checkSaveFile) {
                     try {
@@ -217,84 +195,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     }
                 }
 
-                if (formValues.type === "image" && fileValues.type === 'image' && fileValues.dataFields instanceof Blob) {
-                    experimentData.sampleId = formValues.sampleId;
-                    return new Promise<void>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(fileValues.dataFields);
-                        reader.onloadend = async function () {
-                            const base64data = reader.result as string;
-                            // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
-                            const base64Image = base64data.split(',')[1];
-
-                            experimentData.dataFields = base64Image;
-
-                            try {
-                                const experimentResponse = await fetch(endpointexperiment, {
-                                    method: "POST",
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        method: method,
-                                        ...experimentData
-                                    })
-                                });
-
-                                if (!experimentResponse.ok) {
-                                    const errorData = await experimentResponse.json();
-                                    toast.error("Error!", {
-                                        description: errorData.error || "Error submitting the form.",
-                                    });
-                                    reject(new Error(errorData.error || "Error submitting the form."));
-                                } else {
-                                    const result = await experimentResponse.json();
-
-                                    // If we have a file, link it to the newly created experiment
-                                    if (fileId) {
-                                        await linkFileToEntry(fileId, 'experiment', result.id);
-                                    }
-                                    toast.success("Submitted image as " + experimentData.name + " !");
-                                    resolve();
-                                }
-                            } catch (error) {
-                                console.error("Error submitting image experiment:", error);
-                                reject(error);
-                            }
-                        };
-                        reader.onerror = reject;
-                    });
-                } else if (formValues.type === 'document' && fileValues.type === 'document') {
-                    experimentData.sampleId = formValues.sampleId;
-                    try {
-                        const experimentResponse = await fetch(endpointexperiment, {
-                            method: "POST",
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                method: method,
-                                ...experimentData
-                            })
-                        });
-
-                        if (!experimentResponse.ok) {
-                            const errorData = await experimentResponse.json();
-                            toast.error("Error!", {
-                                description: errorData.error || "Error submitting the form.",
-                            });
-                            hadFailure = true;
-                        } else {
-                            const result = await experimentResponse.json();
-                            // If we have a file, link it to the newly created experiment
-                            if (fileId) {
-                                await linkFileToEntry(fileId, 'experiment', result.experimentId);
-                            }
-                            toast.success("Submitted document as " + experimentData.name + " !");
-                        }
-                    }
-                    catch (error) {
-                        console.error("Error uploading file:", error);
-                        toast.error("Failed to upload file");
-                        hadFailure = true;
-                    }
-                } else if (fileValues.dataFields && fileValues.dataFields.experimentData) {
+                if (fileValues.dataFields && fileValues.dataFields.experimentData) {
                     // Handle structured experiment data with embedded traits
                     try {
                         const experimentResponse = await fetch(endpointexperiment, {
@@ -368,12 +269,6 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
             <TabsList>
               <TabsTrigger value="General">General</TabsTrigger>
               <TabsTrigger value="Details">Details</TabsTrigger>
-              {selectedType === "image" && (
-                <TabsTrigger value="image">Image</TabsTrigger>
-              )}
-              {selectedType === "document" && (
-                <TabsTrigger value="document">Document</TabsTrigger>
-              )}
             </TabsList>
             <TabsContent value="General" className="space-y-4">
               <ComboFormBox
@@ -475,9 +370,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     )}
                     {field.value &&
                       !checkParserSupport(field.value) &&
-                      !["image", "document", "unknown"].includes(
-                        field.value
-                      ) && (
+                      field.value !== "unknown" && (
                         <div className="text-sm text-amber-600 mt-1">
                           ⚠ No automatic trait generation available for this
                           type
@@ -656,74 +549,6 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                   </div>
                 </div>
               )}
-            </TabsContent>
-            <TabsContent value="image" className="space-y-4">
-              <FormField
-                control={form.control}
-                name="sampleName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {" "}
-                      Update sample name if the sample ID is not found
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Sample name"
-                        onChange={async (e) => {
-                          const sampleName = e.target.value;
-                          form.setValue("sampleName", sampleName);
-                          const sampleId = await getSampleIdbyName(
-                            sampleName,
-                            samples
-                          );
-                          form.setValue("sampleId", sampleId);
-                          setFormState({
-                            ...formState,
-                            sampleName: sampleName,
-                            sampleId: sampleId,
-                          });
-                        }}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </TabsContent>
-            <TabsContent value="document" className="space-y-4">
-              <FormField
-                control={form.control}
-                name="sampleName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {" "}
-                      Update sample name if the sample ID is not found
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="Sample name"
-                        onChange={async (e) => {
-                          const sampleName = e.target.value;
-                          form.setValue("sampleName", sampleName);
-                          const sampleId = await getSampleIdbyName(
-                            sampleName,
-                            samples
-                          );
-                          form.setValue("sampleId", sampleId);
-                          setFormState({
-                            ...formState,
-                            sampleName: sampleName,
-                            sampleId: sampleId,
-                          });
-                        }}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
             </TabsContent>
           </Tabs>
           <Button

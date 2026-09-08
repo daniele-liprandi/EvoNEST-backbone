@@ -149,7 +149,7 @@ export default defineConfig({
               link: "/technical-docs/data-format-parser-development",
             },
             {
-              text: "File Processor Development",
+              text: "File Handling & Attachments",
               link: "/technical-docs/file-processor-development",
             },
           ],

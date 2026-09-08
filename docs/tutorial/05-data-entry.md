@@ -6,8 +6,7 @@ By the end of this module, you will have:
 - ✅ Created your first biological sample
 - ✅ Added subsamples (tissues/parts)
 - ✅ Recorded trait measurements
-- ✅ Uploaded files and images
-- ✅ Created experiments with file uploads
+- ✅ Attached photos and files to samples
 - ✅ Used the data explorer
   :::
 
@@ -28,7 +27,7 @@ Now for the practical part - adding real data to EvoNEST! In this hands-on modul
 1. Create a parent sample (an animal specimen)
 2. Add subsamples
 3. Record trait measurements
-4. Create experiments by uploading images
+4. Attach photos and files to your samples
 5. Explore and manage your data
 
 We'll use a practical example you can adapt to your own research.
@@ -246,118 +245,51 @@ EvoNEST automatically calculates:
 3. **Click "Submit"**
 
 
-## Step 4: Create an experiment with images
+## Step 4: Attach photos and files to a sample
 
-In EvoNEST, experiments are created by uploading files (images, documents, or data files) and linking them to samples.
+Photos, PDFs, field notes, and other files attach to a sample, subsample, or trait. An attachment is one file linked to one record. It shows in a gallery on that record's page and in the Files table alongside every other attachment in the NEST.
 
-::: tip Experiments and Data Parsing
-**Advanced Feature:** EvoNEST can automatically parse data files (CSV, XLSX, instrument outputs) to extract trait measurements. When you upload structured data files, custom parsers can:
-- Automatically extract measurements
-- Create trait entries
-- Link data to samples
-- Generate statistics
+Experiments are separate. An experiment holds a raw data file from an instrument, and a parser reads that file into trait measurements. This module stays with attachments. The [Data Format Parser Development Guide](/technical-docs/data-format-parser-development) covers experiments and parsing once you have a data file to work with.
 
-**In this tutorial**, we'll use simple image uploads to learn the basics. If you're interested in creating custom parsers for your instrument data, see the [Data Format Parser Development Guide](/technical-docs/data-format-parser-development) and [File Processor Development Guide](/technical-docs/file-processor-development) after completing the tutorial.
+### 4.1 Download two practice images
+
+Download the spider specimen photo, [Araneus diadematus specimen](https://upload.wikimedia.org/wikipedia/commons/1/16/Araneus_diadematus_MHNT_Femelle_Fronton.jpg), and save it as `Aradia001_specimen.jpg`.
+
+Download the silk microscopy image, [spider silk SEM image](https://spider-silkome-db-bucket.s3.amazonaws.com/mechanical_properties/semx2000s/000/000/084/original/IDV6054_MCH627_S2K449.jpg?1585109565), and save it as `Aradia001_silk_SEM.jpg`.
+
+### 4.2 Attach the specimen photo to the parent sample
+
+1. Open the `Aradia001` sample page. Go to Samples, then click the sample name.
+
+2. Find the Attachments card in the right sidebar.
+
+3. Click Upload and choose `Aradia001_specimen.jpg`.
+
+4. The image appears in the gallery. Click the pencil icon next to its caption and type `Adult female, collected from Torino Botanical Garden`, then press Enter.
+
+### 4.3 Attach the microscopy image to the subsample
+
+1. Open the `Aradia001_dl001` subsample page.
+
+2. In the Attachments card, click Upload and choose `Aradia001_silk_SEM.jpg`.
+
+3. Caption it `SEM of dragline silk, 2000x magnification`.
+
+### 4.4 See every file in one place
+
+1. Click Files in the main navigation.
+
+2. The table lists every attachment in the NEST, each with its target record, kind (`image`, `document`, `data`), and category.
+
+3. Filter by kind or by the sample name to narrow the list. Use the Download button on a row to retrieve the original file.
+
+::: tip What attaches where
+Samples and subsamples take specimen photos, habitat shots, and collection permits.
+
+Traits take measurement screenshots and calibration records, added from the Files column in the sample's trait table.
+
+Experiments take raw instrument output such as CSV, XLSX, or machine-specific formats. A parser turns that output into traits. See the [Data Format Parser Development Guide](/technical-docs/data-format-parser-development).
 :::
-
-### 4.1 Download practice images
-
-Let's use real images for this exercise:
-
-1. **Download the spider specimen photo:**
-   - Right-click and save: [Araneus diadematus specimen](https://upload.wikimedia.org/wikipedia/commons/1/16/Araneus_diadematus_MHNT_Femelle_Fronton.jpg)
-   - Save as: `Aradia001_specimen.jpg`
-
-2. **Download the silk microscopy image:**
-   - Right-click and save: [Spider silk SEM image](https://spider-silkome-db-bucket.s3.amazonaws.com/mechanical_properties/semx2000s/000/000/084/original/IDV6054_MCH627_S2K449.jpg?1585109565)
-   - Save as: `Aradia001_silk_SEM.jpg`
-
-### 4.2 Navigate to Experiments
-
-1. **Click "Experiments"** in the main navigation
-
-2. **Click "Add Experiment"** or "New Experiment"
-
-3. **The experiment form opens** with tabs
-
-### 4.3 Upload specimen image as experiment
-
-Let's create our first experiment - the specimen documentation.
-
-**General tab:**
-
-1. **Responsible:** `admin` (auto-filled)
-
-2. **Import file:** Click or drag-and-drop the `Aradia001_specimen.jpg` image
-
-3. **Experiment Type:** Select `image`
-   - EvoNEST automatically detects it's an image file
-
-4. **Experiment Name:** `Aradia001 - Specimen Photo`
-
-5. **Optional notes:**
-   ```
-   Adult female Araneus diadematus specimen. 
-   Collected from University Botanical Garden.
-   ```
-
-**Details tab:**
-
-1. **Sample:** Select `Aradia001` (your parent sample)
-   - This links the image to the specimen
-
-**Image tab** (appears when type is "image"):
-
-- Shows preview of your uploaded image
-- **Sample Name:** Should show `Aradia001` (auto-linked)
-
-**Click "Submit"** - Your first experiment is created!
-
-::: tip What Are Experiments?
-Experiments in EvoNEST store and organize research files:
-
-**Basic file storage (this tutorial):**
-- Images (specimen photos, microscopy, etc.)
-- Documents (protocols, notes, reports)
-- Linked to samples for organization
-
-**Advanced data parsing (optional):**
-- Upload structured data files (CSV, XLSX, instrument outputs)
-- Automatic trait extraction via custom parsers
-- Measurements automatically linked to samples
-- Statistical analysis of parsed data
-
-For simple documentation (images, PDFs), experiments work as file containers. For instrument data and measurements, you can develop custom parsers to automate trait extraction. See [Technical Documentation](/technical-docs/) to learn more.
-:::
-
-### 4.4 Create a second experiment - silk microscopy
-
-Now let's add the silk SEM image:
-
-1. **Click "Add Experiment"** again
-
-2. **General tab:**
-   - **Import file:** Upload `Aradia001_silk_SEM.jpg`
-   - **Experiment Type:** `image`
-   - **Experiment Name:** `Aradia001_dl001 - Silk SEM Microscopy`
-   - **Notes:** `SEM image of dragline silk at 2000x magnification`
-
-3. **Details tab:**
-   - **Sample:** Select `Aradia001_dl001` (the dragline silk subsample)
-
-4. **Click "Submit"**
-
-### 4.5 View your experiments
-
-1. **Go to "Experiments"** in the main navigation
-
-2. **You should see** your two image experiments listed
-
-3. **Click on an experiment** to view:
-   - The full image
-   - Linked sample information
-   - Upload date and responsible user
-   - Any notes you added
 
 ## Step 5: Explore your data
 
@@ -439,7 +371,7 @@ Create a second spider sample:
 - Different species (e.g., _Latrodectus hesperus_)
 - With subsamples
 - With measurements
-- Upload a specimen photo as an experiment
+- Attach a specimen photo to the sample
 
 ### Exercise 2: Time series data
 
@@ -453,12 +385,13 @@ Add measurements over time:
 
 ### Exercise 3: Multiple images
 
-For one subsample, upload:
+Attach three images to one subsample:
 
-- Light microscopy image (experiment)
-- SEM image (experiment)
-- Field photo (experiment)
-- Link all to the same sample
+- Light microscopy image
+- SEM image
+- Field photo
+
+Give each a caption so the gallery stays readable.
 
 ## Checkpoint: Data entry complete?
 
@@ -467,18 +400,18 @@ Before moving to the next module, verify:
 - [ ] Created at least one parent sample
 - [ ] Added at least one subsample
 - [ ] Recorded at least 2 trait measurements
-- [ ] Uploaded at least 2 images as experiments
-- [ ] Linked experiments to the correct samples
+- [ ] Attached at least 2 images to samples
+- [ ] Checked the images on the Files page
 - [ ] Used filters to explore data
 - [ ] Edited an entry and checked the logbook
-- [ ] Understand the sample → subsample → trait → experiment hierarchy
+- [ ] Understand the sample → subsample → trait hierarchy
 
 ::: tip Data entry skills achieved!
 You now have the core skills to use EvoNEST for your research data management!
 
-**Ready for advanced features?** If you work with instrument data files (tensile testers, spectroscopy, chromatography, etc.), you can create custom parsers to automatically extract measurements from data files. See:
-- [Data Format Parser Development](/technical-docs/data-format-parser-development) - Parse structured data files
-- [File Processor Development](/technical-docs/file-processor-development) - Handle custom file formats
+**Ready for advanced features?** If you work with instrument data files (tensile testers, spectroscopy, chromatography, etc.), you can write parsers that read those files into trait measurements. See:
+- [Data Format Parser Development](/technical-docs/data-format-parser-development) - Parse structured data files into experiments and traits
+- [File Handling & Attachments](/technical-docs/file-processor-development) - How uploads are routed, and how to give an entity a file gallery
 - [Technical Documentation](/technical-docs/) - Technical guides and API reference
 :::
 

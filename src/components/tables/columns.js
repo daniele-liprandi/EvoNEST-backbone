@@ -2,8 +2,9 @@
 import Link from "next/link";
 import React from "react";
 
-import { ClipboardText, GenderFemale, GenderMale, Bug, Carrot, Egg, Shield, TestTube, Trash, X, ArrowClockwise, UploadSimple } from "@phosphor-icons/react";
+import { ClipboardText, GenderFemale, GenderMale, Bug, Carrot, Egg, Shield, TestTube, Trash, X, ArrowClockwise, Paperclip } from "@phosphor-icons/react";
 
+import { AttachmentPanel } from "@/components/attachments/AttachmentPanel";
 import { SampleHoverCard } from "@/components/sample-hover-card";
 import { DataTableColumnHeader } from "@/components/tables/column-header";
 import { RowEditDialog } from "@/components/tables/row-edit-dialog";
@@ -23,18 +24,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DebouncedInput } from "@/components/ui/custom/debounced-input";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { prepend_path } from "@/lib/utils";
-import { uploadFiles } from '@/utils/handlers/fileHandlers';
-import { useRef, useState } from 'react';
-import { toast } from "sonner";
-import { mutate } from 'swr';
-import { Label } from "@/components/ui/label";
-import { handleFileDownloads } from "@/utils/handlers/experimentHandlers";
+import { useState } from 'react';
 
  export const editableColumn = (key, label) => (
   {
@@ -972,73 +968,33 @@ function Filter({
 }
 
 
-export const fileDownloadColumn = () => ({
-  id: 'Download',
-  header: "Download",
-  cell: function Cell(info) {
-    const entry = info.row.original;
-
-    return (
-      <Button onClick={() => handleFileDownloads(entry.filesId)}>Download</Button>
-    );
-  }
-});
-  
-
-export const fileUploadColumn = () => ({
-  id: 'fileUpload',
-  header: "Upload Files",
+// One column for a trait's files. Opens the shared attachment panel, which does
+// upload, gallery, caption and delete against the `attachments` collection. The
+// old pair wrote a `trait.filesId` array that nothing reads any more.
+export const traitAttachmentsColumn = () => ({
+  id: 'attachments',
+  header: "Files",
+  enableSorting: false,
   cell: function Cell(info) {
     const trait = info.row.original;
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleFileSelect = async (files) => {
-      if (!files || files.length === 0) return;
-
-      setIsUploading(true);
-      try {
-        await uploadFiles(files, 'trait-files', {
-          entryType: 'trait',
-          entryId: trait._id,
-          deferredLink: false
-        });
-        mutate(`${prepend_path}/api/traits`);
-        toast.success('Files uploaded successfully');
-      } catch (error) {
-        console.error('Upload error:', error);
-        toast.error('Failed to upload files');
-      } finally {
-        setIsUploading(false);
-      }
-    };
 
     return (
-      <div className="flex items-center">
-        <Input 
-          type="file"
-          className="hidden"
-          multiple
-          onChange={(e) => handleFileSelect(e.target.files)}
-          id={`file-upload-${trait._id}`}
-        />
-        <Label htmlFor={`file-upload-${trait._id}`}>
-          <Button 
-            asChild
-            size="sm"
-            variant="outline"
-            disabled={isUploading}
-          >
-            <span>
-              {isUploading ? (
-                <ArrowClockwise className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <UploadSimple className="mr-2 h-4 w-4" />
-              )}
-              Upload
-            </span>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="Trait files">
+            <Paperclip className="size-4" />
           </Button>
-        </Label>
-      </div>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-lg">
+          <DialogTitle className="sr-only">Trait files</DialogTitle>
+          <AttachmentPanel
+            targetType="trait"
+            targetId={trait._id}
+            description="Images and files linked to this measurement"
+            className="border-0 shadow-none"
+          />
+        </DialogContent>
+      </Dialog>
     );
   }
 });

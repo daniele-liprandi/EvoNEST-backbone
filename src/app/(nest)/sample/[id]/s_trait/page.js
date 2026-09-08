@@ -1,6 +1,6 @@
 "use client"
 
-import { dateColumn, editableColumn, fileDownloadColumn, fileUploadColumn, responsibleColumn, sampleColumn, sortableFilterableColumn } from '@/components/tables/columns';
+import { dateColumn, editableColumn, responsibleColumn, sampleColumn, sortableFilterableColumn, traitAttachmentsColumn } from '@/components/tables/columns';
 import { DataTable } from '@/components/tables/data-table';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -721,8 +721,7 @@ export default function IDTraitPage() {
     editableColumn("unit", "Unit"),
     editableColumn("std", "Standard Deviation"),
     editableColumn("listvals", "List of Values"),
-    fileUploadColumn(),
-    fileDownloadColumn(),
+    traitAttachmentsColumn(),
     {
       accessorKey: "Actions",
       cell: info => {

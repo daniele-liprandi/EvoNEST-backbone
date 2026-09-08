@@ -1,541 +1,139 @@
-# File Processor Development Guide
+# File Handling & Attachments
 
-Learn how to create custom file processors that handle specific file types and extensions in EvoNEST.
+EvoNEST handles an uploaded file in one of three ways, and any entity type can be
+given its own file gallery. This page covers both.
 
 ## Overview
 
-File processors handle file-level operations such as image processing, document handling, and binary file management. Unlike data format parsers, they focus on file type detection and basic processing rather than extracting scientific traits.
+:::info
 
-## Current architecture
+When developing EvoNEST, I imagined a file being able to be two things: either a result or a log coming out of a machine, or something you quickly want to attach to one of your entities in the NEST.
+In the first case, you probably want a parser that programmatically reads that same type of file each time, saves and processes the data.
+In the second case, maybe you want to just attach some legal documents about your sample or experiment.
+
+I decided to call the first type of files "measurement experiments", or just "experiments", and the second one "attachments".
+
+:::
 
 ```
-Raw File → File Type Detection → File Processor → Processed File Data → Form Update
+File in the experiment form
+  ├─ a parser recognises the format  →  experiment + traits
+  └─ no parser matches               →  rejected
+
+Any file in AttachmentPanel or POST /api/attachments
+  └─ /api/files (deferred)  →  /api/attachments  →  attachments row + stored file
 ```
 
-1. **File uploaded** through form interface
-2. **Extension detection** determines file type
-3. **File processor** handles type-specific processing (thumbnails, metadata, etc.)
-4. **Form state updated** with processed file information
-5. **User sees preview** of processed file
+### Recognised instrument data
 
-## When to create file processors
+Machine-readable output from lab instruments, such as tensile rigs, spectrometers
+and dataloggers. The experiment form runs every text file through the parser
+registry (`src/utils/file-management/readable-data-extractors/`). When a parser
+recognises the format it extracts the data, builds the experiment, and generates
+its traits. Writing a parser is covered in the
+[Data Format Parser Development Guide](./data-format-parser-development.md).
 
-Create file processors when you need to:
-- Handle specific file extensions not covered by existing processors
-- Extract metadata from binary file formats
-- Create previews or thumbnails
-- Perform file-specific validation or processing
-- Support new image/document formats
+### Attachments
 
-**Note**: For scientific instrument data that needs trait extraction, create a [data format parser](./data-format-parser-development.md) instead.
+A file that documents a sample, trait or experiment: a specimen photo, a PDF
+protocol, a spreadsheet, a field note. Attachments are uploaded through
+`AttachmentPanel` or the `/api/attachments` route, and never through the
+experiment form. The rest of this page is about them.
 
-## Quick start
+### Text a parser cannot place
 
-1. **Create processor function** in `src/utils/file-management/processors/`
-2. **Define processor metadata** with supported formats and experiment types
-3. **Register** in `src/utils/file-management/processors/index.ts`
-4. **Test** with your file types
+When no parser claims a `.txt`, `.tsv`, `.dat` or `.json` file,
+`processPlainTextFile` throws `UnrecognisedDataFileError` and the experiment form
+asks the user to attach the file to a sample, trait or experiment. Write a parser
+if the file holds instrument data.
 
-## Creating a file processor
+## Attachments
 
-### 1. Basic processor structure
+A file links to an entity through the polymorphic `attachments` collection. One
+row joins a stored file to a target.
 
-```typescript
-import { FileProcessorParams } from './types';
-import { updateFormValues } from './utils';
+| Field | Holds |
+| --- | --- |
+| `targetType`, `targetId` | the entity the file belongs to |
+| `fileId` | the stored file, in the `files` collection |
+| `kind` | coarse render bucket, described below |
+| `contentType` | the file's exact MIME type, which the panel reads for finer choices such as embedding a PDF but only linking a `.docx` |
+| `category` | free-string slot for what the file is for, for example `gallery`, `raw-data`, `sop` |
+| `caption`, `order` | shown and editable in the panel |
 
-// Processor metadata for experiment type discovery
-export const myFileTypeMetadata = {
-    name: 'MyFileTypeProcessor',
-    label: 'My File Type Processor',
-    description: 'Processes my custom file format with specialized handling',
-    version: '1.0.0',
-    author: 'Your Name',
-    supportedFormats: ['.myext', '.custom'],
-    supportedExperimentTypes: ['my_file_experiment'],
-    primaryExperimentType: 'my_file_experiment',
-    requiredFields: [],
-    generatedTraits: [] // File processors typically don't generate traits
-};
+### How targetType resolves
 
-export async function processMyFileType(params: FileProcessorParams): Promise<void> {
-    const { file, defaultValues, form, setFormState, setAllFileData } = params;
+`targetType` maps to a collection and a capability prefix by convention. `trait`
+gives the `traits` collection and the `traits.read` and `traits.delete`
+capabilities. Only the exceptions sit in
+`src/shared/config/attachment-targets.js` under `ATTACHMENT_TARGET_OVERRIDES`, so
+no handler carries a list of known types, and a new entity type needs no change
+here.
 
-    try {
-        // Read file content based on type
-        const fileContent = await readFileContent(file);
-        
-        // Extract metadata
-        const metadata = await extractMetadata(file, fileContent);
-        
-        // Process file (resize, convert, validate, etc.)
-        const processedData = await processFile(file, fileContent);
-        
-        // Create updated values
-        const updatedValues = {
-            ...defaultValues,
-            filename: file.name,
-            type: 'my_file_experiment',
-            date: new Date(file.lastModified),
-            name: `my_file_${file.name}`,
-            metadata: [
-                { key: 'originalName', value: file.name },
-                { key: 'fileSize', value: file.size.toString() },
-                { key: 'lastModified', value: file.lastModified.toString() },
-                ...metadata
-            ],
-            dataFields: processedData
-        };
+### How kind is set
 
-        // Update form state
-        updateFormValues(form, updatedValues, setFormState, setAllFileData);
+`kind` is one of `image`, `video`, `audio`, `document`, `data`. `kindFromMime()`
+derives it from the file's MIME type: `image/*`, `video/*` and `audio/*` map to
+themselves; spreadsheets, CSV and JSON map to `data`; anything else maps to
+`document`. It stays coarse on purpose. The panel reads `contentType` when it
+needs the exact type.
 
-    } catch (error) {
-        console.error(`Error processing ${file.name}:`, error);
-        throw new Error(`Failed to process ${file.name}: ${error.message}`);
-    }
-}
+### API
 
-// Helper functions
-async function readFileContent(file: File): Promise<ArrayBuffer | string> {
-    // Read as binary for most file types
-    return await file.arrayBuffer();
-    
-    // Or read as text for text-based formats
-    // return await file.text();
-}
+`/api/attachments` lives in `src/app/api/attachments/`. It is a separate route
+from `/api/files`, which stores the bytes.
 
-async function extractMetadata(file: File, content: ArrayBuffer | string): Promise<Array<{key: string, value: string}>> {
-    const metadata = [];
-    
-    // Extract file-specific metadata
-    // Example: EXIF data from images, document properties, etc.
-    
-    return metadata;
-}
+| Call | Purpose |
+| --- | --- |
+| `GET /api/attachments?targetType=&targetId=` | one entity's attachments, also filterable by `kind` and `category` |
+| `GET /api/attachments` | every attachment in the NEST, behind the Files nav item |
+| `GET /api/attachments/[id]` | one attachment |
+| `POST /api/attachments` with `{ method: "create", fileId, targetType, targetId, category, responsible }` | link a file to a target |
+| `POST /api/attachments` with `{ method: "setfield", id, field, value }` | change `caption`, `category` or `order` |
+| `DELETE /api/attachments` with `{ id }` | remove the row, and the file with it when nothing else points at it |
 
-async function processFile(file: File, content: ArrayBuffer | string): Promise<any> {
-    // Perform file-specific processing
-    // Example: create thumbnails, convert formats, validate structure
-    
-    return content; // or processed version
-}
+`create` expects a file already uploaded to `/api/files` with
+`deferredLink: true`, which stores it as temporary; the `create` call is what
+marks it permanent. It reads the target through `resolveAttachmentTarget()`,
+requires `category` and a valid `responsible` user, and returns 404 when the file
+or the target document is missing. It also accepts an optional `caption` and an
+explicit `kind`. `delete` needs the `attachments.delete` capability. The `GET`
+routes check only that the caller is signed in.
+
+For an upload that does not go through `AttachmentPanel`, `uploadAndAttach()` and
+`createAttachment()` in `src/utils/handlers/attachmentHandlers.tsx` do both steps
+together.
+
+### Giving an entity a file gallery
+
+Mount the panel on the detail view:
+
+```tsx
+import { AttachmentPanel } from "@/components/attachments/AttachmentPanel";
+
+<AttachmentPanel
+  targetType="experiment"
+  targetId={experiment._id}
+  defaultCategory="gallery"  // stamped on files uploaded here, "gallery" if omitted
+  accept="image/*"           // optional, passed to the file input
+/>
 ```
 
-### 2. Image processor example
+Upload, gallery, caption editing, reordering and delete come with it. On sample
+detail pages, `AttachmentsCard` in `src/components/sample-cards/` wraps the panel
+as a registry card, so every sample type has one.
 
-```typescript
-export async function processImageFile(params: FileProcessorParams): Promise<void> {
-    const { file, defaultValues, form, setFormState, setAllFileData } = params;
+When a `targetType` does not follow the `type` to `types` collection naming, or
+needs a different capability prefix, add one line:
 
-    return new Promise<void>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = function () {
-            const img = new Image();
-            img.onload = function () {
-                // Create thumbnail
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                canvas.width = 200;
-                const aspectRatio = img.width / img.height;
-                canvas.height = Math.round(canvas.width / aspectRatio);
-
-                ctx!.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const updatedValues = { ...defaultValues };
-                        updatedValues.filename = file.name;
-                        updatedValues.type = 'image';
-                        updatedValues.date = new Date(file.lastModified);
-                        updatedValues.name = `image_${file.name}`;
-                        
-                        // Store image metadata
-                        updatedValues.metadata = [
-                            { key: 'name', value: file.name },
-                            { key: 'type', value: file.type },
-                            { key: 'size', value: file.size.toString() },
-                            { key: 'lastModified', value: file.lastModified.toString() },
-                        ];
-
-                        if (img.width && img.height) {
-                            updatedValues.metadata.push(
-                                { key: 'originalWidth', value: img.width.toString() },
-                                { key: 'originalHeight', value: img.height.toString() }
-                            );
-                        }
-
-                        // Store thumbnail as dataFields
-                        updatedValues.dataFields = blob;
-
-                        updateFormValues(form, updatedValues, setFormState, setAllFileData);
-                        resolve();
-                    } else {
-                        reject(new Error('Failed to create thumbnail'));
-                    }
-                }, 'image/jpeg', 0.85);
-            };
-            img.onerror = reject;
-            img.src = reader.result as string;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+```js
+// src/shared/config/attachment-targets.js
+export const ATTACHMENT_TARGET_OVERRIDES = [
+  { type: "equipment", collection: "labEquipment", capabilityPrefix: "equipment" },
+];
 ```
 
-### 3. Document processor example
+## Related
 
-```typescript
-export async function processDocumentFile(params: FileProcessorParams): Promise<void> {
-    const { file, defaultValues, existingNames, form, setFormState, setAllFileData } = params;
-
-    const updatedValues = { ...defaultValues };
-    updatedValues.filename = file.name;
-    updatedValues.type = 'document';
-    updatedValues.date = new Date(file.lastModified);
-    updatedValues.name = generateUniqueName(`document_${file.name}`, existingNames);
-
-    // For documents, we typically just store file reference
-    // Advanced processors might extract text content, metadata, etc.
-    
-    updateFormValues(form, updatedValues, setFormState, setAllFileData);
-}
-```
-
-### 4. Register your processor
-
-Add to `src/utils/file-management/processors/index.ts`:
-
-```typescript
-// Import your processor
-import { processMyFileType, myFileTypeMetadata } from './my-file-processor';
-
-// Export for external use
-export { processMyFileType, myFileTypeMetadata } from './my-file-processor';
-
-// Register in the processor registry
-fileProcessorRegistry.register(myFileTypeMetadata, processMyFileType);
-```
-
-## Processor interface
-
-### FileProcessorParams
-
-```typescript
-export interface FileProcessorParams {
-    file: File;                                    // The uploaded file
-    defaultValues: ExperimentFormValues;          // Default form values
-    samples: any[];                               // Available samples
-    existingNames: string[];                      // Existing experiment names
-    form: any;                                    // React Hook Form instance
-    setFormState: React.Dispatch<React.SetStateAction<ExperimentFormValues>>;
-    setAllFileData: React.Dispatch<React.SetStateAction<Array<Partial<ExperimentFormValues>>>>;
-}
-
-export type FileProcessor = (params: FileProcessorParams) => Promise<void>;
-```
-
-### Processor metadata
-
-```typescript
-export interface ProcessorMetadata {
-    name: string;                                 // Unique processor identifier
-    label: string;                               // Human-readable label for UI
-    description: string;                         // Processor description
-    version: string;                             // Processor version
-    author?: string;                             // Author name
-    supportedFormats: string[];                  // File extensions (e.g., ['.jpg', '.png'])
-    supportedExperimentTypes: string[];          // Experiment types this processor handles
-    primaryExperimentType: string;               // Default experiment type
-    requiredFields: string[];                    // Required form fields
-    generatedTraits: Array<{                     // Traits generated (usually empty for processors)
-        name: string;
-        unit: string;
-        description: string;
-    }>;
-}
-```
-
-## File reading strategies
-
-### Binary files (images, documents)
-
-```typescript
-async function processBinaryFile(file: File): Promise<ArrayBuffer> {
-    const arrayBuffer = await file.arrayBuffer();
-    
-    // Process binary data
-    const uint8Array = new Uint8Array(arrayBuffer);
-    
-    // Extract headers, metadata, etc.
-    const header = uint8Array.slice(0, 10);
-    
-    return arrayBuffer;
-}
-```
-
-### Text files
-
-```typescript
-async function processTextFile(file: File): Promise<string> {
-    const text = await file.text();
-    
-    // Check if it's structured data that should use a parser
-    const parsedData = dataFormatParserRegistry.parse(text, { filename: file.name });
-    
-    if (parsedData) {
-        // Structured data found - delegate to data format parser
-        throw new Error('This file contains structured data and should be processed by a data format parser');
-    }
-    
-    // Process as plain text
-    return text;
-}
-```
-
-### Stream processing (large files)
-
-```typescript
-async function processLargeFile(file: File): Promise<void> {
-    const stream = file.stream();
-    const reader = stream.getReader();
-    
-    try {
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            // Process chunk
-            processChunk(value);
-        }
-    } finally {
-        reader.releaseLock();
-    }
-}
-```
-
-## Available utility functions
-
-### From `utils.ts`
-
-```typescript
-import { 
-    generateUniqueName,           // Create unique experiment names
-    getSuggestedExperimentType,   // Get suggested type based on data
-    updateFormValues,             // Update form state consistently
-    resetGeneratedNames           // Reset name generator for new batch
-} from './utils';
-
-// Generate unique experiment name
-const uniqueName = generateUniqueName(`${fileType}_${file.name}`, existingNames);
-
-// Update form state
-updateFormValues(form, updatedValues, setFormState, setAllFileData);
-```
-
-## Integration with file upload
-
-### Automatic processor selection
-
-File processors are automatically selected based on file extension:
-
-```typescript
-// In extension-processors.tsx
-const fileExtension = path.extname(file.name).toLowerCase();
-
-switch (fileExtension) {
-    case '.jpg':
-    case '.jpeg':
-    case '.png':
-    case '.gif':
-    case '.bmp':
-    case '.webp':
-    case '.svg':
-        await processImageFile(params);
-        break;
-    case '.tiff':
-    case '.tif':
-        await processTiffFile(params);
-        break;
-    case '.myext':
-        await processMyFileType(params);
-        break;
-    default:
-        // Try data format parsers for text files
-        await processPlainTextFile(params);
-}
-```
-
-### Registry integration
-
-The processor registry enables automatic discovery:
-
-```typescript
-// Processors are automatically registered
-fileProcessorRegistry.register(myFileTypeMetadata, processMyFileType);
-
-// Discovery is automatic
-const supportedTypes = fileProcessorRegistry.getSupportedExperimentTypes();
-const processorInfo = fileProcessorRegistry.getMetadata('MyFileTypeProcessor');
-```
-
-## Error handling
-
-### File validation
-
-```typescript
-async function validateFile(file: File): Promise<void> {
-    // Check file size
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        throw new Error('File too large (maximum 10MB)');
-    }
-    
-    // Check file type
-    const allowedTypes = ['.jpg', '.png', '.pdf'];
-    const extension = path.extname(file.name).toLowerCase();
-    if (!allowedTypes.includes(extension)) {
-        throw new Error(`Unsupported file type: ${extension}`);
-    }
-    
-    // Check file content
-    const header = await file.slice(0, 10).arrayBuffer();
-    if (!isValidFileHeader(header)) {
-        throw new Error('Invalid file format');
-    }
-}
-```
-
-### Processing errors
-
-```typescript
-export async function processMyFileType(params: FileProcessorParams): Promise<void> {
-    const { file } = params;
-    
-    try {
-        // Validate file first
-        await validateFile(file);
-        
-        // Process file
-        const result = await processFile(file);
-        
-        // Update form
-        updateFormValues(form, result, setFormState, setAllFileData);
-        
-    } catch (error) {
-        console.error(`Error processing ${file.name}:`, error);
-        
-        // Provide user-friendly error messages
-        if (error.message.includes('too large')) {
-            throw new Error(`File "${file.name}" is too large. Please use a smaller file.`);
-        } else if (error.message.includes('unsupported')) {
-            throw new Error(`File type not supported for "${file.name}". Please use a different format.`);
-        } else {
-            throw new Error(`Failed to process "${file.name}": ${error.message}`);
-        }
-    }
-}
-```
-
-## Best practices
-
-### 1. memory management
-
-```typescript
-// For large files, process in chunks
-async function processLargeImage(file: File): Promise<Blob> {
-    // Use canvas for image processing to avoid memory issues
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Set reasonable canvas size limits
-    const maxWidth = 2048;
-    const maxHeight = 2048;
-    
-    // Process image...
-    
-    return new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.8);
-    });
-}
-```
-
-### 2. file type detection
-
-```typescript
-function detectFileType(file: File): string {
-    // Use multiple detection methods
-    const extension = path.extname(file.name).toLowerCase();
-    const mimeType = file.type;
-    
-    // Validate consistency
-    if (extension === '.jpg' && !mimeType.includes('image/jpeg')) {
-        console.warn('File extension and MIME type mismatch');
-    }
-    
-    return extension;
-}
-```
-
-### 3. progressive processing
-
-```typescript
-async function processFileWithProgress(file: File, onProgress?: (progress: number) => void): Promise<any> {
-    const totalSteps = 5;
-    let currentStep = 0;
-    
-    // Step 1: Validate
-    onProgress?.(++currentStep / totalSteps);
-    await validateFile(file);
-    
-    // Step 2: Read
-    onProgress?.(++currentStep / totalSteps);
-    const content = await file.arrayBuffer();
-    
-    // Step 3: Process
-    onProgress?.(++currentStep / totalSteps);
-    const processed = await processContent(content);
-    
-    // Continue...
-    
-    return processed;
-}
-```
-
-## Available file processors
-
-- **Image Processor**: JPEG, PNG, GIF, BMP, WebP, SVG - creates thumbnails and extracts dimensions
-- **TIFF Processor**: TIFF files with specialized scientific imaging support
-- **Document Processor**: PDF, DOC, TXT - handles document files for protocols
-- **Lossless Image Processor**: RAW and lossless formats preserving quality
-
-## Testing your processor
-
-```typescript
-// Test file processing
-const mockFile = new File(['test content'], 'test.myext', { type: 'application/octet-stream' });
-const mockParams = {
-    file: mockFile,
-    defaultValues: {},
-    samples: [],
-    existingNames: [],
-    form: mockForm,
-    setFormState: jest.fn(),
-    setAllFileData: jest.fn()
-};
-
-await processMyFileType(mockParams);
-
-// Verify results
-expect(mockParams.setFormState).toHaveBeenCalledWith(
-    expect.objectContaining({
-        filename: 'test.myext',
-        type: 'my_file_experiment'
-    })
-);
-```
-
----
-
-For data format parsers that extract scientific traits, see the [Data Format Parser Development Guide](./experiment-parser-development.md).
+- [Data Format Parser Development Guide](./data-format-parser-development.md), for structured instrument data
+- [Sample Cards Development](./component-development.md), for registry cards on sample pages
