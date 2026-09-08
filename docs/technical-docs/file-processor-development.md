@@ -125,6 +125,10 @@ is a discriminated union on `storage`:
 - Uploading needs the `files.upload` capability (`researcher` / `student` by
   default; admins implied).
 
+`GET /api/files/usage` returns `{ gridfsBytes, externalCount, fileCount }` for the
+active NEST; **Settings → Main** shows it as a storage meter with a soft nudge
+toward external links once the managed footprint gets large.
+
 Because the bytes are in the database, a NEST's files travel with a
 `mongodump`/`mongorestore` — there is no separate storage volume to move.
 Pre-GridFS installs keep disk-backed `files` rows (a `path`, no `storage`) that

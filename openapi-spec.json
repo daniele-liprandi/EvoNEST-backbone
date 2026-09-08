@@ -3728,6 +3728,31 @@
         }
       }
     },
+    "/api/files/usage": {
+      "get": {
+        "summary": "Storage footprint for the active NEST",
+        "description": "Managed bytes in GridFS, the number of external links, and the total file count — drives the settings storage meter.",
+        "tags": ["Files"],
+        "responses": {
+          "200": {
+            "description": "The NEST's file storage totals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "gridfsBytes": { "type": "integer", "description": "Sum of `size` over GridFS-backed files" },
+                    "externalCount": { "type": "integer" },
+                    "fileCount": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
     "/api/files/link": {
       "post": {
         "summary": "Link a file to an entry",

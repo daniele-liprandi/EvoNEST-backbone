@@ -28,6 +28,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import {
+  useFileUsage,
+  formatBytes,
+  MANAGED_STORAGE_SOFT_LIMIT,
+} from "@/hooks/useFileUsage";
 
 interface IdGenerationConfig {
   combinations: [number, number][];
@@ -85,6 +90,8 @@ export default function MainSettingsPage() {
       labLongitude: undefined,
     },
   });
+
+  const { usage, usageError } = useFileUsage();
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -565,6 +572,41 @@ export default function MainSettingsPage() {
           </div>
         </form>
       </Form>
+
+      <Separator className="my-8" />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Storage</CardTitle>
+          <CardDescription>
+            Files uploaded into this NEST are stored in the database and travel with a
+            backup. External links are counted but their bytes live elsewhere.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {usageError ? (
+            <p className="text-sm text-destructive">Could not load storage usage.</p>
+          ) : !usage ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (
+            <>
+              <p className="text-sm">
+                <span className="font-medium">{formatBytes(usage.gridfsBytes)}</span> managed
+                {" · "}
+                {usage.fileCount} file{usage.fileCount === 1 ? "" : "s"}
+                {" · "}
+                {usage.externalCount} external link{usage.externalCount === 1 ? "" : "s"}
+              </p>
+              {usage.gridfsBytes >= MANAGED_STORAGE_SOFT_LIMIT && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  This NEST is carrying a lot of managed storage. For large datasets you can
+                  link the files where they live instead of loading them in.
+                </p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
