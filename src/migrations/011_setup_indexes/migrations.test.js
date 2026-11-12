@@ -8,6 +8,7 @@ describe('Setup Indexes Migration', () => {
     let db;
     let traitsCollection;
     let attachmentsCollection;
+    let experimentsCollection;
     let filesCollection;
 
     beforeAll(async () => {
@@ -18,12 +19,14 @@ describe('Setup Indexes Migration', () => {
         db = client.db('test');
         traitsCollection = db.collection("traits");
         attachmentsCollection = db.collection("attachments");
+        experimentsCollection = db.collection("experiments");
         filesCollection = db.collection("files");
     });
 
     beforeEach(async () => {
         await traitsCollection.deleteMany({});
         await attachmentsCollection.deleteMany({});
+        await experimentsCollection.deleteMany({});
         await filesCollection.deleteMany({});
     });
 
@@ -44,6 +47,11 @@ describe('Setup Indexes Migration', () => {
         expect(attachmentsIndexes).toHaveLength(2);
         expect(attachmentsIndexes.some(i => i.key.targetType === 1 && i.key.targetId === 1)).toBeTruthy();
         expect(attachmentsIndexes.some(i => i.key.fileId === 1)).toBeTruthy();
+
+        const experimentsIndexes = (await experimentsCollection.indexes()).filter(i => i.name !== '_id_');
+        expect(experimentsIndexes).toHaveLength(2);
+        expect(experimentsIndexes.some(i => i.key.kind === 1 && i.key.parentId === 1)).toBeTruthy();
+        expect(experimentsIndexes.some(i => i.key.technique === 1)).toBeTruthy();
 
         const filesIndexes = (await filesCollection.indexes()).filter(i => i.name !== '_id_');
         expect(filesIndexes).toHaveLength(1);
@@ -67,6 +75,7 @@ describe('Setup Indexes Migration', () => {
 
         expect(await traitsCollection.indexes()).toHaveLength(1);
         expect((await attachmentsCollection.indexes()).filter(i => i.name !== '_id_')).toHaveLength(0);
+        expect((await experimentsCollection.indexes()).filter(i => i.name !== '_id_')).toHaveLength(0);
     });
 
     test('should handle multiple runs gracefully', async () => {

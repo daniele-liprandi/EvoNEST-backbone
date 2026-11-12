@@ -4,7 +4,7 @@ import { Suspense, useMemo } from "react";
 import { CellContext, Table as TanstackTable } from "@tanstack/react-table";
 
 import { SmartVaul } from "@/components/forms/smart-vaul";
-import { dateColumn, logbookColumn, responsibleColumn, rowActionsColumn, sampleColumn, selectColumn, typeColumn } from "@/components/tables/columns";
+import { dateColumn, logbookColumn, responsibleColumn, rowActionsColumn, sampleColumn, selectColumn, techniqueColumn } from "@/components/tables/columns";
 import { experimentEditFields } from "@/components/tables/edit-fields";
 import { DataTable } from "@/components/tables/data-table";
 import { DataTableToolbar } from "@/components/tables/data-table-toolbar";
@@ -32,7 +32,7 @@ const baseColumns = [
   sampleColumn("sampleId", "sampleName", "Sample"),
   responsibleColumn(),
   dateColumn(),
-  typeColumn(),
+  techniqueColumn(),
   {
     accessorKey: "fileId",
     header: "File",

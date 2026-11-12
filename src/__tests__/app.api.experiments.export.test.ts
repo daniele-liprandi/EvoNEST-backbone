@@ -10,18 +10,21 @@ import { exportExperiments } from "@/app/api/experiments/export/handlers";
 
 const req = (qs = "") => new Request(`http://x/api/experiments/export${qs}`);
 
-const mongoWith = (rows: unknown[]) => testMongo({ find: () => Effect.succeed(rows as never[]) });
+const mongoWith = (rows: unknown[], seen: unknown[] = []) =>
+  testMongo({ find: (_db: unknown, _c: unknown, filter: unknown) => Effect.sync(() => (seen.push(filter), rows as never[])) });
 
 beforeEach(() => jest.spyOn(console, "error").mockImplementation(() => {}));
 afterEach(() => jest.restoreAllMocks());
 
 describe("GET /api/experiments/export", () => {
-  test("returns a JSON attachment", async () => {
+  test("returns a JSON attachment of standalone measurements for the technique", async () => {
+    const seen: unknown[] = [];
     const res = await runRoute(
-      exportExperiments(req("?type=tensile_test")).pipe(
-        Effect.provide(Layer.merge(mongoWith([{ _id: 1 }, { _id: 2 }]), testAuth({ sub: "u1" }))),
+      exportExperiments(req("?technique=tensile_test")).pipe(
+        Effect.provide(Layer.merge(mongoWith([{ _id: 1 }, { _id: 2 }], seen), testAuth({ sub: "u1" }))),
       ),
     );
+    expect(seen).toEqual([{ kind: "measurement", technique: "tensile_test" }]);
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Disposition")).toMatch(/attachment; filename="tensile_tests_/);
     await expect(res.json()).resolves.toEqual({ count: 2 });

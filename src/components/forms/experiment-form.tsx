@@ -55,7 +55,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
         responsible: getUserIdByName(user?.name, users),
         sampleId: "",
         filename: "",
-        type: "",
+        technique: "",
         date: new Date(),
         notes: "",
     };
@@ -70,7 +70,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
 
     const selectedType = useWatch({
         control: form.control,
-        name: "type",
+        name: "technique",
     });
     useEffect(() => {
         if (defaultFileList) {
@@ -111,12 +111,12 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
         let hadFailure = false;
 
         // Validate experiment type and data compatibility
-        if (checkParserSupport(formValues.type)) {
+        if (checkParserSupport(formValues.technique)) {
             const validationErrors: string[] = [];
             
             allFileData.forEach((fileValues, index) => {
                 const fileName = fileValues.filename || `File ${index + 1}`;
-                const validation = validateExperimentType(formValues.type, fileValues);
+                const validation = validateExperimentType(formValues.technique, fileValues);
                 if (!validation.valid) {
                     validationErrors.push(`${fileName}: ${validation.message}`);
                 }
@@ -127,8 +127,8 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     if (!fileValues.dataFields.experimentData.name) {
                         validationErrors.push(`${fileName}: Missing experiment name in parsed data`);
                     }
-                    if (!fileValues.dataFields.experimentData.type) {
-                        validationErrors.push(`${fileName}: Missing experiment type in parsed data`);
+                    if (!fileValues.dataFields.experimentData.technique) {
+                        validationErrors.push(`${fileName}: Missing technique in parsed data`);
                     }
                     if (!fileValues.dataFields.format) {
                         validationErrors.push(`${fileName}: Missing format information in parsed data`);
@@ -176,14 +176,14 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
 
                 if (formValues.notes) experimentData.notes = formValues.notes;
                 if (formValues.filepath) experimentData.filepath = formValues.filepath;
-                experimentData.type = formValues.type;
+                experimentData.technique = formValues.technique;
 
                 if (files && checkSaveFile) {
                     try {
                         for (let i = 0; i < files.length; i++) {
-                            fileId = await uploadFile(files[i], formValues.type, {
+                            fileId = await uploadFile(files[i], formValues.technique, {
                                 deferredLink: true,
-                                mediaType: formValues.type,
+                                mediaType: formValues.technique,
                             });
                             experimentData = { ...experimentData, fileId: fileId };
                         }
@@ -335,7 +335,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
               )}
               <FormField
                 control={form.control}
-                name="type"
+                name="technique"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -355,7 +355,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                       <ComboFormBox
                         control={form.control}
                         setValue={form.setValue}
-                        name="type"
+                        name="technique"
                         options={[
                           ...getUniqueParserOptions(),
                         ]}
@@ -515,12 +515,12 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                           <span className="font-medium">
                             {fileInfo.filename || `File ${index + 1}`}
                           </span>
-                          <Badge variant={fileInfo.type === "experiment_data" ? "green" : "secondary"}>
-                            {fileInfo.type}
+                          <Badge variant={fileInfo.technique === "experiment_data" ? "green" : "secondary"}>
+                            {fileInfo.technique}
                           </Badge>
                         </div>
 
-                        {fileInfo.type === "experiment_data" &&
+                        {fileInfo.technique === "experiment_data" &&
                           fileInfo.dataFields && (
                             <div className="text-xs text-gray-600">
                               <div>Format: {fileInfo.dataFields.format}</div>

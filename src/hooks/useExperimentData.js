@@ -6,7 +6,7 @@ import useSWR from 'swr';
 export const useExperimentsData = (
     prependPath, 
     includeRawData = false, 
-    type,
+    technique,
     options,
     includeTraitsData = false
 ) => {
@@ -14,7 +14,7 @@ export const useExperimentsData = (
     const params = new URLSearchParams();
     if (includeRawData) params.append('includeRawData', 'true');
     if (includeTraitsData) params.append('includeTraitsData', 'true');
-    if (type) params.append('type', type);
+    if (technique) params.append('technique', technique);
     
     const url = `${prependPath}/api/experiments${params.toString() ? '?' + params.toString() : ''}`;
     

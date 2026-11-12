@@ -12,12 +12,12 @@ import { exportExperimentsToStructuredFormat } from "@/utils/exporters/json-expo
 
 const Params = Schema.Struct({
   format: Schema.optional(Schema.String),
-  type: Schema.optional(Schema.String),
+  technique: Schema.optional(Schema.String),
 });
 
 export const exportExperiments = (request: Request) =>
   Effect.gen(function* () {
-    const { format, type } = yield* decodeSearchParams(Params)(request);
+    const { format, technique } = yield* decodeSearchParams(Params)(request);
     if ((format ?? "json").toLowerCase() !== "json") {
       return yield* Effect.fail(
         new ValidationError({ message: "Only JSON export is supported; omit format or use format=json" }),
@@ -26,7 +26,10 @@ export const exportExperiments = (request: Request) =>
 
     const dbName = yield* currentDatabase;
     const mongo = yield* Mongo;
-    const experiments = yield* mongo.find(dbName, "experiments", { type: type ?? "tensile_test" });
+    const experiments = yield* mongo.find(dbName, "experiments", {
+      kind: "measurement",
+      technique: technique ?? "tensile_test",
+    });
     if (experiments.length === 0) {
       return yield* Effect.fail(new NotFoundError({ resource: "Experiments" }));
     }

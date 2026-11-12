@@ -47,6 +47,8 @@ describe('TensileTestFormatParser', () => {
             expect(result).toBeDefined();
             expect(result.format).toBe('EVOMECT150');
             expect(result.suggestedExperimentType).toBe('tensile_test');
+            expect(result.experimentData?.technique).toBe('tensile_test');
+            expect(result.experimentData?.type).toBeUndefined();
             expect(result.parsingMetadata?.confidence).toBe(1.0);
         });
 

@@ -29,7 +29,7 @@ export function exportExperimentsToStructuredFormat(experiments) {
             // Basic metadata
             metadata: {
                 name: experiment.name,
-                type: experiment.type,
+                technique: experiment.technique,
                 date: experiment.date,
                 sampleId: experiment.sampleId,
                 responsible: experiment.responsible,

@@ -12,7 +12,7 @@ export const experimentFormSchema = z.object({
     .string()
     .min(2, { message: "Samples name needs to be longer than 3 characters" }),
   responsible: z.any(),
-  type: z.string(),
+  technique: z.string(),
   sampleId: z.string().optional(),
   filename: z.string().optional(),
   filepath: z.string().optional(),

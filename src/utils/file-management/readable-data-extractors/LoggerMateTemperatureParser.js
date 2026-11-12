@@ -95,7 +95,7 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
                 name: `LoggerMate_${fileMetadata?.filename?.replace(/\.[^/.]+$/, '') || 'unknown'}`,
                 sampleId: metadata.DEVICE_ID || '', // Will need to be mapped to actual sample
                 responsible: '', // Will be filled by the UI
-                type: 'temperature_monitoring',
+                technique: 'temperature_monitoring',
                 date: currentDate,
                 notes: `LoggerMate data with ${dataSection.data.length} temperature readings`,
                 filename: fileMetadata?.filename || 'unknown.txt',

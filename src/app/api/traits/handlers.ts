@@ -277,7 +277,7 @@ const applyConversion = (dbName: string, data: PostData) =>
     };
     const mongo = yield* Mongo;
 
-    const experiments = yield* mongo.find(dbName, EXPERIMENTS, { sampleId: first.sampleId });
+    const experiments = yield* mongo.find(dbName, EXPERIMENTS, { kind: "measurement", sampleId: first.sampleId });
     for (const exp of experiments) {
       const raw = yield* mongo.findOne(dbName, RAWDATA, { experimentId: exp._id });
       if (!raw) continue;
@@ -370,7 +370,7 @@ const resetConversion = (dbName: string, data: PostData) =>
     const first = yield* firstTraitSample(dbName, data);
     const mongo = yield* Mongo;
 
-    const experiments = yield* mongo.find(dbName, EXPERIMENTS, { sampleId: first.sampleId });
+    const experiments = yield* mongo.find(dbName, EXPERIMENTS, { kind: "measurement", sampleId: first.sampleId });
     for (const exp of experiments) {
       const raw = yield* mongo.findOne(dbName, RAWDATA, { experimentId: exp._id });
       if (!raw || !raw.originalData) continue;

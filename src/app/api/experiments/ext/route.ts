@@ -15,9 +15,9 @@
  *         schema: { type: string }
  *         description: Database to export from
  *       - in: query
- *         name: type
+ *         name: technique
  *         schema: { type: string }
- *         description: Filter experiments by type
+ *         description: Filter experiments by technique
  *       - in: query
  *         name: includeRawData
  *         schema: { type: boolean, default: false }

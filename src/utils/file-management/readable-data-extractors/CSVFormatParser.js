@@ -148,7 +148,7 @@ export class CSVFormatParser extends BaseDataFormatParser {
             // Create experiment data structure
             const experimentData = this.createExperimentData({
                 name: `CSV_${fileMetadata?.filename?.replace(/\.[^/.]+$/, '') || 'unknown'}`,
-                type: 'tabular_data',
+                technique: 'tabular_data',
                 filename: fileMetadata?.filename || 'unknown.csv',
                 notes: `CSV data with ${parsedData.length} records and ${columns.length} columns`,
                 data: {

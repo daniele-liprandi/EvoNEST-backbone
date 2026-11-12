@@ -41,15 +41,19 @@ export const listExperiments = (request: Request) =>
     const includeOriginalData = params.get("includeOriginalData") === "true";
     const includeRelated = params.get("related") === "true";
     const includeTraitsData = params.get("includeTraitsData") === "true";
-    const type = params.get("type");
+    const filter: Document = {};
+    const technique = params.get("technique");
+    if (technique) filter.technique = technique;
+    const kind = params.get("kind");
+    if (kind) filter.kind = kind;
+    // `parentId=null` selects top-level rows; an id selects one protocol experiment's children.
+    const parentId = params.get("parentId");
+    if (parentId !== null) filter.parentId = parentId === "null" ? null : parentId;
 
     const mongo = yield* Mongo;
     const collection = yield* mongo.collection(dbName, EXPERIMENTS);
     const experiments = yield* attempt(
-      () =>
-        collection
-          .find(type ? { type } : {}, { projection: projectionFor(includeRawData, includeTraitsData) })
-          .toArray(),
+      () => collection.find(filter, { projection: projectionFor(includeRawData, includeTraitsData) }).toArray(),
       "experiments.find",
     );
 
@@ -87,6 +91,7 @@ const PostBody = Schema.Struct(
     sampleId: Schema.optional(Schema.String),
     responsible: Schema.optional(Schema.Unknown),
     name: Schema.optional(Schema.String),
+    technique: Schema.optional(Schema.String),
     type: Schema.optional(Schema.String),
     field: Schema.optional(Schema.String),
     value: Schema.optional(Schema.Unknown),
@@ -121,17 +126,23 @@ const createExperiment = (dbName: string, data: PostData) =>
 
     const mongo = yield* Mongo;
     const now = stamp();
+    // A lagging client may still send the pre-rename `type`.
+    const { type: legacyType, ...body } = data;
+    const technique = data.technique ?? legacyType;
 
     // Structured payload from the parsers already carries the shape; the legacy
     // path assembles a minimal document from top-level fields.
-    const structured = !!data.data && typeof data.data === "object" && !!data.name && !!data.type;
+    const structured = !!data.data && typeof data.data === "object" && !!data.name && !!technique;
 
     let embeddedTraits: Record<string, unknown>[] = [];
     let experimentData: Record<string, unknown>;
 
     if (structured) {
       experimentData = {
-        ...data,
+        ...body,
+        technique,
+        kind: "measurement",
+        parentId: null,
         version: data.version || 1,
         recentChangeDate: now,
         logbook: data.logbook || [[now, `Created experiment ${data.name}`]],
@@ -159,7 +170,9 @@ const createExperiment = (dbName: string, data: PostData) =>
         name: data.name,
         sampleId: data.sampleId,
         responsible: data.responsible,
-        type: data.type,
+        technique,
+        kind: "measurement",
+        parentId: null,
         date: data.date,
         notes: data.notes,
         filename: data.filename,

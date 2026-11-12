@@ -64,7 +64,7 @@ describe("experiments — a real collection workflow", () => {
     const res = await post({
       method: "create",
       name: "Tensile 1",
-      type: "tensile_test",
+      technique: "tensile_test",
       sampleId,
       responsible: responsible.toHexString(),
       dataFields: { EngineeringStress: [1, 2, 3] },
@@ -77,6 +77,8 @@ describe("experiments — a real collection workflow", () => {
     expect(exp?.data).toEqual({ EngineeringStress: [1, 2, 3] });
     expect(exp?.originalData).toEqual({ EngineeringStress: [1, 2, 3] });
     expect(exp?.method).toBeUndefined();
+    expect(exp).toMatchObject({ technique: "tensile_test", kind: "measurement", parentId: null });
+    expect(exp?.type).toBeUndefined();
 
     const sample = await mongo.db.collection("samples").findOne({ _id: new ObjectId(sampleId) });
     expect(sample?.logbook.at(-1)[1]).toMatch(/New experiment Tensile 1 created/);
@@ -87,7 +89,7 @@ describe("experiments — a real collection workflow", () => {
     const res = await post({
       method: "create",
       name: "Structured 1",
-      type: "tensile_test",
+      technique: "tensile_test",
       sampleId,
       responsible: responsible.toHexString(),
       data: { channelData: [], summary: {} },
@@ -110,13 +112,14 @@ describe("experiments — a real collection workflow", () => {
 
     const exp = await mongo.db.collection("experiments").findOne({ _id: new ObjectId(id) });
     expect(exp?.traits).toBeUndefined(); // embedded traits are not kept on the experiment
+    expect(exp).toMatchObject({ technique: "tensile_test", kind: "measurement", parentId: null });
     expect(exp?.logbook.some((l: string[]) => /Automatically created 2 traits/.test(l[1]))).toBe(true);
   });
 
   test("create rejects a missing sampleId (400) and an unknown responsible (400)", async () => {
-    expect((await post({ method: "create", name: "x", type: "t", responsible: responsible.toHexString() })).status).toBe(400);
+    expect((await post({ method: "create", name: "x", technique: "t", responsible: responsible.toHexString() })).status).toBe(400);
     const sampleId = await makeSample();
-    expect((await post({ method: "create", name: "x", type: "t", sampleId, responsible: new ObjectId().toHexString() })).status).toBe(400);
+    expect((await post({ method: "create", name: "x", technique: "t", sampleId, responsible: new ObjectId().toHexString() })).status).toBe(400);
   });
 
   test("unknown method is 400", async () => {
@@ -127,7 +130,7 @@ describe("experiments — a real collection workflow", () => {
   test("setfield updates the field and logs the change; a missing experiment is 404", async () => {
     const sampleId = await makeSample();
     const { id } = await (
-      await post({ method: "create", name: "E", type: "t", sampleId, responsible: responsible.toHexString(), dataFields: {} })
+      await post({ method: "create", name: "E", technique: "t", sampleId, responsible: responsible.toHexString(), dataFields: {} })
     ).json();
 
     const res = await post({ method: "setfield", id: String(id), field: "status", value: "completed" });
@@ -142,9 +145,9 @@ describe("experiments — a real collection workflow", () => {
 
   test("GET excludes data by default, includes it with includeRawData, and attaches relations", async () => {
     const sampleId = await makeSample();
-    await post({ method: "create", name: "E1", type: "tensile_test", sampleId, responsible: responsible.toHexString(), dataFields: { x: [1] } });
+    await post({ method: "create", name: "E1", technique: "tensile_test", sampleId, responsible: responsible.toHexString(), dataFields: { x: [1] } });
 
-    const plain = await (await get("?type=tensile_test")).json();
+    const plain = await (await get("?technique=tensile_test")).json();
     expect(plain[0].data).toBeUndefined();
 
     const raw = await (await get("?includeRawData=true")).json();
@@ -155,6 +158,35 @@ describe("experiments — a real collection workflow", () => {
     const related = await (await get("?related=true")).json();
     expect(related[0].sample._id.toString()).toBe(sampleId);
     expect(Array.isArray(related[0].traits)).toBe(true);
+  });
+
+  test("create maps a stale `type` to `technique`", async () => {
+    const sampleId = await makeSample();
+    const { id } = await (
+      await post({ method: "create", name: "Old client", type: "tensile_test", sampleId, responsible: responsible.toHexString(), dataFields: {} })
+    ).json();
+    const exp = await mongo.db.collection("experiments").findOne({ _id: new ObjectId(id) });
+    expect(exp?.technique).toBe("tensile_test");
+    expect(exp?.type).toBeUndefined();
+  });
+
+  test("GET filters on technique, kind and parentId", async () => {
+    const sampleId = await makeSample();
+    await post({ method: "create", name: "T", technique: "tensile_test", sampleId, responsible: responsible.toHexString(), dataFields: {} });
+    await post({ method: "create", name: "M", technique: "movement_tracking", sampleId, responsible: responsible.toHexString(), dataFields: {} });
+    const parent = new ObjectId();
+    await mongo.db.collection("experiments").insertMany([
+      { _id: parent, name: "P", kind: "protocol", parentId: null },
+      { name: "C", technique: "tensile_test", kind: "measurement", parentId: parent.toHexString() },
+    ]);
+
+    const names = async (qs: string) =>
+      ((await (await get(qs)).json()) as { name: string }[]).map((e) => e.name).sort();
+
+    expect(await names("?technique=tensile_test")).toEqual(["C", "T"]);
+    expect(await names("?kind=measurement&parentId=null")).toEqual(["M", "T"]);
+    expect(await names("?parentId=null")).toEqual(["M", "P", "T"]);
+    expect(await names(`?parentId=${parent.toHexString()}`)).toEqual(["C"]);
   });
 });
 
@@ -168,7 +200,7 @@ describe("experiments — delete + the experiments.delete gate (#162)", () => {
   test("delete removes the experiment; a missing one is 404, a bad id is 400", async () => {
     const sampleId = await makeSample();
     const { id } = await (
-      await post({ method: "create", name: "E", type: "t", sampleId, responsible: responsible.toHexString(), dataFields: {} })
+      await post({ method: "create", name: "E", technique: "t", sampleId, responsible: responsible.toHexString(), dataFields: {} })
     ).json();
     expect((await del(String(id))).status).toBe(200);
     expect((await del(String(id))).status).toBe(404);
@@ -179,7 +211,7 @@ describe("experiments — delete + the experiments.delete gate (#162)", () => {
     await mongo.client.db("usersdb").collection("users").insertOne({ role: "admin", auth0id: "auth0|boss" });
     const sampleId = await makeSample();
     const { id } = await (
-      await post({ method: "create", name: "E", type: "t", sampleId, responsible: responsible.toHexString(), dataFields: {} })
+      await post({ method: "create", name: "E", technique: "t", sampleId, responsible: responsible.toHexString(), dataFields: {} })
     ).json();
 
     const res = await del(String(id), asRole("viewer"));

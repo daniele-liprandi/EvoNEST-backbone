@@ -16,7 +16,7 @@ export const exportExperiments = (request: Request) =>
       return yield* Effect.fail(new ValidationError({ message: "Only JSON export is supported" }));
     }
 
-    const type = params.get("type");
+    const technique = params.get("technique");
     const includeRawData = params.get("includeRawData") === "true";
     const includeOriginalData = params.get("includeOriginalData") === "true";
     const includeRelated = params.get("includeRelated") === "true";
@@ -27,7 +27,7 @@ export const exportExperiments = (request: Request) =>
     // Projection: skip the heavy fields unless the caller asked for raw data.
     const projection = includeRawData ? {} : { rawdata: 0, originalData: 0 };
     const experiments: Document[] = yield* attempt(
-      () => collection.find(type ? { type } : {}, { projection }).toArray(),
+      () => collection.find(technique ? { technique } : {}, { projection }).toArray(),
       "experiments.find",
     );
     if (experiments.length === 0) {
@@ -74,7 +74,7 @@ export const exportExperiments = (request: Request) =>
     });
 
     structured.metadata.database = database;
-    structured.metadata.filters = { type: type ?? "all", includeRawData, includeOriginalData, includeRelated };
+    structured.metadata.filters = { technique: technique ?? "all", includeRawData, includeOriginalData, includeRelated };
 
     const stamp = new Date().toISOString().slice(0, 10);
     return NextResponse.json(structured, {

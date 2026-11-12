@@ -6,7 +6,7 @@
  *     tags: [Experiments]
  *     parameters:
  *       - { in: query, name: format, schema: { type: string, default: json } }
- *       - { in: query, name: type, schema: { type: string, default: tensile_test } }
+ *       - { in: query, name: technique, schema: { type: string, default: tensile_test } }
  *     responses:
  *       200: { description: JSON attachment }
  *       400: { description: Unsupported format }
