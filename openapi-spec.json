@@ -2412,17 +2412,39 @@
         }
       }
     },
-    "/api/traits/analysis": {
-      "post": {
-        "summary": "Perform statistical analysis on trait data",
-        "description": "Analyze trait measurements with statistical calculations (mean, stddev, min, max, median) grouped by various sample features",
+    "/api/analysis": {
+      "get": {
+        "summary": "Dimensions, their values, and trait types for a summary",
         "tags": [
-          "Traits"
+          "Analysis"
         ],
-        "security": [
+        "parameters": [
           {
-            "SessionAuth": []
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "samples",
+                "traits"
+              ],
+              "default": "traits"
+            }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "{ source, dimensions: [{ id, label, values }], quantities: [{ value, label, unit, count }] }"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Summarise samples (counts) or one trait type (statistics) by up to two row dimensions and one column",
+        "tags": [
+          "Analysis"
         ],
         "requestBody": {
           "required": true,
@@ -2430,27 +2452,41 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "quantity"
-                ],
                 "properties": {
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "samples",
+                      "traits"
+                    ],
+                    "default": "traits"
+                  },
+                  "rows": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "column": {
+                    "type": "string",
+                    "nullable": true
+                  },
                   "quantity": {
                     "type": "string",
-                    "description": "Quantity of trait to analyze (e.g., stressAtBreak, diameter, toughness)"
-                  },
-                  "groupBy": {
-                    "type": "string",
-                    "default": "all",
-                    "description": "Field to group results by (e.g., species, sex, sampleType)"
+                    "description": "Required for source traits"
                   },
                   "filters": {
                     "type": "object",
-                    "description": "Optional filters to apply to the data"
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
                   },
                   "unitConversion": {
                     "type": "boolean",
-                    "default": true,
-                    "description": "Whether to apply unit conversions"
+                    "default": true
                   }
                 }
               }
@@ -2459,60 +2495,13 @@
         },
         "responses": {
           "200": {
-            "description": "Analysis completed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "results": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "group": {
-                            "type": "string"
-                          },
-                          "statistics": {
-                            "type": "object",
-                            "properties": {
-                              "mean": {
-                                "type": "number"
-                              },
-                              "stddev": {
-                                "type": "number"
-                              },
-                              "min": {
-                                "type": "number"
-                              },
-                              "max": {
-                                "type": "number"
-                              },
-                              "median": {
-                                "type": "number"
-                              },
-                              "count": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "processingTime": {
-                      "type": "number",
-                      "description": "Time taken for analysis in milliseconds"
-                    }
-                  }
-                }
-              }
-            }
+            "description": "{ rows: [{ key, cells, total }], columns, columnTotals, total, unit, metadata }"
           },
           "400": {
-            "description": "Bad request - Missing or invalid parameters"
+            "description": "Missing quantity or unknown dimension"
           },
-          "500": {
-            "description": "Server error"
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }

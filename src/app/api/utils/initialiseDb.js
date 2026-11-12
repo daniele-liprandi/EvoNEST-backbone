@@ -22,8 +22,8 @@ export async function ensureDefaultAdmin(client) {
                 name: 'admin',
                 role: 'admin',
                 email: 'admin@demo.com',
-                activeDatabase: 'admin',
-                databases: ['admin'],
+                activeDatabase: 'evonest',
+                databases: ['evonest'],
                 logbook: [`${new Date().toISOString()}: created default admin user`],
                 recentChangeDate: new Date().toISOString()
             };

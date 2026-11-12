@@ -53,7 +53,7 @@ As an administrator, you can create new NESTs - separate database instances for 
 
 1. **Go to the Users table**
 2. **Give the user "admin" access to the new NEST** by clicking the Database button on the last column, 'Actions'
-3. **Click the database selector** in the top-right corner of the interface, currently showing 'admin'
+3. **Click the database selector** in the top-right corner of the interface, currently showing 'evonest'
 4. **Select the desired NEST** from the dropdown menu
 
 You will be automatically switched to the Home of the selected NEST, which will be asking to run the configuration steps for the first time.

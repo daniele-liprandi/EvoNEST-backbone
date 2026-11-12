@@ -44,7 +44,9 @@ async function up(testClient = null, dbName = "test") {
             filesCollection.createIndex(
                 { sha256: 1 },
                 { unique: true, partialFilterExpression: { sha256: { $type: "string" } } }
-            )
+            ),
+            // Dedup lookup
+            filesCollection.createIndex({ "storage.sha256": 1 })
         ]);
 
         // Log results
@@ -56,6 +58,7 @@ async function up(testClient = null, dbName = "test") {
             - experiments.kind_parentId: ${experimentsIndexes[0]}
             - experiments.technique: ${experimentsIndexes[1]}
             - files.sha256 (unique, partial): ${filesIndexes[0]}
+            - files.storage.sha256: ${filesIndexes[1]}
         `);
 
         return { traitsIndexes, attachmentsIndexes, experimentsIndexes, filesIndexes };
@@ -93,7 +96,8 @@ async function down(testClient = null, dbName = "test") {
             attachmentsCollection.dropIndex("fileId_1"),
             experimentsCollection.dropIndex("kind_1_parentId_1"),
             experimentsCollection.dropIndex("technique_1"),
-            filesCollection.dropIndex("sha256_1")
+            filesCollection.dropIndex("sha256_1"),
+            filesCollection.dropIndex("storage.sha256_1")
         ]);
 
         console.log("Indexes dropped successfully");

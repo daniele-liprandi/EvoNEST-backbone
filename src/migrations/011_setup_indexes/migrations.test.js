@@ -54,7 +54,8 @@ describe('Setup Indexes Migration', () => {
         expect(experimentsIndexes.some(i => i.key.technique === 1)).toBeTruthy();
 
         const filesIndexes = (await filesCollection.indexes()).filter(i => i.name !== '_id_');
-        expect(filesIndexes).toHaveLength(1);
+        expect(filesIndexes).toHaveLength(2);
+        expect(filesIndexes.some(i => i.key['storage.sha256'] === 1)).toBeTruthy();
         const sha = filesIndexes.find(i => i.key.sha256 === 1);
         expect(sha.unique).toBe(true);
         expect(sha.partialFilterExpression).toEqual({ sha256: { $type: 'string' } });

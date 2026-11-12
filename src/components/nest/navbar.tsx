@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { mutate } from "swr";
 import {
   BugBeetle,
+  ChartBar,
   Bell,
   BookOpen,
   Database,
@@ -86,14 +87,27 @@ const traitsProps = {
   label: "Traits",
   icon: <Ruler size={60} />,
   description: "Traits in the NEST",
+  options: [],
+  href: "/traits",
+};
+
+const analysisProps = {
+  label: "Analysis",
+  icon: <ChartBar size={60} />,
+  description: "Summaries of the samples and traits in the NEST",
   options: [
     {
-      title: "Analysis",
-      href: "/traits/analysis",
-      description: "Trait analysis and statistics",
+      title: "Trait statistics",
+      href: "/analysis/traits",
+      description: "Mean, standard deviation, range and median of one trait type, by group",
+    },
+    {
+      title: "Summary tables",
+      href: "/analysis/tables",
+      description: "Count samples, or summarise a trait type, across rows and columns",
     },
   ],
-  href: "/traits",
+  href: "/analysis",
 };
 
 const settingsProps = {
@@ -201,7 +215,6 @@ export function NavBar() {
         href: "/samples/maintenance",
         description: "Keep your animals tidy",
       },
-      { title: "Analysis", href: "/samples/analysis", description: "Analysis" },
       {
         title: "QR labels",
         href: "/samples/qrlabels",
@@ -316,6 +329,7 @@ export function NavBar() {
           <NavStandardItem {...samplesProps} />
           <NavStandardItem {...experimentsProps} />
           <NavStandardItem {...traitsProps} />
+          <NavStandardItem {...analysisProps} />
           <NavStandardItem {...filesProps} />
           <NavStandardItem {...settingsProps} />
         </NavigationMenuList>
@@ -355,7 +369,7 @@ export function NavBar() {
             {/* Same sections as the desktop menu (samplesProps included, so a
                 lab's custom sample types and Settings show up here too),
                 just laid out as a flat list instead of dropdowns. */}
-            {[usersProps, samplesProps, experimentsProps, traitsProps, filesProps, settingsProps].map((section) => (
+            {[usersProps, samplesProps, experimentsProps, traitsProps, analysisProps, filesProps, settingsProps].map((section) => (
               <div key={section.label} className="grid gap-2">
                 <Link
                   href={section.href}

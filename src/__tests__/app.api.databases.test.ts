@@ -27,7 +27,7 @@ describe("GET /api/databases", () => {
       insertOne: (...a: unknown[]) => Effect.sync(() => insertOne(...a)),
     });
     const res = await runRoute(listDatabases.pipe(Effect.provide(Layer.merge(mongo, admin))));
-    await expect(res.json()).resolves.toEqual({ databases: ["admin", "evonest"] });
+    await expect(res.json()).resolves.toEqual({ databases: ["evonest"] });
     expect(insertOne).toHaveBeenCalled();
   });
 });
@@ -51,6 +51,14 @@ describe("POST /api/databases", () => {
     const mongo = testMongo({ findOne: () => Effect.succeed({ _id: "admin" }) });
     const res = await runRoute(addDatabase(req({ database: "x" })).pipe(Effect.provide(Layer.merge(mongo, user))));
     expect(res.status).toBe(403);
+  });
+
+  test("400 for a reserved database name", async () => {
+    const mongo = testMongo({ findOne: () => Effect.succeed({ databases: ["evonest"] }) });
+    for (const name of ["admin", "Local", " usersdb "]) {
+      const res = await runRoute(addDatabase(req({ database: name })).pipe(Effect.provide(Layer.merge(mongo, admin))));
+      expect(res.status).toBe(400);
+    }
   });
 
   test("409 when the database already exists", async () => {

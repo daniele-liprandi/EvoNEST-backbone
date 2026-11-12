@@ -36,9 +36,9 @@ export default function SamplesLandingPage() {
             description="Filtered tables that help with collection upkeep."
           />
           <NavCard
-            href="/samples/analysis"
-            title="Analysis"
-            description="Guides and plots to help you analyse your data."
+            href="/analysis/tables"
+            title="Summary tables"
+            description="Count samples by type, species, date or any field you record."
           />
           <NavCard
             href="/samples/import"

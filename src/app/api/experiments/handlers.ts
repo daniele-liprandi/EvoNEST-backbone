@@ -13,11 +13,13 @@ import {
   InternalError,
 } from "@/lib/effect";
 import { sampleChain } from "@/app/api/utils/sampleChain";
+import { deleteBlobIfUnreferenced } from "@/app/api/files/gridfs";
 
 const EXPERIMENTS = "experiments";
 const SAMPLES = "samples";
 const TRAITS = "traits";
 const FILES = "files";
+const ATTACHMENTS = "attachments";
 
 const stamp = () => new Date().toISOString();
 const isHexId = (v: unknown): v is string =>
@@ -285,35 +287,43 @@ export const deleteExperiment = (request: Request) =>
     const experiment = yield* mongo.findOne(dbName, EXPERIMENTS, { _id });
     if (!experiment) return yield* Effect.fail(new NotFoundError({ resource: "Experiment", id }));
 
-    let fileDeleted = false;
-    let fileDocDeleted = false;
-    let fileDoc: Document | null = null;
-
-    if (experiment.fileId) {
-      fileDoc = yield* mongo.findOne(dbName, FILES, { _id: new ObjectId(String(experiment.fileId)) });
-      if (fileDoc) {
-        const removed = yield* Effect.either(
-          Effect.gen(function* () {
-            yield* attempt(() => fs.unlink(fileDoc!.path), "fs.unlink");
-            yield* mongo.deleteOne(dbName, FILES, { _id: fileDoc!._id });
-          }),
-        );
-        if (removed._tag === "Right") {
-          fileDeleted = true;
-          fileDocDeleted = true;
-        }
-      }
-    }
-
     const result = yield* mongo.deleteOne(dbName, EXPERIMENTS, { _id });
     if (result.deletedCount === 0) {
-      if (fileDocDeleted && fileDoc) {
-        yield* mongo
-          .insertOne(dbName, FILES, { _id: new ObjectId(String(experiment.fileId)), path: fileDoc.path })
-          .pipe(Effect.catchAll(() => Effect.void));
-      }
       return yield* Effect.fail(new InternalError({ message: "Failed to delete experiment" }));
     }
 
-    return yield* ok({ message: "Experiment deleted successfully", fileDeleted, fileDocDeleted });
+    const fileIds = [
+      ...new Set([experiment.fileId, ...(Array.isArray(experiment.filesId) ? experiment.filesId : [])].filter(isHexId)),
+    ];
+    const filesDeleted: string[] = [];
+    const filesKept: string[] = [];
+    for (const fileId of fileIds) {
+      const oid = new ObjectId(fileId);
+      const fileDoc = yield* mongo.findOne(dbName, FILES, { _id: oid });
+      if (!fileDoc) continue;
+      const fileName = fileDoc.name ?? fileId;
+      const [byExperiment, byAttachment] = yield* Effect.all([
+        mongo.findOne(dbName, EXPERIMENTS, { $or: [{ fileId }, { filesId: fileId }] }),
+        mongo.findOne(dbName, ATTACHMENTS, { fileId: oid }),
+      ]);
+      if (byExperiment) {
+        filesKept.push(`File ${fileName} was not deleted as it is used by experiment ${byExperiment.name ?? byExperiment._id}`);
+        continue;
+      }
+      if (byAttachment) {
+        filesKept.push(`File ${fileName} was not deleted as it is used by attachment ${byAttachment._id}`);
+        continue;
+      }
+      const removed = yield* mongo.deleteOne(dbName, FILES, { _id: oid });
+      if (removed.deletedCount === 0) continue;
+      filesDeleted.push(fileName);
+      if (fileDoc.storage?.backend === "gridfs") {
+        const db = yield* mongo.db(dbName);
+        yield* Effect.promise(() => deleteBlobIfUnreferenced(db, fileDoc.storage.ref as ObjectId));
+      } else if (typeof fileDoc.path === "string") {
+        yield* attempt(() => fs.unlink(fileDoc.path), "fs.unlink").pipe(Effect.catchAll(() => Effect.void));
+      }
+    }
+
+    return yield* ok({ message: "Experiment deleted successfully", filesDeleted, filesKept });
   });

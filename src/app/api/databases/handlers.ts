@@ -1,8 +1,11 @@
 import { Effect, Schema } from "effect";
-import { ok, decodeBody, requireCapability, Mongo, NonEmptyString, ConflictError } from "@/lib/effect";
+import { ok, decodeBody, requireCapability, Mongo, NonEmptyString, ConflictError, ValidationError } from "@/lib/effect";
 
 const SETTINGS_DB = "systemdb";
-const DEFAULT_DATABASES = ["admin", "evonest"];
+const DEFAULT_DATABASES = ["evonest"];
+// MongoDB's own databases and the app's user and system stores. A NEST under
+// one of these names would mix lab data into them, and every migration skips them.
+export const RESERVED_DATABASES = ["admin", "config", "local", "usersdb", "systemdb"];
 
 const readDatabaseNames = Effect.gen(function* () {
   const mongo = yield* Mongo;
@@ -28,6 +31,9 @@ export const addDatabase = (request: Request) =>
     yield* requireCapability("databases.manage");
     const { database } = yield* decodeBody(AddBody)(request);
     const name = database.trim().toLowerCase();
+    if (RESERVED_DATABASES.includes(name)) {
+      return yield* Effect.fail(new ValidationError({ message: `"${name}" is reserved; choose another name` }));
+    }
     const mongo = yield* Mongo;
     const now = new Date().toISOString();
 
