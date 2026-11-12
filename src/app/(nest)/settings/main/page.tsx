@@ -238,8 +238,7 @@ export default function MainSettingsPage() {
             <CardHeader>
               <CardTitle>Sample ID Generation</CardTitle>
               <CardDescription>
-                Configure how sample IDs are automatically generated from genus
-                and species names
+                Sample IDs are generated from the genus and species names.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -463,8 +462,7 @@ export default function MainSettingsPage() {
             <CardHeader>
               <CardTitle>Lab Information</CardTitle>
               <CardDescription>
-                Configure your laboratory information for default location
-                settings
+                The &quot;Lab location&quot; button in the sample form fills in these values.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

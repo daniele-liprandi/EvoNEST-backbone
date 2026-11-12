@@ -86,8 +86,8 @@ function RolesEditor({ roles, onSaved }: { roles: Role[]; onSaved: () => void })
       <CardHeader>
         <CardTitle>Roles</CardTitle>
         <CardDescription>
-          The roles a person can hold. <code>admin</code> always has full access and cannot be removed.
-          A role&apos;s value is fixed once saved — to rename one, add a new role and reassign people.
+          <code>admin</code> always has full access and cannot be removed. A role&apos;s value cannot be
+          changed once saved. To rename a role, add a new one and reassign people.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -192,7 +192,7 @@ function PermissionsMatrix({
     <Card>
       <CardHeader>
         <CardTitle>Permissions</CardTitle>
-        <CardDescription>Which roles may perform each action. Admin holds every one.</CardDescription>
+        <CardDescription>Admin has every permission.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -266,7 +266,6 @@ function PeopleRoles({ roles }: { roles: Role[] }) {
     <Card>
       <CardHeader>
         <CardTitle>People</CardTitle>
-        <CardDescription>Assign a role to each person in the NEST.</CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>

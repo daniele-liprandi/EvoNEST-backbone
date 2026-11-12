@@ -428,7 +428,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Sample Types"
-            description="Different types of samples that can be recorded in the system"
             data={configs.sampletypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="sampletypes"
@@ -449,7 +448,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Sample Subtypes"
-            description="Specific categories of samples"
             data={configs.samplesubtypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="samplesubtypes"
@@ -466,7 +464,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Equipment Types"
-            description="Different types of equipment used for measurements"
             data={configs.equipmenttypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="equipmenttypes"
@@ -475,7 +472,7 @@ export default function TypesPage() {
 
           <TypeTable
             title="Base Units"
-            description="Base units that can be used with SI prefixes for measurements"
+            description="Each unit can be used with SI prefixes, e.g. Pa as kPa or MPa."
             data={configs.baseunits}
             showColumns={["label", "value", "category", "description"]}
             configType="baseunits"
