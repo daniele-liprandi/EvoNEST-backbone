@@ -11,6 +11,8 @@ const PivotTableComponent = ({ data }) => {
             rows: ['genus','parentName','type'],
             cols: ['subsampletype'],
             rendererName: 'Table Heatmap',
+            // The library defaults this to {} but its propType wants an array.
+            attrCategory: [],
         },
     };
 
