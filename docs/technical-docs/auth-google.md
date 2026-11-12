@@ -221,8 +221,8 @@ providers: [
                             name: 'admin',
                             role: 'admin',
                             email: 'admin@demo.com',
-                            activeDatabase: 'admin',
-                            databases: ['admin'],
+                            activeDatabase: 'evonest',
+                            databases: ['evonest'],
                             logbook: [`${new Date().toISOString()}: created demo user`],
                             recentChangeDate: new Date().toISOString()
                         }
@@ -292,8 +292,8 @@ callbacks: {
                         $setOnInsert: {
                             auth0id: user.id,
                             role: 'user', // Default role
-                            activeDatabase: 'admin',
-                            databases: ['admin'],
+                            activeDatabase: 'evonest',
+                            databases: ['evonest'],
                             logbook: [`${new Date().toISOString()}: user created via Google OAuth`]
                         }
                     },
@@ -432,8 +432,8 @@ async signIn({ user, account, profile }) {
                     $setOnInsert: {
                         auth0id: user.id,
                         role: defaultRole,
-                        activeDatabase: 'admin',
-                        databases: ['admin'],
+                        activeDatabase: 'evonest',
+                        databases: ['evonest'],
                         logbook: [`${new Date().toISOString()}: user created via Google OAuth`]
                     }
                 },
@@ -626,8 +626,8 @@ export const authOptions: NextAuthOptions = {
                             $setOnInsert: {
                                 auth0id: user.id,
                                 role: 'user',
-                                activeDatabase: 'admin',
-                                databases: ['admin'],
+                                activeDatabase: 'evonest',
+                                databases: ['evonest'],
                                 logbook: [`${new Date().toISOString()}: user created via Google OAuth`]
                             }
                         },

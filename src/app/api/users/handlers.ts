@@ -79,7 +79,7 @@ const validateDatabases = (requested: ReadonlyArray<string> | undefined) =>
     if (!requested || requested.length === 0) return;
     const mongo = yield* Mongo;
     const settings = yield* mongo.findOne(SYSTEM_DB, "settings", { type: "databases" });
-    const available = (settings?.databases as string[]) ?? ["admin", "evonest"];
+    const available = (settings?.databases as string[]) ?? ["evonest"];
     const invalid = requested.filter((db) => !available.includes(db));
     if (invalid.length > 0) {
       return yield* Effect.fail(

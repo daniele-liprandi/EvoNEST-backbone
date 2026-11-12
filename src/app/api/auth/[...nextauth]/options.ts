@@ -39,8 +39,8 @@ export const authOptions: NextAuthOptions = {
                                 name: 'admin',
                                 role: 'admin',
                                 email: 'admin@demo.com',
-                                activeDatabase: 'admin',
-                                databases: ['admin'],
+                                activeDatabase: 'evonest',
+                                databases: ['evonest'],
                                 logbook: [`${new Date().toISOString()}: created demo user`],
                                 recentChangeDate: new Date().toISOString()
                             }
