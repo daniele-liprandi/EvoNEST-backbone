@@ -66,15 +66,23 @@ export const getSchema = (request: Request) =>
       dbName = dbParam ?? (yield* currentDatabase);
     }
 
-    const [sampleCols, traitCols, experimentCols, sampleTypesCfg, traitTypesCfg, subsampleTypesCfg] =
-      yield* Effect.all([
-        liveColumns(dbName, "samples"),
-        liveColumns(dbName, "traits"),
-        liveColumns(dbName, "experiments"),
-        configData(dbName, "sampletypes"),
-        configData(dbName, "traittypes"),
-        configData(dbName, "samplesubtypes"),
-      ]);
+    const [
+      sampleCols,
+      traitCols,
+      experimentCols,
+      attachmentCols,
+      sampleTypesCfg,
+      traitQuantitiesCfg,
+      subsampleTypesCfg,
+    ] = yield* Effect.all([
+      liveColumns(dbName, "samples"),
+      liveColumns(dbName, "traits"),
+      liveColumns(dbName, "experiments"),
+      liveColumns(dbName, "attachments"),
+      configData(dbName, "sampletypes"),
+      configData(dbName, "traitquantities"),
+      configData(dbName, "samplesubtypes"),
+    ]);
 
     const sampleSection = (label: string, path: string) => ({
       label,
@@ -97,13 +105,14 @@ export const getSchema = (request: Request) =>
           path: "/experiments/general",
           columns: [...experimentCols, ...COMPUTED.experiments],
         },
+        { label: "attachments", path: "/attachments", columns: attachmentCols },
       ],
       // The lab's configured record model — the source of truth for what
-      // sample/trait types and fields a create operation may use.
+      // sample types, trait quantities and fields a create operation may use.
       sampleTypes: sampleTypesCfg
         .filter((t) => t.value)
         .map((t) => ({ value: t.value!, label: t.label ?? t.value!, fields: fieldKeys(t.fields) })),
-      traitTypes: traitTypesCfg
+      traitQuantities: traitQuantitiesCfg
         .filter((t) => t.value)
         .map((t) => ({ value: t.value!, label: t.label ?? t.value!, unit: t.unit ?? null })),
       subsampleTypes: subsampleTypesCfg

@@ -15,7 +15,7 @@ import { EditFieldsCard } from './EditFieldsCard';
 import { FeedCard } from './FeedCard';
 import { PreservationCard } from './PreservationCard';
 import { HierarchyCard } from './HierarchyCard';
-import { GalleryCard } from './GalleryCard';
+import { AttachmentsCard } from './AttachmentsCard';
 import { PositionCard } from './PositionCard';
 import { LabelSampleCard } from './LabelSampleCard';
 
@@ -32,7 +32,7 @@ export const ALL_CARDS = [
   FeedCard,
   PreservationCard,
   HierarchyCard,
-  GalleryCard,
+  AttachmentsCard,
   PositionCard,
   LabelSampleCard,
 ];

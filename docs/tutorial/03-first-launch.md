@@ -123,7 +123,7 @@ After logging in for the first time, you'll see a **First Time Setup** dialog in
 
    - Create the default configuration in your NEST
    - Set up sample types (animal, plant, tissue, etc.)
-   - Create default trait types (mass, length, etc.)
+   - Create default trait quantities (mass, length, etc.)
    - Configure equipment types
    - Prepare the NEST structure
 
@@ -183,7 +183,7 @@ At the top or side of the screen, you'll see the main navigation menu with these
 - 🧬 **Samples** - Manage biological specimens, create parent samples and subsamples, search and filter
 - 🧪 **Experiments** - Record raw data from instruments, upload files, link to samples
 - 📏 **Traits** - Extract and record processed measurements, view clean data tables, statistical analysis
-- ⚙️ **Settings** - Configure sample types, trait types, equipment, and lab information for this NEST
+- ⚙️ **Settings** - Configure sample types, trait quantities, equipment, and lab information for this NEST
 - 📚 **Documentation** - Access the main documentation
 
 At the top-right, you'll see the `Scan QR` button, the theme toggle, **the current NEST name**, and the user avatar.
@@ -528,6 +528,6 @@ Perfect! You're ready to start configuring EvoNEST for your laboratory's needs.
 In the next module, you'll:
 
 - Configure sample types for your laboratory
-- Set up trait types with proper units
+- Set up trait quantities with proper units
 - Define equipment and measurement tools
 - Customize sample ID generation

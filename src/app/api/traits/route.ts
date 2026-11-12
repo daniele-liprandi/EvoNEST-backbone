@@ -6,7 +6,7 @@
  *     tags: [Traits]
  *     parameters:
  *       - { in: query, name: id, schema: { type: string }, description: Fetch one trait }
- *       - { in: query, name: type, schema: { type: string } }
+ *       - { in: query, name: quantity, schema: { type: string } }
  *       - { in: query, name: includeSampleFeatures, schema: { type: boolean } }
  *       - { in: query, name: related, schema: { type: boolean } }
  *     responses:

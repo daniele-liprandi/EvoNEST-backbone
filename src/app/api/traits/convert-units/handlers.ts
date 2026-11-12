@@ -19,9 +19,9 @@ export const convertUnits = (request: Request) =>
     );
     const mongo = yield* Mongo;
 
-    const traitTypes = yield* mongo.findOne(dbName, CONFIG, { type: "traittypes" });
-    if (!traitTypes?.data) {
-      return yield* Effect.fail(new InternalError({ message: "Trait types configuration not found" }));
+    const traitQuantities = yield* mongo.findOne(dbName, CONFIG, { type: "traitquantities" });
+    if (!traitQuantities?.data) {
+      return yield* Effect.fail(new InternalError({ message: "Trait quantities configuration not found" }));
     }
     const baseUnits = (yield* mongo.findOne(dbName, CONFIG, { type: "baseunits" }))?.data ?? null;
 
@@ -36,12 +36,12 @@ export const convertUnits = (request: Request) =>
     const details: Record<string, unknown>[] = [];
 
     for (const trait of traits) {
-      const analysis = analyzeTraitConversion(trait, traitTypes.data, baseUnits);
+      const analysis = analyzeTraitConversion(trait, traitQuantities.data, baseUnits);
       details.push({
         traitId: String(trait._id),
-        type: trait.type,
+        quantity: trait.quantity,
         converted: analysis.needsConversion,
-        oldValue: trait.measurement,
+        oldValue: trait.value,
         oldUnit: trait.unit,
         newValue: analysis.newValue,
         newUnit: analysis.newUnit,
@@ -55,9 +55,9 @@ export const convertUnits = (request: Request) =>
           TRAITS,
           { _id: trait._id },
           {
-            $set: { measurement: analysis.newValue, unit: analysis.newUnit, recentChangeDate: now },
+            $set: { value: analysis.newValue, unit: analysis.newUnit, recentChangeDate: now },
             $push: {
-              logbook: `${now}: Unit converted from ${trait.unit} to ${analysis.newUnit} (${trait.measurement} to ${analysis.newValue})`,
+              logbook: `${now}: Unit converted from ${trait.unit} to ${analysis.newUnit} (${trait.value} to ${analysis.newValue})`,
             },
           },
         );

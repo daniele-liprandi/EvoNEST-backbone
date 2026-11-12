@@ -231,7 +231,7 @@ export default function IdPage() {
               </Button>
               <div className="hidden items-center gap-2 md:ml-auto md:flex">
                 <AlertDialog>
-                  <AlertDialogTrigger><Button variant="outline" size="sm">Delete</Button></AlertDialogTrigger>
+                  <AlertDialogTrigger asChild><Button variant="outline" size="sm">Delete</Button></AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete sample {sample.name}?
@@ -303,7 +303,7 @@ export default function IdPage() {
             </div>
             <div className="flex items-center justify-center gap-2 md:hidden">
               <AlertDialog>
-                <AlertDialogTrigger><Button variant="outline" size="sm">Delete</Button></AlertDialogTrigger>
+                <AlertDialogTrigger asChild><Button variant="outline" size="sm">Delete</Button></AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete sample {sample.name}?

@@ -35,7 +35,7 @@ features:
 
   - icon: 🔧
     title: Highly customizable
-    details: Define your own sample types, trait types, equipment lists, and ID generation rules. Extend with custom components and parsers. 
+    details: Define your own sample types, trait quantities, equipment lists, and ID generation rules. Extend with custom components and parsers. 
 ---
 
 ## Welcome to EvoNEST Documentation

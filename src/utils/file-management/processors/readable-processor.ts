@@ -7,7 +7,7 @@ This file contains the logic to process plain text files, including JSON and oth
 import { getSampleIdbyName } from "@/hooks/sampleHooks";
 import { dataFormatParserRegistry } from "../readable-data-extractors/index.js";
 import { ExperimentFormValues } from "../extension-processors";
-import { FileProcessorParams } from "./types";
+import { FileProcessorParams, UnrecognisedDataFileError } from "./types";
 import { generateUniqueName, getSuggestedExperimentType, updateFormValues,} from "@/utils/file-management/processors/utils";
 import { ParsedDataResult } from "../readable-data-extractors/types.js";
 
@@ -190,20 +190,10 @@ export async function processPlainTextFile(
               : []),
           ];
         } else {
-          // No format parser could handle it - treat as plain document
-          updatedValues.type = "document";
-          updatedValues.dataFields = text; // Keep raw text
-          updatedValues.name = generateUniqueName(
-            `document_${file.name.replace(/\.[^/.]+$/, "")}`,
-            existingNames
-          );
-
-          updatedValues.metadata = [
-            { key: "name", value: file.name },
-            { key: "type", value: file.type },
-            { key: "size", value: file.size.toString() },
-            { key: "lastModified", value: file.lastModified.toString() },
-          ];
+          // No parser claims it, so it is a document, not an experiment. The
+          // caller turns this into a "attach it instead" message.
+          reject(new UnrecognisedDataFileError(file.name));
+          return;
         }
       }
 

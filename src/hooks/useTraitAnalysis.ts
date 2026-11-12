@@ -7,7 +7,7 @@ export interface AnalysisFilters {
 }
 
 export interface AnalysisRequest {
-    traitType: string;
+    quantity: string;
     /** A built-in grouping (`all`, `family`, `genus`, `species`, `fullSpecies`,
      *  `subsampletype`, `fullSpeciesSubsampletype`) or any configured sample field key. */
     groupBy: string;
@@ -34,7 +34,7 @@ export interface AnalysisResponse {
         filteredTraits: number;
         processingTime: string;
         groupBy: string;
-        traitType: string;
+        quantity: string;
     };
 }
 
@@ -44,7 +44,7 @@ export interface GroupByOption {
 }
 
 export interface FilterOptions {
-    traitTypes: string[];
+    traitQuantities: string[];
     sampleSubTypes: string[];
     nfibres: string[];
     groupByOptions: GroupByOption[];

@@ -1,25 +1,19 @@
 /**
  * Experiment Type Discovery Utility
- * 
- * Discovers available experiment types by examining the processors and readable-data-extractors
- * This replaces the old useExperimentParsers hook since parsers are now frontend-only
+ *
+ * Discovers available experiment types from the data format parsers.
+ * This replaces the old useExperimentParsers hook since parsers are now frontend-only.
+ * Image/document files no longer become experiments — they attach to entities via
+ * `<AttachmentPanel />` (see src/shared/config/attachment-targets.js).
  */
 
 import { dataFormatParserRegistry } from './readable-data-extractors/index';
-import { fileProcessorRegistry } from './processors/index';
-
-// Get processor-supported experiment types from registry
-function getProcessorSupportedTypes(): Array<{value: string, label: string, processor: string}> {
-    return fileProcessorRegistry.getSupportedExperimentTypes();
-}
 
 // Get parser-supported experiment types dynamically from parser metadata
 export function getSupportedTypes(): Array<{value: string, label: string, parser: string}> {
   const parsers = dataFormatParserRegistry.getAll();
-  const processorTypes = getProcessorSupportedTypes();
   const types: Array<{value: string, label: string, parser: string}> = [];
-  
-  // Add parser types
+
   parsers.forEach((parser: any) => {
     try {
       // Check if parser has the new metadata structure
@@ -41,21 +35,12 @@ export function getSupportedTypes(): Array<{value: string, label: string, parser
           parser: parser.name
         });
       }
-      
+
     } catch (error) {
       console.warn(`Could not get info from parser ${parser.name}:`, error);
     }
   });
-  
-  // Add processor types (convert processor format to parser format)
-  processorTypes.forEach(processorType => {
-    types.push({
-      value: processorType.value,
-      label: processorType.label,
-      parser: processorType.processor // processor name becomes parser name
-    });
-  });
-  
+
   return types;
 }
 
@@ -63,21 +48,12 @@ export function getSupportedTypes(): Array<{value: string, label: string, parser
  * Get all available experiment types
  */
 export function getAvailableExperimentTypes(): Array<{value: string, label: string}> {
-  const processorTypes = getProcessorSupportedTypes();
-  const parserTypes = getSupportedTypes();
-  
-  // Combine and deduplicate
-  const allTypes = [
-    ...processorTypes.map(({ value, label }) => ({ value, label })),
-    ...parserTypes.map(({ value, label }) => ({ value, label }))
-  ];
-  
+  const allTypes = getSupportedTypes().map(({ value, label }) => ({ value, label }));
+
   // Remove duplicates by value
-  const uniqueTypes = allTypes.filter((type, index, self) => 
+  return allTypes.filter((type, index, self) =>
     index === self.findIndex(t => t.value === type.value)
   );
-  
-  return uniqueTypes;
 }
 
 /**
@@ -89,7 +65,7 @@ export function checkParserSupport(experimentType: string): boolean {
 }
 
 /**
- * Get parser/processor information for an experiment type
+ * Get parser information for an experiment type
  */
 export function getParserInfo(experimentType: string): {
   requiresStructuredData: boolean;
@@ -102,14 +78,13 @@ export function getParserInfo(experimentType: string): {
   version: string;
   parser?: string;
 } {
-  // First check parsers (structured data)
   const parserTypes = getSupportedTypes();
   const parserType = parserTypes.find(type => type.value === experimentType);
-  
+
   if (parserType) {
     const parsers = dataFormatParserRegistry.getAll();
     const parser = parsers.find((p: any) => p.name === parserType.parser);
-    
+
     if (parser) {
       return {
         requiresStructuredData: parser.requiresStructuredData || false,
@@ -124,35 +99,13 @@ export function getParserInfo(experimentType: string): {
       };
     }
   }
-  
-  // Then check processors (file processing)
-  const processorTypes = getProcessorSupportedTypes();
-  const processorType = processorTypes.find(type => type.value === experimentType);
-  
-  if (processorType) {
-    const processorMetadata = fileProcessorRegistry.getMetadata(processorType.processor);
-    
-    if (processorMetadata) {
-      return {
-        requiresStructuredData: processorMetadata.requiresStructuredData || false,
-        type: experimentType,
-        parser: processorMetadata.name,
-        label: processorMetadata.label,
-        description: processorMetadata.description,
-        supportedTypes: processorMetadata.supportedExperimentTypes,
-        requiredFields: processorMetadata.requiredFields,
-        generatedTraits: processorMetadata.generatedTraits,
-        version: processorMetadata.version,
-      };
-    }
-  }
-  
+
   // Return default values for unsupported types
   return {
     requiresStructuredData: false,
     type: experimentType,
     label: 'Unknown Type',
-    description: 'No parser or processor available for this experiment type',
+    description: 'No parser available for this experiment type',
     supportedTypes: [],
     requiredFields: [],
     generatedTraits: [],
@@ -168,12 +121,12 @@ export function validateExperimentType(type: string, fileData: any): {
   message?: string;
 } {
   const parserInfo = getParserInfo(type);
-  
+
   if (!parserInfo.requiresStructuredData) {
-    // For non-parser types (image, document), validation always passes
+    // For non-parser types, validation always passes
     return { valid: true };
   }
-  
+
   // For parser-supported types, be more lenient with validation
   // Allow files that have been processed by parsers, even if structure differs
   if (fileData?.dataFields) {
@@ -181,7 +134,7 @@ export function validateExperimentType(type: string, fileData: any): {
     // The parsers should have already validated the data structure
     return { valid: true };
   }
-  
+
   // Only fail if there's absolutely no processed data for a parser-supported type
   return {
     valid: false,
@@ -201,13 +154,13 @@ export function getTraitGeneratingTypes(): string[] {
  */
 export function getUniqueParserOptions(): Array<{value: string, label: string}> {
   const parserTypes = getSupportedTypes();
-  
+
   // Return unique options (in case of duplicates)
   const uniqueMap = new Map<string, string>();
   parserTypes.forEach(type => {
     uniqueMap.set(type.value, type.label);
   });
-  
+
   return Array.from(uniqueMap.entries()).map(([value, label]) => ({
     value,
     label

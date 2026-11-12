@@ -282,12 +282,11 @@ export class StarOddiParser extends BaseDataFormatParser {
         
         if (temperatures.length > 0) {
             traits.push({
-                method: "create",
-                type: "temperature",
+                quantity: "temperature",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: this.calculateAverage(temperatures),
+                value: this.calculateAverage(temperatures),
                 std: this.calculateStandardDeviation(temperatures),
                 min: Math.min(...temperatures),
                 max: Math.max(...temperatures),
@@ -306,12 +305,11 @@ export class StarOddiParser extends BaseDataFormatParser {
             
         if (heartRates.length > 0) {
             traits.push({
-                method: "create",
-                type: "heart_rate",
+                quantity: "heart_rate",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: this.calculateAverage(heartRates),
+                value: this.calculateAverage(heartRates),
                 std: this.calculateStandardDeviation(heartRates),
                 min: Math.min(...heartRates),
                 max: Math.max(...heartRates),
@@ -332,12 +330,11 @@ export class StarOddiParser extends BaseDataFormatParser {
             const poorCount = qualityIndices.filter(qi => qi === 3).length;
             
             traits.push({
-                method: "create",
-                type: "quality_index",
+                quantity: "quality_index",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,
-                measurement: avgQuality,
+                value: avgQuality,
                 std: this.calculateStandardDeviation(qualityIndices),
                 min: Math.min(...qualityIndices),
                 max: Math.max(...qualityIndices),

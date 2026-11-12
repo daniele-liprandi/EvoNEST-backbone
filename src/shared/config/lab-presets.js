@@ -1,7 +1,7 @@
 import { DEFAULT_CONFIGS } from "./default-types";
 
 // A lab preset is a partial override of DEFAULT_CONFIGS applied at first setup.
-// It names only the config types that differ (usually sampletypes / traittypes);
+// It names only the config types that differ (usually sampletypes / traitquantities);
 // the rest falls back to the shipped default. Admins edit all of it afterwards.
 
 // --- Per-type field and column layouts -----------------------------------
@@ -142,7 +142,7 @@ const SAMPLE_TYPES = {
 
 const TRAIT = (value, label, unit, description) => ({ value, label, unit, description });
 
-const TRAIT_TYPES = {
+const TRAIT_QUANTITIES = {
   mass: TRAIT("mass", "Mass", "g", "Mass measured on a balance"),
   length: TRAIT("length", "Length", "mm", "Length along the longest axis"),
   width: TRAIT("width", "Width", "mm", "Width perpendicular to the longest axis"),
@@ -198,7 +198,7 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.animal, SAMPLE_TYPES.subsample, SAMPLE_TYPES.silk],
-      traittypes: [TRAIT_TYPES.mass, TRAIT_TYPES.length, TRAIT_TYPES.width],
+      traitquantities: [TRAIT_QUANTITIES.mass, TRAIT_QUANTITIES.length, TRAIT_QUANTITIES.width],
     },
   },
   {
@@ -211,12 +211,12 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.silk, SAMPLE_TYPES.animal, SAMPLE_TYPES.subsample],
-      traittypes: [
-        TRAIT_TYPES.fibre_diameter,
-        TRAIT_TYPES.tensile_strength,
-        TRAIT_TYPES.youngs_modulus,
-        TRAIT_TYPES.toughness,
-        TRAIT_TYPES.strain_at_break,
+      traitquantities: [
+        TRAIT_QUANTITIES.fibre_diameter,
+        TRAIT_QUANTITIES.tensile_strength,
+        TRAIT_QUANTITIES.youngs_modulus,
+        TRAIT_QUANTITIES.toughness,
+        TRAIT_QUANTITIES.strain_at_break,
       ],
     },
   },
@@ -237,13 +237,13 @@ export const LAB_PRESETS = [
         SAMPLE_TYPES.dna_extract,
         SAMPLE_TYPES.secretion,
       ],
-      traittypes: [
-        TRAIT_TYPES.mass,
-        TRAIT_TYPES.length,
-        TRAIT_TYPES.dna_concentration,
-        TRAIT_TYPES.bone_density,
-        TRAIT_TYPES.cortical_thickness,
-        TRAIT_TYPES.resting_metabolic_rate,
+      traitquantities: [
+        TRAIT_QUANTITIES.mass,
+        TRAIT_QUANTITIES.length,
+        TRAIT_QUANTITIES.dna_concentration,
+        TRAIT_QUANTITIES.bone_density,
+        TRAIT_QUANTITIES.cortical_thickness,
+        TRAIT_QUANTITIES.resting_metabolic_rate,
       ],
     },
   },
@@ -259,13 +259,13 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.crop, SAMPLE_TYPES.subsample, SAMPLE_TYPES.tissue],
-      traittypes: [
-        TRAIT_TYPES.plant_height,
-        TRAIT_TYPES.biomass,
-        TRAIT_TYPES.yield_mass,
-        TRAIT_TYPES.leaf_area,
-        TRAIT_TYPES.chlorophyll,
-        TRAIT_TYPES.mass,
+      traitquantities: [
+        TRAIT_QUANTITIES.plant_height,
+        TRAIT_QUANTITIES.biomass,
+        TRAIT_QUANTITIES.yield_mass,
+        TRAIT_QUANTITIES.leaf_area,
+        TRAIT_QUANTITIES.chlorophyll,
+        TRAIT_QUANTITIES.mass,
       ],
     },
   },
@@ -280,12 +280,12 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.herbarium, SAMPLE_TYPES.subsample, SAMPLE_TYPES.tissue],
-      traittypes: [
-        TRAIT_TYPES.leaf_length,
-        TRAIT_TYPES.leaf_area,
-        TRAIT_TYPES.specific_leaf_area,
-        TRAIT_TYPES.seed_mass,
-        TRAIT_TYPES.trichome_density,
+      traitquantities: [
+        TRAIT_QUANTITIES.leaf_length,
+        TRAIT_QUANTITIES.leaf_area,
+        TRAIT_QUANTITIES.specific_leaf_area,
+        TRAIT_QUANTITIES.seed_mass,
+        TRAIT_QUANTITIES.trichome_density,
       ],
     },
   },
@@ -300,13 +300,13 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.specimen, SAMPLE_TYPES.tissue, SAMPLE_TYPES.subsample],
-      traittypes: [
-        TRAIT_TYPES.total_length,
-        TRAIT_TYPES.tail_length,
-        TRAIT_TYPES.hindfoot_length,
-        TRAIT_TYPES.ear_length,
-        TRAIT_TYPES.skull_length,
-        TRAIT_TYPES.mass,
+      traitquantities: [
+        TRAIT_QUANTITIES.total_length,
+        TRAIT_QUANTITIES.tail_length,
+        TRAIT_QUANTITIES.hindfoot_length,
+        TRAIT_QUANTITIES.ear_length,
+        TRAIT_QUANTITIES.skull_length,
+        TRAIT_QUANTITIES.mass,
       ],
     },
   },
@@ -321,12 +321,12 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.seqsample, SAMPLE_TYPES.tissue, SAMPLE_TYPES.animal],
-      traittypes: [
-        TRAIT_TYPES.dna_concentration,
-        TRAIT_TYPES.rin,
-        TRAIT_TYPES.fragment_size,
-        TRAIT_TYPES.library_molarity,
-        TRAIT_TYPES.read_count,
+      traitquantities: [
+        TRAIT_QUANTITIES.dna_concentration,
+        TRAIT_QUANTITIES.rin,
+        TRAIT_QUANTITIES.fragment_size,
+        TRAIT_QUANTITIES.library_molarity,
+        TRAIT_QUANTITIES.read_count,
       ],
     },
   },
@@ -342,12 +342,12 @@ export const LAB_PRESETS = [
     ],
     overrides: {
       sampletypes: [SAMPLE_TYPES.strain, SAMPLE_TYPES.subsample],
-      traittypes: [
-        TRAIT_TYPES.od600,
-        TRAIT_TYPES.doubling_time,
-        TRAIT_TYPES.colony_diameter,
-        TRAIT_TYPES.mic,
-        TRAIT_TYPES.biomass_yield,
+      traitquantities: [
+        TRAIT_QUANTITIES.od600,
+        TRAIT_QUANTITIES.doubling_time,
+        TRAIT_QUANTITIES.colony_diameter,
+        TRAIT_QUANTITIES.mic,
+        TRAIT_QUANTITIES.biomass_yield,
       ],
     },
   },

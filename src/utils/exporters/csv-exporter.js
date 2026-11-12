@@ -102,7 +102,7 @@ function flattenTraits(traits) {
     }
     
     // For CSV, we'll include basic trait info as a summary
-    const traitSummary = traits.map(t => `${t.type}: ${t.measurement} ${t.unit || ''}`).join('; ');
+    const traitSummary = traits.map(t => `${t.quantity}: ${t.value} ${t.unit || ''}`).join('; ');
     return { 
         traits_summary: traitSummary,
         traits_count: traits.length

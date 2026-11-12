@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   sampletypes,
-  traittypes,
+  traitquantities,
   equipmenttypes,
   samplesubtypes,
   baseunits,
@@ -174,7 +174,7 @@ const AddItemForm = ({
                 className="col-span-3"
               />
             </div>
-            {configType === "traittypes" && (
+            {configType === "traitquantities" && (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="unit" className="text-right">
                   Unit
@@ -302,7 +302,7 @@ const handleDeleteItem = async (
 export default function TypesPage() {
   const [configs, setConfigs] = useState<Record<string, LabelType[]>>({
     sampletypes: sampletypes,
-    traittypes: traittypes,
+    traitquantities: traitquantities,
     samplesubtypes: samplesubtypes,
     equipmenttypes: equipmenttypes,
     baseunits: baseunits,
@@ -325,7 +325,7 @@ export default function TypesPage() {
     try {
       const configTypes = [
         "sampletypes",
-        "traittypes",
+        "traitquantities",
         "samplesubtypes",
         "equipmenttypes",
         "baseunits",
@@ -457,11 +457,11 @@ export default function TypesPage() {
           />
 
           <TypeTable
-            title="Trait Types"
-            description="Different types of measurements and traits that can be recorded"
-            data={configs.traittypes}
+            title="Trait Quantities"
+            description="The quantities this lab records as traits, each with its unit"
+            data={configs.traitquantities}
             showColumns={["label", "value", "unit", "description"]}
-            configType="traittypes"
+            configType="traitquantities"
             onRefresh={refreshConfig}
           />
 

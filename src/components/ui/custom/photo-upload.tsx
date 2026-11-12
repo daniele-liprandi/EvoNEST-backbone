@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { Camera, CircleNotch } from '@phosphor-icons/react';
 import { Button } from "@/components/ui/button";
-import { uploadFiles } from '@/utils/handlers/fileHandlers';
+import { uploadAndAttach } from '@/utils/handlers/attachmentHandlers';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { mutate } from 'swr';
 import { prepend_path } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -15,9 +16,9 @@ interface PhotoUploadProps {
 
 export default function PhotoUpload({ entryType, entryId, className }: PhotoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const { currentUser } = useCurrentUser();
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const metadata = { entryType, entryId };
 
   const compressImage = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
@@ -77,33 +78,33 @@ export default function PhotoUpload({ entryType, entryId, className }: PhotoUplo
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
+      if (!currentUser?._id) {
+        toast.error('Sign in again to upload');
+        return;
+      }
       setIsUploading(true);
       setProgress(0);
-      
+
       try {
-        // Convert FileList to Array for processing
         const fileArray = Array.from(files);
         const totalFiles = fileArray.length;
-        
-        // Compress all images
-        const compressedFiles: File[] = [];
+
         for (let i = 0; i < fileArray.length; i++) {
-          const compressedFile = await compressImage(fileArray[i]);
-          compressedFiles.push(compressedFile);
-          setProgress((i + 1) / totalFiles * 100);
+          const compressed = await compressImage(fileArray[i]);
+          await uploadAndAttach(compressed, {
+            targetType: entryType,
+            targetId: entryId,
+            category: 'gallery',
+            responsible: currentUser._id,
+          });
+          setProgress(((i + 1) / totalFiles) * 100);
         }
 
-        // Create new FileList-like object for upload
-        const dataTransfer = new DataTransfer();
-        compressedFiles.forEach(file => dataTransfer.items.add(file));
-        
-        // Upload compressed files
-        await uploadFiles(dataTransfer.files, 'photos', metadata);
-        
-        // Mutate both collections since we don't know which one needs updating
-        mutate(`${prepend_path}/api/samples`);
-        mutate(`${prepend_path}/api/traits`);
-        
+        mutate(
+          (key) =>
+            typeof key === 'string' && key.startsWith(`${prepend_path}/api/attachments`),
+        );
+
         toast.success('Files uploaded successfully');
       } catch (error) {
         console.error('Upload error:', error);

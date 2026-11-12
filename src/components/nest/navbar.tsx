@@ -9,7 +9,9 @@ import { mutate } from "swr";
 import {
   BugBeetle,
   Bell,
+  BookOpen,
   Database,
+  Paperclip,
   Ruler,
   User,
   UserCircle,
@@ -66,14 +68,18 @@ const experimentsProps = {
   label: "Experiments",
   icon: <MathOperations size={60} />,
   description: "All the experiments collected in the NEST",
-  options: [
-    {
-      title: "Media",
-      href: "/experiments/media",
-      description: "Image- and video-based experiments",
-    },
-  ],
+  options: [],
   href: "/experiments",
+};
+
+// Attachments cut across every entity (samples, traits, experiments, ...), so
+// the entry point is its own top-level item, not a child of Experiments.
+const filesProps = {
+  label: "Files",
+  icon: <Paperclip size={60} />,
+  description: "Images, documents, video and audio linked to any entity",
+  options: [],
+  href: "/attachments",
 };
 
 const traitsProps = {
@@ -310,23 +316,8 @@ export function NavBar() {
           <NavStandardItem {...samplesProps} />
           <NavStandardItem {...experimentsProps} />
           <NavStandardItem {...traitsProps} />
+          <NavStandardItem {...filesProps} />
           <NavStandardItem {...settingsProps} />
-          {/*link to utils*/}
-
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Documentation</NavigationMenuTrigger>
-            <NavigationMenuContent className="z-40">
-              <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-1">
-                <ListItem
-                  title="Documentation"
-                  href="https://daniele-liprandi.github.io/EvoNEST-backbone/"
-                  className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md transition-colors hover:bg-accent hover:text-accent-foreground"
-                >
-                  EvoNEST Documentation
-                </ListItem>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
       {/* -------------------------------------------------------------------------------------- */}
@@ -364,7 +355,7 @@ export function NavBar() {
             {/* Same sections as the desktop menu (samplesProps included, so a
                 lab's custom sample types and Settings show up here too),
                 just laid out as a flat list instead of dropdowns. */}
-            {[usersProps, samplesProps, experimentsProps, traitsProps, settingsProps].map((section) => (
+            {[usersProps, samplesProps, experimentsProps, traitsProps, filesProps, settingsProps].map((section) => (
               <div key={section.label} className="grid gap-2">
                 <Link
                   href={section.href}
@@ -433,6 +424,17 @@ export function NavBar() {
             </Button>
           </>
         )}
+
+        <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+          <Link
+            href="https://daniele-liprandi.github.io/EvoNEST-backbone/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <BookOpen className="h-5 w-5" />
+            <span className="sr-only">Documentation</span>
+          </Link>
+        </Button>
 
         <Popover>
           <PopoverTrigger asChild>

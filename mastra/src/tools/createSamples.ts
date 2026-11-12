@@ -22,7 +22,7 @@ const SampleRecordInputSchema = z
     location: z.string().optional(),
     lat: z.number().optional(),
     lon: z.number().optional(),
-    date: z.string().optional().describe('ISO date string YYYY-MM-DD'),
+    date: z.string().describe('Collection date, ISO YYYY-MM-DD. Required by the API: ask the researcher if they did not give one'),
     sex: z.enum(['male', 'female', 'unknown']).optional(),
     box: z.string().optional(),
     slot: z.string().optional(),
@@ -203,7 +203,7 @@ const normaliseToSchema = (
       ...(r.location !== undefined && { location: r.location }),
       ...(r.lat !== undefined && { lat: r.lat }),
       ...(r.lon !== undefined && { lon: r.lon }),
-      ...(r.date !== undefined && { date: r.date }),
+      date: r.date,
       ...(r.sex !== undefined && { sex: r.sex }),
       ...(r.box !== undefined && { box: r.box }),
       ...(r.slot !== undefined && { slot: r.slot }),
@@ -234,14 +234,13 @@ const processRecord = (
         rec.date = parsed.toISOString().slice(0, 10)
       } else {
         yield* Ref.update(warningsRef, ws => [
-          ...ws, `Could not parse date "${rec.date}" for record ${index + 1} — left as-is.`,
+          ...ws, `Could not parse date "${rec.date}" for record ${index + 1}; the NEST will reject it, ask the researcher for the collection date.`,
         ])
       }
     }
     if (!rec.date) {
-      rec.date = new Date().toISOString().slice(0, 10)
       yield* Ref.update(warningsRef, ws => [
-        ...ws, `No date for record ${index + 1} — defaulted to today.`,
+        ...ws, `No date for record ${index + 1}; the NEST will reject it, ask the researcher for the collection date.`,
       ])
     }
 
@@ -332,7 +331,7 @@ export const createSamples = createTool({
           Effect.orElseSucceed(() => ({
             routes: [],
             sampleTypes: [],
-            traitTypes: [],
+            traitQuantities: [],
             subsampleTypes: [],
           }) satisfies LabSchema),
         )

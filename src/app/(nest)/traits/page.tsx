@@ -185,7 +185,7 @@ function TraitsPageContent() {
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow>
-                                                            <TableHead>Trait Type</TableHead>
+                                                            <TableHead>Quantity</TableHead>
                                                             <TableHead>Current Value</TableHead>
                                                             <TableHead>New Value</TableHead>
                                                             <TableHead>Date</TableHead>
@@ -194,7 +194,7 @@ function TraitsPageContent() {
                                                     <TableBody>
                                                         {conversionPreview.preview.map((item: any, i: number) => (
                                                             <TableRow key={i}>
-                                                                <TableCell className="capitalize">{item.type}</TableCell>
+                                                                <TableCell className="capitalize">{item.quantity}</TableCell>
                                                                 <TableCell>
                                                                     {item.oldValue.toFixed(3)} {item.oldUnit}
                                                                 </TableCell>

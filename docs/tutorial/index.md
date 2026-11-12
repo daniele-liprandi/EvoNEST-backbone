@@ -93,12 +93,12 @@ Launch EvoNEST for the first time, log in, and verify everything is working corr
 
 **[Configuration guide →](/tutorial/04-configuration)**
 
-Customize EvoNEST for your laboratory. Set up sample types, trait types, equipment, and lab-specific settings.
+Customize EvoNEST for your laboratory. Set up sample types, trait quantities, equipment, and lab-specific settings.
 
 **What you'll do:**
 
 - Configure sample and subsample types
-- Define trait types with units
+- Define trait quantities with units
 - Set up sample ID generation rules
 - Configure lab information
 

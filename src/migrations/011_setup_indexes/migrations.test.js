@@ -7,6 +7,8 @@ describe('Setup Indexes Migration', () => {
     let client;
     let db;
     let traitsCollection;
+    let attachmentsCollection;
+    let filesCollection;
 
     beforeAll(async () => {
         mongod = await MongoMemoryServer.create();
@@ -15,10 +17,14 @@ describe('Setup Indexes Migration', () => {
         await client.connect();
         db = client.db('test');
         traitsCollection = db.collection("traits");
+        attachmentsCollection = db.collection("attachments");
+        filesCollection = db.collection("files");
     });
 
     beforeEach(async () => {
         await traitsCollection.deleteMany({});
+        await attachmentsCollection.deleteMany({});
+        await filesCollection.deleteMany({});
     });
 
     afterAll(async () => {
@@ -26,46 +32,48 @@ describe('Setup Indexes Migration', () => {
         await mongod.stop();
     });
 
-    test('should create indexes successfully', async () => {
-        // Run the migration
+    test('should create traits and attachments indexes successfully', async () => {
         await up(client);
 
-        // Verify indexes were created
-        const indexes = await traitsCollection.indexes();
-        const customIndexes = indexes.filter(index => index.name !== '_id_');
+        const traitsIndexes = (await traitsCollection.indexes()).filter(i => i.name !== '_id_');
+        expect(traitsIndexes).toHaveLength(2);
+        expect(traitsIndexes.some(i => i.key.quantity === 1)).toBeTruthy();
+        expect(traitsIndexes.some(i => i.key.sampleId === 1)).toBeTruthy();
 
-        // Verify we have exactly 2 custom indexes
-        expect(customIndexes).toHaveLength(2);
+        const attachmentsIndexes = (await attachmentsCollection.indexes()).filter(i => i.name !== '_id_');
+        expect(attachmentsIndexes).toHaveLength(2);
+        expect(attachmentsIndexes.some(i => i.key.targetType === 1 && i.key.targetId === 1)).toBeTruthy();
+        expect(attachmentsIndexes.some(i => i.key.fileId === 1)).toBeTruthy();
 
-        // Verify specific indexes
-        expect(customIndexes.some(index => index.key.type === 1)).toBeTruthy();
-        expect(customIndexes.some(index => index.key.sampleId === 1)).toBeTruthy();
+        const filesIndexes = (await filesCollection.indexes()).filter(i => i.name !== '_id_');
+        expect(filesIndexes).toHaveLength(1);
+        const sha = filesIndexes.find(i => i.key.sha256 === 1);
+        expect(sha.unique).toBe(true);
+        expect(sha.partialFilterExpression).toEqual({ sha256: { $type: 'string' } });
+    });
+
+    test('files.sha256 index rejects a duplicate hash but allows many without one', async () => {
+        await up(client);
+        await filesCollection.insertOne({ name: 'a', sha256: 'abc' });
+        await expect(filesCollection.insertOne({ name: 'b', sha256: 'abc' })).rejects.toThrow();
+        await filesCollection.insertOne({ name: 'c' });
+        await filesCollection.insertOne({ name: 'd' });
+        expect(await filesCollection.countDocuments()).toBe(3);
     });
 
     test('should drop indexes successfully during down migration', async () => {
-        // First create indexes
         await up(client);
-
-        // Then run down migration
         await down(client);
 
-        // Verify only _id index remains
-        const indexes = await traitsCollection.indexes();
-        
-        // Should only have the default _id index
-        expect(indexes).toHaveLength(1);
-        expect(indexes[0].name).toBe('_id_');
+        expect(await traitsCollection.indexes()).toHaveLength(1);
+        expect((await attachmentsCollection.indexes()).filter(i => i.name !== '_id_')).toHaveLength(0);
     });
 
     test('should handle multiple runs gracefully', async () => {
-        // Run migration twice
         await up(client);
         await up(client);
 
-        // Verify indexes are still correct
-        const indexes = await traitsCollection.indexes();
-        const customIndexes = indexes.filter(index => index.name !== '_id_');
-
-        expect(customIndexes).toHaveLength(2);
+        expect((await traitsCollection.indexes()).filter(i => i.name !== '_id_')).toHaveLength(2);
+        expect((await attachmentsCollection.indexes()).filter(i => i.name !== '_id_')).toHaveLength(2);
     });
 });

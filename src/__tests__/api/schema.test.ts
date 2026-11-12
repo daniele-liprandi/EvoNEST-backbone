@@ -16,7 +16,7 @@ const CONFIG = {
     { value: "animal", label: "Animal", fields: ["taxonomy", "sex"] },
     { value: "crop", label: "Crop", fields: ["taxonomy", { key: "plot", label: "Plot" }, { key: "treatment" }] },
   ],
-  traittypes: [
+  traitquantities: [
     { value: "mass", label: "Mass", unit: "g" },
     { value: "count", label: "Count" },
   ],
@@ -58,7 +58,7 @@ describe("GET /api/schema", () => {
       { value: "animal", label: "Animal", fields: ["taxonomy", "sex"] },
       { value: "crop", label: "Crop", fields: ["taxonomy", "plot", "treatment"] },
     ]);
-    expect(body.traitTypes).toEqual([
+    expect(body.traitQuantities).toEqual([
       { value: "mass", label: "Mass", unit: "g" },
       { value: "count", label: "Count", unit: null },
     ]);
@@ -74,7 +74,7 @@ describe("GET /api/schema", () => {
       await run(req(), Layer.merge(bare, testAuth({ sub: "u1", activeDatabase: "labdb" })))
     ).json();
     expect(body.sampleTypes).toEqual([]);
-    expect(body.traitTypes).toEqual([]);
+    expect(body.traitQuantities).toEqual([]);
   });
 
   test("401 without a session", async () => {

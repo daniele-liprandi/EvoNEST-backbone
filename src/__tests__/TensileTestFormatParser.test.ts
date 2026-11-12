@@ -100,30 +100,30 @@ describe('TensileTestFormatParser', () => {
             expect(apiTraits.length).toBeGreaterThan(0);
 
             // Find specific traits and check their units (all pressure values converted to Pa)
-            const modulusTrait = apiTraits.find((t: any) => t.type === 'modulus');
+            const modulusTrait = apiTraits.find((t: any) => t.quantity === 'modulus');
             expect(modulusTrait).toBeDefined();
             expect(modulusTrait?.unit).toBe('Pa');
-            expect(modulusTrait?.measurement).toBe(9.581e9); // 9.581 GPa = 9.581e9 Pa
+            expect(modulusTrait?.value).toBe(9.581e9); // 9.581 GPa = 9.581e9 Pa
 
-            const stressAtBreakTrait = apiTraits.find((t: any) => t.type === 'stressAtBreak');
+            const stressAtBreakTrait = apiTraits.find((t: any) => t.quantity === 'stressAtBreak');
             expect(stressAtBreakTrait).toBeDefined();
             expect(stressAtBreakTrait?.unit).toBe('Pa');
-            expect(stressAtBreakTrait?.measurement).toBe(1126.972e6); // 1126.972 MPa = 1126.972e6 Pa
+            expect(stressAtBreakTrait?.value).toBe(1126.972e6); // 1126.972 MPa = 1126.972e6 Pa
 
-            const strainAtBreakTrait = apiTraits.find((t: any) => t.type === 'strainAtBreak');
+            const strainAtBreakTrait = apiTraits.find((t: any) => t.quantity === 'strainAtBreak');
             expect(strainAtBreakTrait).toBeDefined();
             expect(strainAtBreakTrait?.unit).toBe('mm/mm');
-            expect(strainAtBreakTrait?.measurement).toBe(0.322); // No conversion
+            expect(strainAtBreakTrait?.value).toBe(0.322); // No conversion
 
-            const toughnessTrait = apiTraits.find((t: any) => t.type === 'toughness');
+            const toughnessTrait = apiTraits.find((t: any) => t.quantity === 'toughness');
             expect(toughnessTrait).toBeDefined();
             expect(toughnessTrait?.unit).toBe('Pa');
-            expect(toughnessTrait?.measurement).toBe(218.498e6); // 218.498 MPa = 218.498e6 Pa
+            expect(toughnessTrait?.value).toBe(218.498e6); // 218.498 MPa = 218.498e6 Pa
 
-            const equivalentDiameterTrait = apiTraits.find((t: any) => t.type === 'equivalentDiameter');
+            const equivalentDiameterTrait = apiTraits.find((t: any) => t.quantity === 'equivalentDiameter');
             expect(equivalentDiameterTrait).toBeDefined();
             expect(equivalentDiameterTrait?.unit).toBe('um');
-            expect(equivalentDiameterTrait?.measurement).toBe(0.991); // No conversion
+            expect(equivalentDiameterTrait?.value).toBe(0.991); // No conversion
         });
 
         it('should extract channel data', () => {

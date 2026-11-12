@@ -19,17 +19,37 @@ async function up(testClient = null, dbName = "test") {
         // Create indexes for traits collection
         const traitsCollection = db.collection("traits");
         const traitsIndexes = await Promise.all([
-            traitsCollection.createIndex({ type: 1 }),
+            traitsCollection.createIndex({ quantity: 1 }),
             traitsCollection.createIndex({ sampleId: 1 })
+        ]);
+
+        // Create indexes for attachments collection (polymorphic file <-> entity join)
+        const attachmentsCollection = db.collection("attachments");
+        const attachmentsIndexes = await Promise.all([
+            attachmentsCollection.createIndex({ targetType: 1, targetId: 1 }),
+            attachmentsCollection.createIndex({ fileId: 1 })
+        ]);
+
+        // Content-addressed dedup for GridFS-backed files. Partial so external
+        // links (no sha256) and any legacy row are exempt from the uniqueness.
+        const filesCollection = db.collection("files");
+        const filesIndexes = await Promise.all([
+            filesCollection.createIndex(
+                { sha256: 1 },
+                { unique: true, partialFilterExpression: { sha256: { $type: "string" } } }
+            )
         ]);
 
         // Log results
         console.log(`Created indexes:
-            - traits.type: ${traitsIndexes[0]}
+            - traits.quantity: ${traitsIndexes[0]}
             - traits.sampleId: ${traitsIndexes[1]}
+            - attachments.targetType_targetId: ${attachmentsIndexes[0]}
+            - attachments.fileId: ${attachmentsIndexes[1]}
+            - files.sha256 (unique, partial): ${filesIndexes[0]}
         `);
 
-        return traitsIndexes;
+        return { traitsIndexes, attachmentsIndexes, filesIndexes };
     } catch (error) {
         console.error("Error creating indexes:", error);
         throw error;
@@ -53,10 +73,15 @@ async function down(testClient = null, dbName = "test") {
 
         const db = client.db(dbName);
         const traitsCollection = db.collection("traits");
+        const attachmentsCollection = db.collection("attachments");
+        const filesCollection = db.collection("files");
 
         await Promise.all([
-            traitsCollection.dropIndex("type_1"),
-            traitsCollection.dropIndex("sampleId_1")
+            traitsCollection.dropIndex("quantity_1"),
+            traitsCollection.dropIndex("sampleId_1"),
+            attachmentsCollection.dropIndex("targetType_1_targetId_1"),
+            attachmentsCollection.dropIndex("fileId_1"),
+            filesCollection.dropIndex("sha256_1")
         ]);
 
         console.log("Indexes dropped successfully");

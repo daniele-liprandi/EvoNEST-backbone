@@ -24,7 +24,7 @@ describe("resolvePreset", () => {
       expect.arrayContaining([expect.objectContaining({ key: "watered", kind: "counter" })]),
     );
     expect(crop.columns).toContain("growthStage");
-    expect(resolved?.traittypes.map((t: any) => t.value)).toContain("yield");
+    expect(resolved?.traitquantities.map((t: any) => t.value)).toContain("yield");
   });
 
   test.each([

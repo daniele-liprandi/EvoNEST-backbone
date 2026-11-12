@@ -24,9 +24,14 @@ export const getSettings = Effect.gen(function* () {
 
   const settings = yield* mongo.findOne(dbName, SETTINGS, { type: "main" });
   if (!settings) return yield* ok({ success: true, data: DEFAULT_SETTINGS });
+  // First-run setup stores only labInfo.name, so fill the gaps from the
+  // defaults; the sample form makes no names at all without idGeneration.
   return yield* ok({
     success: true,
-    data: { idGeneration: settings.idGeneration, labInfo: settings.labInfo },
+    data: {
+      idGeneration: { ...DEFAULT_SETTINGS.idGeneration, ...settings.idGeneration },
+      labInfo: { ...DEFAULT_SETTINGS.labInfo, ...settings.labInfo },
+    },
   });
 });
 

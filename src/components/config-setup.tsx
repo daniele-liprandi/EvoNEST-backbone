@@ -119,7 +119,7 @@ function Wizard({ onComplete }: { onComplete: () => void }) {
           <div className="space-y-1">
             <h2 className="text-xl font-semibold">Choose a starting point</h2>
             <p className="text-sm text-muted-foreground">
-              This sets the initial sample and trait types. You can change all of it later under Settings.
+              This sets the initial sample types and trait quantities. You can change all of it later under Settings.
             </p>
           </div>
           <div className="grid gap-2">

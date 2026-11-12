@@ -337,6 +337,9 @@ export const handleSamplePost = (request: Request) =>
     if (record.responsible != null) {
       yield* requireResponsible(record.responsible);
     }
+    if (record.date == null || record.date === "" || Number.isNaN(Date.parse(String(record.date)))) {
+      return yield* Effect.fail(new ValidationError({ message: "A valid collection date is required" }));
+    }
 
     const sampleDoc: Record<string, unknown> = {
       ...record,

@@ -35,12 +35,13 @@ import { LabelType } from "@/utils/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useMemo, useState } from "react"
 import { getUserIdByName } from "@/hooks/userHooks"
-import { linkFileToEntry, uploadFiles } from "@/utils/handlers/fileHandlers"
+import { uploadFiles } from "@/utils/handlers/fileHandlers"
+import { createAttachment } from "@/utils/handlers/attachmentHandlers"
 
 const formSchema = z.object({
     responsible: z.any(),
     sampleId: z.string(),
-    type: z.string(),
+    quantity: z.string(),
     date: z.date(),
     unit: z.string().optional(),
     detail: z.string().optional(),
@@ -56,7 +57,7 @@ const formSchema = z.object({
 export function TraitForm({ users, samples, user, onSuccess }: { users: any, samples: any, user: any, onSuccess?: () => void }) {
     const [files, setFiles] = useState<FileList | null>(null);
     const [selectedTypeFeatures, setSelectedTypeFeatures] = useState<LabelType>();
-    const { traittypes, equipmenttypes } = useConfigTypes();
+    const { traitquantities, equipmenttypes } = useConfigTypes();
     // Memoize the options to avoid re-computation on each render
     const sampleOptions = useMemo(() => {
         return samples.map((sample: { _id: any; name: any }) => ({ value: sample._id, label: sample.name }));
@@ -73,15 +74,15 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
 
     const { watch } = form;
 
-    // Watch the 'type' field
-    const selectedType = watch("type");
+    // Watch the 'quantity' field
+    const selectedType = watch("quantity");
     
-    // take the current object from traittypes, matching it using selectedType for traittype.value
+    // take the current object from traitquantities, matching it using selectedType for the quantity value
     useEffect(() => {
-        const selectedTypeFeatures = traittypes.find((traittype) => traittype.value === selectedType);
+        const selectedTypeFeatures = traitquantities.find((quantity) => quantity.value === selectedType);
         setSelectedTypeFeatures(selectedTypeFeatures);
         form.setValue('unit', selectedTypeFeatures?.unit);
-    }, [selectedType, traittypes, form]);
+    }, [selectedType, traitquantities, form]);
         
 
     const getSampleNameById = (sampleId: string, samples: any[]) => {
@@ -134,7 +135,7 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
             const sampleName = getSampleNameById(values.sampleId, samples);
             const renamedFiles = renameFiles(files, sampleName);
             // Update to include entryType and entryId
-            fileResponse = await uploadFiles(renamedFiles, values.type, { deferredLink: true, mediaType: 'image/jpeg' });
+            fileResponse = await uploadFiles(renamedFiles, values.quantity, { deferredLink: true, mediaType: 'image/jpeg' });
         }        
         
         const traitResponse = await fetch(endpoint, {
@@ -144,17 +145,16 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
                 method: method,
                 sampleId: values.sampleId,
                 responsible: values.responsible,
-                type: values.type,
+                quantity: values.quantity,
                 detail: values.detail,
                 equipment: values.equipment,
                 date: values.date,
                 nfibres: values.nfibres,
                 unit: values.unit,
-                measurement: avg,
+                value: avg,
                 std: std,
                 listvals: listvals,
                 notes: values.notes,
-                filesId: fileResponse,
                 recentChangeDate: new Date().toISOString()
             })
         });        if (!traitResponse.ok) {
@@ -169,12 +169,21 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
             mutate(`${prepend_path}/api/traits?includeSampleFeatures=true`);
             
             toast.success("Trait saved")
-            // for each file in fileResponse, link it to the trait
+            // Attach each uploaded file to the new trait as a gallery item.
             if (fileResponse) {
-                fileResponse.forEach(async (fileId: string | null) => {
-                    if (fileId)
-                        await linkFileToEntry(fileId, 'trait', response.id);
-                });
+                await Promise.all(
+                    fileResponse
+                        .filter((fileId: string | null): fileId is string => !!fileId)
+                        .map((fileId: string) =>
+                            createAttachment({
+                                fileId,
+                                targetType: 'trait',
+                                targetId: response.id,
+                                category: 'gallery',
+                                responsible: values.responsible,
+                            }),
+                        ),
+                );
             }
             onSuccess?.();
         }
@@ -193,9 +202,9 @@ export function TraitForm({ users, samples, user, onSuccess }: { users: any, sam
                         <ComboFormBox
                             control={form.control}
                             setValue={form.setValue}
-                            name="type"
-                            options={traittypes.map((type) => ({ value: type.value, label: type.label }))}
-                            fieldlabel={"Trait type"}
+                            name="quantity"
+                            options={traitquantities.map((q) => ({ value: q.value, label: q.label }))}
+                            fieldlabel={"Quantity"}
                             description={""}
                         />
                         <ComboFormBox

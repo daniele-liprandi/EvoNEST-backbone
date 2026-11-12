@@ -1,9 +1,9 @@
 /** @jest-environment node */
 
 jest.mock("@/utils/unitConversion", () => ({
-  analyzeTraitConversion: (trait: { measurement: number }) =>
-    trait.measurement > 0
-      ? { needsConversion: true, newValue: trait.measurement / 1000, newUnit: "m" }
+  analyzeTraitConversion: (trait: { value: number }) =>
+    trait.value > 0
+      ? { needsConversion: true, newValue: trait.value / 1000, newUnit: "m" }
       : { needsConversion: false, newValue: null, newUnit: null },
 }));
 
@@ -22,14 +22,14 @@ const configAnd = (traits: unknown[]) =>
   testMongo({
     findOne: (_db, _c, filter) =>
       Effect.succeed(
-        ((filter as { type?: string }).type === "traittypes" ? { data: {} } : { data: null }) as never,
+        ((filter as { type?: string }).type === "traitquantities" ? { data: {} } : { data: null }) as never,
       ),
     find: () => Effect.succeed(traits as never[]),
   });
 
 describe("POST /api/traits/convert-units/preview", () => {
   test("counts conversions and caps the preview at 10", async () => {
-    const traits = Array.from({ length: 12 }, (_, i) => ({ _id: new ObjectId(), measurement: i + 1, type: "d" }));
+    const traits = Array.from({ length: 12 }, (_, i) => ({ _id: new ObjectId(), value: i + 1, quantity: "d" }));
     const res = await runRoute(
       previewConversion(req({})).pipe(Effect.provide(Layer.merge(configAnd(traits), testAuth({ sub: "u1" })))),
     );

@@ -241,12 +241,11 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         const magnitudes = measurements.map(m => m.magnitude);
         const avgMagnitude = this.calculateAverage(magnitudes);
         traits.push({
-            method: "create",
-            type: "total_acceleration",
+            quantity: "total_acceleration",
             sampleId: sampleId,
             responsible: "",
             date: date,
-            measurement: avgMagnitude,
+            value: avgMagnitude,
             unit: "g",
             equipment: "LoggerMate Accelerometer",
             detail: `Average acceleration from ${magnitudes.length} measurements (range: ${Math.min(...magnitudes).toFixed(3)}-${Math.max(...magnitudes).toFixed(3)}g)`,
@@ -256,12 +255,11 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         // Movement variance
         const variance = this.calculateVariance(magnitudes);
         traits.push({
-            method: "create",
-            type: "movement_variance",
+            quantity: "movement_variance",
             sampleId: sampleId,
             responsible: "",
             date: date,
-            measurement: variance,
+            value: variance,
             unit: "g²",
             equipment: "LoggerMate Accelerometer",
             detail: `Movement variance (std dev: ${Math.sqrt(variance).toFixed(4)}g)`,
@@ -271,12 +269,11 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         // Activity periods (periods with high variance)
         const activityPeriods = this.detectActivityPeriods(measurements);
         traits.push({
-            method: "create",
-            type: "activity_periods",
+            quantity: "activity_periods",
             sampleId: sampleId,
             responsible: "",
             date: date,
-            measurement: activityPeriods.length,
+            value: activityPeriods.length,
             unit: "count",
             equipment: "LoggerMate Accelerometer",
             detail: `${activityPeriods.length} activity periods, total active time: ${activityPeriods.reduce((sum, period) => sum + period.duration, 0)}s`,
@@ -287,12 +284,11 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         const maxAcceleration = Math.max(...magnitudes);
         const maxIndex = magnitudes.indexOf(maxAcceleration);
         traits.push({
-            method: "create",
-            type: "max_acceleration",
+            quantity: "max_acceleration",
             sampleId: sampleId,
             responsible: "",
             date: date,
-            measurement: maxAcceleration,
+            value: maxAcceleration,
             unit: "g",
             equipment: "LoggerMate Accelerometer",
             detail: `Maximum acceleration at ${measurements[maxIndex]?.timestamp || 'unknown time'}`,
@@ -302,12 +298,11 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         // Recording duration
         const duration = this.getRecordingDuration(measurements);
         traits.push({
-            method: "create",
-            type: "recording_duration",
+            quantity: "recording_duration",
             sampleId: sampleId,
             responsible: "",
             date: date,
-            measurement: duration,
+            value: duration,
             unit: "seconds",
             equipment: "LoggerMate Accelerometer",
             detail: `Recording duration: ${(duration / 3600).toFixed(2)} hours, ${(duration / 60).toFixed(1)} minutes`,

@@ -3,7 +3,7 @@
 
 import { 
   sampletypes as defaultSampleTypes,
-  traittypes as defaultTraitTypes,
+  traitquantities as defaultTraitQuantities,
   equipmenttypes as defaultEquipmentTypes,
   samplesubtypes as defaultSampleSubtypes,
   silkcategories as defaultSilkCategories,
@@ -26,10 +26,10 @@ export function getSampleTypesSync(): LabelType[] {
 }
 
 /**
- * Get trait types with database fallback
+ * Get trait quantities with database fallback
  */
-export function getTraitTypesSync(): LabelType[] {
-  return configCache.traittypes || defaultTraitTypes
+export function getTraitQuantitiesSync(): LabelType[] {
+  return configCache.traitquantities || defaultTraitQuantities
 }
 
 /**
@@ -73,7 +73,7 @@ export async function loadConfigCache(): Promise<void> {
   }
 
   try {
-    const configTypes = ['sampletypes', 'traittypes', 'equipmenttypes', 'samplesubtypes', 'silkcategories', 'siprefixes', 'baseunits']
+    const configTypes = ['sampletypes', 'traitquantities', 'equipmenttypes', 'samplesubtypes', 'silkcategories', 'siprefixes', 'baseunits']
     const newCache: Record<string, any> = {}
 
     for (const configType of configTypes) {
@@ -103,7 +103,7 @@ export async function loadConfigCache(): Promise<void> {
     // Set defaults if everything fails
     configCache = {
       sampletypes: defaultSampleTypes,
-      traittypes: defaultTraitTypes,
+      traitquantities: defaultTraitQuantities,
       equipmenttypes: defaultEquipmentTypes,
       samplesubtypes: defaultSampleSubtypes,
       silkcategories: defaultSilkCategories,
@@ -117,7 +117,7 @@ export async function loadConfigCache(): Promise<void> {
 function getDefaultForType(type: string) {
   switch (type) {
     case 'sampletypes': return defaultSampleTypes
-    case 'traittypes': return defaultTraitTypes
+    case 'traitquantities': return defaultTraitQuantities
     case 'equipmenttypes': return defaultEquipmentTypes
     case 'samplesubtypes': return defaultSampleSubtypes
     case 'silkcategories': return defaultSilkCategories

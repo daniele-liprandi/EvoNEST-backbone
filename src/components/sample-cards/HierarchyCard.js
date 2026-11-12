@@ -21,7 +21,7 @@ export function HierarchyCard({ sample, samplesData, onParentChange }) {
       <CardContent>
         {sample.parentId && (
           <Alert>
-            <AlertTitle><h4>Parent</h4></AlertTitle>
+            <AlertTitle>Parent</AlertTitle>
             <AlertDescription>
               <Select value={sample.parentId} onValueChange={onParentChange}>
                 <SelectTrigger id="parent" aria-label="Select parent">
@@ -46,7 +46,7 @@ export function HierarchyCard({ sample, samplesData, onParentChange }) {
         
         {!sample.parentId && (
           <Alert>
-            <AlertTitle><h4>Parent</h4></AlertTitle>
+            <AlertTitle>Parent</AlertTitle>
             <AlertDescription>
               <Select defaultValue="No parent" onValueChange={onParentChange}>
                 <SelectTrigger id="parent" aria-label="Select parent">
@@ -67,7 +67,7 @@ export function HierarchyCard({ sample, samplesData, onParentChange }) {
         )}
         
         <Alert>
-          <AlertTitle><h4>Children</h4></AlertTitle>
+          <AlertTitle>Children</AlertTitle>
           <AlertDescription>
             {samplesData.filter(s => s.parentId === sample._id).map((child, index) => (
               <Link href={`/sample/${child._id}`} key={index}>

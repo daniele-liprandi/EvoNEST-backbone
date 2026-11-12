@@ -15,9 +15,9 @@
  *         schema: { type: string }
  *         description: Database to export from
  *       - in: query
- *         name: type
+ *         name: quantity
  *         schema: { type: string }
- *         description: Filter traits by type
+ *         description: Filter traits by quantity
  *       - in: query
  *         name: includeSampleFeatures
  *         schema: { type: boolean, default: false }

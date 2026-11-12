@@ -17,11 +17,14 @@ export const DEFAULT_ROLES = [
 export const CAPABILITIES = [
   { value: "users.manage", label: "Manage users (create, delete, edit, change their databases)" },
   { value: "databases.manage", label: "Add and configure databases" },
-  { value: "config.edit", label: "Edit the lab configuration (sample types, trait types, units)" },
+  { value: "config.edit", label: "Edit the lab configuration (sample types, trait quantities, units)" },
   { value: "config.seed", label: "Reset the lab configuration to defaults" },
   { value: "samples.delete", label: "Delete samples" },
   { value: "traits.delete", label: "Delete traits" },
   { value: "experiments.delete", label: "Delete experiments" },
+  { value: "attachments.delete", label: "Delete attachments (and the file when it was the last one)" },
+  { value: "files.upload", label: "Upload files into the NEST" },
+  { value: "files.link-external", label: "Link external files (kept where they live)" },
 ];
 
 // Defaults chosen to preserve today's behaviour: user/database management is
@@ -35,4 +38,7 @@ export const DEFAULT_PERMISSIONS = [
   { value: "samples.delete", roles: ["researcher", "student"] },
   { value: "traits.delete", roles: ["researcher", "student"] },
   { value: "experiments.delete", roles: ["researcher", "student"] },
+  { value: "attachments.delete", roles: ["researcher", "student"] },
+  { value: "files.upload", roles: ["researcher", "student"] },
+  { value: "files.link-external", roles: ["researcher", "student"] },
 ];

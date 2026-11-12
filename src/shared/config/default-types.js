@@ -43,7 +43,7 @@ export const DEFAULT_CONFIGS = {
       columns: ["name", "parent", "responsible", "recentChange", "date", "box", "slot"],
     }
   ],
-  traittypes: [
+  traitquantities: [
     { value: "mass", label: "Mass", unit: "g", description: "Mass of the sample measured using a microbalance" },
     { value: "length", label: "Length", unit: "mm", description: "Length of the sample measured from maximum to minimum point along the longest symmetry axis" },
     { value: "width", label: "Width", unit: "mm", description: "Width of the sample measured from maximum to minimum point along the perpendicular to the longest symmetry axis" },
@@ -176,7 +176,7 @@ export const DEFAULT_CONFIGS = {
 
 // Individual exports for backward compatibility
 export const sampletypes = DEFAULT_CONFIGS.sampletypes;
-export const traittypes = DEFAULT_CONFIGS.traittypes;
+export const traitquantities = DEFAULT_CONFIGS.traitquantities;
 export const equipmenttypes = DEFAULT_CONFIGS.equipmenttypes;
 export const samplesubtypes = DEFAULT_CONFIGS.samplesubtypes;
 export const silkcategories = DEFAULT_CONFIGS.silkcategories;
