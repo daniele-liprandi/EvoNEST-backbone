@@ -1,4 +1,5 @@
 import { DEFAULT_CONFIGS } from "./default-types";
+import { STARTER_PROTOCOLS } from "./protocols";
 
 // A lab preset is a partial override of DEFAULT_CONFIGS applied at first setup.
 // It names only the config types that differ (usually sampletypes / traitquantities);
@@ -199,6 +200,7 @@ export const LAB_PRESETS = [
     overrides: {
       sampletypes: [SAMPLE_TYPES.animal, SAMPLE_TYPES.subsample, SAMPLE_TYPES.silk],
       traitquantities: [TRAIT_QUANTITIES.mass, TRAIT_QUANTITIES.length, TRAIT_QUANTITIES.width],
+      protocols: [STARTER_PROTOCOLS.husbandry_check, STARTER_PROTOCOLS.single_measurement],
     },
   },
   {
@@ -218,6 +220,7 @@ export const LAB_PRESETS = [
         TRAIT_QUANTITIES.toughness,
         TRAIT_QUANTITIES.strain_at_break,
       ],
+      protocols: [STARTER_PROTOCOLS.tensile_campaign, STARTER_PROTOCOLS.single_measurement],
     },
   },
   {

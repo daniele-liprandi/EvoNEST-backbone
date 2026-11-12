@@ -125,3 +125,31 @@ describe("DELETE /api/config/types", () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe("POST /api/config/types, protocols", () => {
+  const post = (body: unknown, mongo: Parameters<typeof testMongo>[0] = {}) =>
+    runRoute(handleConfigPost(req("POST", body)).pipe(Effect.provide(Layer.merge(testMongo({ updateOne: ok1, ...mongo }), admin))));
+  const valid = {
+    value: "weigh",
+    label: "Weigh",
+    appliesToSampleTypes: [],
+    steps: [{ key: "weigh", label: "Weigh", kind: "measurement", params: [], equipmentTypes: [], optional: false, repeatable: false, technique: null, expectedQuantities: ["mass"] }],
+  };
+
+  test("a valid protocol is stored", async () => {
+    expect((await post({ method: "update", type: "protocols", data: [valid] })).status).toBe(200);
+  });
+
+  test("an unknown technique is refused with 400", async () => {
+    const bad = { ...valid, steps: [{ ...valid.steps[0], technique: "x_ray" }] };
+    const res = await post({ method: "update", type: "protocols", data: [bad] });
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(await res.json())).toMatch(/unknown technique \\"x_ray\\"/);
+  });
+
+  test("additem checks the list it would produce", async () => {
+    const findOne = () => Effect.succeed({ type: "protocols", data: [valid] } as never);
+    expect((await post({ method: "additem", type: "protocols", item: valid }, { findOne })).status).toBe(400);
+    expect((await post({ method: "additem", type: "protocols", item: { ...valid, value: "weigh_again" } }, { findOne })).status).toBe(200);
+  });
+});

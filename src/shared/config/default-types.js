@@ -1,5 +1,7 @@
 // Shared default configurations that can be used by both frontend and backend
 
+import { STARTER_PROTOCOLS } from "./protocols";
+
 export const DEFAULT_CONFIGS = {
   sampletypes: [
     // `fields` is the type's data field list (see samples/fields.js) — it drives
@@ -171,7 +173,8 @@ export const DEFAULT_CONFIGS = {
     { value: "H", label: "Henry", description: "Unit of inductance", category: "inductance" },
     { value: "L", label: "Liter", description: "Unit of volume", category: "volume" },
     { value: "l", label: "Liter (lowercase)", description: "Unit of volume", category: "volume" }
-  ]
+  ],
+  protocols: [STARTER_PROTOCOLS.single_measurement]
 };
 
 // Individual exports for backward compatibility
@@ -182,3 +185,4 @@ export const samplesubtypes = DEFAULT_CONFIGS.samplesubtypes;
 export const silkcategories = DEFAULT_CONFIGS.silkcategories;
 export const siprefixes = DEFAULT_CONFIGS.siprefixes;
 export const baseunits = DEFAULT_CONFIGS.baseunits;
+export const protocols = DEFAULT_CONFIGS.protocols;

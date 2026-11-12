@@ -131,6 +131,11 @@ const settingsProps = {
       href: "/settings/types",
       description: "Description of types in the NEST",
     },
+    {
+      title: "Protocols",
+      href: "/settings/protocols",
+      description: "Steps, parameters and equipment of each protocol",
+    },
   ],
   href: "/settings",
 };

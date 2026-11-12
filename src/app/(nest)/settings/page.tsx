@@ -42,6 +42,18 @@ export default function Component() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/settings/protocols">
+            <Card className="p-6 lg:p-8 rounded-xl shadow-lg dark:shadow-orange-500/50">
+              <CardHeader>
+                <CardTitle>Protocols</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                <div className="flex items-center gap-2">
+                  <span>Steps, parameters and equipment of each protocol</span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
           {isAdmin && (
             <Link href="/settings/admin">
               <Card className="p-6 lg:p-8 rounded-xl shadow-lg dark:shadow-orange-500/50">
