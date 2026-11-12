@@ -318,7 +318,7 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
         const experimentData = parsedData.experimentData;
 
         // Check required experiment fields
-        const requiredFields = ['name', 'type', 'filename'];
+        const requiredFields = ['name', 'technique', 'filename'];
         requiredFields.forEach(field => {
             if (!experimentData[field]) {
                 errors.push(`Required experiment field missing: ${field}`);
