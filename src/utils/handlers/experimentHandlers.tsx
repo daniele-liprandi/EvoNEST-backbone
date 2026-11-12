@@ -12,6 +12,8 @@ export const handleDeleteExperiment = async (experimentId: any) => {
       body: JSON.stringify({ id: experimentId })
     });
     if (!res.ok) throw new Error('Could not delete the experiment');
+    const { filesKept = [] } = await res.json();
+    filesKept.forEach((line: string) => toast.message(line));
   } catch (e) {
     // Catches both a non-OK response and fetch() itself rejecting (offline,
     // DNS/CORS) — either way the delete didn't happen.
@@ -29,8 +31,10 @@ export const handleBulkDeleteExperiments = async (experimentIds: string[]) => {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
-      }).then((res) => {
+      }).then(async (res) => {
         if (!res.ok) throw new Error(id);
+        const { filesKept = [] } = await res.json();
+        filesKept.forEach((line: string) => toast.message(line));
       })
     )
   );

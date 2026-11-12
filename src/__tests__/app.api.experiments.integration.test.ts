@@ -4,6 +4,7 @@ import { Effect, Layer } from "effect";
 import { ObjectId } from "mongodb";
 import { runRoute, mongoLayer, testAuth } from "@/lib/effect";
 import { setupTestMongo, type TestMongo } from "./helpers/mongo";
+import { bucketFor } from "@/app/api/files/gridfs";
 import {
   listExperiments,
   handleExperimentPost,
@@ -173,6 +174,52 @@ describe("experiments — delete + the experiments.delete gate (#162)", () => {
     expect((await del(String(id))).status).toBe(200);
     expect((await del(String(id))).status).toBe(404);
     expect((await del("nope")).status).toBe(400);
+  });
+
+  // A GridFS-backed files row, as /api/files writes it.
+  const storeFile = async (name: string) => {
+    const bucket = bucketFor(mongo.db);
+    const ref = await new Promise<ObjectId>((resolve, reject) => {
+      const up = bucket.openUploadStream(name);
+      up.on("finish", () => resolve(up.id as ObjectId)).on("error", reject);
+      up.end(Buffer.from(`contents of ${name}`));
+    });
+    const { insertedId } = await mongo.db.collection("files").insertOne({ name, storage: { backend: "gridfs", ref } });
+    return { fileId: insertedId.toHexString(), ref };
+  };
+  const blobExists = async (ref: ObjectId) => (await mongo.db.collection("files.files").countDocuments({ _id: ref })) > 0;
+  const experimentWith = async (fields: Record<string, unknown>) => {
+    const { insertedId } = await mongo.db.collection("experiments").insertOne({ name: "E", ...fields });
+    return insertedId.toHexString();
+  };
+
+  test("delete drops the experiment's GridFS file and blob when nothing else uses them", async () => {
+    const { fileId, ref } = await storeFile("a.txt");
+    const id = await experimentWith({ fileId, filesId: [fileId] });
+
+    const res = await del(id);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ filesDeleted: ["a.txt"], filesKept: [] });
+    expect(await mongo.db.collection("files").countDocuments({ _id: new ObjectId(fileId) })).toBe(0);
+    expect(await blobExists(ref)).toBe(false);
+  });
+
+  test("delete keeps a file another experiment or an attachment still uses", async () => {
+    const shared = await storeFile("shared.txt");
+    const attached = await storeFile("attached.txt");
+    const id = await experimentWith({ fileId: shared.fileId, filesId: [shared.fileId, attached.fileId] });
+    await experimentWith({ filesId: [shared.fileId] });
+    await mongo.db.collection("attachments").insertOne({ fileId: new ObjectId(attached.fileId), targetType: "sample" });
+
+    const body = await (await del(id)).json();
+    expect(body.filesDeleted).toEqual([]);
+    expect(body.filesKept).toEqual([
+      "File shared.txt was not deleted as it is used by experiment E",
+      expect.stringMatching(/^File attached\.txt was not deleted as it is used by attachment /),
+    ]);
+    expect(await blobExists(shared.ref)).toBe(true);
+    expect(await blobExists(attached.ref)).toBe(true);
+    await mongo.db.collection("attachments").deleteMany({});
   });
 
   test("a role without experiments.delete is refused with 403 once an admin exists", async () => {
