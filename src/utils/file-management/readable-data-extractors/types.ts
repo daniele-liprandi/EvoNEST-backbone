@@ -97,7 +97,7 @@ export interface ParsedDataResult {
   // Data that goes directly into the experiment document
   experimentData: ExperimentAPIData;
 
-  // Set by the registry: the parser that produced this result
+  // Set by the registry
   parserName?: string;
 
   // Parsing metadata
@@ -120,9 +120,6 @@ export function isParsedDataResult(data: any): data is ParsedDataResult {
   );
 }
 
-/**
- * One trait type a parser can emit.
- */
 export interface GeneratedTrait {
   value: string;
   label: string;
@@ -130,9 +127,6 @@ export interface GeneratedTrait {
   description: string;
 }
 
-/**
- * A parser's declaration, as returned by `registry.listParsers()`.
- */
 export interface ParserDescription {
   name: string;
   label: string;

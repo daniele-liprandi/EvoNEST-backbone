@@ -2,7 +2,6 @@ import type { LabelType } from "@/utils/types";
 import dataFormatParserRegistry from "./readable-data-extractors/registry";
 import type { GeneratedTrait } from "./readable-data-extractors/types";
 
-/** What to do with a trait type the lab does not know yet. */
 export type TraitTypeChoice = { action: "add" } | { action: "map"; to: string } | { action: "skip" };
 
 export type NewTraitType = GeneratedTrait;
@@ -19,7 +18,7 @@ const humanise = (value: string) => {
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-/** Trait type values the lab already stores, including each entry's aliases. */
+/** Includes the aliases */
 export const knownTraitTypes = (traitTypes: LabelType[]) => {
   const known = new Set<string>();
   for (const t of traitTypes) {
@@ -79,7 +78,6 @@ export function applyTraitTypeChoices(
     }
   }
   if (!changed) return null;
-  // Entries that never had aliases keep their original shape.
   return next.map((t) => {
     if (t.aliases?.length) return t;
     const rest = { ...t };

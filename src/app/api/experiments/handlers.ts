@@ -85,10 +85,7 @@ export const listExperiments = (request: Request) =>
 
 // --- POST ------------------------------------------------------------------
 
-/**
- * Parser trait type -> the lab's trait type, from `traitquantities[].aliases`.
- * Mapping `modulus` onto `youngs_modulus` puts "modulus" in that entry's aliases.
- */
+// Parser trait type -> lab trait type, from `traitquantities[].aliases`
 const traitTypeAliases = (dbName: string) =>
   Effect.gen(function* () {
     const mongo = yield* Mongo;

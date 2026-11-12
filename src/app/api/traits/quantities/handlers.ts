@@ -4,7 +4,6 @@ import { ok, decodeBody, currentDatabase, currentSession, requireCapability, Mon
 const TRAITS = "traits";
 const stamp = () => new Date().toISOString();
 
-/** Every trait type present in stored traits, with how many traits carry it. */
 export const listStoredQuantities = Effect.gen(function* () {
   yield* currentSession;
   const dbName = yield* currentDatabase;

@@ -162,8 +162,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
             }
         }
 
-        // The server maps trait types through the saved aliases, so the lab's
-        // choices must land before the experiments are posted.
+        // Aliases must be saved before the experiments are posted
         if (canEditConfig) {
             const next = applyTraitTypeChoices(traitquantities, newTraitTypes, traitTypeChoices);
             if (next) {

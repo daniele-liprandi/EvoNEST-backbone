@@ -1,7 +1,4 @@
-/**
- * Every registered parser honours the declaration contract: the trait types it
- * emits from its example file are ones it declares.
- */
+// Each parser emits only the trait types it declares
 
 import { readFileSync } from 'fs';
 import { resolve, basename } from 'path';

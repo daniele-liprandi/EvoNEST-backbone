@@ -28,9 +28,6 @@ export class BaseDataFormatParser {
         this.dynamicTraits = false;
     }
 
-    /**
-     * The parser's declaration, without the parsing code.
-     */
     describe() {
         return {
             name: this.name,

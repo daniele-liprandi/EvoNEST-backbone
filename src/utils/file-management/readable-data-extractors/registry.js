@@ -114,7 +114,6 @@ class DataFormatParserRegistry {
                 return null;
             }
 
-            // The upload form looks up the parser's declared trait types by name.
             return { ...parsedData, parserName: parser.name };
         } catch (error) {
             console.error(`Parser ${parser.name} failed to parse data:`, error.message);
@@ -122,11 +121,6 @@ class DataFormatParserRegistry {
         }
     }
 
-    /**
-     * Every parser's declaration (see BaseDataFormatParser.describe).
-     *
-     * @returns {Array} Parser declarations
-     */
     listParsers() {
         return this.getAll().map(parser => parser.describe());
     }

@@ -53,10 +53,7 @@ const FAMILIES: { value: ParserDescription["family"]; label: string }[] = [
 
 type StoredQuantity = { quantity: string; count: number };
 
-/**
- * Write trait type choices: "add" and "map" go to the traitquantities config,
- * and "map" also moves stored traits already saved under the parser's name.
- */
+// "map" also moves the traits already stored under the parser's name
 async function saveChoices(
   traitTypes: LabelType[],
   newTypes: NewTraitType[],

@@ -30,7 +30,7 @@ export class CSVFormatParser extends BaseDataFormatParser {
         this.family = 'generic';
         this.formatDescription = 'Any comma, semicolon or tab separated table with a header row';
         this.exampleFile = null;
-        // One trait type per numeric column, named after the column.
+        // Trait types are named after the numeric columns
         this.dynamicTraits = true;
         this.generatedTraits = [];
     }
@@ -213,9 +213,7 @@ export class CSVFormatParser extends BaseDataFormatParser {
         return traits;
     }
 
-    /**
-     * A column header as a trait type value: "Body mass (g)" -> "body_mass_g".
-     */
+    // "Body mass (g)" -> "body_mass_g"
     columnQuantity(column) {
         return String(column)
             .normalize('NFKD')
