@@ -27,51 +27,63 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['tensile_test'];
         this.primaryExperimentType = 'tensile_test';
         this.requiredFields = ['force', 'displacement', 'time'];
+        this.family = 'mechanics';
+        this.formatDescription = 'NanoSuite test export whose first line is EVOMECT150NanoTestDataFile';
+        this.exampleFile = '/parser-examples/tensile-test/B_4_IS_1.txt';
         this.generatedTraits = [
             {
-                name: 'modulus',
+                value: 'youngs_modulus',
+                label: "Young's modulus",
                 unit: 'Pa',
-                description: 'Young\'s modulus (elasticity modulus) of the material'
+                description: "Stiffness in the elastic region"
             },
             {
-                name: 'stressAtBreak',
+                value: 'tensile_strength',
+                label: "Tensile strength",
                 unit: 'Pa',
-                description: 'Stress at which the specimen breaks'
+                description: "Stress at which the specimen breaks"
             },
             {
-                name: 'strainAtBreak',
+                value: 'strain_at_break',
+                label: "Strain at break",
                 unit: 'mm/mm',
-                description: 'Strain at which the specimen breaks'
+                description: "Strain at which the specimen breaks"
             },
             {
-                name: 'offsetYieldStress',
+                value: 'offset_yield_stress',
+                label: "Offset yield stress",
                 unit: 'Pa',
-                description: 'Stress at yield point using offset method'
+                description: "Stress at the yield point, offset method"
             },
             {
-                name: 'offsetYieldStrain',
+                value: 'offset_yield_strain',
+                label: "Offset yield strain",
                 unit: 'mm/mm',
-                description: 'Strain at yield point using offset method'
+                description: "Strain at the yield point, offset method"
             },
             {
-                name: 'toughness',
+                value: 'toughness',
+                label: "Toughness",
                 unit: 'Pa',
-                description: 'Material toughness (energy absorption capacity)'
+                description: "Energy absorbed per unit volume to failure"
             },
             {
-                name: 'equivalentDiameter',
+                value: 'fiber_diameter',
+                label: "Fibre diameter",
                 unit: 'um',
-                description: 'Equivalent diameter of the test specimen'
+                description: "Equivalent diameter of the test specimen"
             },
             {
-                name: 'strainRate',
+                value: 'strain_rate',
+                label: "Strain rate",
                 unit: '1/s',
-                description: 'Rate of strain applied during the test'
+                description: "Rate of strain applied during the test"
             },
             {
-                name: 'loadAtBreak',
+                value: 'load_at_break',
+                label: "Load at break",
                 unit: 'N',
-                description: 'Calculated force at break (stress × cross-sectional area)'
+                description: "Force at break, from stress at break and the cross-section"
             }
         ];
     }
@@ -158,15 +170,15 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
         
         // Define trait type mappings - updated to match actual file variables
         const traitTypeMap = {
-            'Modulus': 'modulus',
-            'StressAtBreak': 'stressAtBreak',
-            'StrainAtBreak': 'strainAtBreak',
-            'OffsetYieldStress': 'offsetYieldStress',
-            'OffsetYieldStrain': 'offsetYieldStrain',
+            'Modulus': 'youngs_modulus',
+            'StressAtBreak': 'tensile_strength',
+            'StrainAtBreak': 'strain_at_break',
+            'OffsetYieldStress': 'offset_yield_stress',
+            'OffsetYieldStrain': 'offset_yield_strain',
             'Toughness': 'toughness',
-            'SpecimenDiameter': 'equivalentDiameter',
-            'StrainRate': 'strainRate',
-            'LoadAtBreak': 'loadAtBreak'
+            'SpecimenDiameter': 'fiber_diameter',
+            'StrainRate': 'strain_rate',
+            'LoadAtBreak': 'load_at_break'
         };
 
         // Define output unit mappings - pressure values are already converted to Pa

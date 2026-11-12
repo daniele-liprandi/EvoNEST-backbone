@@ -17,7 +17,7 @@ import { CircleNotch } from "@phosphor-icons/react"
 import { ComboFormBox } from "@/components/forms/combo-form-box"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
     Form,
     FormControl, FormField,
@@ -43,11 +43,27 @@ import { Button } from "@/components/ui/button"
 import { linkFileToEntry, uploadFile } from "@/utils/handlers/fileHandlers"
 import { ParserPreview } from "./ParserPreview"
 import { DataFormatPreview } from "./DataFormatPreview"
+import { NewTraitTypes } from "./NewTraitTypes"
+import { useConfigTypes } from "@/hooks/useConfigTypes"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import {
+    applyTraitTypeChoices,
+    findNewTraitTypes,
+    type TraitTypeChoice,
+} from "@/utils/file-management/trait-type-mapping"
 
 export function ExperimentForm({ users, samples, user, experiments, defaultFileList, onSuccess }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList, onSuccess?: () => void }) {
     const [allFileData, setAllFileData] = useState<Array<Partial<ExperimentFormValues>>>([]);
     const [files, setFiles] = useState<FileList | null>(null);
     const [checkSaveFile, setCheckSaveFile] = useState(true);
+    const { traitquantities, refresh: refreshConfig } = useConfigTypes();
+    const { can, isUserLoading } = useCurrentUser();
+    const canEditConfig = can("config.edit");
+    const [traitTypeChoices, setTraitTypeChoices] = useState<Record<string, TraitTypeChoice>>({});
+    const newTraitTypes = useMemo(
+        () => findNewTraitTypes(allFileData as Parameters<typeof findNewTraitTypes>[0], traitquantities),
+        [allFileData, traitquantities],
+    );
 
 
     const defaultValues = {
@@ -143,6 +159,27 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     duration: 6000
                 });
                 return;
+            }
+        }
+
+        // The server maps trait types through the saved aliases, so the lab's
+        // choices must land before the experiments are posted.
+        if (canEditConfig) {
+            const next = applyTraitTypeChoices(traitquantities, newTraitTypes, traitTypeChoices);
+            if (next) {
+                const res = await fetch(`${prepend_path}/api/config/types`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ method: "update", type: "traitquantities", data: next }),
+                });
+                if (!res.ok) {
+                    toast.error("Could not save the new trait types", {
+                        description: "Nothing was uploaded. Try again, or skip them.",
+                    });
+                    return;
+                }
+                refreshConfig();
+                setTraitTypeChoices({});
             }
         }
 
@@ -395,6 +432,15 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
 
               {/* Data Format Processing Status */}
               <DataFormatPreview allFileData={allFileData} />
+
+              <NewTraitTypes
+                newTypes={newTraitTypes}
+                traitTypes={traitquantities}
+                fileCount={allFileData.length}
+                canEdit={isUserLoading ? undefined : canEditConfig}
+                choices={traitTypeChoices}
+                onChange={(value, choice) => setTraitTypeChoices((prev) => ({ ...prev, [value]: choice }))}
+              />
 
               {/* Parser Preview */}
               <ParserPreview

@@ -18,6 +18,7 @@ const EXPERIMENTS = "experiments";
 const SAMPLES = "samples";
 const TRAITS = "traits";
 const FILES = "files";
+const CONFIG = "config";
 
 const stamp = () => new Date().toISOString();
 const isHexId = (v: unknown): v is string =>
@@ -84,6 +85,22 @@ export const listExperiments = (request: Request) =>
 
 // --- POST ------------------------------------------------------------------
 
+/**
+ * Parser trait type -> the lab's trait type, from `traitquantities[].aliases`.
+ * Mapping `modulus` onto `youngs_modulus` puts "modulus" in that entry's aliases.
+ */
+const traitTypeAliases = (dbName: string) =>
+  Effect.gen(function* () {
+    const mongo = yield* Mongo;
+    const config = yield* mongo.findOne(dbName, CONFIG, { type: "traitquantities" });
+    const aliases = new Map<string, string>();
+    for (const entry of (config?.data ?? []) as { value?: string; aliases?: unknown }[]) {
+      if (!entry.value || !Array.isArray(entry.aliases)) continue;
+      for (const alias of entry.aliases) if (typeof alias === "string") aliases.set(alias, entry.value);
+    }
+    return aliases;
+  });
+
 const PostBody = Schema.Struct(
   {
     method: Schema.optional(Schema.String),
@@ -148,15 +165,17 @@ const createExperiment = (dbName: string, data: PostData) =>
         logbook: data.logbook || [[now, `Created experiment ${data.name}`]],
       };
       if (Array.isArray(data.traits)) {
+        const aliases = yield* traitTypeAliases(dbName);
         embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
           // A lagging parser may still emit the old `type` / `measurement` keys;
           // remap them so the trait document carries `quantity` / `value`. `method`
           // is an API-dispatch key, dropped here the way `createTrait` drops it.
           const { type, measurement, ...rest } = trait;
           delete rest.method;
+          const quantity = (rest.quantity ?? type) as string | undefined;
           return {
             ...rest,
-            ...(rest.quantity === undefined && type !== undefined ? { quantity: type } : {}),
+            ...(quantity !== undefined ? { quantity: aliases.get(quantity) ?? quantity } : {}),
             ...(rest.value === undefined && measurement !== undefined ? { value: measurement } : {}),
             experimentId: null,
             createdAt: now,

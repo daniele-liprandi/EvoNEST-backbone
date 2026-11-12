@@ -10,7 +10,7 @@ describe('LoggerMateTemperatureParser', () => {
   test('parses the example file and validates the result', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
     const parser = new LoggerMateTemperatureParser();
-    const file = resolve(process.cwd(), 'src/utils/file-management/test-data/loggermate/WirelessTemperatureData.txt');
+    const file = resolve(process.cwd(), 'public/parser-examples/loggermate/WirelessTemperatureData.txt');
     const parsed = parser.parse(readFileSync(file, 'utf-8'), { filename: 'WirelessTemperatureData.txt' });
 
     expect(parsed.experimentData.technique).toBe('temperature_monitoring');

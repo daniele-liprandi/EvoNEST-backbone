@@ -581,7 +581,7 @@ docker exec evonest_mongodb_dev mongodump --out /backup
 
 **Solution:**
 
-1. Settings → Types → Trait Quantities
+1. Settings → Types → Trait types
 2. Find the trait quantity
 3. Edit it
 4. Add Unit field (e.g., `μm`, `MPa`)

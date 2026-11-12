@@ -23,21 +23,27 @@ export class StarOddiParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['physiological_monitoring'];
         this.primaryExperimentType = 'physiological_monitoring';
         this.requiredFields = ['timestamp', 'temperature'];
+        this.family = 'logging';
+        this.formatDescription = 'STAR-ODDI DST micro-HRT logger export';
+        this.exampleFile = "/parser-examples/star-oddi/temp-heart.DAT";
         this.generatedTraits = [
             {
-                name: 'temperature',
+                value: 'temperature',
+                label: "Temperature",
                 unit: '°C',
-                description: 'Temperature measurements from STAR-ODDI logger'
+                description: "Temperature from the STAR-ODDI logger"
             },
             {
-                name: 'heart_rate',
+                value: 'heart_rate',
+                label: "Heart rate",
                 unit: 'bpm',
-                description: 'Heart rate measurements in beats per minute'
+                description: "Heart rate in beats per minute"
             },
             {
-                name: 'quality_index',
+                value: 'quality_index',
+                label: "Quality index",
                 unit: 'index',
-                description: 'Quality index for measurement reliability (0=good, 1=ok, 3=poor)'
+                description: "Heart rate measurement reliability (0 good, 1 ok, 3 poor)"
             }
         ];
     }

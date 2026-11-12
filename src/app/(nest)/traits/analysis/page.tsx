@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -88,6 +88,16 @@ export default function TraitAnalysisPage() {
     "fullSpeciesSubsampletype"
   );
   const groupByOptions = filterOptions?.groupByOptions ?? FALLBACK_GROUP_OPTIONS;
+  // Configured trait types first, then any stored trait type the lab has not
+  // configured (a skipped parser trait type, an old manual entry), so stored
+  // data is always reachable.
+  const traitOptions = useMemo(() => {
+    const configured = new Set(traitquantities.map((t) => t.value));
+    const stored = (filterOptions?.traitQuantities ?? [])
+      .filter((q) => !configured.has(q))
+      .map((q) => ({ value: q, label: q }));
+    return [...traitquantities, ...stored];
+  }, [traitquantities, filterOptions]);
   // Filter states
   const [selectedSampleSubtypes, setSelectedSampleSubtypes] = useState<
     Set<string>
@@ -249,7 +259,7 @@ export default function TraitAnalysisPage() {
                     <SelectValue placeholder="Select a trait" />
                   </SelectTrigger>
                   <SelectContent>
-                    {traitquantities.map((trait) => (
+                    {traitOptions.map((trait) => (
                       <SelectItem key={trait.value} value={trait.value}>
                         {trait.label}
                       </SelectItem>

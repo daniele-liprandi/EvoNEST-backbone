@@ -17,7 +17,7 @@ By the end of this module, you will have:
 Before starting this module, make sure you've completed [Module 4: Configuration](/tutorial/04-configuration) and have:
 
 - ✅ Sample and subsample types configured
-- ✅ Trait quantities with units set up
+- ✅ Trait types with units set up
 - ✅ EvoNEST running and logged in
 
 ## Overview

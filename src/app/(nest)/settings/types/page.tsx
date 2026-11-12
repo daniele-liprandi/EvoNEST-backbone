@@ -248,7 +248,11 @@ const TypeTable = ({
           {data.map((item, index) => (
             <TableRow key={index}>
               {showColumns.map((column) => (
-                <TableCell key={column}>{item[column] || "-"}</TableCell>
+                <TableCell key={column}>
+                  {Array.isArray(item[column])
+                    ? (item[column] as string[]).join(", ") || "-"
+                    : item[column] || "-"}
+                </TableCell>
               ))}
               <TableCell>
                 <div className="flex items-center gap-2">
@@ -457,10 +461,10 @@ export default function TypesPage() {
           />
 
           <TypeTable
-            title="Trait Quantities"
-            description="The quantities this lab records as traits, each with its unit"
+            title="Trait types"
+            description="Trait types this lab records, with their default unit. Aliases are names from file parsers that are stored as this trait type."
             data={configs.traitquantities}
-            showColumns={["label", "value", "unit", "description"]}
+            showColumns={["label", "value", "unit", "aliases", "description"]}
             configType="traitquantities"
             onRefresh={refreshConfig}
           />

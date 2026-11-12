@@ -59,10 +59,17 @@ describe("GET /api/schema", () => {
       { value: "crop", label: "Crop", fields: ["taxonomy", "plot", "treatment"] },
     ]);
     expect(body.traitQuantities).toEqual([
-      { value: "mass", label: "Mass", unit: "g" },
-      { value: "count", label: "Count", unit: null },
+      { value: "mass", label: "Mass", unit: "g", aliases: [] },
+      { value: "count", label: "Count", unit: null, aliases: [] },
     ]);
     expect(body.subsampleTypes).toEqual([{ value: "dragline", label: "Dragline" }]);
+  });
+
+  test("lists the file parsers with their technique and trait types", async () => {
+    const { parsers } = await (await run(req())).json();
+    const tensile = parsers.find((p: { name: string }) => p.name === "TensileTestFormatParser");
+    expect(tensile).toMatchObject({ technique: "tensile_test", family: "mechanics" });
+    expect(tensile.generatedTraits.map((t: { value: string }) => t.value)).toContain("youngs_modulus");
   });
 
   test("empty config is empty arrays, not an error", async () => {

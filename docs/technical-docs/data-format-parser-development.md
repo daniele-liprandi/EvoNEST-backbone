@@ -45,14 +45,19 @@ export class MyInstrumentParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['my_experiment'];
         this.primaryExperimentType = 'my_experiment';
         this.requiredFields = [];
+        this.family = 'logging';
+        this.formatDescription = 'MyInstrument export with a "# MyInstrument" header';
+        this.exampleFile = '/parser-examples/my-instrument/example.txt';
         this.generatedTraits = [
             {
-                name: 'temperature',
+                value: 'temperature',
+                label: 'Temperature',
                 unit: '°C',
                 description: 'Measured temperature'
             },
             {
-                name: 'pressure', 
+                value: 'pressure',
+                label: 'Pressure',
                 unit: 'Pa',
                 description: 'Applied pressure'
             }
@@ -150,13 +155,23 @@ constructor() {
     this.description = 'Parser description';    // Help text
     this.version = '1.0.0';                     // Parser version
     this.supportedFormats = ['.txt', '.csv'];   // File extensions
-    this.supportedExperimentTypes = ['type1'];  // Experiment types
-    this.primaryExperimentType = 'type1';       // Default type for auto-detection
-    this.generatedTraits = [                    // Traits this parser creates
-        { name: 'trait_name', unit: 'unit', description: 'desc' }
+    this.supportedExperimentTypes = ['type1'];  // Techniques the parser handles
+    this.primaryExperimentType = 'type1';       // Stored as experiment.technique
+    this.family = 'mechanics';                  // mechanics | logging | generic (Parsers page grouping)
+    this.formatDescription = 'What the file looks like, in one line';
+    this.exampleFile = '/parser-examples/type1/example.txt'; // under public/, or null
+    this.generatedTraits = [                    // Every trait type the parser can emit
+        { value: 'trait_name', label: 'Trait name', unit: 'unit', description: 'desc' }
     ];
 }
 ```
+
+#### The trait type contract
+
+- `generatedTraits` lists every trait type the parser emits. Each trait's `quantity` must be one of these `value`s; `src/__tests__/parser-registry.contract.test.ts` parses each parser's example file and fails on an undeclared one.
+- `value` is snake_case. Where a lab preset already has the quantity (`src/shared/config/lab-presets.js`), use the preset's value: `youngs_modulus`, `tensile_strength`, `strain_at_break`, `fiber_diameter`. A lab whose trait types use other names maps them on upload (the form asks) or on the Parsers page; the mapping is stored as `aliases` on the lab's trait type and applied when the experiment is created.
+- A parser whose trait types come from the file itself (the CSV parser names them after its columns) sets `this.dynamicTraits = true` and leaves `generatedTraits` empty.
+- Put the example file under `public/parser-examples/`; the Parsers page links to it and the contract test reads it.
 
 #### Optional properties
 

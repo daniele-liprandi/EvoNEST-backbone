@@ -21,26 +21,33 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['gps_tracking'];
         this.primaryExperimentType = 'gps_tracking';
         this.requiredFields = ['latitude', 'longitude', 'timestamp'];
+        this.family = 'logging';
+        this.formatDescription = 'LoggerMate GPS export with coordinates and satellite counts';
+        this.exampleFile = "/parser-examples/loggermate/GPSData.TXT";
         this.generatedTraits = [
             {
-                name: 'location_accuracy',
+                value: 'location_accuracy',
+                label: "Location accuracy",
                 unit: 'meters',
-                description: 'Average GPS accuracy based on HDOP values'
+                description: "Average GPS accuracy from HDOP values"
             },
             {
-                name: 'tracking_duration',
+                value: 'tracking_duration',
+                label: "Tracking duration",
                 unit: 'hours',
-                description: 'Total duration of GPS tracking session'
+                description: "Total duration of the GPS tracking session"
             },
             {
-                name: 'distance_traveled',
+                value: 'distance_traveled',
+                label: "Distance travelled",
                 unit: 'meters',
-                description: 'Total distance traveled between GPS points'
+                description: "Total distance between GPS points"
             },
             {
-                name: 'average_satellites',
+                value: 'average_satellites',
+                label: "Average satellites",
                 unit: 'count',
-                description: 'Average number of satellites used for positioning'
+                description: "Average number of satellites used for positioning"
             }
         ];
     }

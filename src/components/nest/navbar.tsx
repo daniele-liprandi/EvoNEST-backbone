@@ -68,7 +68,13 @@ const experimentsProps = {
   label: "Experiments",
   icon: <MathOperations size={60} />,
   description: "All the experiments collected in the NEST",
-  options: [],
+  options: [
+    {
+      title: "Parsers",
+      href: "/experiments/parsers",
+      description: "Instrument files EvoNEST reads and the trait types they produce",
+    },
+  ],
   href: "/experiments",
 };
 

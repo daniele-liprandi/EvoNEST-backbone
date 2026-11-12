@@ -27,28 +27,12 @@ export class CSVFormatParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['tabular_data'];
         this.primaryExperimentType = 'tabular_data';
         this.requiredFields = []; // CSV can have any fields
-        this.generatedTraits = [
-            {
-                name: 'row_count',
-                unit: 'count',
-                description: 'Number of data rows in the CSV file'
-            },
-            {
-                name: 'column_count',
-                unit: 'count',
-                description: 'Number of columns in the CSV file'
-            },
-            {
-                name: 'delimiter',
-                unit: 'string',
-                description: 'Detected delimiter character (comma, semicolon, tab, etc.)'
-            },
-            {
-                name: 'header_detected',
-                unit: 'boolean',
-                description: 'Whether headers were detected in the first row'
-            }
-        ];
+        this.family = 'generic';
+        this.formatDescription = 'Any comma, semicolon or tab separated table with a header row';
+        this.exampleFile = null;
+        // One trait type per numeric column, named after the column.
+        this.dynamicTraits = true;
+        this.generatedTraits = [];
     }
 
     /**
@@ -212,7 +196,7 @@ export class CSVFormatParser extends BaseDataFormatParser {
                 const value = row[column];
                 if (typeof value === 'number' && !isNaN(value)) {
                     traits.push({
-                        quantity: "measurement",
+                        quantity: this.columnQuantity(column),
                         sampleId: sampleId,
                         responsible: "", // Will be filled by the UI
                         date: date,
@@ -227,6 +211,18 @@ export class CSVFormatParser extends BaseDataFormatParser {
         });
 
         return traits;
+    }
+
+    /**
+     * A column header as a trait type value: "Body mass (g)" -> "body_mass_g".
+     */
+    columnQuantity(column) {
+        return String(column)
+            .normalize('NFKD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '') || 'value';
     }
 
     /**

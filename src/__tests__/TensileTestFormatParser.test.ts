@@ -12,7 +12,7 @@ describe('TensileTestFormatParser', () => {
 
     beforeAll(() => {
         // Load the actual test file
-        const testFilePath = resolve(process.cwd(), 'src/utils/file-management/test-data/tensile-test/B_4_IS_1.txt');
+        const testFilePath = resolve(process.cwd(), 'public/parser-examples/tensile-test/B_4_IS_1.txt');
         testFileContent = readFileSync(testFilePath, 'utf-8');
     });
 
@@ -102,22 +102,22 @@ describe('TensileTestFormatParser', () => {
             expect(apiTraits.length).toBeGreaterThan(0);
 
             // Find specific traits and check their units (all pressure values converted to Pa)
-            const modulusTrait = apiTraits.find((t: any) => t.quantity === 'modulus');
+            const modulusTrait = apiTraits.find((t: any) => t.quantity === 'youngs_modulus');
             expect(modulusTrait).toBeDefined();
             expect(modulusTrait?.unit).toBe('Pa');
             expect(modulusTrait?.value).toBe(9.581e9); // 9.581 GPa = 9.581e9 Pa
 
-            const stressAtBreakTrait = apiTraits.find((t: any) => t.quantity === 'stressAtBreak');
+            const stressAtBreakTrait = apiTraits.find((t: any) => t.quantity === 'tensile_strength');
             expect(stressAtBreakTrait).toBeDefined();
             expect(stressAtBreakTrait?.unit).toBe('Pa');
             expect(stressAtBreakTrait?.value).toBe(1126.972e6); // 1126.972 MPa = 1126.972e6 Pa
 
-            const strainAtBreakTrait = apiTraits.find((t: any) => t.quantity === 'strainAtBreak');
+            const strainAtBreakTrait = apiTraits.find((t: any) => t.quantity === 'strain_at_break');
             expect(strainAtBreakTrait).toBeDefined();
             expect(strainAtBreakTrait?.unit).toBe('mm/mm');
             expect(strainAtBreakTrait?.value).toBe(0.322); // No conversion
 
-            const offsetYieldStrainTrait = apiTraits.find((t: any) => t.quantity === 'offsetYieldStrain');
+            const offsetYieldStrainTrait = apiTraits.find((t: any) => t.quantity === 'offset_yield_strain');
             expect(offsetYieldStrainTrait?.unit).toBe('mm/mm');
             expect(offsetYieldStrainTrait?.value).toBe(0.292);
 
@@ -126,7 +126,7 @@ describe('TensileTestFormatParser', () => {
             expect(toughnessTrait?.unit).toBe('Pa');
             expect(toughnessTrait?.value).toBe(218.498e6); // 218.498 MPa = 218.498e6 Pa
 
-            const equivalentDiameterTrait = apiTraits.find((t: any) => t.quantity === 'equivalentDiameter');
+            const equivalentDiameterTrait = apiTraits.find((t: any) => t.quantity === 'fiber_diameter');
             expect(equivalentDiameterTrait).toBeDefined();
             expect(equivalentDiameterTrait?.unit).toBe('um');
             expect(equivalentDiameterTrait?.value).toBe(0.991); // No conversion
@@ -260,31 +260,31 @@ describe('TensileTestFormatParser', () => {
             expect(generatedTraits).toBeDefined();
             expect(Array.isArray(generatedTraits)).toBe(true);
 
-            const traitNames = generatedTraits.map((t: any) => t.name);
-            expect(traitNames).toContain('modulus');
-            expect(traitNames).toContain('stressAtBreak');
-            expect(traitNames).toContain('strainAtBreak');
-            expect(traitNames).toContain('offsetYieldStress');
-            expect(traitNames).toContain('offsetYieldStrain');
+            const traitNames = generatedTraits.map((t: any) => t.value);
+            expect(traitNames).toContain('youngs_modulus');
+            expect(traitNames).toContain('tensile_strength');
+            expect(traitNames).toContain('strain_at_break');
+            expect(traitNames).toContain('offset_yield_stress');
+            expect(traitNames).toContain('offset_yield_strain');
             expect(traitNames).toContain('toughness');
-            expect(traitNames).toContain('equivalentDiameter');
-            expect(traitNames).toContain('strainRate');
-            expect(traitNames).toContain('loadAtBreak');
+            expect(traitNames).toContain('fiber_diameter');
+            expect(traitNames).toContain('strain_rate');
+            expect(traitNames).toContain('load_at_break');
 
             // Check units are correct (pressure values in Pa)
-            const modulus = generatedTraits.find((t: any) => t.name === 'modulus');
+            const modulus = generatedTraits.find((t: any) => t.value === 'youngs_modulus');
             expect(modulus?.unit).toBe('Pa');
 
-            const stressAtBreak = generatedTraits.find((t: any) => t.name === 'stressAtBreak');
+            const stressAtBreak = generatedTraits.find((t: any) => t.value === 'tensile_strength');
             expect(stressAtBreak?.unit).toBe('Pa');
 
-            const strainAtBreak = generatedTraits.find((t: any) => t.name === 'strainAtBreak');
+            const strainAtBreak = generatedTraits.find((t: any) => t.value === 'strain_at_break');
             expect(strainAtBreak?.unit).toBe('mm/mm');
 
-            const equivalentDiameter = generatedTraits.find((t: any) => t.name === 'equivalentDiameter');
+            const equivalentDiameter = generatedTraits.find((t: any) => t.value === 'fiber_diameter');
             expect(equivalentDiameter?.unit).toBe('um');
 
-            const loadAtBreak = generatedTraits.find((t: any) => t.name === 'loadAtBreak');
+            const loadAtBreak = generatedTraits.find((t: any) => t.value === 'load_at_break');
             expect(loadAtBreak?.unit).toBe('N');
         });
     });

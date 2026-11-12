@@ -21,16 +21,21 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['temperature_monitoring'];
         this.primaryExperimentType = 'temperature_monitoring';
         this.requiredFields = ['temperature', 'timestamp'];
+        this.family = 'logging';
+        this.formatDescription = 'LoggerMate wireless datalogger export with temperature readings';
+        this.exampleFile = "/parser-examples/loggermate/WirelessTemperatureData.txt";
         this.generatedTraits = [
             {
-                name: 'temperature',
+                value: 'temperature',
+                label: "Temperature",
                 unit: '°C',
-                description: 'Average temperature during the monitoring period with statistical analysis'
+                description: "Average temperature over the recording"
             },
             {
-                name: 'temperature_recording_duration',
+                value: 'temperature_recording_duration',
+                label: "Temperature recording length",
                 unit: 'samples',
-                description: 'Number of temperature samples recorded'
+                description: "Number of temperature readings recorded"
             }
         ];
     }
@@ -224,7 +229,7 @@ export class LoggerMateTemperatureParser extends BaseDataFormatParser {
                 detail: `Average temperature from ${temperatures.length} readings`,
             },
             {
-                quantity: "temp_rec_length",
+                quantity: "temperature_recording_duration",
                 sampleId: sampleId,
                 responsible: "",
                 date: date,

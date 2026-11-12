@@ -160,6 +160,32 @@ describe("experiments — a real collection workflow", () => {
     expect(Array.isArray(related[0].traits)).toBe(true);
   });
 
+  test("create resolves parser trait types through traitquantities aliases", async () => {
+    await mongo.db.collection("config").insertOne({
+      type: "traitquantities",
+      data: [{ value: "youngs_modulus", label: "Young's modulus", unit: "GPa", aliases: ["modulus"] }, { value: "mass" }],
+    });
+    const sampleId = await makeSample();
+    const { id } = await (
+      await post({
+        method: "create",
+        name: "Aliased",
+        technique: "tensile_test",
+        sampleId,
+        responsible: responsible.toHexString(),
+        data: { channelData: [] },
+        traits: [
+          { quantity: "modulus", value: 9e9, unit: "Pa" },
+          { quantity: "load_at_break", value: 0.001, unit: "N" },
+        ],
+      })
+    ).json();
+
+    const traits = await mongo.db.collection("traits").find({ experimentId: String(id) }).toArray();
+    expect(traits.map((t) => t.quantity).sort()).toEqual(["load_at_break", "youngs_modulus"]);
+    await mongo.db.collection("config").deleteMany({ type: "traitquantities" });
+  });
+
   test("create maps a stale `type` to `technique`", async () => {
     const sampleId = await makeSample();
     const { id } = await (
