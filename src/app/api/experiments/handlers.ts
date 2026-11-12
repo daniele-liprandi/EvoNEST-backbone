@@ -109,7 +109,6 @@ const PostBody = Schema.Struct(
     responsible: Schema.optional(Schema.Unknown),
     name: Schema.optional(Schema.String),
     technique: Schema.optional(Schema.String),
-    type: Schema.optional(Schema.String),
     field: Schema.optional(Schema.String),
     value: Schema.optional(Schema.Unknown),
     data: Schema.optional(Schema.Unknown),
@@ -143,9 +142,7 @@ const createExperiment = (dbName: string, data: PostData) =>
 
     const mongo = yield* Mongo;
     const now = stamp();
-    // A lagging client may still send the pre-rename `type`.
-    const { type: legacyType, ...body } = data;
-    const technique = data.technique ?? legacyType;
+    const { technique } = data;
 
     // Structured payload from the parsers already carries the shape; the legacy
     // path assembles a minimal document from top-level fields.
@@ -156,8 +153,7 @@ const createExperiment = (dbName: string, data: PostData) =>
 
     if (structured) {
       experimentData = {
-        ...body,
-        technique,
+        ...data,
         kind: "measurement",
         parentId: null,
         version: data.version || 1,
@@ -167,16 +163,11 @@ const createExperiment = (dbName: string, data: PostData) =>
       if (Array.isArray(data.traits)) {
         const aliases = yield* traitTypeAliases(dbName);
         embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
-          // A lagging parser may still emit the old `type` / `measurement` keys;
-          // remap them so the trait document carries `quantity` / `value`. `method`
-          // is an API-dispatch key, dropped here the way `createTrait` drops it.
-          const { type, measurement, ...rest } = trait;
-          delete rest.method;
-          const quantity = (rest.quantity ?? type) as string | undefined;
+          const { method: _method, ...rest } = trait;
+          const quantity = rest.quantity as string | undefined;
           return {
             ...rest,
             ...(quantity !== undefined ? { quantity: aliases.get(quantity) ?? quantity } : {}),
-            ...(rest.value === undefined && measurement !== undefined ? { value: measurement } : {}),
             experimentId: null,
             createdAt: now,
           };
