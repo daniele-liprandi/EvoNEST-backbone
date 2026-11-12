@@ -10,7 +10,7 @@ import { useUserData } from "@/hooks/useUserData"
 import { prepend_path } from "@/lib/utils"
 import { swrFetcher } from "@/lib/swr-fetcher"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -85,10 +85,6 @@ function RolesEditor({ roles, onSaved }: { roles: Role[]; onSaved: () => void })
     <Card>
       <CardHeader>
         <CardTitle>Roles</CardTitle>
-        <CardDescription>
-          The roles a person can hold. <code>admin</code> always has full access and cannot be removed.
-          A role&apos;s value is fixed once saved — to rename one, add a new role and reassign people.
-        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {draft.map((role, i) => (
@@ -192,7 +188,6 @@ function PermissionsMatrix({
     <Card>
       <CardHeader>
         <CardTitle>Permissions</CardTitle>
-        <CardDescription>Which roles may perform each action. Admin holds every one.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -266,7 +261,6 @@ function PeopleRoles({ roles }: { roles: Role[] }) {
     <Card>
       <CardHeader>
         <CardTitle>People</CardTitle>
-        <CardDescription>Assign a role to each person in the NEST.</CardDescription>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>

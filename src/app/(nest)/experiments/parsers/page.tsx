@@ -280,16 +280,9 @@ export default function ParsersPage() {
   return (
     <section className="w-full py-12 md:py-16">
       <div className="container flex flex-col gap-6 px-4 md:gap-8 md:px-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">
-            Parsers
-          </h1>
-          <p className="max-w-prose text-sm text-muted-foreground">
-            The instrument files EvoNEST reads. Uploading one creates a
-            measurement with the parser&apos;s technique and the trait types
-            listed under it.
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">
+          Parsers
+        </h1>
 
         {unknownStored.length > 0 && (
           <Card>
