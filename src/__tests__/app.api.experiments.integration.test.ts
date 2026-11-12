@@ -94,7 +94,7 @@ describe("experiments — a real collection workflow", () => {
       responsible: responsible.toHexString(),
       data: { channelData: [], summary: {} },
       traits: [
-        { method: "create", type: "stressAtBreak", measurement: 1.2 },
+        { method: "create", quantity: "stressAtBreak", value: 1.2 },
         { quantity: "modulus", value: 9 },
       ],
     });
@@ -105,10 +105,10 @@ describe("experiments — a real collection workflow", () => {
     const traits = await mongo.db.collection("traits").find({ experimentId: id }).toArray();
     expect(traits).toHaveLength(2);
     expect(traits.every((t) => t.sampleId === sampleId)).toBe(true);
-    // old-style keys are remapped, and the API-dispatch key is not persisted
+    // the API-dispatch key is not persisted
     expect(traits.map((t) => t.quantity).sort()).toEqual(["modulus", "stressAtBreak"]);
     expect(traits.find((t) => t.quantity === "stressAtBreak")?.value).toBe(1.2);
-    expect(traits.every((t) => t.method === undefined && t.type === undefined)).toBe(true);
+    expect(traits.every((t) => t.method === undefined)).toBe(true);
 
     const exp = await mongo.db.collection("experiments").findOne({ _id: new ObjectId(id) });
     expect(exp?.traits).toBeUndefined(); // embedded traits are not kept on the experiment
@@ -158,16 +158,6 @@ describe("experiments — a real collection workflow", () => {
     const related = await (await get("?related=true")).json();
     expect(related[0].sample._id.toString()).toBe(sampleId);
     expect(Array.isArray(related[0].traits)).toBe(true);
-  });
-
-  test("create maps a stale `type` to `technique`", async () => {
-    const sampleId = await makeSample();
-    const { id } = await (
-      await post({ method: "create", name: "Old client", type: "tensile_test", sampleId, responsible: responsible.toHexString(), dataFields: {} })
-    ).json();
-    const exp = await mongo.db.collection("experiments").findOne({ _id: new ObjectId(id) });
-    expect(exp?.technique).toBe("tensile_test");
-    expect(exp?.type).toBeUndefined();
   });
 
   test("GET filters on technique, kind and parentId", async () => {
