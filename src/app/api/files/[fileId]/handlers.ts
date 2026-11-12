@@ -16,6 +16,7 @@ import {
 } from "@/lib/effect";
 import { resolveAttachmentTarget } from "@/shared/config/attachment-targets";
 import {
+  ALLOWED_MIME_TYPES,
   bucketFor,
   deleteBlobIfUnreferenced,
   gridfsBlobExists,
@@ -33,6 +34,21 @@ const contentTypeOf = (fileDoc: Document, fallbackName?: string) =>
   (typeof fileDoc.contentType === "string" && fileDoc.contentType) ||
   (fallbackName && (mime.lookup(fallbackName) as string)) ||
   "application/octet-stream";
+
+/**
+ * Headers for serving a file inline on the app's own origin. Only allow-listed
+ * types render inline; anything else (an external .html or .svg, a forged
+ * mime) goes out as an opaque download, or its script would run as the viewer.
+ */
+const servingHeaders = (contentType: string): Record<string, string> => {
+  const base = contentType.split(";")[0].trim().toLowerCase();
+  const inline = ALLOWED_MIME_TYPES.has(base);
+  return {
+    "content-type": inline ? contentType : "application/octet-stream",
+    "x-content-type-options": "nosniff",
+    ...(inline ? {} : { "content-disposition": "attachment" }),
+  };
+};
 
 /** Stream a GridFS-backed file, honouring a single `Range` request. */
 const streamFromGridFS = (dbName: string, fileDoc: Document, request: Request) =>
@@ -66,10 +82,11 @@ const streamFromGridFS = (dbName: string, fileDoc: Document, request: Request) =
     }
 
     const headers: Record<string, string> = {
-      "content-type": contentType,
+      ...servingHeaders(contentType),
       "accept-ranges": "bytes",
-      // Content-addressed by sha256 — safe to cache hard.
-      "cache-control": "public, max-age=31536000, immutable",
+      // Content-addressed by sha256, so safe to cache hard; private because a
+      // shared proxy must not hand a login-only file to anyone else.
+      "cache-control": "private, max-age=31536000, immutable",
     };
     if (etag) headers.etag = etag;
 
@@ -115,11 +132,11 @@ const streamFromDisk = (fileDoc: Document, request?: Request) =>
     const size = stats.size;
     const contentType = contentTypeOf(fileDoc, fileDoc.path);
     const base: Record<string, string> = {
-      "content-type": contentType,
+      ...servingHeaders(contentType),
       "accept-ranges": "bytes",
     };
     if (contentType.startsWith("image/")) {
-      base["cache-control"] = "public, max-age=31536000";
+      base["cache-control"] = "private, max-age=31536000";
     }
 
     const range = request ? parseRangeHeader(request.headers.get("range"), size) : null;

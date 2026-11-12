@@ -9,7 +9,7 @@ const { ObjectId, GridFSBucket } = require("mongodb");
 const { runRoute } = require("@/lib/effect");
 const { setupTestMongo } = require("./helpers/mongo");
 const { uploadFile, listFiles } = require("@/app/api/files/handlers");
-const { streamFile } = require("@/app/api/files/[fileId]/handlers");
+const { streamFile, deleteFile } = require("@/app/api/files/[fileId]/handlers");
 
 jest.setTimeout(60_000);
 
@@ -76,7 +76,7 @@ describe("POST /api/files — GridFS", () => {
     expect(sample.filesId).toContain(fileId);
   });
 
-  test("a repeated upload dedups to one blob and returns the first id", async () => {
+  test("a repeated upload gets its own row on the same blob; deleting one keeps the other", async () => {
     const s1 = await makeSample();
     const s2 = await makeSample();
     const first = await (await upload({
@@ -88,9 +88,33 @@ describe("POST /api/files — GridFS", () => {
       metadata: JSON.stringify({ entryType: "sample", entryId: s2.toHexString() }),
     })).json();
 
-    expect(second.fileId).toBe(first.fileId);
+    expect(second.fileId).not.toBe(first.fileId);
     expect(await blobCount()).toBe(1);
-    expect(await mongo.db.collection("files").countDocuments()).toBe(1);
+    const rows = mongo.db.collection("files");
+    const [a, b] = await Promise.all(
+      [first.fileId, second.fileId].map((id) => rows.findOne({ _id: new ObjectId(id) })),
+    );
+    expect(b.storage.ref).toEqual(a.storage.ref);
+    expect(a.sha256).toBeDefined();
+    expect(b.sha256).toBeUndefined();
+
+    const del = await runRoute(deleteFile(first.fileId).pipe(Effect.provide(mongo.layer)));
+    expect(del.status).toBe(200);
+    expect(await blobCount()).toBe(1);
+    const res = await runRoute(
+      streamFile(second.fileId, new Request("http://x")).pipe(Effect.provide(mongo.layer)),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("col1,col2\n1,2\n");
+  });
+
+  test("rejects an empty file and leaves no blob", async () => {
+    const res = await upload({
+      file: new File([""], "empty.csv", { type: "text/csv" }),
+      metadata: JSON.stringify({ deferredLink: true }),
+    });
+    expect(res.status).toBe(400);
+    expect(await blobCount()).toBe(0);
   });
 
   test("accepts a video/* upload with the larger cap", async () => {

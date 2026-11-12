@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { Readable } from "stream";
+import { Readable, pipeline } from "stream";
 import Busboy from "busboy";
 import { GridFSBucket, ObjectId, type Db } from "mongodb";
 import { kindFromMime } from "@/shared/config/attachment-targets";
@@ -8,18 +8,32 @@ import { kindFromMime } from "@/shared/config/attachment-targets";
 export const BUCKET_NAME = "files";
 export const bucketFor = (db: Db) => new GridFSBucket(db, { bucketName: BUCKET_NAME });
 
-/** Store a whole buffer as a GridFS blob (migration/import paths). */
-export const putBuffer = (
+/**
+ * Stream a readable into a GridFS blob, hashing as it goes (the external-file
+ * import path). A failed read deletes whatever chunks already landed.
+ */
+export const putStream = (
   db: Db,
   filename: string,
-  buffer: Buffer,
+  source: Readable,
   mime: string,
-): Promise<ObjectId> =>
+): Promise<{ ref: ObjectId; sha256: string; size: number }> =>
   new Promise((resolve, reject) => {
-    const stream = bucketFor(db).openUploadStream(filename, { metadata: { contentType: mime } });
-    stream.on("error", reject);
-    stream.on("finish", () => resolve(stream.id as ObjectId));
-    stream.end(buffer);
+    const bucket = bucketFor(db);
+    const upload = bucket.openUploadStream(filename, { metadata: { contentType: mime } });
+    const hash = createHash("sha256");
+    let size = 0;
+    source.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      hash.update(chunk);
+    });
+    pipeline(source, upload, (err) => {
+      if (err) {
+        bucket.delete(upload.id as ObjectId).catch(() => {});
+        return reject(err);
+      }
+      resolve({ ref: upload.id as ObjectId, sha256: hash.digest("hex"), size });
+    });
   });
 
 /** Whether a GridFS blob (`_id: ref`) has any chunks — a cheap existence probe. */
@@ -223,13 +237,18 @@ export const streamUploadToGridFS = (request: Request, db: Db): Promise<UploadRe
       filePromise
         .then((file) => {
           if (settled) return;
+          if (file.size === 0) return fail(new UploadError("no-file", "The file is empty."));
           settled = true;
           resolve({ ...file, fields });
         })
         .catch(fail);
     });
 
-    Readable.fromWeb(request.body as Parameters<typeof Readable.fromWeb>[0]).pipe(bb);
+    // pipeline, not pipe: a client abort errors the source, and only pipeline
+    // forwards that, so the request settles and the partial blob is deleted.
+    pipeline(Readable.fromWeb(request.body as Parameters<typeof Readable.fromWeb>[0]), bb, (err) => {
+      if (err) fail(err);
+    });
   });
 
 export interface RangeSpec {

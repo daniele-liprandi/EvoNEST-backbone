@@ -180,6 +180,46 @@ describe("POST /api/files — external links", () => {
     expect(realFs.existsSync(p)).toBe(true);
   });
 
+  test("STORAGE_PATH is not an external root: another NEST's files stay unreachable", async () => {
+    const outside = nodePath.join(os.tmpdir(), `other-nest-${Date.now()}.csv`);
+    realFs.writeFileSync(outside, "secret");
+    try {
+      const { fileId } = await linkExternal(outside);
+      const res = await runRoute(
+        streamFile(fileId, new Request("http://x")).pipe(Effect.provide(mongo.layer)),
+      );
+      expect(res.status).toBe(409);
+    } finally {
+      realFs.rmSync(outside, { force: true });
+    }
+  });
+
+  test("an unlisted type (.html) is stored and served as an opaque download", async () => {
+    const p = writeExternal("page.html", "<script>alert(1)</script>");
+    const { fileId } = await linkExternal(p, { mime: "text/html" });
+    const doc = await mongo.db.collection("files").findOne({ _id: new ObjectId(fileId) });
+    expect(doc!.mime).toBe("application/octet-stream");
+
+    const res = await runRoute(
+      streamFile(fileId, new Request("http://x")).pipe(Effect.provide(mongo.layer)),
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/octet-stream");
+    expect(res.headers.get("content-disposition")).toBe("attachment");
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+  });
+
+  test("import refuses unlisted types and files over the size cap", async () => {
+    const html = await linkExternal(writeExternal("page2.html", "<p>x</p>"));
+    expect((await post({ method: "import", id: html.fileId })).status).toBe(400);
+
+    const big = writeExternal("big.png", "");
+    realFs.truncateSync(big, 21 * 1024 * 1024);
+    const png = await linkExternal(big);
+    expect((await post({ method: "import", id: png.fileId })).status).toBe(400);
+    expect(await mongo.db.collection("files.files").countDocuments()).toBe(0);
+  });
+
   test("unknown method is 400", async () => {
     expect((await post({ method: "frobnicate" })).status).toBe(400);
   });

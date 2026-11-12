@@ -260,6 +260,9 @@ const ImportPage = () => {
     /// Update getExpectedType function
     const getExpectedType = (field) => {
         if (customFields.has(field)) return 'string';
+        // The inferred schema reports stored ISO dates as strings, which would
+        // let "n/a" through to a server 400 halfway into the import.
+        if (field === 'date') return 'date';
         return fieldTypes[field] || 'string';
     };
 
@@ -812,13 +815,26 @@ const ImportPage = () => {
         // Transform data according to field mappings
         const transformedData = data.map(record => transformRecord(record));
 
-        // Sort data so parents are processed first
-        const sortedData = [...transformedData].sort((a, b) => {
-            // If an item has no parentId, it should come first
-            if (!a.parentId && b.parentId) return -1;
-            if (a.parentId && !b.parentId) return 1;
-            return 0;
-        });
+        // Parents before children at every level: order by depth in the CSV's
+        // own parent chain, so a grandchild never precedes its parent.
+        const byOriginalId = new Map(
+            transformedData.filter(r => r.originalId).map(r => [String(r.originalId), r])
+        );
+        const depthOf = (record) => {
+            let depth = 0;
+            const seen = new Set();
+            let parent = record.parentId && byOriginalId.get(String(record.parentId));
+            while (parent && !seen.has(parent)) {
+                seen.add(parent);
+                depth++;
+                parent = parent.parentId && byOriginalId.get(String(parent.parentId));
+            }
+            return depth;
+        };
+        const sortedData = transformedData
+            .map(record => ({ record, depth: depthOf(record) }))
+            .sort((a, b) => a.depth - b.depth)
+            .map(({ record }) => record);
 
         // Process records sequentially
         for (let i = 0; i < sortedData.length; i++) {

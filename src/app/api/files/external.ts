@@ -19,16 +19,15 @@ const canonical = (p: string): string => {
 };
 
 /**
- * Filesystem roots the server is allowed to read external files from — the
- * `EXTERNAL_FILE_ROOTS` list (delimited like `PATH`) plus `STORAGE_PATH`. An
- * external path outside every root is treated as "not reachable from the
- * server": links still hold, but streaming and importing return 409 and the UI
- * shows the path as copyable text.
+ * Filesystem roots the server is allowed to read external files from: the
+ * `EXTERNAL_FILE_ROOTS` list (delimited like `PATH`). An external path outside
+ * every root is treated as "not reachable from the server": links still hold,
+ * but streaming and importing return 409 and the UI shows the path as
+ * copyable text. `STORAGE_PATH` is deliberately not a root: it holds every
+ * NEST's legacy files, so a link into it would read another NEST's data.
  */
 const externalRoots = (): string[] =>
-  [process.env.EXTERNAL_FILE_ROOTS, process.env.STORAGE_PATH]
-    .filter((v): v is string => typeof v === "string" && v.length > 0)
-    .join(path.delimiter)
+  (process.env.EXTERNAL_FILE_ROOTS ?? "")
     .split(path.delimiter)
     .map((r) => r.trim())
     .filter(Boolean)
@@ -45,6 +44,8 @@ const isUnder = (candidate: string, roots: string[]) =>
  */
 export const resolveExternalPath = (p: unknown): string | null => {
   if (typeof p !== "string" || p.length === 0) return null;
-  const resolved = path.resolve(p);
-  return isUnder(canonical(resolved), externalRoots()) ? resolved : null;
+  // Return the canonical path, not the one given: opening the latter would
+  // follow a symlink swapped in after this check.
+  const real = canonical(path.resolve(p));
+  return isUnder(real, externalRoots()) ? real : null;
 };

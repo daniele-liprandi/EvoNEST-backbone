@@ -1,7 +1,7 @@
 import { Effect, Schema } from "effect";
 import { basename } from "path";
-import { stat, readFile } from "fs/promises";
-import { createHash } from "crypto";
+import { stat } from "fs/promises";
+import { createReadStream } from "fs";
 import { ObjectId, type Db, type Document } from "mongodb";
 import mime from "mime-types";
 import {
@@ -18,7 +18,14 @@ import {
   InternalError,
 } from "@/lib/effect";
 import { resolveAttachmentTarget, kindFromMime } from "@/shared/config/attachment-targets";
-import { bucketFor, putBuffer, streamUploadToGridFS, UploadError } from "./gridfs";
+import {
+  ALLOWED_MIME_TYPES,
+  bucketFor,
+  putStream,
+  sizeCapForMime,
+  streamUploadToGridFS,
+  UploadError,
+} from "./gridfs";
 import { resolveExternalPath } from "./external";
 
 const isHexId = (v: string) => ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
@@ -131,51 +138,62 @@ export const uploadFile = (request: Request) =>
       );
     }
 
-    // Content-addressed dedup: an identical blob is already stored, so drop this
-    // upload and hand back the id that already points at it. The `{ sha256: 1 }`
-    // unique index is the backstop for a race between the lookup and the insert.
-    const reuse = (doc: Document) =>
+    // Content-addressed dedup of the blob, not the row: every upload gets its
+    // own `files` row (deleting one entry's file must not take another's), and
+    // a repeat upload points that row at the blob already stored. The canonical
+    // row owns the unique top-level `sha256`; duplicates carry it only under
+    // `storage`, as migration 022 does. The unique index settles a race.
+    const now = new Date();
+    const row = (ref: ObjectId, canonical: boolean) => ({
+      _id: new ObjectId(),
+      name: upload.filename,
+      mime: upload.mime,
+      // Mirrored under the old key so readers not yet moved off `contentType` keep working.
+      contentType: upload.mime,
+      kind: kindFromMime(upload.mime),
+      size: upload.size,
+      ...(canonical ? { sha256: upload.sha256 } : {}),
+      storage: { backend: "gridfs", ref, sha256: upload.sha256 },
+      createdAt: now,
+      createdBy: user.doc?._id ?? user.sub,
+      metadata: { ...metadata, uploadDate: now, isTemporary: !!deferredLink },
+    });
+
+    const insertDuplicateOf = (canonicalDoc: Document) =>
       Effect.gen(function* () {
         yield* dropBlob(db, upload.ref);
-        return doc._id as ObjectId;
+        const doc = row(canonicalDoc.storage.ref as ObjectId, false);
+        yield* mongo.insertOne(dbName, "files", doc);
+        return doc._id;
       });
 
-    const existing = yield* mongo.findOne(dbName, "files", { sha256: upload.sha256 });
+    const existing = yield* mongo.findOne(dbName, "files", {
+      sha256: upload.sha256,
+      "storage.backend": "gridfs",
+    });
+    // Whether this request's own blob backs the new row (so unwinding drops it).
+    let ownsBlob = false;
     let fileId: ObjectId;
-    let created = false;
     if (existing) {
-      fileId = yield* reuse(existing);
+      fileId = yield* insertDuplicateOf(existing);
     } else {
-      const candidate = new ObjectId();
-      const now = new Date();
-      const inserted = yield* mongo
-        .insertOne(dbName, "files", {
-          _id: candidate,
-          name: upload.filename,
-          mime: upload.mime,
-          // Mirrored under the old key so readers not yet moved off `contentType` keep working.
-          contentType: upload.mime,
-          kind: kindFromMime(upload.mime),
-          size: upload.size,
-          sha256: upload.sha256,
-          storage: { backend: "gridfs", ref: upload.ref, sha256: upload.sha256 },
-          createdAt: now,
-          createdBy: user.doc?._id ?? user.sub,
-          metadata: { ...metadata, uploadDate: now, isTemporary: !!deferredLink },
-        })
-        .pipe(Effect.either);
-
+      const doc = row(upload.ref, true);
+      const inserted = yield* mongo.insertOne(dbName, "files", doc).pipe(Effect.either);
       if (inserted._tag === "Right") {
-        fileId = candidate;
-        created = true;
+        fileId = doc._id;
+        ownsBlob = true;
       } else {
-        // Either lost the race (another request stored this exact blob first) or
-        // the insert failed for another reason — in both cases this request's
-        // freshly-streamed blob is now an orphan.
-        const winner = yield* mongo.findOne(dbName, "files", { sha256: upload.sha256 });
-        yield* dropBlob(db, upload.ref);
-        if (!winner) return yield* Effect.fail(inserted.left);
-        fileId = winner._id as ObjectId;
+        // Lost the race to another request storing these exact bytes, or the
+        // insert failed for another reason.
+        const winner = yield* mongo.findOne(dbName, "files", {
+          sha256: upload.sha256,
+          "storage.backend": "gridfs",
+        });
+        if (!winner) {
+          yield* dropBlob(db, upload.ref);
+          return yield* Effect.fail(inserted.left);
+        }
+        fileId = yield* insertDuplicateOf(winner);
       }
     }
 
@@ -188,13 +206,11 @@ export const uploadFile = (request: Request) =>
         upload.filename,
       );
       if (!linked) {
-        // Only unwind a blob and a row this request actually created.
-        if (created) {
-          yield* dropBlob(db, upload.ref);
-          yield* mongo
-            .deleteOne(dbName, "files", { _id: fileId })
-            .pipe(Effect.catchAll(() => Effect.void));
-        }
+        // The row is always this request's; the blob only when it was new.
+        yield* mongo
+          .deleteOne(dbName, "files", { _id: fileId })
+          .pipe(Effect.catchAll(() => Effect.void));
+        if (ownsBlob) yield* dropBlob(db, upload.ref);
         return yield* Effect.fail(new NotFoundError({ resource: entryType as string }));
       }
     }
@@ -242,10 +258,13 @@ const linkExternal = (data: FilesPostData) =>
     const filePath = (data.path ?? "").trim();
     if (!filePath) return yield* Effect.fail(new ValidationError({ message: "path is required" }));
 
-    const mimeType =
+    const claimed =
       (typeof data.mime === "string" && data.mime) ||
       (mime.lookup(filePath) as string) ||
-      "application/octet-stream";
+      "";
+    // An unlisted type (an .html on a share, a forged mime) is stored as opaque
+    // bytes, so it is never served inline as markup.
+    const mimeType = ALLOWED_MIME_TYPES.has(claimed) ? claimed : "application/octet-stream";
     const fileId = new ObjectId();
     const now = new Date();
 
@@ -334,38 +353,72 @@ const importExternal = (data: FilesPostData) =>
         new ConflictError({ message: "External file not reachable from the server" }),
       );
     }
-    const buffer = yield* attempt(() => readFile(abs), "read external file").pipe(
-      Effect.catchAll(() =>
-        Effect.fail(new ConflictError({ message: "External file could not be read" })),
-      ),
-    );
-
-    const sha256 = createHash("sha256").update(buffer).digest("hex");
     const mimeType =
       (typeof fileDoc.mime === "string" && fileDoc.mime) ||
       (mime.lookup(abs) as string) ||
       "application/octet-stream";
+    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+      return yield* Effect.fail(
+        new ValidationError({ message: `${mimeType} files can only stay as external links` }),
+      );
+    }
+    const stats = yield* attempt(() => stat(abs), "fs.stat").pipe(
+      Effect.catchAll(() => Effect.succeed(null)),
+    );
+    if (!stats || !stats.isFile()) {
+      return yield* Effect.fail(new ConflictError({ message: "External file could not be read" }));
+    }
+    const cap = sizeCapForMime(mimeType);
+    if (stats.size > cap) {
+      return yield* Effect.fail(
+        new ValidationError({
+          message: `Too large to load into the NEST (limit ${Math.round(cap / (1024 * 1024))} MB); keep it as an external link`,
+        }),
+      );
+    }
 
-    const existing = yield* mongo.findOne(dbName, "files", { sha256 });
-    let ref: ObjectId;
-    let canonical = false;
-    if (existing?.storage?.backend === "gridfs") {
+    const stored = yield* attempt(
+      () => putStream(db, fileDoc.name ?? "imported", createReadStream(abs), mimeType),
+      "import external file",
+    ).pipe(
+      Effect.catchAll(() =>
+        Effect.fail(new ConflictError({ message: "External file could not be read" })),
+      ),
+    );
+    const { sha256 } = stored;
+
+    // Same blob model as uploads: reuse an identical stored blob and drop ours.
+    const existing = yield* mongo.findOne(dbName, "files", { sha256, "storage.backend": "gridfs" });
+    let ref = stored.ref;
+    const canonical = !existing;
+    if (existing) {
+      yield* dropBlob(db, stored.ref);
       ref = existing.storage.ref as ObjectId;
-    } else {
-      canonical = true;
-      ref = yield* Effect.promise(() => putBuffer(db, fileDoc.name ?? "imported", buffer, mimeType));
     }
 
     const set: Record<string, unknown> = {
       mime: mimeType,
       contentType: mimeType,
       kind: kindFromMime(mimeType),
-      size: buffer.length,
+      size: stored.size,
       storage: { backend: "gridfs", ref, sha256, importedFrom: fileDoc.storage.path },
     };
     if (canonical) set.sha256 = sha256;
 
-    yield* mongo.updateOne(dbName, "files", { _id: fileDoc._id }, { $set: set });
+    const updated = yield* mongo
+      .updateOne(dbName, "files", { _id: fileDoc._id }, { $set: set })
+      .pipe(Effect.either);
+    if (updated._tag === "Left") {
+      // A concurrent import or upload of the same bytes took the unique sha256.
+      const winner = canonical
+        ? yield* mongo.findOne(dbName, "files", { sha256, "storage.backend": "gridfs" })
+        : null;
+      if (!winner) return yield* Effect.fail(updated.left);
+      yield* dropBlob(db, stored.ref);
+      delete set.sha256;
+      set.storage = { ...(set.storage as object), ref: winner.storage.ref };
+      yield* mongo.updateOne(dbName, "files", { _id: fileDoc._id }, { $set: set });
+    }
     return yield* ok({ fileId: String(fileDoc._id), status: 200 });
   });
 

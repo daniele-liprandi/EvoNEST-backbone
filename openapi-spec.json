@@ -615,7 +615,8 @@
         "type": "object",
         "required": [
           "name",
-          "type"
+          "type",
+          "date"
         ],
         "properties": {
           "_id": {
@@ -2872,7 +2873,8 @@
                     "type": "animal",
                     "family": "Araneidae",
                     "genus": "Nephila",
-                    "species": "clavipes"
+                    "species": "clavipes",
+                    "date": "2026-06-03"
                   }
                 },
                 "update_sample": {

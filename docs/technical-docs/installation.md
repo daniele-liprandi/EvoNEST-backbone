@@ -57,7 +57,7 @@ STORAGE_PATH='/usr/evonest/file_storage_dev'
 ```
 
 ::: tip File storage
-Uploaded files are stored in **GridFS**, inside the database, so they travel with a `mongodump`/`mongorestore`. `STORAGE_PATH` is only read by the legacy disk-to-GridFS import migration (`022_files_to_gridfs`) and as an allowed root for external file links. A fresh install can point it anywhere writable.
+Uploaded files are stored in **GridFS**, inside the database, so they travel with a `mongodump`/`mongorestore`. `STORAGE_PATH` is only read by the legacy disk-to-GridFS import migration (`022_files_to_gridfs`). It is not an allowed root for external file links, since it holds every NEST's files. A fresh install can point it anywhere writable.
 
 **Upgrading an existing install:** run `node src/migrations/022_files_to_gridfs.js --dryrun` to preview, then without `--dryrun` to sweep disk files into GridFS. The migration also (re)creates the `files.sha256` dedup index on each NEST, so 011 does not need re-running.
 

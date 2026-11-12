@@ -153,8 +153,8 @@ registered as an **external** file instead of being copied in:
   `files.link-external`. `{ method: "import" }` streams the file into GridFS once,
   flips the record, and keeps the old path as `storage.importedFrom` (needs
   `files.upload`).
-- The server may only read external paths under `EXTERNAL_FILE_ROOTS` (or
-  `STORAGE_PATH`). A path outside every root still holds as a link, but
+- The server may only read external paths under `EXTERNAL_FILE_ROOTS`.
+  `STORAGE_PATH` is not a root: it holds every NEST's legacy files. A path outside every root still holds as a link, but
   `check` reports `unknown` and streaming / download / import return `409` — the
   UI then shows the path as copyable text.
 - `DELETE` drops the row and never touches the filesystem for an external file.

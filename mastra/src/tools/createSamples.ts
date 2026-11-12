@@ -234,14 +234,13 @@ const processRecord = (
         rec.date = parsed.toISOString().slice(0, 10)
       } else {
         yield* Ref.update(warningsRef, ws => [
-          ...ws, `Could not parse date "${rec.date}" for record ${index + 1} — left as-is.`,
+          ...ws, `Could not parse date "${rec.date}" for record ${index + 1}; the NEST will reject it, ask the researcher for the collection date.`,
         ])
       }
     }
     if (!rec.date) {
-      rec.date = new Date().toISOString().slice(0, 10)
       yield* Ref.update(warningsRef, ws => [
-        ...ws, `No date for record ${index + 1} — defaulted to today.`,
+        ...ws, `No date for record ${index + 1}; the NEST will reject it, ask the researcher for the collection date.`,
       ])
     }
 

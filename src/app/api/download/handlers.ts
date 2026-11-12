@@ -40,6 +40,7 @@ const attachmentHeaders = (name: unknown, size?: number) => {
   const headers: Record<string, string> = {
     "Content-Disposition": `attachment; filename="${encodeURIComponent(toSafeFilename(name))}"`,
     "Content-Type": "application/octet-stream",
+    "X-Content-Type-Options": "nosniff",
   };
   if (typeof size === "number") headers["Content-Length"] = String(size);
   return headers;
