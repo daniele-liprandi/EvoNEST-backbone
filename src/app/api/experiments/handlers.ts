@@ -289,25 +289,31 @@ export const deleteExperiment = (request: Request) =>
       return yield* Effect.fail(new InternalError({ message: "Failed to delete experiment" }));
     }
 
-    // The experiment's files go only when nothing else points at them: another
-    // experiment (fileId / filesId) or an attachment. A failed cleanup leaves an
-    // unreferenced file behind and must not fail the delete.
     const fileIds = [
       ...new Set([experiment.fileId, ...(Array.isArray(experiment.filesId) ? experiment.filesId : [])].filter(isHexId)),
     ];
-    let filesDeleted = 0;
+    const filesDeleted: string[] = [];
+    const filesKept: string[] = [];
     for (const fileId of fileIds) {
       const oid = new ObjectId(fileId);
+      const fileDoc = yield* mongo.findOne(dbName, FILES, { _id: oid });
+      if (!fileDoc) continue;
+      const fileName = fileDoc.name ?? fileId;
       const [byExperiment, byAttachment] = yield* Effect.all([
         mongo.findOne(dbName, EXPERIMENTS, { $or: [{ fileId }, { filesId: fileId }] }),
         mongo.findOne(dbName, ATTACHMENTS, { fileId: oid }),
       ]);
-      if (byExperiment || byAttachment) continue;
-      const fileDoc = yield* mongo.findOne(dbName, FILES, { _id: oid });
-      if (!fileDoc) continue;
+      if (byExperiment) {
+        filesKept.push(`File ${fileName} was not deleted as it is used by experiment ${byExperiment.name ?? byExperiment._id}`);
+        continue;
+      }
+      if (byAttachment) {
+        filesKept.push(`File ${fileName} was not deleted as it is used by attachment ${byAttachment._id}`);
+        continue;
+      }
       const removed = yield* mongo.deleteOne(dbName, FILES, { _id: oid });
       if (removed.deletedCount === 0) continue;
-      filesDeleted += 1;
+      filesDeleted.push(fileName);
       if (fileDoc.storage?.backend === "gridfs") {
         const db = yield* mongo.db(dbName);
         yield* Effect.promise(() => deleteBlobIfUnreferenced(db, fileDoc.storage.ref as ObjectId));
@@ -316,10 +322,5 @@ export const deleteExperiment = (request: Request) =>
       }
     }
 
-    return yield* ok({
-      message: "Experiment deleted successfully",
-      fileDeleted: filesDeleted > 0,
-      fileDocDeleted: filesDeleted > 0,
-      filesDeleted,
-    });
+    return yield* ok({ message: "Experiment deleted successfully", filesDeleted, filesKept });
   });

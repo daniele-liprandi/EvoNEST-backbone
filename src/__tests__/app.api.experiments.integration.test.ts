@@ -199,7 +199,7 @@ describe("experiments — delete + the experiments.delete gate (#162)", () => {
 
     const res = await del(id);
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ fileDeleted: true, filesDeleted: 1 });
+    expect(await res.json()).toMatchObject({ filesDeleted: ["a.txt"], filesKept: [] });
     expect(await mongo.db.collection("files").countDocuments({ _id: new ObjectId(fileId) })).toBe(0);
     expect(await blobExists(ref)).toBe(false);
   });
@@ -211,7 +211,12 @@ describe("experiments — delete + the experiments.delete gate (#162)", () => {
     await experimentWith({ filesId: [shared.fileId] });
     await mongo.db.collection("attachments").insertOne({ fileId: new ObjectId(attached.fileId), targetType: "sample" });
 
-    expect(await (await del(id)).json()).toMatchObject({ fileDeleted: false, filesDeleted: 0 });
+    const body = await (await del(id)).json();
+    expect(body.filesDeleted).toEqual([]);
+    expect(body.filesKept).toEqual([
+      "File shared.txt was not deleted as it is used by experiment E",
+      expect.stringMatching(/^File attached\.txt was not deleted as it is used by attachment /),
+    ]);
     expect(await blobExists(shared.ref)).toBe(true);
     expect(await blobExists(attached.ref)).toBe(true);
     await mongo.db.collection("attachments").deleteMany({});

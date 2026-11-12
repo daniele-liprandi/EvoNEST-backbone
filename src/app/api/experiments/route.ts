@@ -26,7 +26,7 @@
  *     summary: Delete an experiment and its attached file
  *     tags: [Experiments]
  *     responses:
- *       200: { description: "{ message, fileDeleted, fileDocDeleted, filesDeleted }; files go only when no other experiment or attachment uses them" }
+ *       200: { description: "{ message, filesDeleted: [name], filesKept: [reason] }" }
  *       400: { description: Invalid id }
  *       401: { description: Unauthorized }
  *       403: { description: Missing the experiments.delete capability }
