@@ -140,7 +140,8 @@ describe("GET /api/analysis", () => {
     const { s1 } = await seedSamples();
     await mongo.db.collection("traits").insertMany([
       { quantity: "mass", value: 1, sampleId: s1.toHexString(), nfibres: "Bundle" },
-      { quantity: "modulus", value: 9e9, sampleId: s1.toHexString() },
+      { quantity: "modulus", value: 9e9, unit: "Pa", sampleId: s1.toHexString() },
+      { quantity: "modulus", value: 9, unit: "GPa", sampleId: s1.toHexString() },
     ]);
     const body = await (await options("?source=traits")).json();
     const ids = body.dimensions.map((d: { id: string }) => d.id);
@@ -150,8 +151,8 @@ describe("GET /api/analysis", () => {
     expect(body.dimensions.find((d: { id: string }) => d.id === "sex").values).toEqual(["female", "male", NOT_RECORDED]);
     expect(body.dimensions.find((d: { id: string }) => d.id === "nfibres").values).toEqual(["bundle", NOT_RECORDED]);
     expect(body.quantities).toEqual([
-      { value: "mass", label: "Mass", unit: "g", count: 1 },
-      { value: "modulus", label: "modulus", unit: null, count: 1 },
+      { value: "mass", label: "Mass", unit: "g", count: 1, units: [] },
+      { value: "modulus", label: "modulus", unit: null, count: 2, units: ["GPa", "Pa"] },
     ]);
 
     const samples = await (await options("?source=samples")).json();

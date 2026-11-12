@@ -52,9 +52,9 @@ export const analysisOptions = (request: Request) =>
       attempt(
         () =>
           traitsColl
-            .aggregate<{ _id: string; count: number }>([
+            .aggregate<{ _id: string; count: number; units: unknown[] }>([
               { $match: { quantity: { $type: "string" } } },
-              { $group: { _id: "$quantity", count: { $sum: 1 } } },
+              { $group: { _id: "$quantity", count: { $sum: 1 }, units: { $addToSet: "$unit" } } },
             ])
             .toArray(),
         "traits.aggregate quantities",
@@ -84,13 +84,14 @@ export const analysisOptions = (request: Request) =>
 
     const configured = traitTypesConfig as Config[];
     const countBy = new Map(counts.map((c) => [c._id, c.count]));
+    const unitsBy = new Map(counts.map((c) => [c._id, c.units.filter((u): u is string => typeof u === "string" && u !== "").sort()]));
     const quantities = [
       ...configured.filter((t) => t.value).map((t) => ({ value: t.value!, label: t.label ?? t.value!, unit: t.unit ?? null })),
       ...[...countBy.keys()]
         .filter((q) => !configured.some((t) => t.value === q))
         .sort()
         .map((q) => ({ value: q, label: q, unit: null })),
-    ].map((q) => ({ ...q, count: countBy.get(q.value) ?? 0 }));
+    ].map((q) => ({ ...q, count: countBy.get(q.value) ?? 0, units: unitsBy.get(q.value) ?? [] }));
 
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
     return yield* ok({

@@ -12,7 +12,7 @@ import type { Source } from "@/lib/analysis/url-state";
 export type { Source, AnalysisUrlState };
 
 export type DimensionOption = { id: string; label: string; values: string[] };
-export type QuantityOption = { value: string; label: string; unit: string | null; count: number };
+export type QuantityOption = { value: string; label: string; unit: string | null; count: number; units: string[] };
 
 export type AnalysisOptions = { source: Source; dimensions: DimensionOption[]; quantities: QuantityOption[] };
 

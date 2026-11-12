@@ -171,7 +171,13 @@ function SummaryTablesContent() {
             {result?.unit && <Badge variant="secondary">{result.unit}</Badge>}
             {state.source === "traits" && quantityOption && !quantityOption.unit && (
               <span className="text-xs text-muted-foreground">
-                No unit set in Settings for this trait type. Values are reported as is.
+                No default unit set for this trait type.
+                {quantityOption.units.length > 0 && ` Units found in the existing data: ${quantityOption.units.join(", ")}.`}{" "}
+                To set a default unit, go to{" "}
+                <Link href="/settings/types#traitquantities" className="underline underline-offset-2">
+                  Settings → Trait types
+                </Link>
+                .
               </span>
             )}
           </div>
