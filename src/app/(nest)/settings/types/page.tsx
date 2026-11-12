@@ -462,7 +462,7 @@ export default function TypesPage() {
 
           <TypeTable
             title="Trait types"
-            description="Trait types this lab records, with their default unit. Aliases are names from file parsers that are stored as this trait type."
+            description="Aliases are names from file parsers that are stored as this trait type."
             data={configs.traitquantities}
             showColumns={["label", "value", "unit", "aliases", "description"]}
             configType="traitquantities"
