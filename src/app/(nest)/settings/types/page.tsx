@@ -458,7 +458,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Trait types"
-            description="Trait types this lab records, with their default unit"
             data={configs.traitquantities}
             showColumns={["label", "value", "unit", "description"]}
             configType="traitquantities"
