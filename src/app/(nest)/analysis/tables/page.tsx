@@ -171,7 +171,7 @@ function SummaryTablesContent() {
             {result?.unit && <Badge variant="secondary">{result.unit}</Badge>}
             {state.source === "traits" && quantityOption && !quantityOption.unit && (
               <span className="text-xs text-muted-foreground">
-                Values are shown as stored; this trait type has no unit set in Settings.
+                No unit set in Settings for this trait type. Values are reported as is.
               </span>
             )}
           </div>

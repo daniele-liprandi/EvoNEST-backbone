@@ -2,7 +2,6 @@ import type { AnalysisResult } from "@/hooks/useAnalysis";
 import { formatStat, type Aggregation, type Summary } from "@/lib/analysis/stats";
 import { cn } from "@/lib/utils";
 
-/** Empty cells are left blank. Totals are not shaded. */
 export function SummaryTable({
   result,
   rowLabels,
