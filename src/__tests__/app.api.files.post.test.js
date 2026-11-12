@@ -108,6 +108,42 @@ describe("POST /api/files — GridFS", () => {
     expect(await res.text()).toBe("col1,col2\n1,2\n");
   });
 
+  test("after the row holding the unique sha256 is deleted, a repeat upload still reuses the blob", async () => {
+    const meta = JSON.stringify({ deferredLink: true });
+    const first = await (await upload({ file: csvFile("a.csv"), metadata: meta })).json();
+    const second = await (await upload({ file: csvFile("b.csv"), metadata: meta })).json();
+    await runRoute(deleteFile(first.fileId).pipe(Effect.provide(mongo.layer)));
+
+    const third = await (await upload({ file: csvFile("c.csv"), metadata: meta })).json();
+
+    expect(await blobCount()).toBe(1);
+    const rows = mongo.db.collection("files");
+    const [b, c] = await Promise.all([second, third].map((r) => rows.findOne({ _id: new ObjectId(r.fileId) })));
+    expect(c.storage.ref).toEqual(b.storage.ref);
+  });
+
+  test("when the shared blob is already gone, the new row keeps this upload's own blob", async () => {
+    const sha256 = require("crypto").createHash("sha256").update("col1,col2\n1,2\n").digest("hex");
+    // A row whose blob was reclaimed between the lookup and the insert.
+    await mongo.db.collection("files").insertOne({ name: "ghost.csv", storage: { backend: "gridfs", ref: new ObjectId(), sha256 } });
+
+    const { fileId } = await (await upload({ file: csvFile(), metadata: JSON.stringify({ deferredLink: true }) })).json();
+
+    const doc = await mongo.db.collection("files").findOne({ _id: new ObjectId(fileId) });
+    expect(await mongo.db.collection("files.files").countDocuments({ _id: doc.storage.ref })).toBe(1);
+    const res = await runRoute(streamFile(fileId, new Request("http://x")).pipe(Effect.provide(mongo.layer)));
+    expect(await res.text()).toBe("col1,col2\n1,2\n");
+  });
+
+  test("putStream stops a stream that passes its cap and leaves no blob", async () => {
+    const { putStream, UploadError } = require("@/app/api/files/gridfs");
+    const { Readable } = require("stream");
+    const source = Readable.from([Buffer.alloc(10), Buffer.alloc(10)]);
+    await expect(putStream(mongo.db, "big.bin", source, "text/plain", 15)).rejects.toBeInstanceOf(UploadError);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(await blobCount()).toBe(0);
+  });
+
   test("rejects an empty file and leaves no blob", async () => {
     const res = await upload({
       file: new File([""], "empty.csv", { type: "text/csv" }),
