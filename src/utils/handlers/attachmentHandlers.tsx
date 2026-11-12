@@ -65,11 +65,14 @@ export const uploadAndAttach = async (
   file: File,
   target: { targetType: string; targetId: string; category?: string; responsible: string },
   storageType = "attachments",
+  { quiet = false }: { quiet?: boolean } = {},
 ): Promise<string | null> => {
-  const fileId = await uploadFile(file, storageType, {
-    deferredLink: true,
-    mediaType: file.type,
-  });
+  const fileId = await uploadFile(
+    file,
+    storageType,
+    { deferredLink: true, mediaType: file.type },
+    { quiet },
+  );
   if (!fileId) return null;
   return createAttachment({
     fileId,

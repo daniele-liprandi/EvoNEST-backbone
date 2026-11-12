@@ -9,11 +9,7 @@ export function AttachmentsCard({ sample, sampleId }) {
     return <Skeleton className="h-[200px] w-full" />;
   }
   return (
-    <AttachmentPanel
-      targetType="sample"
-      targetId={id}
-      description="Images and files linked to this sample"
-    />
+    <AttachmentPanel targetType="sample" targetId={id} />
   );
 }
 

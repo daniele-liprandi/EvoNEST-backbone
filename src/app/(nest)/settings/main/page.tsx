@@ -578,10 +578,6 @@ export default function MainSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Storage</CardTitle>
-          <CardDescription>
-            Files uploaded into this NEST are stored in the database and travel with a
-            backup. External links are counted but their bytes live elsewhere.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {usageError ? (
@@ -591,7 +587,7 @@ export default function MainSettingsPage() {
           ) : (
             <>
               <p className="text-sm">
-                <span className="font-medium">{formatBytes(usage.gridfsBytes)}</span> managed
+                <span className="font-medium">{formatBytes(usage.gridfsBytes)}</span> uploaded
                 {" · "}
                 {usage.fileCount} file{usage.fileCount === 1 ? "" : "s"}
                 {" · "}
@@ -599,8 +595,7 @@ export default function MainSettingsPage() {
               </p>
               {usage.gridfsBytes >= MANAGED_STORAGE_SOFT_LIMIT && (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  This NEST is carrying a lot of managed storage. For large datasets you can
-                  link the files where they live instead of loading them in.
+                  Large datasets can be linked instead of uploaded.
                 </p>
               )}
             </>

@@ -990,7 +990,7 @@ export const traitAttachmentsColumn = () => ({
           <AttachmentPanel
             targetType="trait"
             targetId={trait._id}
-            description="Images and files linked to this measurement"
+            variant="full"
             className="border-0 shadow-none"
           />
         </DialogContent>
