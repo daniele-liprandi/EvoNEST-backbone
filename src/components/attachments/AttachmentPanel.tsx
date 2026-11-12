@@ -604,6 +604,12 @@ function AttachmentRow({
   );
 }
 
+const STATUS_LABEL: Record<string, string> = {
+  ok: "reachable",
+  missing: "missing",
+  unknown: "outside server roots",
+};
+
 const STATUS_STYLE: Record<string, string> = {
   ok: "border-transparent bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
   missing: "border-transparent bg-destructive/15 text-destructive",
@@ -646,8 +652,12 @@ function ExternalControls({
           external
         </Badge>
         {status && (
-          <Badge variant="outline" className={STATUS_STYLE[status]}>
-            {status === "ok" ? "reachable" : status}
+          <Badge
+            variant="outline"
+            className={STATUS_STYLE[status]}
+            title={status === "unknown" ? "The server may only read paths under EXTERNAL_FILE_ROOTS" : undefined}
+          >
+            {STATUS_LABEL[status]}
           </Badge>
         )}
         {file.lastCheckedAt && (
