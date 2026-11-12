@@ -32,7 +32,7 @@ const BOTH: Source[] = ["samples", "traits"];
 
 const BUILTIN: Dimension[] = [
   { id: "type", label: "Sample type", sources: BOTH, get: ({ sample }) => text(sample.type) },
-  // `silktype` is the legacy silk-only name for `subsampletype`.
+  // `silktype` is the old name of `subsampletype`
   {
     id: "subsampletype",
     label: "Subsample type",
@@ -89,17 +89,11 @@ const BUILTIN: Dimension[] = [
   },
 ];
 
-// Configured fields that make no sense as a grouping: free text, dates (the
-// built-in year/month buckets cover the collection date) and fields with their
-// own built-in dimension above.
+// Not used as dimensions: free text, dates (year and month cover them) and
+// fields with a built-in dimension
 const SKIP_FIELD_KINDS = new Set(["textarea", "date"]);
 const SKIP_FIELD_KEYS = new Set(["taxonomy", "parent", "responsible", "date", "subsampletype"]);
 
-/**
- * Every dimension a summary can group or filter on: the built-ins plus the
- * fields configured on the lab's sample types. Internal keys (`_id`, logbook,
- * timestamps) never appear.
- */
 export function buildDimensions(sampleTypesConfig: unknown[]): Dimension[] {
   const taken = new Set(BUILTIN.map((d) => d.id));
   const fields: Dimension[] = [];

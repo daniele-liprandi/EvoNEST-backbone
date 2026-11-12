@@ -4,7 +4,6 @@ import type { DimensionOption } from "@/hooks/useAnalysis";
 
 const NONE = "__none__";
 
-/** Pick one dimension; with `noneLabel`, choosing nothing is an option too. */
 export function DimensionSelect({
   id,
   label,

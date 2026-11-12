@@ -15,7 +15,6 @@ const configData = (dbName: string, type: string) =>
     (doc) => (Array.isArray(doc?.data) ? (doc!.data as unknown[]) : []),
   );
 
-/** Everything a record needs to resolve its dimensions. */
 const loadContext = (dbName: string) =>
   Effect.gen(function* () {
     const mongo = yield* Mongo;
@@ -37,8 +36,6 @@ const record = (
 ): AnalysisRecord => ({ dims: Object.fromEntries(dims.map((d) => [d.id, d.get(ctx)])), value });
 
 const parseSource = (raw: string | null | undefined): Source => (raw === "samples" ? "samples" : "traits");
-
-// --- GET: dimensions, their values, and the trait types with data ------------
 
 export const analysisOptions = (request: Request) =>
   Effect.gen(function* () {
@@ -64,8 +61,7 @@ export const analysisOptions = (request: Request) =>
       ),
     ]);
 
-    // Values per dimension: sample dimensions from the samples, trait-only ones
-    // from the traits that carry them.
+    // Trait-only dimensions take their values from the traits
     const values = new Map(dims.map((d) => [d.id, new Set<string>()]));
     for (const sample of samples) {
       for (const d of dims) {
@@ -110,8 +106,6 @@ export const analysisOptions = (request: Request) =>
     });
   });
 
-// --- POST: one summary --------------------------------------------------------
-
 const Body = Schema.Struct({
   source: Schema.optional(Schema.Literal("samples", "traits")),
   rows: Schema.optional(Schema.Array(Schema.String)),
@@ -151,7 +145,7 @@ export const runAnalysis = (request: Request) =>
     } else {
       const quantity = body.quantity!;
       const traitTypes = (yield* configData(dbName, "traitquantities")) as Config[];
-      // An absent config means the built-in base units, not none.
+      // Without a config, the built-in base units are used
       const baseUnitsConfig = yield* configData(dbName, "baseunits");
       const baseUnits = baseUnitsConfig.length ? baseUnitsConfig : undefined;
       const target = getDefaultUnitForQuantity(quantity, traitTypes) as string | null;
@@ -162,12 +156,12 @@ export const runAnalysis = (request: Request) =>
       records = [];
       for (const trait of traits) {
         const sample = samplesById.get(String(trait.sampleId ?? ""));
-        // A trait whose sample is gone has no dimensions to report under.
+        // Traits of deleted samples are skipped
         if (!sample) continue;
         let value = typeof trait.value === "number" ? trait.value : Number(trait.value);
         if (!Number.isFinite(value)) continue;
         if (convert && target && trait.unit && trait.unit !== target) {
-          // Incompatible units leave the value as stored.
+          // Values with incompatible units are kept as stored
           value = (convertMeasurement(value, trait.unit, target, baseUnits) as number | null) ?? value;
         }
         records.push(record(dims, { sample, trait, samplesById, userNames }, value));

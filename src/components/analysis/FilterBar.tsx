@@ -9,10 +9,7 @@ import { cn } from "@/lib/utils";
 const summary = (values: string[]) =>
   values.length === 0 ? "any" : values.length <= 2 ? values.join(", ") : `${values.length} values`;
 
-/**
- * Value filters, one per dimension. A dimension with no values ticked does not
- * filter; ticking values keeps only the records that have one of them.
- */
+/** A dimension without selected values is not filtered. */
 export function FilterBar({
   dimensions,
   filters,

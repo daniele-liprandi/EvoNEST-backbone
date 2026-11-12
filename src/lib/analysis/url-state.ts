@@ -13,13 +13,13 @@ export type AnalysisUrlState = {
 };
 
 const FILTER_PREFIX = "f.";
-// Filter values may contain commas (a free-text field); "|" is rarer.
+// Filter values can contain commas
 const SEP = "|";
 
 export function parseAnalysisState(params: URLSearchParams, defaults: Partial<AnalysisUrlState> = {}): AnalysisUrlState {
   const filters: Record<string, string[]> = {};
   params.forEach((value, key) => {
-    // An empty filter is kept: the chip stays on screen until values are ticked.
+    // Empty filters are kept so that their chip stays visible
     if (key.startsWith(FILTER_PREFIX)) filters[key.slice(FILTER_PREFIX.length)] = value ? value.split(SEP) : [];
   });
   const rows = params.get("rows");

@@ -47,7 +47,7 @@ function SummaryTablesContent() {
   const request = useMemo(() => {
     if (!options) return null;
     if (state.source === "traits" && !quantity) return null;
-    // Drop dimensions this source does not have (e.g. after switching source).
+    // After a source switch, some dimensions may not exist
     const known = new Set(options.dimensions.map((d) => d.id));
     return {
       source: state.source,

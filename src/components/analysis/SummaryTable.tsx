@@ -2,11 +2,7 @@ import type { AnalysisResult } from "@/hooks/useAnalysis";
 import { formatStat, type Aggregation, type Summary } from "@/lib/analysis/stats";
 import { cn } from "@/lib/utils";
 
-/**
- * The pivoted table: row dimensions down the side, column values across, row
- * and column totals. Empty cells are blank, not 0. The heatmap shades body
- * cells (not totals) on the theme's primary colour.
- */
+/** Empty cells are left blank. Totals are not shaded. */
 export function SummaryTable({
   result,
   rowLabels,

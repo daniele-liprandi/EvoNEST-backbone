@@ -1,6 +1,3 @@
-// Summary statistics shared by every analysis view, so Trait statistics and
-// Summary tables report the same numbers for the same grouping.
-
 export const AGGREGATIONS = ["n", "mean", "sd", "min", "max", "median"] as const;
 export type Aggregation = (typeof AGGREGATIONS)[number];
 
@@ -15,11 +12,7 @@ export const AGGREGATION_LABELS: Record<Aggregation, string> = {
 
 export type Summary = Record<Aggregation, number | null>;
 
-/**
- * `n` counts the records in the group; the value statistics use the numeric
- * values among them. `sd` is the sample standard deviation (n - 1), so a group
- * of one has none.
- */
+/** `sd` is the sample standard deviation (n - 1). */
 export function summarise(count: number, values: number[]): Summary {
   const valid = values.filter((v) => typeof v === "number" && Number.isFinite(v));
   if (valid.length === 0) {
@@ -33,7 +26,7 @@ export function summarise(count: number, values: number[]): Summary {
   return { n: count, mean, sd, min: sorted[0], max: sorted[k - 1], median };
 }
 
-/** Four significant figures, without trailing zeros; blank for no value. */
+/** Four significant figures */
 export function formatStat(value: number | null | undefined, aggregation: Aggregation): string {
   if (value === null || value === undefined) return "";
   if (aggregation === "n") return String(value);

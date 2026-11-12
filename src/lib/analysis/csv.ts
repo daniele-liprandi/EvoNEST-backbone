@@ -3,11 +3,7 @@ import { formatStat, type Aggregation } from "./stats";
 
 const cell = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
 
-/**
- * The pivoted table as CSV: one column per row dimension, one per column value
- * (or a single value column), then the row total. The last line holds the
- * column totals. Empty cells stay empty.
- */
+/** The last line holds the column totals. */
 export function pivotToCsv(
   result: PivotResult,
   rowLabels: string[],

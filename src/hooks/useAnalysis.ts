@@ -49,16 +49,13 @@ const postFetcher = async ([url, body]: [string, string]): Promise<AnalysisResul
   return res.json();
 };
 
-/** Runs the summary; `null` skips it (e.g. no trait type chosen yet). */
 export function useAnalysisResult(request: AnalysisRequest | null) {
   const key = request ? ([`${prepend_path}/api/analysis`, JSON.stringify(request)] as [string, string]) : null;
   const { data, error, isLoading } = useSWR<AnalysisResult>(key, postFetcher, { keepPreviousData: true });
   return { result: data, resultError: error as FetchError | undefined, loading: isLoading };
 }
 
-// --- URL state ------------------------------------------------------------------
-
-/** Page state kept in the URL, so a view can be bookmarked and shared. */
+/** Kept in the URL so that a view can be bookmarked and shared. */
 export function useAnalysisUrlState(defaults: Partial<AnalysisUrlState>) {
   const params = useSearchParams();
   const router = useRouter();

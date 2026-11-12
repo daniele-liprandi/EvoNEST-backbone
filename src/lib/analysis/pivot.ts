@@ -1,6 +1,6 @@
 import { summarise, type Summary } from "./stats";
 
-/** Shown, sorted last, and filtered on, for a record with no value for a dimension. */
+/** Records without a value for a dimension; sorted last. */
 export const NOT_RECORDED = "Not recorded";
 
 export type AnalysisRecord = {
@@ -23,7 +23,6 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "bas
 const compareKeys = (a: string, b: string) =>
   a === b ? 0 : a === NOT_RECORDED ? 1 : b === NOT_RECORDED ? -1 : collator.compare(a, b);
 
-/** Keep records whose value for each filtered dimension is one of the allowed values. */
 export function applyFilters(records: AnalysisRecord[], filters: Record<string, string[]>): AnalysisRecord[] {
   const active = Object.entries(filters).filter(([, allowed]) => allowed.length > 0);
   if (active.length === 0) return records;
@@ -38,10 +37,6 @@ const add = (b: Bucket, r: AnalysisRecord) => {
 };
 const done = (b: Bucket) => summarise(b.count, b.values);
 
-/**
- * Cross-tabulate records: one row per combination of the `rows` dimensions,
- * one column per value of `column` (or none), with row, column and grand totals.
- */
 export function pivot(records: AnalysisRecord[], rows: string[], column: string | null): PivotResult {
   const rowBuckets = new Map<string, { key: string[]; cells: Map<string, Bucket>; total: Bucket }>();
   const columnBuckets = new Map<string, Bucket>();
