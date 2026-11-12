@@ -9,7 +9,9 @@
  *       - { in: query, name: includeOriginalData, schema: { type: boolean } }
  *       - { in: query, name: includeTraitsData, schema: { type: boolean } }
  *       - { in: query, name: related, schema: { type: boolean } }
- *       - { in: query, name: type, schema: { type: string } }
+ *       - { in: query, name: technique, schema: { type: string } }
+ *       - { in: query, name: kind, schema: { type: string, enum: [measurement, protocol] } }
+ *       - { in: query, name: parentId, schema: { type: string }, description: "`null` for top-level experiments, or a protocol experiment id for its measurements" }
  *     responses:
  *       200: { description: List of experiments }
  *       401: { description: Unauthorized }

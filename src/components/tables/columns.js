@@ -326,6 +326,12 @@ export const typeColumn = () => (
     header: "Type",
   }
 );
+export const techniqueColumn = () => (
+  {
+    accessorKey: "technique",
+    header: "Technique",
+  }
+);
 export const dateColumn = () => (
   {
     accessorKey: "date",

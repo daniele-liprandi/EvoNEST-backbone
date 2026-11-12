@@ -101,7 +101,7 @@ export class LoggerMateGPSParser extends BaseDataFormatParser {
             // Create experiment data structure
             const experimentData = this.createExperimentData({
                 name: experimentName,
-                type: this.primaryExperimentType,
+                technique: this.primaryExperimentType,
                 filename: fileMetadata?.filename || 'gps_data.txt',
                 notes: this.generateNotes(measurements, metrics),
                 data: {

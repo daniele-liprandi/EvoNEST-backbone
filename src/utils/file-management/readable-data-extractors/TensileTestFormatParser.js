@@ -108,7 +108,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             // Create experiment data structure
             const experimentData = this.createExperimentData({
                 name: `TensileTest_${metadata?.filename?.replace(/\.[^/.]+$/, '') || 'unknown'}`,
-                type: 'tensile_test',
+                technique: 'tensile_test',
                 filename: metadata?.filename || 'unknown.txt',
                 sampleId: textFields?.SpecimenName || '', // Will need to be mapped to actual sample
                 notes: `Tensile test data with ${Object.keys(extractedTraits).length} traits and ${Object.keys(channelData).length} channels`,
@@ -548,8 +548,8 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
         }
 
         // Check experiment type
-        if (experimentData.type !== 'tensile_test') {
-            errors.push('Experiment type must be tensile_test for tensile test parser');
+        if (experimentData.technique !== 'tensile_test') {
+            errors.push('Technique must be tensile_test for tensile test parser');
         }
 
         return {

@@ -146,7 +146,7 @@ describe("traits — cross-collection workflow", () => {
 
     const expId = new ObjectId();
     await mongo.db.collection("experiments").insertOne({
-      _id: expId, sampleId, stressAtBreak: 100, toughness: 50, offsetYieldStress: 20, modulus: 200, specimenDiameter: 10, logbook: [],
+      _id: expId, kind: "measurement", sampleId, stressAtBreak: 100, toughness: 50, offsetYieldStress: 20, modulus: 200, specimenDiameter: 10, logbook: [],
     });
     await mongo.db.collection("rawdata").insertOne({ experimentId: expId, data: { EngineeringStress: [1, 2, 3] } });
 

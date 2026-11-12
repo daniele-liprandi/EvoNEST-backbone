@@ -62,7 +62,7 @@ export async function processPlainTextFile(
         parsedData.metadata
       ) {
         // Handle JSON experiment data
-        updatedValues.type = "experiment_data";
+        updatedValues.technique = "experiment_data";
 
         // If the JSON already has dataFields structure, use it directly
         // Otherwise, treat the entire JSON as dataFields
@@ -135,7 +135,7 @@ export async function processPlainTextFile(
 
         if (parsedData) {
           // Successfully parsed with a format parser
-          updatedValues.type = parsedData.experimentData.type || "readable";
+          updatedValues.technique = parsedData.experimentData.technique || "readable";
           updatedValues.dataFields = parsedData;
 
           // Suggest experiment type based on detected format

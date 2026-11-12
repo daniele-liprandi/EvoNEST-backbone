@@ -974,7 +974,7 @@
         "type": "object",
         "required": [
           "name",
-          "type",
+          "technique",
           "responsible"
         ],
         "properties": {
@@ -988,10 +988,25 @@
             "description": "Experiment name",
             "example": "Silk tensile strength study"
           },
-          "type": {
+          "technique": {
             "type": "string",
-            "description": "Type of experiment",
-            "example": "mechanical_test"
+            "description": "Technique that produced the data (a parser technique)",
+            "example": "tensile_test"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "measurement",
+              "protocol"
+            ],
+            "description": "Discriminator: a data-acquisition event, or a protocol experiment",
+            "example": "measurement"
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Parent protocol experiment id; null for top-level experiments",
+            "example": null
           },
           "description": {
             "type": "string",
@@ -1077,7 +1092,7 @@
         "required": [
           "method",
           "name",
-          "type",
+          "technique",
           "responsible"
         ],
         "properties": {
@@ -1094,10 +1109,10 @@
             "description": "Experiment name",
             "example": "Silk tensile strength study"
           },
-          "type": {
+          "technique": {
             "type": "string",
-            "description": "Type of experiment",
-            "example": "mechanical_test"
+            "description": "Technique that produced the data (a parser technique)",
+            "example": "tensile_test"
           },
           "description": {
             "type": "string",
@@ -4098,12 +4113,32 @@
           },
           {
             "in": "query",
-            "name": "type",
+            "name": "technique",
             "schema": {
               "type": "string"
             },
-            "description": "Filter experiments by type",
-            "example": "mechanical_test"
+            "description": "Filter experiments by technique",
+            "example": "tensile_test"
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "measurement",
+                "protocol"
+              ]
+            },
+            "description": "Filter by experiment kind"
+          },
+          {
+            "in": "query",
+            "name": "parentId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "`null` for top-level experiments, or a protocol experiment id for its measurements"
           }
         ],
         "responses": {
@@ -4155,7 +4190,7 @@
                   "value": {
                     "method": "create",
                     "name": "Silk tensile strength study",
-                    "type": "mechanical_test",
+                    "technique": "tensile_test",
                     "description": "Testing the tensile strength of spider silk",
                     "responsible": "507f1f77bcf86cd799439013",
                     "date": "2024-03-15",
@@ -4265,11 +4300,11 @@
           },
           {
             "in": "query",
-            "name": "type",
+            "name": "technique",
             "schema": {
               "type": "string"
             },
-            "description": "Filter experiments by type"
+            "description": "Filter experiments by technique"
           },
           {
             "in": "query",
@@ -4349,12 +4384,12 @@
           },
           {
             "in": "query",
-            "name": "type",
+            "name": "technique",
             "schema": {
               "type": "string",
               "default": "tensile_test"
             },
-            "description": "Experiment type filter"
+            "description": "Technique to export"
           }
         ],
         "responses": {

@@ -99,7 +99,7 @@ export class MyInstrumentParser extends BaseDataFormatParser {
             // Return structured experiment data
             return this.createExperimentData({
                 name: this.generateExperimentName(fileMetadata),
-                type: this.primaryExperimentType,
+                technique: this.primaryExperimentType,
                 traits: traits,
                 data: {
                     format: this.name,
@@ -225,15 +225,13 @@ const parsedData = dataFormatParserRegistry.parse(rawText, fileMetadata);
 if (parsedData) {
     // Structured data found - experiment created with traits
     const experimentData = {
-        type: 'experiment_data',
+        technique: parsedData.experimentData.technique,
         dataFields: parsedData
     };
 } else {
-    // No parser available - treated as document
-    const experimentData = {
-        type: 'document', 
-        dataFields: rawText
-    };
+    // No parser recognises the file: the form rejects it and suggests
+    // attaching it to a sample instead.
+    throw new UnrecognisedDataFileError(file.name);
 }
 ```
 

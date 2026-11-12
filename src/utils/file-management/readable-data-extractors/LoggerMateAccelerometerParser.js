@@ -101,7 +101,7 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
             // Create experiment data structure
             const experimentData = this.createExperimentData({
                 name: experimentName,
-                type: this.primaryExperimentType,
+                technique: this.primaryExperimentType,
                 filename: fileMetadata?.filename || 'accelerometer_data.txt',
                 notes: this.generateNotes(measurements),
                 data: {

@@ -216,7 +216,7 @@ export class BaseDataFormatParser {
      * 
      * @param {Object} options - Options for creating experiment data
      * @param {string} options.name - Experiment name
-     * @param {string} options.type - Experiment type
+     * @param {string} options.technique - Technique that produced the data (the parser's primaryExperimentType)
      * @param {string} options.filename - Original filename
      * @param {string} options.sampleId - Sample ID (optional)
      * @param {string} options.notes - Notes about the experiment
@@ -226,7 +226,7 @@ export class BaseDataFormatParser {
      */
     createExperimentData({
         name,
-        type,
+        technique,
         filename,
         sampleId = '',
         notes = '',
@@ -239,7 +239,7 @@ export class BaseDataFormatParser {
             name: name,
             sampleId: sampleId,
             responsible: '', // Will be filled by the UI
-            type: type,
+            technique,
             date: currentDate,
             notes: notes,
             filename: filename,

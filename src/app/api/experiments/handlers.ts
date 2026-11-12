@@ -43,15 +43,19 @@ export const listExperiments = (request: Request) =>
     const includeOriginalData = params.get("includeOriginalData") === "true";
     const includeRelated = params.get("related") === "true";
     const includeTraitsData = params.get("includeTraitsData") === "true";
-    const type = params.get("type");
+    const filter: Document = {};
+    const technique = params.get("technique");
+    if (technique) filter.technique = technique;
+    const kind = params.get("kind");
+    if (kind) filter.kind = kind;
+    // `parentId=null` selects top-level rows; an id selects one protocol experiment's children.
+    const parentId = params.get("parentId");
+    if (parentId !== null) filter.parentId = parentId === "null" ? null : parentId;
 
     const mongo = yield* Mongo;
     const collection = yield* mongo.collection(dbName, EXPERIMENTS);
     const experiments = yield* attempt(
-      () =>
-        collection
-          .find(type ? { type } : {}, { projection: projectionFor(includeRawData, includeTraitsData) })
-          .toArray(),
+      () => collection.find(filter, { projection: projectionFor(includeRawData, includeTraitsData) }).toArray(),
       "experiments.find",
     );
 
@@ -89,7 +93,7 @@ const PostBody = Schema.Struct(
     sampleId: Schema.optional(Schema.String),
     responsible: Schema.optional(Schema.Unknown),
     name: Schema.optional(Schema.String),
-    type: Schema.optional(Schema.String),
+    technique: Schema.optional(Schema.String),
     field: Schema.optional(Schema.String),
     value: Schema.optional(Schema.Unknown),
     data: Schema.optional(Schema.Unknown),
@@ -123,10 +127,11 @@ const createExperiment = (dbName: string, data: PostData) =>
 
     const mongo = yield* Mongo;
     const now = stamp();
+    const { technique } = data;
 
     // Structured payload from the parsers already carries the shape; the legacy
     // path assembles a minimal document from top-level fields.
-    const structured = !!data.data && typeof data.data === "object" && !!data.name && !!data.type;
+    const structured = !!data.data && typeof data.data === "object" && !!data.name && !!technique;
 
     let embeddedTraits: Record<string, unknown>[] = [];
     let experimentData: Record<string, unknown>;
@@ -134,21 +139,17 @@ const createExperiment = (dbName: string, data: PostData) =>
     if (structured) {
       experimentData = {
         ...data,
+        kind: "measurement",
+        parentId: null,
         version: data.version || 1,
         recentChangeDate: now,
         logbook: data.logbook || [[now, `Created experiment ${data.name}`]],
       };
       if (Array.isArray(data.traits)) {
         embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
-          // A lagging parser may still emit the old `type` / `measurement` keys;
-          // remap them so the trait document carries `quantity` / `value`. `method`
-          // is an API-dispatch key, dropped here the way `createTrait` drops it.
-          const { type, measurement, ...rest } = trait;
-          delete rest.method;
+          const { method: _method, ...rest } = trait;
           return {
             ...rest,
-            ...(rest.quantity === undefined && type !== undefined ? { quantity: type } : {}),
-            ...(rest.value === undefined && measurement !== undefined ? { value: measurement } : {}),
             experimentId: null,
             createdAt: now,
           };
@@ -161,7 +162,9 @@ const createExperiment = (dbName: string, data: PostData) =>
         name: data.name,
         sampleId: data.sampleId,
         responsible: data.responsible,
-        type: data.type,
+        technique,
+        kind: "measurement",
+        parentId: null,
         date: data.date,
         notes: data.notes,
         filename: data.filename,

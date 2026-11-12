@@ -54,7 +54,7 @@ export interface TraitAPIData {
     name: data.name,
     sampleId: data.sampleId,
     responsible: data.responsible,
-    type: data.type,
+    technique: data.technique,
     date: data.date,
     notes: data.notes,
     filename: data.filename,
@@ -76,7 +76,7 @@ export interface ExperimentAPIData {
   name: string;
   sampleId: string;
   responsible: string;
-  type: string;
+  technique: string;
   date: string;
   notes?: string;
   data?: any; // Processed data content

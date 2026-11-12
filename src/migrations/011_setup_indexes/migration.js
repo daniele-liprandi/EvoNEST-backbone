@@ -30,6 +30,13 @@ async function up(testClient = null, dbName = "test") {
             attachmentsCollection.createIndex({ fileId: 1 })
         ]);
 
+        // Experiments list and roll-up queries filter on top-level rows and kind.
+        const experimentsCollection = db.collection("experiments");
+        const experimentsIndexes = await Promise.all([
+            experimentsCollection.createIndex({ kind: 1, parentId: 1 }),
+            experimentsCollection.createIndex({ technique: 1 })
+        ]);
+
         // Content-addressed dedup for GridFS-backed files. Partial so external
         // links (no sha256) and any legacy row are exempt from the uniqueness.
         const filesCollection = db.collection("files");
@@ -48,11 +55,13 @@ async function up(testClient = null, dbName = "test") {
             - traits.sampleId: ${traitsIndexes[1]}
             - attachments.targetType_targetId: ${attachmentsIndexes[0]}
             - attachments.fileId: ${attachmentsIndexes[1]}
+            - experiments.kind_parentId: ${experimentsIndexes[0]}
+            - experiments.technique: ${experimentsIndexes[1]}
             - files.sha256 (unique, partial): ${filesIndexes[0]}
             - files.storage.sha256: ${filesIndexes[1]}
         `);
 
-        return { traitsIndexes, attachmentsIndexes, filesIndexes };
+        return { traitsIndexes, attachmentsIndexes, experimentsIndexes, filesIndexes };
     } catch (error) {
         console.error("Error creating indexes:", error);
         throw error;
@@ -77,6 +86,7 @@ async function down(testClient = null, dbName = "test") {
         const db = client.db(dbName);
         const traitsCollection = db.collection("traits");
         const attachmentsCollection = db.collection("attachments");
+        const experimentsCollection = db.collection("experiments");
         const filesCollection = db.collection("files");
 
         await Promise.all([
@@ -84,6 +94,8 @@ async function down(testClient = null, dbName = "test") {
             traitsCollection.dropIndex("sampleId_1"),
             attachmentsCollection.dropIndex("targetType_1_targetId_1"),
             attachmentsCollection.dropIndex("fileId_1"),
+            experimentsCollection.dropIndex("kind_1_parentId_1"),
+            experimentsCollection.dropIndex("technique_1"),
             filesCollection.dropIndex("sha256_1"),
             filesCollection.dropIndex("storage.sha256_1")
         ]);

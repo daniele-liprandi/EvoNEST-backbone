@@ -180,7 +180,7 @@ export const handleExportAllExperiments = async () => {
 
     // Request JSON from the server (server default is JSON)
     const params = new URLSearchParams({
-      type: 'tensile_test'
+      technique: 'tensile_test'
     });
     
     const response = await fetch(`${prepend_path}/api/experiments/export?${params}`, {
