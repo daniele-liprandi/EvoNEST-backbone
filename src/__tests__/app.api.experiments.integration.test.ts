@@ -50,7 +50,7 @@ const makeSample = async () => {
     handleSamplePost(
       new Request("http://x/api/samples", {
         method: "POST",
-        body: JSON.stringify({ method: "create", name: `S-${Math.random()}`, type: "animal", responsible: responsible.toHexString() }),
+        body: JSON.stringify({ method: "create", name: `S-${Math.random()}`, type: "animal", date: "2026-01-01", responsible: responsible.toHexString() }),
       }),
     ).pipe(Effect.provide(mongo.layer)),
   );

@@ -47,7 +47,7 @@ const samplePost = (body: unknown) =>
   );
 
 async function makeSample(fields: Record<string, unknown> = {}) {
-  const res = await samplePost({ method: "create", name: `S-${Math.random()}`, type: "animal", responsible: responsible.toHexString(), ...fields });
+  const res = await samplePost({ method: "create", name: `S-${Math.random()}`, type: "animal", date: "2026-01-01", responsible: responsible.toHexString(), ...fields });
   const { _id } = await res.json();
   return String(_id);
 }
@@ -120,7 +120,7 @@ describe("traits — cross-collection workflow", () => {
 
   test("GET ?related=true attaches the sample chain (subsample -> animal)", async () => {
     const animalId = await makeSample({ name: "An1", genus: "Araneus" });
-    const silkRes = await samplePost({ method: "create", name: "An1_s1", type: "silk", parentId: "An1", responsible: responsible.toHexString() });
+    const silkRes = await samplePost({ method: "create", date: "2026-01-01", name: "An1_s1", type: "silk", parentId: "An1", responsible: responsible.toHexString() });
     const { _id: silkId } = await silkRes.json();
     await traitPost({ method: "create", sampleId: String(silkId), quantity: "diameter", value: 2, responsible: responsible.toHexString() });
 
