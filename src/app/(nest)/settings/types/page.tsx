@@ -223,7 +223,7 @@ const TypeTable = ({
   onRefresh,
   renderRowExtra,
 }: TypeTableProps) => (
-  <Card className="mb-6">
+  <Card id={configType} className="mb-6 scroll-mt-20">
     <CardHeader>
       <CardTitle className="flex justify-between items-center">
         {title}
@@ -457,8 +457,7 @@ export default function TypesPage() {
           />
 
           <TypeTable
-            title="Trait Quantities"
-            description="The quantities this lab records as traits, each with its unit"
+            title="Trait types"
             data={configs.traitquantities}
             showColumns={["label", "value", "unit", "description"]}
             configType="traitquantities"
