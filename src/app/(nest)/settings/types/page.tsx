@@ -455,7 +455,7 @@ export default function TypesPage() {
           />
 
           <TypeTable
-            title="Trait types"
+            title="Quantities"
             data={configs.traitquantities}
             showColumns={["label", "value", "unit", "aliases", "description"]}
             configType="traitquantities"

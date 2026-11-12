@@ -1,4 +1,4 @@
-// Each parser emits only the trait types it declares
+// Each parser emits only the quantities it declares
 
 import { readFileSync } from 'fs';
 import { resolve, basename } from 'path';
@@ -30,7 +30,7 @@ describe('parser registry contract', () => {
     }
   });
 
-  test('declared trait types are snake_case with a label and a unit', () => {
+  test('declared quantities are snake_case with a label and a unit', () => {
     for (const p of parsers) {
       if (p.dynamicTraits) {
         expect(p.generatedTraits).toEqual([]);
@@ -51,7 +51,7 @@ describe('parser registry contract', () => {
     'LoggerMateGPSParser',
     'LoggerMateAccelerometerParser',
     'StarOddiParser',
-  ])('%s emits only declared trait types from its example file', (name) => {
+  ])('%s emits only declared quantities from its example file', (name) => {
     const p = parsers.find((x) => x.name === name)!;
     expect(p.exampleFile).toBeTruthy();
     const file = resolve(process.cwd(), 'public', p.exampleFile!.replace(/^\//, ''));
@@ -65,7 +65,7 @@ describe('parser registry contract', () => {
     expect([...emitted].filter((q) => !declared.has(q))).toEqual([]);
   });
 
-  test('the CSV parser names trait types after the numeric columns', () => {
+  test('the CSV parser names quantities after the numeric columns', () => {
     const csv = 'Sample,Body mass (g),Wing length\nA,1.2,30\nB,1.4,31\nC,1.1,29\n';
     const parsed = registry.getByName('CSVFormatParser')!.parse(csv, { filename: 'x.csv' });
     const quantities = new Set(parsed.experimentData.traits.map((t: { quantity: string }) => t.quantity));

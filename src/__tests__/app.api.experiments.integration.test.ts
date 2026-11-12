@@ -161,7 +161,22 @@ describe("experiments — a real collection workflow", () => {
     expect(Array.isArray(related[0].traits)).toBe(true);
   });
 
-  test("create resolves parser trait types through traitquantities aliases", async () => {
+  test("create rejects an embedded trait whose value is not a number", async () => {
+    const sampleId = await makeSample();
+    const res = await post({
+      method: "create",
+      name: "Bad value",
+      technique: "tensile_test",
+      sampleId,
+      responsible: responsible.toHexString(),
+      data: { channelData: [] },
+      traits: [{ quantity: "youngs_modulus", value: "9e9" }],
+    });
+    expect(res.status).toBe(400);
+    expect(await mongo.db.collection("experiments").countDocuments({ name: "Bad value" })).toBe(0);
+  });
+
+  test("create resolves parser quantities through traitquantities aliases", async () => {
     await mongo.db.collection("config").insertOne({
       type: "traitquantities",
       data: [{ value: "youngs_modulus", label: "Young's modulus", unit: "GPa", aliases: ["modulus"] }, { value: "mass" }],

@@ -73,7 +73,7 @@ const experimentsProps = {
     {
       title: "Parsers",
       href: "/experiments/parsers",
-      description: "Instrument files EvoNEST reads and the trait types they produce",
+      description: "Instrument files EvoNEST reads and the quantities they produce",
     },
   ],
   href: "/experiments",
@@ -105,12 +105,12 @@ const analysisProps = {
     {
       title: "Trait statistics",
       href: "/analysis/traits",
-      description: "Mean, standard deviation, range and median of one trait type, by group",
+      description: "Mean, standard deviation, range and median of one quantity, by group",
     },
     {
       title: "Summary tables",
       href: "/analysis/tables",
-      description: "Count samples, or summarise a trait type, across rows and columns",
+      description: "Count samples, or summarise a quantity, across rows and columns",
     },
   ],
   href: "/analysis",

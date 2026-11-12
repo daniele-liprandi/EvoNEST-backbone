@@ -43,14 +43,14 @@ import { Button } from "@/components/ui/button"
 import { linkFileToEntry, uploadFile } from "@/utils/handlers/fileHandlers"
 import { ParserPreview } from "./ParserPreview"
 import { DataFormatPreview } from "./DataFormatPreview"
-import { NewTraitTypes } from "./NewTraitTypes"
+import { NewQuantities } from "./NewQuantities"
 import { useConfigTypes } from "@/hooks/useConfigTypes"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import {
-    applyTraitTypeChoices,
-    findNewTraitTypes,
-    type TraitTypeChoice,
-} from "@/utils/file-management/trait-type-mapping"
+    applyQuantityChoices,
+    findNewQuantities,
+    type QuantityChoice,
+} from "@/utils/file-management/quantity-mapping"
 
 export function ExperimentForm({ users, samples, user, experiments, defaultFileList, onSuccess }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList, onSuccess?: () => void }) {
     const [allFileData, setAllFileData] = useState<Array<Partial<ExperimentFormValues>>>([]);
@@ -59,9 +59,9 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
     const { traitquantities, refresh: refreshConfig } = useConfigTypes();
     const { can, isUserLoading } = useCurrentUser();
     const canEditConfig = can("config.edit");
-    const [traitTypeChoices, setTraitTypeChoices] = useState<Record<string, TraitTypeChoice>>({});
-    const newTraitTypes = useMemo(
-        () => findNewTraitTypes(allFileData as Parameters<typeof findNewTraitTypes>[0], traitquantities),
+    const [quantityChoices, setQuantityChoices] = useState<Record<string, QuantityChoice>>({});
+    const newQuantities = useMemo(
+        () => findNewQuantities(allFileData as Parameters<typeof findNewQuantities>[0], traitquantities),
         [allFileData, traitquantities],
     );
 
@@ -164,7 +164,7 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
 
         // Aliases must be saved before the experiments are posted
         if (canEditConfig) {
-            const next = applyTraitTypeChoices(traitquantities, newTraitTypes, traitTypeChoices);
+            const next = applyQuantityChoices(traitquantities, newQuantities, quantityChoices);
             if (next) {
                 const res = await fetch(`${prepend_path}/api/config/types`, {
                     method: "POST",
@@ -172,13 +172,13 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     body: JSON.stringify({ method: "update", type: "traitquantities", data: next }),
                 });
                 if (!res.ok) {
-                    toast.error("Could not save the new trait types", {
+                    toast.error("Could not save the new quantities", {
                         description: "Nothing was uploaded. Try again, or skip them.",
                     });
                     return;
                 }
                 refreshConfig();
-                setTraitTypeChoices({});
+                setQuantityChoices({});
             }
         }
 
@@ -432,13 +432,13 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
               {/* Data Format Processing Status */}
               <DataFormatPreview allFileData={allFileData} />
 
-              <NewTraitTypes
-                newTypes={newTraitTypes}
-                traitTypes={traitquantities}
+              <NewQuantities
+                newTypes={newQuantities}
+                traitquantities={traitquantities}
                 fileCount={allFileData.length}
                 canEdit={isUserLoading ? undefined : canEditConfig}
-                choices={traitTypeChoices}
-                onChange={(value, choice) => setTraitTypeChoices((prev) => ({ ...prev, [value]: choice }))}
+                choices={quantityChoices}
+                onChange={(value, choice) => setQuantityChoices((prev) => ({ ...prev, [value]: choice }))}
               />
 
               {/* Parser Preview */}

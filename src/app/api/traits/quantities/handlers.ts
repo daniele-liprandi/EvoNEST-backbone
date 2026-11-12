@@ -25,7 +25,7 @@ export const listStoredQuantities = Effect.gen(function* () {
 
 const RenameBody = Schema.Struct({ from: Schema.String, to: Schema.String });
 
-/** Move stored traits to another trait type: a mapping only affects later uploads. */
+/** Move stored traits to another quantity: a mapping only affects later uploads. */
 export const renameStoredQuantity = (request: Request) =>
   Effect.gen(function* () {
     yield* requireCapability("config.edit");
@@ -33,7 +33,7 @@ export const renameStoredQuantity = (request: Request) =>
     const by = (yield* currentSession).name ?? "unknown user";
     const { from, to } = yield* decodeBody(RenameBody)(request);
     if (!from || !to || from === to) {
-      return yield* Effect.fail(new ValidationError({ message: "from and to must be two different trait types" }));
+      return yield* Effect.fail(new ValidationError({ message: "from and to must be two different quantities" }));
     }
     const mongo = yield* Mongo;
     const traits = yield* mongo.collection(dbName, TRAITS);
@@ -41,7 +41,7 @@ export const renameStoredQuantity = (request: Request) =>
       () =>
         traits.updateMany(
           { quantity: from },
-          { $set: { quantity: to }, $push: { logbook: [stamp(), `Trait type changed from ${from} to ${to} by ${by}`] } as never },
+          { $set: { quantity: to }, $push: { logbook: [stamp(), `Quantity changed from ${from} to ${to} by ${by}`] } as never },
         ),
       "traits.updateMany quantity",
     );

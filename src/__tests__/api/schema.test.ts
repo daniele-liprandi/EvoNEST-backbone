@@ -65,7 +65,7 @@ describe("GET /api/schema", () => {
     expect(body.subsampleTypes).toEqual([{ value: "dragline", label: "Dragline" }]);
   });
 
-  test("lists the file parsers with their technique and trait types", async () => {
+  test("lists the file parsers with their technique and quantities", async () => {
     const { parsers } = await (await run(req())).json();
     const tensile = parsers.find((p: { name: string }) => p.name === "TensileTestFormatParser");
     expect(tensile).toMatchObject({ technique: "tensile_test", family: "mechanics" });

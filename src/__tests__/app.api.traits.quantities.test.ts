@@ -28,7 +28,7 @@ const rename = (body: unknown) =>
   );
 
 describe("/api/traits/quantities", () => {
-  test("GET counts stored traits per trait type", async () => {
+  test("GET counts stored traits per quantity", async () => {
     await mongo.db.collection("traits").insertMany([
       { quantity: "mass", value: 1 },
       { quantity: "mass", value: 2 },
@@ -41,7 +41,7 @@ describe("/api/traits/quantities", () => {
     ]);
   });
 
-  test("POST moves stored traits to another trait type and logs it", async () => {
+  test("POST moves stored traits to another quantity and logs it", async () => {
     await mongo.db.collection("traits").insertMany([
       { quantity: "modulus", value: 9e9, logbook: [] },
       { quantity: "modulus", value: 8e9, logbook: [] },
@@ -53,11 +53,11 @@ describe("/api/traits/quantities", () => {
 
     const moved = await mongo.db.collection("traits").find({ quantity: "youngs_modulus" }).toArray();
     expect(moved).toHaveLength(2);
-    expect(moved[0].logbook.at(-1)[1]).toMatch(/Trait type changed from modulus to youngs_modulus/);
+    expect(moved[0].logbook.at(-1)[1]).toMatch(/Quantity changed from modulus to youngs_modulus/);
     expect(await mongo.db.collection("traits").countDocuments({ quantity: "mass" })).toBe(1);
   });
 
-  test("POST rejects identical or missing trait types", async () => {
+  test("POST rejects identical or missing quantities", async () => {
     expect((await rename({ from: "mass", to: "mass" })).status).toBe(400);
     expect((await rename({ from: "mass" })).status).toBe(400);
   });

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 
-import { NewTraitTypes } from "@/components/forms/NewTraitTypes";
+import { NewQuantities } from "@/components/forms/NewQuantities";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,11 +38,11 @@ import type {
   ParserDescription,
 } from "@/utils/file-management/readable-data-extractors/types";
 import {
-  applyTraitTypeChoices,
-  knownTraitTypes,
-  type NewTraitType,
-  type TraitTypeChoice,
-} from "@/utils/file-management/trait-type-mapping";
+  applyQuantityChoices,
+  knownQuantities,
+  type NewQuantity,
+  type QuantityChoice,
+} from "@/utils/file-management/quantity-mapping";
 import type { LabelType } from "@/utils/types";
 
 const FAMILIES: { value: ParserDescription["family"]; label: string }[] = [
@@ -55,11 +55,11 @@ type StoredQuantity = { quantity: string; count: number };
 
 // "map" also moves the traits already stored under the parser's name
 async function saveChoices(
-  traitTypes: LabelType[],
-  newTypes: NewTraitType[],
-  choices: Record<string, TraitTypeChoice>,
+  traitquantities: LabelType[],
+  newTypes: NewQuantity[],
+  choices: Record<string, QuantityChoice>,
 ): Promise<boolean> {
-  const next = applyTraitTypeChoices(traitTypes, newTypes, choices);
+  const next = applyQuantityChoices(traitquantities, newTypes, choices);
   if (!next) return true;
   const res = await fetch(`${prepend_path}/api/config/types`, {
     method: "POST",
@@ -86,28 +86,28 @@ async function saveChoices(
 
 function TraitStatus({
   trait,
-  traitTypes,
+  traitquantities,
 }: {
   trait: GeneratedTrait;
-  traitTypes: LabelType[];
+  traitquantities: LabelType[];
 }) {
-  if (traitTypes.some((t) => t.value === trait.value)) {
-    return <Badge variant="secondary">In your trait types</Badge>;
+  if (traitquantities.some((t) => t.value === trait.value)) {
+    return <Badge variant="secondary">In Settings</Badge>;
   }
-  const target = traitTypes.find((t) => t.aliases?.includes(trait.value));
+  const target = traitquantities.find((t) => t.aliases?.includes(trait.value));
   if (target)
     return <Badge variant="secondary">Stored as {target.label}</Badge>;
-  return <Badge variant="outline">Not in your trait types</Badge>;
+  return <Badge variant="outline">Not in Settings</Badge>;
 }
 
 function MissingTraitActions({
   trait,
-  traitTypes,
+  traitquantities,
   onSave,
 }: {
   trait: GeneratedTrait;
-  traitTypes: LabelType[];
-  onSave: (choice: TraitTypeChoice) => void;
+  traitquantities: LabelType[];
+  onSave: (choice: QuantityChoice) => void;
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ function MissingTraitActions({
           <SelectValue placeholder="Store as…" />
         </SelectTrigger>
         <SelectContent>
-          {traitTypes.map((t) => (
+          {traitquantities.map((t) => (
             <SelectItem key={t.value} value={t.value}>
               {t.label}
             </SelectItem>
@@ -139,16 +139,16 @@ function MissingTraitActions({
 
 function ParserCard({
   parser,
-  traitTypes,
+  traitquantities,
   canEdit,
   onSave,
 }: {
   parser: ParserDescription;
-  traitTypes: LabelType[];
+  traitquantities: LabelType[];
   canEdit: boolean;
-  onSave: (trait: GeneratedTrait, choice: TraitTypeChoice) => void;
+  onSave: (trait: GeneratedTrait, choice: QuantityChoice) => void;
 }) {
-  const known = knownTraitTypes(traitTypes);
+  const known = knownQuantities(traitquantities);
   return (
     <Card className="min-w-0">
       <CardHeader>
@@ -184,14 +184,14 @@ function ParserCard({
         </dl>
         {parser.dynamicTraits ? (
           <p className="text-sm text-muted-foreground">
-            Each numeric column becomes a trait type named after its header.
+            Each numeric column becomes a quantity named after its header.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Trait type</TableHead>
+                  <TableHead>Quantity</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Unit</TableHead>
                   <TableHead>In this lab</TableHead>
@@ -209,11 +209,11 @@ function ParserCard({
                       {canEdit && !known.has(trait.value) ? (
                         <MissingTraitActions
                           trait={trait}
-                          traitTypes={traitTypes}
+                          traitquantities={traitquantities}
                           onSave={(choice) => onSave(trait, choice)}
                         />
                       ) : (
-                        <TraitStatus trait={trait} traitTypes={traitTypes} />
+                        <TraitStatus trait={trait} traitquantities={traitquantities} />
                       )}
                     </TableCell>
                   </TableRow>
@@ -238,11 +238,11 @@ export default function ParsersPage() {
   const { data: stored, mutate: refreshStored } = useSWR<StoredQuantity[]>(
     `${prepend_path}/api/traits/quantities`,
   );
-  const [choices, setChoices] = useState<Record<string, TraitTypeChoice>>({});
+  const [choices, setChoices] = useState<Record<string, QuantityChoice>>({});
   const [saving, setSaving] = useState(false);
 
   const unknownStored = useMemo(() => {
-    const known = knownTraitTypes(traitquantities);
+    const known = knownQuantities(traitquantities);
     const declared = new Map(
       parsers.flatMap((p) => p.generatedTraits).map((t) => [t.value, t]),
     );
@@ -258,17 +258,17 @@ export default function ParsersPage() {
   }, [stored, traitquantities, parsers]);
 
   const run = async (
-    newTypes: NewTraitType[],
-    next: Record<string, TraitTypeChoice>,
+    newTypes: NewQuantity[],
+    next: Record<string, QuantityChoice>,
   ) => {
     setSaving(true);
     try {
       const okay = await saveChoices(traitquantities, newTypes, next);
       if (okay) {
-        toast.success("Trait types saved");
+        toast.success("Quantities saved");
         setChoices({});
       } else {
-        toast.error("Could not save the trait types");
+        toast.error("Could not save the quantities");
       }
     } finally {
       refresh();
@@ -287,10 +287,10 @@ export default function ParsersPage() {
         {unknownStored.length > 0 && (
           <Card>
             <CardContent className="space-y-3 pt-6">
-              <NewTraitTypes
-                heading={`${unknownStored.length} trait type${unknownStored.length > 1 ? "s" : ""} in stored traits ${unknownStored.length > 1 ? "are" : "is"} not in your trait types`}
+              <NewQuantities
+                heading={`${unknownStored.length} stored ${unknownStored.length > 1 ? "quantities are" : "quantity is"} not in Settings`}
                 newTypes={unknownStored}
-                traitTypes={traitquantities}
+                traitquantities={traitquantities}
                 canEdit={isUserLoading ? undefined : canEdit}
                 choices={choices}
                 onChange={(value, choice) =>
@@ -298,7 +298,7 @@ export default function ParsersPage() {
                 }
                 note={
                   <p className="text-xs text-muted-foreground">
-                    Storing one as an existing trait type also moves the traits
+                    Storing one as an existing quantity also moves the traits
                     already saved under its name.
                   </p>
                 }
@@ -340,7 +340,7 @@ export default function ParsersPage() {
                   <ParserCard
                     key={parser.name}
                     parser={parser}
-                    traitTypes={traitquantities}
+                    traitquantities={traitquantities}
                     canEdit={canEdit && !saving}
                     onSave={(trait, choice) =>
                       run([trait], { [trait.value]: choice })

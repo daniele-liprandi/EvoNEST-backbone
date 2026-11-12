@@ -160,17 +160,17 @@ constructor() {
     this.family = 'mechanics';                  // mechanics | logging | generic (Parsers page grouping)
     this.formatDescription = 'What the file looks like, in one line';
     this.exampleFile = '/parser-examples/type1/example.txt'; // under public/, or null
-    this.generatedTraits = [                    // Every trait type the parser can emit
+    this.generatedTraits = [                    // Every quantity the parser can emit
         { value: 'trait_name', label: 'Trait name', unit: 'unit', description: 'desc' }
     ];
 }
 ```
 
-#### The trait type contract
+#### The quantity contract
 
-- `generatedTraits` lists every trait type the parser emits. Each trait's `quantity` must be one of these `value`s; `src/__tests__/parser-registry.contract.test.ts` parses each parser's example file and fails on an undeclared one.
-- `value` is snake_case. Where a lab preset already has the quantity (`src/shared/config/lab-presets.js`), use the preset's value: `youngs_modulus`, `tensile_strength`, `strain_at_break`, `fiber_diameter`. A lab whose trait types use other names maps them on upload (the form asks) or on the Parsers page; the mapping is stored as `aliases` on the lab's trait type and applied when the experiment is created.
-- A parser whose trait types come from the file itself (the CSV parser names them after its columns) sets `this.dynamicTraits = true` and leaves `generatedTraits` empty.
+- `generatedTraits` lists every quantity the parser emits. Each trait's `quantity` must be one of these `value`s; `src/__tests__/parser-registry.contract.test.ts` parses each parser's example file and fails on an undeclared one.
+- `value` is snake_case. Where a lab preset already has the quantity (`src/shared/config/lab-presets.js`), use the preset's value: `youngs_modulus`, `tensile_strength`, `strain_at_break`, `fiber_diameter`. A lab whose quantities use other names maps them on upload (the form asks) or on the Parsers page; the mapping is stored as `aliases` on the lab's quantity and applied when the experiment is created.
+- A parser whose quantities come from the file itself (the CSV parser names them after its columns) sets `this.dynamicTraits = true` and leaves `generatedTraits` empty.
 - Put the example file under `public/parser-examples/`; the Parsers page links to it and the contract test reads it.
 
 #### Optional properties

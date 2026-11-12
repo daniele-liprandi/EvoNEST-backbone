@@ -56,7 +56,7 @@ describe("POST /api/traits/convert-units/preview", () => {
     expect(res.status).toBe(401);
   });
 
-  test("500 when the trait types config is missing", async () => {
+  test("500 when the quantities config is missing", async () => {
     const mongo = testMongo({ findOne: () => Effect.succeed(null), find: () => Effect.succeed([] as never[]) });
     const res = await runRoute(
       previewConversion(req({})).pipe(Effect.provide(Layer.merge(mongo, testAuth({ sub: "u1" })))),

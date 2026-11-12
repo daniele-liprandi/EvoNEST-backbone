@@ -14,6 +14,7 @@ import {
 } from "@/lib/effect";
 import { sampleChain } from "@/app/api/utils/sampleChain";
 import { deleteBlobIfUnreferenced } from "@/app/api/files/gridfs";
+import { requireNumericValue } from "@/app/api/traits/handlers";
 
 const EXPERIMENTS = "experiments";
 const SAMPLES = "samples";
@@ -87,8 +88,8 @@ export const listExperiments = (request: Request) =>
 
 // --- POST ------------------------------------------------------------------
 
-// Parser trait type -> lab trait type, from `traitquantities[].aliases`
-const traitTypeAliases = (dbName: string) =>
+// Parser quantity -> lab quantity, from `traitquantities[].aliases`
+const quantityAliases = (dbName: string) =>
   Effect.gen(function* () {
     const mongo = yield* Mongo;
     const config = yield* mongo.findOne(dbName, CONFIG, { type: "traitquantities" });
@@ -160,7 +161,8 @@ const createExperiment = (dbName: string, data: PostData) =>
         logbook: data.logbook || [[now, `Created experiment ${data.name}`]],
       };
       if (Array.isArray(data.traits)) {
-        const aliases = yield* traitTypeAliases(dbName);
+        for (const trait of data.traits as Record<string, unknown>[]) yield* requireNumericValue(trait.value);
+        const aliases = yield* quantityAliases(dbName);
         embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
           const { method: _method, ...rest } = trait;
           const quantity = rest.quantity as string | undefined;

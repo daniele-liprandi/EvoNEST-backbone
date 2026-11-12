@@ -30,7 +30,7 @@ export class CSVFormatParser extends BaseDataFormatParser {
         this.family = 'generic';
         this.formatDescription = 'Any comma, semicolon or tab separated table with a header row';
         this.exampleFile = null;
-        // Trait types are named after the numeric columns
+        // Quantities are named after the numeric columns
         this.dynamicTraits = true;
         this.generatedTraits = [];
     }

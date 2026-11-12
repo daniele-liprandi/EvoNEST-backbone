@@ -74,7 +74,7 @@ function SummaryTablesContent() {
       <CardHeader>
         <CardTitle>Summary tables</CardTitle>
         <CardDescription>
-          Count samples, or summarise one trait type, by up to two row fields and one column field.
+          Count samples, or summarise one quantity, by up to two row fields and one column field.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -96,10 +96,10 @@ function SummaryTablesContent() {
           {state.source === "traits" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="quantity">Trait type</Label>
+                <Label htmlFor="quantity">Quantity</Label>
                 <Select value={quantity} onValueChange={(v) => update({ quantity: v })}>
                   <SelectTrigger id="quantity">
-                    <SelectValue placeholder="No trait types yet" />
+                    <SelectValue placeholder="No quantities yet" />
                   </SelectTrigger>
                   <SelectContent>
                     {options?.quantities.map((q) => (
@@ -171,11 +171,11 @@ function SummaryTablesContent() {
             {result?.unit && <Badge variant="secondary">{result.unit}</Badge>}
             {state.source === "traits" && quantityOption && !quantityOption.unit && (
               <span className="text-xs text-muted-foreground">
-                No default unit set for this trait type.
+                No default unit set for this quantity.
                 {quantityOption.units.length > 0 && ` Units found in the existing data: ${quantityOption.units.join(", ")}.`}{" "}
                 To set a default unit, go to{" "}
                 <Link href="/settings/types#traitquantities" className="underline underline-offset-2">
-                  Settings → Trait types
+                  Settings → Quantities
                 </Link>
                 .
               </span>

@@ -2,13 +2,13 @@
  * @swagger
  * /api/traits/quantities:
  *   get:
- *     summary: Trait types present in stored traits, with counts
+ *     summary: Quantities present in stored traits, with counts
  *     tags: [Traits]
  *     responses:
  *       200: { description: "[{ quantity, count }]" }
  *       401: { description: Unauthorized }
  *   post:
- *     summary: Move stored traits from one trait type to another
+ *     summary: Move stored traits from one quantity to another
  *     tags: [Traits]
  *     requestBody:
  *       required: true
@@ -22,7 +22,7 @@
  *               to: { type: string }
  *     responses:
  *       200: { description: "{ renamed }" }
- *       400: { description: Missing or identical trait types }
+ *       400: { description: Missing or identical quantities }
  *       401: { description: Unauthorized }
  *       403: { description: Missing the config.edit capability }
  */

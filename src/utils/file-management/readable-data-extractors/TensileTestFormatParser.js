@@ -168,8 +168,8 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
     convertTraitsToAPIFormat(extractedTraits, sampleId, date) {
         const traits = [];
         
-        // Define trait type mappings - updated to match actual file variables
-        const traitTypeMap = {
+        // Define quantity mappings - updated to match actual file variables
+        const quantityMap = {
             'Modulus': 'youngs_modulus',
             'StressAtBreak': 'tensile_strength',
             'StrainAtBreak': 'strain_at_break',
@@ -198,7 +198,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             if (value !== null && value !== undefined && !isNaN(value)) {
                 // Values are already converted in readTrait(), just use them directly
                 traits.push({
-                    quantity: traitTypeMap[traitName] || traitName,
+                    quantity: quantityMap[traitName] || traitName,
                     sampleId: sampleId,
                     responsible: "", // Will be filled by the UI
                     date: date,
@@ -218,7 +218,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
      * Convert trait keys from PascalCase to camelCase
      */
     convertTraitKeysToCamelCase(extractedTraits) {
-        const traitTypeMap = {
+        const quantityMap = {
             'Modulus': 'modulus',
             'StressAtBreak': 'stressAtBreak',
             'StrainAtBreak': 'strainAtBreak',
@@ -232,7 +232,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
 
         const camelCaseTraits = {};
         Object.entries(extractedTraits).forEach(([key, value]) => {
-            const camelKey = traitTypeMap[key] || key;
+            const camelKey = quantityMap[key] || key;
             camelCaseTraits[camelKey] = value;
         });
 

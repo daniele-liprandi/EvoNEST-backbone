@@ -135,7 +135,7 @@ describe("POST /api/analysis, samples", () => {
 });
 
 describe("GET /api/analysis", () => {
-  test("dimensions from config without internal or free-text fields, values per dimension, trait types with counts", async () => {
+  test("dimensions from config without internal or free-text fields, values per dimension, quantities with counts", async () => {
     await seedConfig();
     const { s1 } = await seedSamples();
     await mongo.db.collection("traits").insertMany([

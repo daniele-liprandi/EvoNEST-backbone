@@ -56,7 +56,7 @@ export default function ExperimentsLandingPage() {
           <NavCard
             href="/experiments/parsers"
             title="Parsers"
-            description="Instrument files EvoNEST reads and the trait types they produce."
+            description="Instrument files EvoNEST reads and the quantities they produce."
           />
         </div>
       </div>

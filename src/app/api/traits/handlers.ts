@@ -32,6 +32,11 @@ const logbook = (...parts: string[]): string[] => [stamp(), ...parts];
 const isHexId = (v: unknown): v is string =>
   typeof v === "string" && ObjectId.isValid(v) && new ObjectId(v).toHexString() === v;
 
+export const requireNumericValue = (value: unknown) =>
+  typeof value === "number" && Number.isFinite(value)
+    ? Effect.void
+    : Effect.fail(new ValidationError({ message: `Trait value must be a number, got ${JSON.stringify(value) ?? "nothing"}` }));
+
 function parseNFibres(nfibres: unknown):
   | { error: string }
   | { type: "single"; value: number }
@@ -163,6 +168,7 @@ const createTrait = (dbName: string, authName: string, data: PostData) =>
     if (!isHexId(data.sampleId ?? "")) {
       return yield* Effect.fail(new ValidationError({ message: "Invalid sample id" }));
     }
+    yield* requireNumericValue(data.value);
     const mongo = yield* Mongo;
     const sampleOid = new ObjectId(data.sampleId as string);
 
@@ -193,6 +199,7 @@ const updateTrait = (dbName: string, data: PostData) =>
   Effect.gen(function* () {
     if (!isHexId(data.id ?? "")) return yield* Effect.fail(new ValidationError({ message: "Invalid trait id" }));
     if (!isHexId(data.sampleId ?? "")) return yield* Effect.fail(new ValidationError({ message: "Invalid sample id" }));
+    if ("value" in data) yield* requireNumericValue(data.value);
     const mongo = yield* Mongo;
 
     const update: Record<string, unknown> = { ...data, recentChangeDate: stamp() };
@@ -222,6 +229,7 @@ const setTraitField = (dbName: string, authName: string, data: PostData) =>
     if (PROTECTED_SETFIELDS.has(field)) {
       return yield* Effect.fail(new ForbiddenError({ message: `Field '${field}' cannot be updated with setfield` }));
     }
+    if (field === "value") yield* requireNumericValue(data.value);
     const mongo = yield* Mongo;
     const result = yield* mongo.updateOne(
       dbName,

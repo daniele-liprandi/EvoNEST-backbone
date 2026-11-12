@@ -13,21 +13,21 @@ import {
 } from "@/components/ui/select";
 import type { LabelType } from "@/utils/types";
 import type {
-  NewTraitType,
-  TraitTypeChoice,
-} from "@/utils/file-management/trait-type-mapping";
+  NewQuantity,
+  QuantityChoice,
+} from "@/utils/file-management/quantity-mapping";
 
-const encode = (choice: TraitTypeChoice) =>
+const encode = (choice: QuantityChoice) =>
   choice.action === "map" ? `map:${choice.to}` : choice.action;
-const decode = (raw: string): TraitTypeChoice =>
+const decode = (raw: string): QuantityChoice =>
   raw.startsWith("map:")
     ? { action: "map", to: raw.slice(4) }
     : { action: raw as "add" | "skip" };
 
-/** Add, map or skip each new trait type; written to config on submit. */
-export function NewTraitTypes({
+/** Add, map or skip each new quantity; written to config on submit. */
+export function NewQuantities({
   newTypes,
-  traitTypes,
+  traitquantities,
   fileCount,
   canEdit,
   choices,
@@ -36,13 +36,13 @@ export function NewTraitTypes({
   note,
   readOnlyNote,
 }: {
-  newTypes: NewTraitType[];
-  traitTypes: LabelType[];
+  newTypes: NewQuantity[];
+  traitquantities: LabelType[];
   fileCount?: number;
   /** Undefined while the user's capabilities are still loading. */
   canEdit: boolean | undefined;
-  choices: Record<string, TraitTypeChoice>;
-  onChange: (value: string, choice: TraitTypeChoice) => void;
+  choices: Record<string, QuantityChoice>;
+  onChange: (value: string, choice: QuantityChoice) => void;
   heading?: string;
   note?: ReactNode;
   readOnlyNote?: ReactNode;
@@ -53,7 +53,7 @@ export function NewTraitTypes({
     (fileCount ?? 1) > 1
       ? "The uploaded measurements contain"
       : "The uploaded measurement contains";
-  const count = `${newTypes.length} new trait type${newTypes.length > 1 ? "s" : ""}`;
+  const count = `${newTypes.length} new ${newTypes.length > 1 ? "quantities" : "quantity"}`;
 
   return (
     <div className="space-y-3 rounded-md border p-3">
@@ -84,14 +84,14 @@ export function NewTraitTypes({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="add">Add as a new trait type</SelectItem>
+                    <SelectItem value="add">Add as a new quantity</SelectItem>
                     <SelectItem value="skip">Skip</SelectItem>
-                    {traitTypes.length > 0 && (
+                    {traitquantities.length > 0 && (
                       <>
                         <SelectSeparator />
                         <SelectGroup>
                           <SelectLabel>Store as</SelectLabel>
-                          {traitTypes.map((t) => (
+                          {traitquantities.map((t) => (
                             <SelectItem key={t.value} value={`map:${t.value}`}>
                               {t.label}
                             </SelectItem>
@@ -106,7 +106,7 @@ export function NewTraitTypes({
           </ul>
           {note ?? (
             <p className="text-xs text-muted-foreground">
-              Saved to Settings, Trait types, when you submit. Skipped ones are
+              Saved to Settings, Quantities, when you submit. Skipped ones are
               stored under the parser&apos;s name.
             </p>
           )}

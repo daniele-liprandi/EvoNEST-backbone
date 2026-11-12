@@ -1,8 +1,8 @@
 import {
-  applyTraitTypeChoices,
-  findNewTraitTypes,
-  knownTraitTypes,
-} from "@/utils/file-management/trait-type-mapping";
+  applyQuantityChoices,
+  findNewQuantities,
+  knownQuantities,
+} from "@/utils/file-management/quantity-mapping";
 
 const lab = [
   { value: "mass", label: "Mass", unit: "g" },
@@ -19,35 +19,35 @@ const parsed = (parserName: string | undefined, quantities: [string, string?][])
 beforeAll(() => jest.spyOn(console, "log").mockImplementation(() => {}));
 afterAll(() => jest.restoreAllMocks());
 
-describe("knownTraitTypes", () => {
+describe("knownQuantities", () => {
   test("includes values and aliases", () => {
-    expect([...knownTraitTypes(lab)].sort()).toEqual(["mass", "modulus", "youngs_modulus"]);
+    expect([...knownQuantities(lab)].sort()).toEqual(["mass", "modulus", "youngs_modulus"]);
   });
 });
 
-describe("findNewTraitTypes", () => {
-  test("returns only unknown trait types, once each, with the parser's declaration", () => {
+describe("findNewQuantities", () => {
+  test("returns only unknown quantities, once each, with the parser's declaration", () => {
     const files = [
       parsed("TensileTestFormatParser", [["youngs_modulus", "Pa"], ["tensile_strength", "Pa"], ["modulus", "Pa"]]),
       parsed("TensileTestFormatParser", [["tensile_strength", "Pa"]]),
     ];
-    expect(findNewTraitTypes(files, lab)).toEqual([
+    expect(findNewQuantities(files, lab)).toEqual([
       { value: "tensile_strength", label: "Tensile strength", unit: "Pa", description: "Stress at which the specimen breaks" },
     ]);
   });
 
   test("falls back to the trait's own unit and a readable label without a declaration", () => {
-    expect(findNewTraitTypes([parsed("CSVFormatParser", [["wing_length", "mm"]])], lab)).toEqual([
+    expect(findNewQuantities([parsed("CSVFormatParser", [["wing_length", "mm"]])], lab)).toEqual([
       { value: "wing_length", label: "Wing length", unit: "mm", description: "" },
     ]);
   });
 
   test("nothing new, nothing returned", () => {
-    expect(findNewTraitTypes([parsed(undefined, [["mass"]])], lab)).toEqual([]);
+    expect(findNewQuantities([parsed(undefined, [["mass"]])], lab)).toEqual([]);
   });
 });
 
-describe("applyTraitTypeChoices", () => {
+describe("applyQuantityChoices", () => {
   const newTypes = [
     { value: "tensile_strength", label: "Tensile strength", unit: "Pa", description: "" },
     { value: "body_mass", label: "Body mass", unit: "g", description: "" },
@@ -55,7 +55,7 @@ describe("applyTraitTypeChoices", () => {
   ];
 
   test("adds, maps and skips", () => {
-    const next = applyTraitTypeChoices(lab, newTypes, {
+    const next = applyQuantityChoices(lab, newTypes, {
       tensile_strength: { action: "add" },
       body_mass: { action: "map", to: "mass" },
       strain_rate: { action: "skip" },
@@ -68,17 +68,17 @@ describe("applyTraitTypeChoices", () => {
   });
 
   test("defaults to add", () => {
-    const next = applyTraitTypeChoices(lab, [newTypes[0]], {});
+    const next = applyQuantityChoices(lab, [newTypes[0]], {});
     expect(next?.at(-1)?.value).toBe("tensile_strength");
   });
 
   test("returns null when every choice is skip", () => {
-    expect(applyTraitTypeChoices(lab, newTypes, Object.fromEntries(newTypes.map((t) => [t.value, { action: "skip" as const }])))).toBeNull();
+    expect(applyQuantityChoices(lab, newTypes, Object.fromEntries(newTypes.map((t) => [t.value, { action: "skip" as const }])))).toBeNull();
   });
 
   test("does not mutate the input", () => {
     const copy = JSON.parse(JSON.stringify(lab));
-    applyTraitTypeChoices(lab, newTypes, { body_mass: { action: "map", to: "mass" } });
+    applyQuantityChoices(lab, newTypes, { body_mass: { action: "map", to: "mass" } });
     expect(lab).toEqual(copy);
   });
 });

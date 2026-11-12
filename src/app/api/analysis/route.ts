@@ -2,7 +2,7 @@
  * @swagger
  * /api/analysis:
  *   get:
- *     summary: Dimensions, their values, and trait types for a summary
+ *     summary: Dimensions, their values, and quantities for a summary
  *     tags: [Analysis]
  *     parameters:
  *       - { in: query, name: source, schema: { type: string, enum: [samples, traits], default: traits } }
@@ -10,7 +10,7 @@
  *       200: { description: "{ source, dimensions: [{ id, label, values }], quantities: [{ value, label, unit, count }] }" }
  *       401: { description: Unauthorized }
  *   post:
- *     summary: Summarise samples (counts) or one trait type (statistics) by up to two row dimensions and one column
+ *     summary: Summarise samples (counts) or one quantity (statistics) by up to two row dimensions and one column
  *     tags: [Analysis]
  *     requestBody:
  *       required: true

@@ -47,7 +47,7 @@ export const analysisOptions = (request: Request) =>
     const dims = dimensionsFor(dimensions, source);
 
     const traitsColl = yield* mongo.collection(dbName, "traits");
-    const [traitTypesConfig, counts] = yield* Effect.all([
+    const [quantitiesConfig, counts] = yield* Effect.all([
       configData(dbName, "traitquantities"),
       attempt(
         () =>
@@ -82,7 +82,7 @@ export const analysisOptions = (request: Request) =>
       }
     }
 
-    const configured = traitTypesConfig as Config[];
+    const configured = quantitiesConfig as Config[];
     const countBy = new Map(counts.map((c) => [c._id, c.count]));
     const unitsBy = new Map(counts.map((c) => [c._id, c.units.filter((u): u is string => typeof u === "string" && u !== "").sort()]));
     const quantities = [
@@ -145,11 +145,11 @@ export const runAnalysis = (request: Request) =>
       records = samples.map((sample) => record(dims, { sample, samplesById, userNames }, null));
     } else {
       const quantity = body.quantity!;
-      const traitTypes = (yield* configData(dbName, "traitquantities")) as Config[];
+      const traitquantities = (yield* configData(dbName, "traitquantities")) as Config[];
       // Without a config, the built-in base units are used
       const baseUnitsConfig = yield* configData(dbName, "baseunits");
       const baseUnits = baseUnitsConfig.length ? baseUnitsConfig : undefined;
-      const target = getDefaultUnitForQuantity(quantity, traitTypes) as string | null;
+      const target = getDefaultUnitForQuantity(quantity, traitquantities) as string | null;
       const convert = body.unitConversion ?? true;
       unit = convert ? target ?? "" : "";
       const traitsColl = yield* mongo.collection(dbName, "traits");

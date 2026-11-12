@@ -2,9 +2,9 @@ import type { LabelType } from "@/utils/types";
 import dataFormatParserRegistry from "./readable-data-extractors/registry";
 import type { GeneratedTrait } from "./readable-data-extractors/types";
 
-export type TraitTypeChoice = { action: "add" } | { action: "map"; to: string } | { action: "skip" };
+export type QuantityChoice = { action: "add" } | { action: "map"; to: string } | { action: "skip" };
 
-export type NewTraitType = GeneratedTrait;
+export type NewQuantity = GeneratedTrait;
 
 type ParsedFile = {
   dataFields?: {
@@ -19,19 +19,19 @@ const humanise = (value: string) => {
 };
 
 /** Includes the aliases */
-export const knownTraitTypes = (traitTypes: LabelType[]) => {
+export const knownQuantities = (traitquantities: LabelType[]) => {
   const known = new Set<string>();
-  for (const t of traitTypes) {
+  for (const t of traitquantities) {
     known.add(t.value);
     for (const alias of t.aliases ?? []) known.add(alias);
   }
   return known;
 };
 
-/** New trait types in the parsed files, described from the parser's declaration. */
-export function findNewTraitTypes(files: ParsedFile[], traitTypes: LabelType[]): NewTraitType[] {
-  const known = knownTraitTypes(traitTypes);
-  const found = new Map<string, NewTraitType>();
+/** New quantities in the parsed files, described from the parser's declaration. */
+export function findNewQuantities(files: ParsedFile[], traitquantities: LabelType[]): NewQuantity[] {
+  const known = knownQuantities(traitquantities);
+  const found = new Map<string, NewQuantity>();
   for (const file of files) {
     const declared = file.dataFields?.parserName
       ? dataFormatParserRegistry.getByName(file.dataFields.parserName)?.generatedTraits ?? []
@@ -51,14 +51,14 @@ export function findNewTraitTypes(files: ParsedFile[], traitTypes: LabelType[]):
   return [...found.values()];
 }
 
-/** "add" appends a trait type, "map" adds an alias; null when nothing changes. */
-export function applyTraitTypeChoices(
-  traitTypes: LabelType[],
-  newTypes: NewTraitType[],
-  choices: Record<string, TraitTypeChoice>,
+/** "add" appends a quantity, "map" adds an alias; null when nothing changes. */
+export function applyQuantityChoices(
+  traitquantities: LabelType[],
+  newTypes: NewQuantity[],
+  choices: Record<string, QuantityChoice>,
 ): LabelType[] | null {
   let changed = false;
-  const next: LabelType[] = traitTypes.map((t) => ({ ...t, aliases: [...(t.aliases ?? [])] }));
+  const next: LabelType[] = traitquantities.map((t) => ({ ...t, aliases: [...(t.aliases ?? [])] }));
   for (const type of newTypes) {
     const choice = choices[type.value] ?? { action: "add" };
     if (choice.action === "add") {
