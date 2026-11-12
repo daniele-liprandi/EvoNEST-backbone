@@ -82,6 +82,7 @@ describe("GET /api/schema", () => {
     ).json();
     expect(body.sampleTypes).toEqual([]);
     expect(body.traitQuantities).toEqual([]);
+    expect(body.protocols).toEqual([]);
   });
 
   test("401 without a session", async () => {

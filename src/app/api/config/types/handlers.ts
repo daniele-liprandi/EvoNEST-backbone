@@ -9,6 +9,8 @@ import {
   NotFoundError,
   ValidationError,
 } from "@/lib/effect";
+import { validateProtocols } from "@/shared/config/protocols";
+import dataFormatParserRegistry from "@/utils/file-management/readable-data-extractors/registry";
 
 const CONFIG = "config";
 
@@ -40,6 +42,24 @@ const PostBody = Schema.Struct(
 type PostData = Schema.Schema.Type<typeof PostBody>;
 
 const stampFields = (by: string) => ({ lastModified: new Date().toISOString(), modifiedBy: by });
+
+/** The config list a write would produce, checked when its type has a schema. */
+const checkConfigWrite = (dbName: string, data: PostData) =>
+  Effect.gen(function* () {
+    if (data.type !== "protocols") return;
+    let next: unknown = data.data;
+    if (data.method === "additem" || data.method === "updateitem") {
+      const mongo = yield* Mongo;
+      const current = ((yield* mongo.findOne(dbName, CONFIG, { type: data.type }))?.data ?? []) as { value?: string }[];
+      next =
+        data.method === "additem"
+          ? [...current, data.item]
+          : current.map((entry) => (entry.value === data.oldValue ? data.item : entry));
+    }
+    const techniques = dataFormatParserRegistry.listParsers().map((p: { technique: string }) => p.technique);
+    const errors = validateProtocols(next, techniques);
+    if (errors.length) return yield* Effect.fail(new ValidationError({ message: errors.join("; ") }));
+  });
 
 const addItem = (dbName: string, by: string, data: PostData) =>
   Effect.gen(function* () {
@@ -122,6 +142,7 @@ export const handleConfigPost = (request: Request) =>
     const dbName = yield* currentDatabase;
     const data = yield* decodeBody(PostBody)(request);
     yield* requireCapability(data.method === "seed" ? "config.seed" : "config.edit");
+    if (data.method !== "deleteitem") yield* checkConfigWrite(dbName, data);
 
     switch (data.method) {
       case "additem":

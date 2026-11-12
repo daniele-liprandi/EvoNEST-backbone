@@ -75,6 +75,7 @@ export const getSchema = (request: Request) =>
       sampleTypesCfg,
       traitQuantitiesCfg,
       subsampleTypesCfg,
+      protocolsCfg,
     ] = yield* Effect.all([
       liveColumns(dbName, "samples"),
       liveColumns(dbName, "traits"),
@@ -83,6 +84,7 @@ export const getSchema = (request: Request) =>
       configData(dbName, "sampletypes"),
       configData(dbName, "traitquantities"),
       configData(dbName, "samplesubtypes"),
+      configData(dbName, "protocols"),
     ]);
 
     const sampleSection = (label: string, path: string) => ({
@@ -126,5 +128,6 @@ export const getSchema = (request: Request) =>
         .map((t) => ({ value: t.value!, label: t.label ?? t.value! })),
       // A measurement's `technique` is a parser's `technique`
       parsers: dataFormatParserRegistry.listParsers(),
+      protocols: protocolsCfg,
     });
   });

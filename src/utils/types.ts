@@ -22,6 +22,35 @@ export type LabelType = {
     aliases?: string[], // quantities: parser names stored as this quantity
 };
 
+export type ProtocolParam = {
+    key: string,
+    label: string,
+    kind: "text" | "number" | "date" | "select" | "textarea",
+    options?: { value: string, label: string }[],
+    description?: string,
+};
+
+export type ProtocolStep = {
+    key: string,
+    label: string,
+    kind: "procedure" | "measurement",
+    params: ProtocolParam[],
+    equipmentTypes: string[],
+    optional: boolean,
+    repeatable: boolean,
+    repeatAs?: "subsample" | "label",
+    technique?: string | null,
+    expectedQuantities?: string[],
+};
+
+export type Protocol = {
+    value: string,
+    label: string,
+    description?: string,
+    appliesToSampleTypes: string[],
+    steps: ProtocolStep[],
+};
+
 // Export the default configurations (these are used as fallbacks when the API is not available)
 export const sampletypes: LabelType[] = defaultSampletypes;
 export const traitquantities: LabelType[] = defaultTraitquantities;
