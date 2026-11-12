@@ -128,7 +128,7 @@ After logging in for the first time, you'll see a **First Time Setup** dialog in
    - Prepare the NEST structure
 
 ::: tip What is a NEST?
-A **NEST** is what we call a database in EvoNEST. Think of it as a container for all your lab's data - samples, experiments, traits, and settings. Sometimes, research groups want to separate their data, so each project can have its own NEST, and users can be given access to specific NESTs. The first time you log in, EvoNEST creates your first NEST, admin, and populates it with default configurations.
+A **NEST** is what we call a database in EvoNEST. Think of it as a container for all your lab's data - samples, experiments, traits, and settings. Sometimes, research groups want to separate their data, so each project can have its own NEST, and users can be given access to specific NESTs. The first time you log in, EvoNEST creates your first NEST, evonest, and populates it with default configurations.
 :::
 
 ## Step 4: Explore the dashboard
