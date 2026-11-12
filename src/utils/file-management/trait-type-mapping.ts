@@ -29,10 +29,7 @@ export const knownTraitTypes = (traitTypes: LabelType[]) => {
   return known;
 };
 
-/**
- * Trait types the parsed files would write that the lab does not know, with
- * label, unit and description from the parser's declaration where it has one.
- */
+/** New trait types in the parsed files, described from the parser's declaration. */
 export function findNewTraitTypes(files: ParsedFile[], traitTypes: LabelType[]): NewTraitType[] {
   const known = knownTraitTypes(traitTypes);
   const found = new Map<string, NewTraitType>();
@@ -55,11 +52,7 @@ export function findNewTraitTypes(files: ParsedFile[], traitTypes: LabelType[]):
   return [...found.values()];
 }
 
-/**
- * The lab's trait type list after applying the choices: "add" appends the
- * parser's trait type, "map" records it as an alias of an existing one.
- * Returns null when nothing changes.
- */
+/** "add" appends a trait type, "map" adds an alias; null when nothing changes. */
 export function applyTraitTypeChoices(
   traitTypes: LabelType[],
   newTypes: NewTraitType[],

@@ -24,11 +24,7 @@ const decode = (raw: string): TraitTypeChoice =>
     ? { action: "map", to: raw.slice(4) }
     : { action: raw as "add" | "skip" };
 
-/**
- * Trait types in the uploaded files that the lab does not know yet. With
- * config rights each one can be added, stored as an existing trait type, or
- * skipped; the choices are written to config on submit.
- */
+/** Add, map or skip each new trait type; written to config on submit. */
 export function NewTraitTypes({
   newTypes,
   traitTypes,

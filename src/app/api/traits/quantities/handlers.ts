@@ -26,10 +26,7 @@ export const listStoredQuantities = Effect.gen(function* () {
 
 const RenameBody = Schema.Struct({ from: Schema.String, to: Schema.String });
 
-/**
- * Move stored traits from one trait type to another. Mapping a parser's name
- * onto a lab trait type only affects later uploads; this brings earlier ones along.
- */
+/** Move stored traits to another trait type: a mapping only affects later uploads. */
 export const renameStoredQuantity = (request: Request) =>
   Effect.gen(function* () {
     yield* requireCapability("config.edit");

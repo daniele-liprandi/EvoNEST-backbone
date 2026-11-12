@@ -282,7 +282,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             'StressAtBreak',        // Line 12: StressAtBreak 1126.972 MPa
             'StrainAtBreak',        // Line 11: StrainAtBreak 0.322 mm/mm
             'OffsetYieldStress',    // Line 15: OffsetYieldStress 279.674 MPa
-            'OffsetYieldStrain',    // Line 14: OffsetYieldStrain 0.292 MPa (mislabelled; read as mm/mm)
+            'OffsetYieldStrain',    // Line 14: OffsetYieldStrain 0.292 MPa
             'Toughness',            // Line 13: Toughness 218.498 MPa
             'SpecimenDiameter',     // Line 8: SpecimenDiameter 0.991 um
             'StrainRate'            // Line 9: StrainRate 1.000e-02 1/s
@@ -434,8 +434,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             
             if (isNaN(rawValue)) return null;
 
-            // NanoSuite labels OffsetYieldStrain "MPa"; a strain is dimensionless,
-            // so a pressure factor would inflate it by 1e6.
+            // NanoSuite exports can contain wrong units
             if (trait.endsWith('Strain')) return rawValue;
 
             // Unit is in the second part (if it exists)

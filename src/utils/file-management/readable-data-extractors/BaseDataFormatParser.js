@@ -19,11 +19,8 @@ export class BaseDataFormatParser {
         this.label = this.name; // Default label is the parser name
         this.description = '';
         this.author = '';
-        // The parser contract, read by the Parsers page, /api/schema and the
-        // upload form. `generatedTraits` lists every trait type the parser can
-        // emit as { value, label, unit, description }; `value` is snake_case and
-        // matches a lab preset where one exists. A parser whose trait types come
-        // from the file itself (CSV columns) sets `dynamicTraits` instead.
+        // Read by the Parsers page, /api/schema and the upload form.
+        // `generatedTraits` values are snake_case and match the lab presets.
         this.family = 'generic';
         this.formatDescription = '';
         this.exampleFile = null;

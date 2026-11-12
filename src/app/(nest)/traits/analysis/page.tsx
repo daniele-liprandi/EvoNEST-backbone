@@ -88,9 +88,7 @@ export default function TraitAnalysisPage() {
     "fullSpeciesSubsampletype"
   );
   const groupByOptions = filterOptions?.groupByOptions ?? FALLBACK_GROUP_OPTIONS;
-  // Configured trait types first, then any stored trait type the lab has not
-  // configured (a skipped parser trait type, an old manual entry), so stored
-  // data is always reachable.
+  // Configured trait types, then stored ones that are not configured
   const traitOptions = useMemo(() => {
     const configured = new Set(traitquantities.map((t) => t.value));
     const stored = (filterOptions?.traitQuantities ?? [])

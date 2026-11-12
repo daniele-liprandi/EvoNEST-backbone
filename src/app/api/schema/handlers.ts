@@ -124,8 +124,7 @@ export const getSchema = (request: Request) =>
       subsampleTypes: subsampleTypesCfg
         .filter((t) => t.value)
         .map((t) => ({ value: t.value!, label: t.label ?? t.value! })),
-      // What each file parser reads and the trait types it produces; a
-      // measurement's `technique` is a parser's `technique`.
+      // A measurement's `technique` is a parser's `technique`
       parsers: dataFormatParserRegistry.listParsers(),
     });
   });
