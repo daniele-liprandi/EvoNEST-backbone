@@ -66,7 +66,7 @@ describe('TensileTestFormatParser', () => {
             // Check offsetYieldStress (Line 15: OffsetYieldStress 279.674 MPa) - converted to Pa
             expect(traits.offsetYieldStress).toBe(279.674e6);
 
-            // Check offsetYieldStrain (Line 14: OffsetYieldStrain 0.292 MPa) - the file's unit is wrong; a strain is not converted
+            // Check offsetYieldStrain (Line 14: OffsetYieldStrain 0.292 MPa) - NanoSuite exports can contain wrong units
             expect(traits.offsetYieldStrain).toBe(0.292);
 
             // Check toughness (Line 13: Toughness 218.498 MPa) - converted to Pa
