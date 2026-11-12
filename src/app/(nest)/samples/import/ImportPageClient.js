@@ -31,8 +31,10 @@ import { useFieldTypes } from "@/hooks/useFieldTypes";
 import { useUserData } from "@/hooks/useUserData";
 import { getUserIdByName } from "@/hooks/userHooks";
 import { prepend_path } from "@/lib/utils";
+import Papa from "papaparse";
+import { mutate } from "swr";
 
-const REQUIRED_FIELDS = ['family', 'genus', 'species', 'type', 'responsible'];
+const REQUIRED_FIELDS = ['family', 'genus', 'species', 'type', 'responsible', 'date'];
 
 // Special mapping options for combined fields
 const SPECIAL_MAPPINGS = {
@@ -204,6 +206,12 @@ const SPECIAL_MAPPINGS = {
     }
 };
 
+const mappingLabel = (field, special, isCustom) => {
+    if (special) return SPECIAL_MAPPINGS[special]?.label ?? special;
+    if (isCustom) return `${field} (custom)`;
+    return field;
+};
+
 const levenshteinDistance = (str1, str2) => {
     const track = Array(str2.length + 1).fill(null).map(() =>
         Array(str1.length + 1).fill(null));
@@ -246,7 +254,6 @@ const ImportPage = () => {
     const [customFields, setCustomFields] = useState(new Set());
     const [importProgress, setImportProgress] = useState(0);
     const [importStatus, setImportStatus] = useState(null);
-    const [idMapping, setIdMapping] = useState({}); // Track old -> new IDs
     const [isHierarchicalImport, setIsHierarchicalImport] = useState(false); // Track if this is hierarchical import
     const [hierarchicalData, setHierarchicalData] = useState({ animals: [], subsamples: [] }); // Processed hierarchical data
 
@@ -523,7 +530,15 @@ const ImportPage = () => {
                         }}
                     >
                         <SelectTrigger className="h-8 w-[180px]">
-                            <SelectValue placeholder="Map to field..." />
+                            {/* Plain text here: by default the trigger repeats the
+                                whole item, badges included, and overflows. */}
+                            <SelectValue placeholder="Map to field...">
+                                {(fieldMappings[key] || specialMappings[key]) && (
+                                    <span className="truncate">
+                                        {mappingLabel(fieldMappings[key], specialMappings[key], customFields.has(key))}
+                                    </span>
+                                )}
+                            </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                             {/* Standard Fields Section */}
@@ -588,27 +603,14 @@ const ImportPage = () => {
     }, [data, fieldMappings, specialMappings, cellErrors, customFields, standardFields, fieldTypes, validateData]);
 
 
-    // Parse CSV string to JSON
-    const parseCSV = (csvString) => {
-        const lines = csvString.split('\n');
-        const headers = lines[0].split(',').map(header => header.trim());
-        const jsonData = [];
-
-        for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-
-            const values = lines[i].split(',').map(value => value.trim());
-            const row = {};
-
-            headers.forEach((header, index) => {
-                row[header] = values[index] || '';
-            });
-
-            jsonData.push(row);
-        }
-
-        return jsonData;
-    };
+    // Papa handles quoted cells; a comma inside a note used to shift every
+    // column after it.
+    const parseCSV = (csvString) => Papa.parse(csvString, {
+        header: true,
+        skipEmptyLines: 'greedy',
+        transformHeader: (header) => header.trim(),
+        transform: (value) => value.trim(),
+    }).data;
 
     const processFile = async (file) => {
         if (!file.name.endsWith('.csv')) {
@@ -619,6 +621,7 @@ const ImportPage = () => {
         setIsLoading(true);
         setProgress(0);
         setValidationErrors([]); // Clear any existing validation errors
+        setImportStatus(null);
 
         try {
             const reader = new FileReader();
@@ -638,8 +641,12 @@ const ImportPage = () => {
                 // Get the first row's keys (CSV headers)
                 if (jsonData.length > 0) {
                     Object.keys(jsonData[0]).forEach(csvField => {
-                        // First try exact matches
-                        if (standardFields.includes(csvField)) {
+                        // A special mapping wins over the same-named standard
+                        // field: "nomenclature" must be split into genus and
+                        // species, "responsible" resolved from a name to a user id.
+                        if (SPECIAL_MAPPINGS[csvField]) {
+                            initialSpecialMapping[csvField] = csvField;
+                        } else if (standardFields.includes(csvField)) {
                             initialMapping[csvField] = csvField;
                         } else {
                             // Try fuzzy matching for unmatched fields
@@ -703,7 +710,8 @@ const ImportPage = () => {
             }
 
             setImportProgress(100);
-            setImportStatus('Import completed successfully');
+            setImportStatus(`Imported ${isHierarchicalImport ? hierarchicalData.subsamples.length + ' subsamples and their animals' : data.length + ' samples'}`);
+            mutate(`${prepend_path}/api/samples`);
 
             // Clear data after successful import
             setData([]);
@@ -712,7 +720,6 @@ const ImportPage = () => {
             setSpecialMappings({});
             setCellErrors({});
             setCustomFields(new Set());
-            setIdMapping({});
             setHierarchicalData({ animals: [], subsamples: [] });
         } catch (error) {
             setValidationErrors([`Import error: ${error.message}`]);
@@ -742,9 +749,11 @@ const ImportPage = () => {
                 animalIdMapping[transformedAnimal.name] = existingAnimal._id;
                 setImportStatus(`Animal "${transformedAnimal.name}" already exists, using existing record`);
             } else {
-                // Create new animal - ensure type is set to "animal"
+                // Create new animal - ensure type is set to "animal". The row's
+                // subsampletype describes the child, not the animal.
+                const { subsampletype, ...animalFields } = transformedAnimal;
                 const animalData = {
-                    ...transformedAnimal,
+                    ...animalFields,
                     type: 'animal',  // Override any type from CSV data
                     method: 'create'
                 };
@@ -756,8 +765,8 @@ const ImportPage = () => {
                 });
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(`Failed to import animal "${transformedAnimal.name}": ${error.message}`);
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(`Failed to import animal "${transformedAnimal.name}": ${error.error || error.message || response.statusText}`);
                 }
 
                 const result = await response.json();
@@ -788,14 +797,18 @@ const ImportPage = () => {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(`Failed to import subsample "${transformedSubsample.name}": ${error.message}`);
+                const error = await response.json().catch(() => ({}));
+                throw new Error(`Failed to import subsample "${transformedSubsample.name}": ${error.error || error.message || response.statusText}`);
             }
         }
     };
 
     // Handle standard import (existing logic)
     const handleStandardImport = async () => {
+        // A plain object, not state: a setState inside this loop is not seen
+        // by later iterations, so children never got their new parentId.
+        const newIds = {};
+
         // Transform data according to field mappings
         const transformedData = data.map(record => transformRecord(record));
 
@@ -814,8 +827,8 @@ const ImportPage = () => {
             setImportStatus(`Importing record ${i + 1} of ${sortedData.length}`);
 
             // Update parentId if needed
-            if (record.parentId && idMapping[record.parentId]) {
-                record.parentId = idMapping[record.parentId];
+            if (record.parentId && newIds[record.parentId]) {
+                record.parentId = newIds[record.parentId];
             }
 
             // Remove originalId from the record before sending
@@ -828,15 +841,15 @@ const ImportPage = () => {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(`Failed to import record ${i + 1}: ${error.message}`);
+                const error = await response.json().catch(() => ({}));
+                throw new Error(`Failed to import record ${i + 1}: ${error.error || error.message || response.statusText}`);
             }
 
             const result = await response.json();
 
             // Store the mapping between original and new ID
             if (originalId && result._id) {
-                setIdMapping(prev => ({ ...prev, [originalId]: result._id }));
+                newIds[originalId] = result._id;
             }
 
             // Optional: Add a small delay to prevent overwhelming the server
@@ -922,16 +935,18 @@ const ImportPage = () => {
                     <div className="space-y-4">
                         {/* File Upload */}
                         <div className="flex items-center gap-4">
-                            <Button variant="outline" className="relative">
+                            {/* Auto-mapping needs the sample schema: a file picked before
+                                it loads is fuzzy-matched against nothing. */}
+                            <Button variant="outline" className="relative" disabled={isLoading || schemaLoading}>
                                 <input
                                     type="file"
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     accept=".csv"
                                     onChange={handleFileUpload}
-                                    disabled={isLoading}
+                                    disabled={isLoading || schemaLoading}
                                 />
                                 <UploadSimple className="w-4 h-4 mr-2" />
-                                Select CSV File
+                                {schemaLoading ? "Loading fields..." : "Select CSV File"}
                             </Button>
                             {isLoading && <Progress value={progress} className="w-[200px]" />}
                         </div>
@@ -1052,11 +1067,18 @@ const ImportPage = () => {
                             </div>
                         )}
 
+                        {!isLoading && importStatus && data.length === 0 && (
+                            <Alert>
+                                <Check className="h-4 w-4" />
+                                <AlertDescription>{importStatus}</AlertDescription>
+                            </Alert>
+                        )}
+
                         {/* Import Button */}
                         {data.length > 0 && (
                             <Button
                                 onClick={handleImport}
-                                disabled={isLoading || (!Object.values(fieldMappings).some(v => v) && !Object.values(specialMappings).some(v => v))}
+                                disabled={isLoading || validationErrors.length > 0 || (!Object.values(fieldMappings).some(v => v) && !Object.values(specialMappings).some(v => v))}
                                 className="w-full"
                             >
                                 {isLoading ? (
