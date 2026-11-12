@@ -21,19 +21,22 @@ afterAll(async () => {
   await mongo.stop();
 });
 beforeEach(async () => {
-  await mongo.db.collection("files").deleteMany({});
+  await Promise.all(["files", "files.files"].map((c) => mongo.db.collection(c).deleteMany({})));
   jest.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => jest.restoreAllMocks());
 
 const usage = () => runRoute(fileUsage.pipe(Effect.provide(mongo.layer)));
 
-const gridfsFile = (size: number) => ({
-  _id: new ObjectId(),
-  name: "g",
-  size,
-  storage: { backend: "gridfs", ref: new ObjectId() },
-});
+// Inserts the bucket entry the meter reads; returns the row pointing at it.
+const gridfsFile = async (size: number, ref = new ObjectId()) => {
+  await mongo.db.collection("files.files").updateOne(
+    { _id: ref },
+    { $setOnInsert: { length: size, filename: "g" } },
+    { upsert: true },
+  );
+  return { _id: new ObjectId(), name: "g", size, storage: { backend: "gridfs", ref } };
+};
 const externalFile = () => ({
   _id: new ObjectId(),
   name: "e",
@@ -43,8 +46,8 @@ const externalFile = () => ({
 describe("GET /api/files/usage", () => {
   test("sums managed bytes, counts external links and all files", async () => {
     await mongo.db.collection("files").insertMany([
-      gridfsFile(1000),
-      gridfsFile(2500),
+      await gridfsFile(1000),
+      await gridfsFile(2500),
       externalFile(),
       externalFile(),
       // A legacy disk row (no storage, no size) still counts toward fileCount.
@@ -66,9 +69,15 @@ describe("GET /api/files/usage", () => {
 
   test("external bytes never count toward gridfsBytes", async () => {
     await mongo.db.collection("files").insertMany([
-      gridfsFile(10),
+      await gridfsFile(10),
       { ...externalFile(), size: 999999 },
     ]);
     expect((await (await usage()).json()).gridfsBytes).toBe(10);
+  });
+
+  test("a blob shared by deduplicated rows counts once", async () => {
+    const ref = new ObjectId();
+    await mongo.db.collection("files").insertMany([await gridfsFile(700, ref), await gridfsFile(700, ref)]);
+    expect(await (await usage()).json()).toEqual({ gridfsBytes: 700, externalCount: 0, fileCount: 2 });
   });
 });

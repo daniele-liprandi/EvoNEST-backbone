@@ -21,6 +21,7 @@ import { resolveAttachmentTarget, kindFromMime } from "@/shared/config/attachmen
 import {
   ALLOWED_MIME_TYPES,
   bucketFor,
+  deleteBlobIfUnreferenced,
   putStream,
   sizeCapForMime,
   streamUploadToGridFS,
@@ -210,7 +211,8 @@ export const uploadFile = (request: Request) =>
         yield* mongo
           .deleteOne(dbName, "files", { _id: fileId })
           .pipe(Effect.catchAll(() => Effect.void));
-        if (ownsBlob) yield* dropBlob(db, upload.ref);
+        // A concurrent upload of the same bytes may already point at this blob.
+        if (ownsBlob) yield* Effect.promise(() => deleteBlobIfUnreferenced(db, upload.ref));
         return yield* Effect.fail(new NotFoundError({ resource: entryType as string }));
       }
     }
@@ -413,7 +415,10 @@ const importExternal = (data: FilesPostData) =>
       const winner = canonical
         ? yield* mongo.findOne(dbName, "files", { sha256, "storage.backend": "gridfs" })
         : null;
-      if (!winner) return yield* Effect.fail(updated.left);
+      if (!winner) {
+        if (canonical) yield* dropBlob(db, stored.ref);
+        return yield* Effect.fail(updated.left);
+      }
       yield* dropBlob(db, stored.ref);
       delete set.sha256;
       set.storage = { ...(set.storage as object), ref: winner.storage.ref };

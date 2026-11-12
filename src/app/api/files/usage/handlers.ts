@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import { ok, currentDatabase, Mongo, attempt } from "@/lib/effect";
+import { BUCKET_NAME } from "../gridfs";
 
 /**
  * Storage footprint for the active NEST: bytes held in GridFS, how many files
@@ -18,7 +19,6 @@ export const fileUsage = Effect.gen(function* () {
             $group: {
               _id: "$storage.backend",
               count: { $sum: 1 },
-              bytes: { $sum: { $ifNull: ["$size", 0] } },
             },
           },
         ])
@@ -26,12 +26,19 @@ export const fileUsage = Effect.gen(function* () {
     "files.usage aggregate",
   );
 
-  let gridfsBytes = 0;
+  // Bytes from the bucket itself: rows that share a deduplicated blob would
+  // count it once per row.
+  const blobs = yield* mongo.collection(dbName, `${BUCKET_NAME}.files`);
+  const [stored] = yield* attempt(
+    () => blobs.aggregate([{ $group: { _id: null, bytes: { $sum: "$length" } } }]).toArray(),
+    "files.usage blob bytes",
+  );
+  const gridfsBytes = stored?.bytes ?? 0;
+
   let externalCount = 0;
   let fileCount = 0;
   for (const row of rows) {
     fileCount += row.count;
-    if (row._id === "gridfs") gridfsBytes = row.bytes;
     if (row._id === "external") externalCount = row.count;
   }
 
