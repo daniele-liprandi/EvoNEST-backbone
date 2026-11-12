@@ -66,8 +66,8 @@ describe('TensileTestFormatParser', () => {
             // Check offsetYieldStress (Line 15: OffsetYieldStress 279.674 MPa) - converted to Pa
             expect(traits.offsetYieldStress).toBe(279.674e6);
 
-            // Check offsetYieldStrain (Line 14: OffsetYieldStrain 0.292 MPa) - converted to Pa
-            expect(traits.offsetYieldStrain).toBe(0.292e6);
+            // Check offsetYieldStrain (Line 14: OffsetYieldStrain 0.292 MPa) - NanoSuite exports can contain wrong units
+            expect(traits.offsetYieldStrain).toBe(0.292);
 
             // Check toughness (Line 13: Toughness 218.498 MPa) - converted to Pa
             expect(traits.toughness).toBe(218.498e6);
@@ -114,6 +114,10 @@ describe('TensileTestFormatParser', () => {
             expect(strainAtBreakTrait).toBeDefined();
             expect(strainAtBreakTrait?.unit).toBe('mm/mm');
             expect(strainAtBreakTrait?.value).toBe(0.322); // No conversion
+
+            const offsetYieldStrainTrait = apiTraits.find((t: any) => t.quantity === 'offsetYieldStrain');
+            expect(offsetYieldStrainTrait?.unit).toBe('mm/mm');
+            expect(offsetYieldStrainTrait?.value).toBe(0.292);
 
             const toughnessTrait = apiTraits.find((t: any) => t.quantity === 'toughness');
             expect(toughnessTrait).toBeDefined();

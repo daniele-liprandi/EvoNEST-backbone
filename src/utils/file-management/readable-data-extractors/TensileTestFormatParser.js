@@ -50,7 +50,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             },
             {
                 name: 'offsetYieldStrain',
-                unit: 'Pa',
+                unit: 'mm/mm',
                 description: 'Strain at yield point using offset method'
             },
             {
@@ -175,7 +175,7 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             'StressAtBreak': 'Pa',
             'StrainAtBreak': 'mm/mm',
             'OffsetYieldStress': 'Pa',
-            'OffsetYieldStrain': 'Pa',
+            'OffsetYieldStrain': 'mm/mm',
             'Toughness': 'Pa',
             'SpecimenDiameter': 'um',
             'StrainRate': '1/s',
@@ -422,9 +422,12 @@ export class TensileTestFormatParser extends BaseDataFormatParser {
             
             if (isNaN(rawValue)) return null;
 
+            // NanoSuite exports can contain wrong units
+            if (trait.endsWith('Strain')) return rawValue;
+
             // Unit is in the second part (if it exists)
             const unit = parts[1] || '';
-            
+
             // Apply unit conversion based on what's in the file
             const conversionFactor = this.getConversionFactor(unit);
             const convertedValue = rawValue * conversionFactor;
