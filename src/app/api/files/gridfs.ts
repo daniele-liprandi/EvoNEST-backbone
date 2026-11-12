@@ -10,9 +10,8 @@ export const bucketFor = (db: Db) => new GridFSBucket(db, { bucketName: BUCKET_N
 
 /**
  * Stream a readable into a GridFS blob, hashing as it goes (the external-file
- * import path). A failed read, or one passing `maxBytes`, deletes whatever
- * chunks already landed; the cap is checked on the bytes read, so a file that
- * grows after it was sized is still stopped.
+ * import path). A failed read, or one over `maxBytes`, deletes the chunks
+ * already written.
  */
 export const putStream = (
   db: Db,

@@ -46,11 +46,7 @@ interface Metadata {
 const dropBlob = (db: Db, ref: ObjectId) =>
   Effect.promise(() => bucketFor(db).delete(ref).catch(() => {}));
 
-/**
- * Any row already backed by a blob with these bytes. Every GridFS row carries
- * `storage.sha256`, so this still finds the blob after the row holding the
- * unique top-level `sha256` is deleted.
- */
+/** By `storage.sha256`: the row holding the top-level `sha256` may be deleted. */
 const findStoredBlob = (dbName: string, sha256: string) =>
   Effect.flatMap(Mongo, (mongo) =>
     mongo.findOne(dbName, "files", { "storage.sha256": sha256, "storage.backend": "gridfs" }),
@@ -171,9 +167,9 @@ export const uploadFile = (request: Request) =>
       metadata: { ...metadata, uploadDate: now, isTemporary: !!deferredLink },
     });
 
-    // The row goes in before this request's blob is dropped: once it points at
-    // the shared blob, a concurrent delete of the other row keeps that blob.
-    // If the blob was already reclaimed, the row keeps this request's copy.
+    // 1. Insert this row pointing at the shared blob.
+    // 2. Shared blob still there: drop this request's blob.
+    // 3. Shared blob gone: point the row at this request's blob.
     const insertDuplicateOf = (sharedDoc: Document) =>
       Effect.gen(function* () {
         const sharedRef = sharedDoc.storage.ref as ObjectId;
@@ -405,8 +401,8 @@ const importExternal = (data: FilesPostData) =>
     });
     const { sha256 } = stored;
 
-    // Same blob model as uploads: reuse an identical stored blob and drop ours,
-    // but only once this row points at it and the blob is confirmed still there.
+    // Same order as uploads (insertDuplicateOf): point the row at the shared
+    // blob, then drop ours only if the shared blob is still there.
     const existing = yield* findStoredBlob(dbName, sha256);
     let ref = stored.ref;
     const canonical = !existing;

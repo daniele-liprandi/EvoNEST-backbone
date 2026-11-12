@@ -38,7 +38,7 @@ async function up(testClient = null, dbName = "test") {
                 { sha256: 1 },
                 { unique: true, partialFilterExpression: { sha256: { $type: "string" } } }
             ),
-            // Dedup lookup: every GridFS row carries it, canonical or not.
+            // Dedup lookup
             filesCollection.createIndex({ "storage.sha256": 1 })
         ]);
 
