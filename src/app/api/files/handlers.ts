@@ -22,6 +22,7 @@ import {
   ALLOWED_MIME_TYPES,
   bucketFor,
   deleteBlobIfUnreferenced,
+  gridfsBlobExists,
   putStream,
   sizeCapForMime,
   streamUploadToGridFS,
@@ -44,6 +45,16 @@ interface Metadata {
 /** Best-effort removal of an orphaned GridFS blob. */
 const dropBlob = (db: Db, ref: ObjectId) =>
   Effect.promise(() => bucketFor(db).delete(ref).catch(() => {}));
+
+/**
+ * Any row already backed by a blob with these bytes. Every GridFS row carries
+ * `storage.sha256`, so this still finds the blob after the row holding the
+ * unique top-level `sha256` is deleted.
+ */
+const findStoredBlob = (dbName: string, sha256: string) =>
+  Effect.flatMap(Mongo, (mongo) =>
+    mongo.findOne(dbName, "files", { "storage.sha256": sha256, "storage.backend": "gridfs" }),
+  );
 
 /**
  * Append `fileId` to the target entry's `filesId` and write a logbook line.
@@ -160,23 +171,29 @@ export const uploadFile = (request: Request) =>
       metadata: { ...metadata, uploadDate: now, isTemporary: !!deferredLink },
     });
 
-    const insertDuplicateOf = (canonicalDoc: Document) =>
+    // The row goes in before this request's blob is dropped: once it points at
+    // the shared blob, a concurrent delete of the other row keeps that blob.
+    // If the blob was already reclaimed, the row keeps this request's copy.
+    const insertDuplicateOf = (sharedDoc: Document) =>
       Effect.gen(function* () {
-        yield* dropBlob(db, upload.ref);
-        const doc = row(canonicalDoc.storage.ref as ObjectId, false);
+        const sharedRef = sharedDoc.storage.ref as ObjectId;
+        const doc = row(sharedRef, false);
         yield* mongo.insertOne(dbName, "files", doc);
-        return doc._id;
+        const stillThere = yield* Effect.promise(() => gridfsBlobExists(db, sharedRef));
+        if (stillThere) {
+          yield* dropBlob(db, upload.ref);
+          return { fileId: doc._id, ownsBlob: false };
+        }
+        yield* mongo.updateOne(dbName, "files", { _id: doc._id }, { $set: { "storage.ref": upload.ref } });
+        return { fileId: doc._id, ownsBlob: true };
       });
 
-    const existing = yield* mongo.findOne(dbName, "files", {
-      sha256: upload.sha256,
-      "storage.backend": "gridfs",
-    });
+    const existing = yield* findStoredBlob(dbName, upload.sha256);
     // Whether this request's own blob backs the new row (so unwinding drops it).
     let ownsBlob = false;
     let fileId: ObjectId;
     if (existing) {
-      fileId = yield* insertDuplicateOf(existing);
+      ({ fileId, ownsBlob } = yield* insertDuplicateOf(existing));
     } else {
       const doc = row(upload.ref, true);
       const inserted = yield* mongo.insertOne(dbName, "files", doc).pipe(Effect.either);
@@ -186,15 +203,12 @@ export const uploadFile = (request: Request) =>
       } else {
         // Lost the race to another request storing these exact bytes, or the
         // insert failed for another reason.
-        const winner = yield* mongo.findOne(dbName, "files", {
-          sha256: upload.sha256,
-          "storage.backend": "gridfs",
-        });
+        const winner = yield* findStoredBlob(dbName, upload.sha256);
         if (!winner) {
           yield* dropBlob(db, upload.ref);
           return yield* Effect.fail(inserted.left);
         }
-        fileId = yield* insertDuplicateOf(winner);
+        ({ fileId, ownsBlob } = yield* insertDuplicateOf(winner));
       }
     }
 
@@ -379,24 +393,24 @@ const importExternal = (data: FilesPostData) =>
       );
     }
 
-    const stored = yield* attempt(
-      () => putStream(db, fileDoc.name ?? "imported", createReadStream(abs), mimeType),
-      "import external file",
-    ).pipe(
-      Effect.catchAll(() =>
-        Effect.fail(new ConflictError({ message: "External file could not be read" })),
-      ),
-    );
+    const tooLarge = new ValidationError({
+      message: `Too large to load into the NEST (limit ${Math.round(cap / (1024 * 1024))} MB); keep it as an external link`,
+    });
+    const stored = yield* Effect.tryPromise({
+      try: () => putStream(db, fileDoc.name ?? "imported", createReadStream(abs), mimeType, cap),
+      catch: (e) =>
+        e instanceof UploadError && e.failure === "too-large"
+          ? tooLarge
+          : new ConflictError({ message: "External file could not be read" }),
+    });
     const { sha256 } = stored;
 
-    // Same blob model as uploads: reuse an identical stored blob and drop ours.
-    const existing = yield* mongo.findOne(dbName, "files", { sha256, "storage.backend": "gridfs" });
+    // Same blob model as uploads: reuse an identical stored blob and drop ours,
+    // but only once this row points at it and the blob is confirmed still there.
+    const existing = yield* findStoredBlob(dbName, sha256);
     let ref = stored.ref;
     const canonical = !existing;
-    if (existing) {
-      yield* dropBlob(db, stored.ref);
-      ref = existing.storage.ref as ObjectId;
-    }
+    if (existing) ref = existing.storage.ref as ObjectId;
 
     const set: Record<string, unknown> = {
       mime: mimeType,
@@ -419,10 +433,17 @@ const importExternal = (data: FilesPostData) =>
         if (canonical) yield* dropBlob(db, stored.ref);
         return yield* Effect.fail(updated.left);
       }
-      yield* dropBlob(db, stored.ref);
       delete set.sha256;
-      set.storage = { ...(set.storage as object), ref: winner.storage.ref };
+      ref = winner.storage.ref as ObjectId;
+      set.storage = { ...(set.storage as object), ref };
       yield* mongo.updateOne(dbName, "files", { _id: fileDoc._id }, { $set: set });
+    }
+    if (ref !== stored.ref) {
+      if (yield* Effect.promise(() => gridfsBlobExists(db, ref))) {
+        yield* dropBlob(db, stored.ref);
+      } else {
+        yield* mongo.updateOne(dbName, "files", { _id: fileDoc._id }, { $set: { "storage.ref": stored.ref } });
+      }
     }
     return yield* ok({ fileId: String(fileDoc._id), status: 200 });
   });

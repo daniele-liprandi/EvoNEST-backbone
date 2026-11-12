@@ -10,13 +10,16 @@ export const bucketFor = (db: Db) => new GridFSBucket(db, { bucketName: BUCKET_N
 
 /**
  * Stream a readable into a GridFS blob, hashing as it goes (the external-file
- * import path). A failed read deletes whatever chunks already landed.
+ * import path). A failed read, or one passing `maxBytes`, deletes whatever
+ * chunks already landed; the cap is checked on the bytes read, so a file that
+ * grows after it was sized is still stopped.
  */
 export const putStream = (
   db: Db,
   filename: string,
   source: Readable,
   mime: string,
+  maxBytes = Infinity,
 ): Promise<{ ref: ObjectId; sha256: string; size: number }> =>
   new Promise((resolve, reject) => {
     const bucket = bucketFor(db);
@@ -25,6 +28,10 @@ export const putStream = (
     let size = 0;
     source.on("data", (chunk: Buffer) => {
       size += chunk.length;
+      if (size > maxBytes) {
+        source.destroy(new UploadError("too-large", "File exceeds the size limit"));
+        return;
+      }
       hash.update(chunk);
     });
     pipeline(source, upload, (err) => {
