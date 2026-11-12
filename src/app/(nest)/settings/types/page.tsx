@@ -223,7 +223,7 @@ const TypeTable = ({
   onRefresh,
   renderRowExtra,
 }: TypeTableProps) => (
-  <Card className="mb-6">
+  <Card id={configType} className="mb-6 scroll-mt-20">
     <CardHeader>
       <CardTitle className="flex justify-between items-center">
         {title}

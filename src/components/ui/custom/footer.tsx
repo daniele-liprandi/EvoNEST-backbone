@@ -78,7 +78,7 @@ export function Footer() {
           </ul>
         </div>
         
-        <div className="flex items-center justify-center gap-x-4">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
           <Image
             className="h-12 w-auto"
             src={uniLogo}
