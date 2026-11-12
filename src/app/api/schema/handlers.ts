@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 import { ok, currentSession, currentDatabase, Mongo, ValidationError } from "@/lib/effect";
 import { isServiceRequest } from "@/app/api/utils/verifyServiceKey";
+import dataFormatParserRegistry from "@/utils/file-management/readable-data-extractors/registry";
 import type { NextRequest } from "next/server";
 
 const EXCLUDE_FIELDS = new Set([
@@ -33,7 +34,7 @@ const liveColumns = (dbName: string, collection: string) =>
     return [...keys].filter((key) => !EXCLUDE_FIELDS.has(key));
   });
 
-type ConfigEntry = { value?: string; label?: string; unit?: string; fields?: unknown };
+type ConfigEntry = { value?: string; label?: string; unit?: string; fields?: unknown; aliases?: unknown };
 
 const configData = (dbName: string, type: string) =>
   Effect.map(
@@ -114,9 +115,16 @@ export const getSchema = (request: Request) =>
         .map((t) => ({ value: t.value!, label: t.label ?? t.value!, fields: fieldKeys(t.fields) })),
       traitQuantities: traitQuantitiesCfg
         .filter((t) => t.value)
-        .map((t) => ({ value: t.value!, label: t.label ?? t.value!, unit: t.unit ?? null })),
+        .map((t) => ({
+          value: t.value!,
+          label: t.label ?? t.value!,
+          unit: t.unit ?? null,
+          aliases: Array.isArray(t.aliases) ? t.aliases : [],
+        })),
       subsampleTypes: subsampleTypesCfg
         .filter((t) => t.value)
         .map((t) => ({ value: t.value!, label: t.label ?? t.value! })),
+      // A measurement's `technique` is a parser's `technique`
+      parsers: dataFormatParserRegistry.listParsers(),
     });
   });

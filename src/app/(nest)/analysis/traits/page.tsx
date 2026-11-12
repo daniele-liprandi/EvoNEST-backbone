@@ -74,17 +74,17 @@ function TraitStatisticsContent() {
     <Card>
       <CardHeader>
         <CardTitle>Trait statistics</CardTitle>
-        <CardDescription>Mean, standard deviation, range and median of one trait type, by group.</CardDescription>
+        <CardDescription>Mean, standard deviation, range and median of one quantity, by group.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {optionsError && <p className="text-sm text-destructive">Could not load the trait types.</p>}
+        {optionsError && <p className="text-sm text-destructive">Could not load the quantities.</p>}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="trait-select">Trait type</Label>
+            <Label htmlFor="trait-select">Quantity</Label>
             <Select value={quantity} onValueChange={(v) => update({ quantity: v })}>
               <SelectTrigger id="trait-select">
-                <SelectValue placeholder="No trait types yet" />
+                <SelectValue placeholder="No quantities yet" />
               </SelectTrigger>
               <SelectContent>
                 {options?.quantities.map((q) => (

@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -53,7 +52,6 @@ interface LabelType {
 
 interface TypeTableProps {
   title: string;
-  description?: string;
   data: LabelType[];
   showColumns: string[];
   configType: string;
@@ -216,7 +214,6 @@ const AddItemForm = ({
 
 const TypeTable = ({
   title,
-  description,
   data,
   showColumns,
   configType,
@@ -229,7 +226,6 @@ const TypeTable = ({
         {title}
         <AddItemForm configType={configType} onSuccess={onRefresh} />
       </CardTitle>
-      {description && <CardDescription>{description}</CardDescription>}
     </CardHeader>
     <CardContent>
       <Table>
@@ -248,7 +244,11 @@ const TypeTable = ({
           {data.map((item, index) => (
             <TableRow key={index}>
               {showColumns.map((column) => (
-                <TableCell key={column}>{item[column] || "-"}</TableCell>
+                <TableCell key={column}>
+                  {Array.isArray(item[column])
+                    ? (item[column] as string[]).join(", ") || "-"
+                    : item[column] || "-"}
+                </TableCell>
               ))}
               <TableCell>
                 <div className="flex items-center gap-2">
@@ -428,7 +428,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Sample Types"
-            description="Different types of samples that can be recorded in the system"
             data={configs.sampletypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="sampletypes"
@@ -449,7 +448,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Sample Subtypes"
-            description="Specific categories of samples"
             data={configs.samplesubtypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="samplesubtypes"
@@ -457,16 +455,15 @@ export default function TypesPage() {
           />
 
           <TypeTable
-            title="Trait types"
+            title="Quantities"
             data={configs.traitquantities}
-            showColumns={["label", "value", "unit", "description"]}
+            showColumns={["label", "value", "unit", "aliases", "description"]}
             configType="traitquantities"
             onRefresh={refreshConfig}
           />
 
           <TypeTable
             title="Equipment Types"
-            description="Different types of equipment used for measurements"
             data={configs.equipmenttypes}
             showColumns={["label", "value", "description", "shortened"]}
             configType="equipmenttypes"
@@ -475,7 +472,6 @@ export default function TypesPage() {
 
           <TypeTable
             title="Base Units"
-            description="Base units that can be used with SI prefixes for measurements"
             data={configs.baseunits}
             showColumns={["label", "value", "category", "description"]}
             configType="baseunits"

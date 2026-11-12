@@ -13,7 +13,7 @@ The configuration system is divided into two main areas:
 This section allows you to configure the different types of data your lab works with:
 
 - **Sample Types** - Define categories of biological samples (e.g., "animal", "silk", "web")
-- **Trait Quantities** - Configure the quantities you measure, each with its unit (e.g., "diameter" in μm)
+- **Quantities** - Configure the quantities you measure, each with its unit (e.g., "diameter" in μm)
 - **Sample Subtypes** - Specify subcategories for detailed classification
 - **Equipment Types** - List measurement equipment used in your lab
 - **Silk Types** - Define specific spider silk types for detailed classification
@@ -89,7 +89,7 @@ Silk Samples:
 ```
 :::
 
-:::details Trait Quantities with Units
+:::details Quantities with Units
 ```
 Diameter Measurements:
 - Value: "diameter"

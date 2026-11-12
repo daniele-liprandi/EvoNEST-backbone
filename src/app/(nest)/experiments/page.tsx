@@ -53,6 +53,11 @@ export default function ExperimentsLandingPage() {
             title="General"
             description="Every experiment in the NEST, in one table."
           />
+          <NavCard
+            href="/experiments/parsers"
+            title="Parsers"
+            description="Instrument files EvoNEST reads and the quantities they produce."
+          />
         </div>
       </div>
     </section>

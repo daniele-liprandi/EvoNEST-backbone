@@ -7,7 +7,6 @@ import { z } from "zod";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -237,10 +236,6 @@ export default function MainSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Sample ID Generation</CardTitle>
-              <CardDescription>
-                Configure how sample IDs are automatically generated from genus
-                and species names
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Default lengths */}
@@ -462,10 +457,6 @@ export default function MainSettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Lab Information</CardTitle>
-              <CardDescription>
-                Configure your laboratory information for default location
-                settings
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField

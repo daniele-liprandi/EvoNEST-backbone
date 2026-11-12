@@ -2162,6 +2162,64 @@
         }
       }
     },
+    "/api/traits/quantities": {
+      "get": {
+        "summary": "Trait types present in stored traits, with counts",
+        "tags": [
+          "Traits"
+        ],
+        "responses": {
+          "200": {
+            "description": "[{ quantity, count }]"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Move stored traits from one trait type to another",
+        "tags": [
+          "Traits"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string"
+                  },
+                  "to": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ renamed }"
+          },
+          "400": {
+            "description": "Missing or identical trait types"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Missing the config.edit capability"
+          }
+        }
+      }
+    },
     "/api/traits/ext": {
       "get": {
         "summary": "Export traits data with API key authentication",

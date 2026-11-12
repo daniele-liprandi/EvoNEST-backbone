@@ -8,6 +8,7 @@
  */
 
 import { dataFormatParserRegistry } from './readable-data-extractors/index';
+import type { GeneratedTrait } from './readable-data-extractors/types';
 
 // Get parser-supported experiment types dynamically from parser metadata
 export function getSupportedTypes(): Array<{value: string, label: string, parser: string}> {
@@ -74,7 +75,7 @@ export function getParserInfo(experimentType: string): {
   description: string;
   supportedTypes: string[];
   requiredFields: string[];
-  generatedTraits: Array<{name: string, unit: string, description: string}>;
+  generatedTraits: GeneratedTrait[];
   version: string;
   parser?: string;
 } {

@@ -76,10 +76,13 @@ describe("traits — cross-collection workflow", () => {
     expect(sample?.logbook.at(-1)[1]).toMatch(/New trait of quantity diameter and value 3.5/);
   });
 
-  test("create against a missing sample is 404; a bad responsible is 400", async () => {
-    expect((await traitPost({ method: "create", sampleId: new ObjectId().toHexString(), quantity: "x", responsible: responsible.toHexString() })).status).toBe(404);
+  test("create against a missing sample is 404; a bad responsible is 400; a non-numeric value is 400", async () => {
+    expect((await traitPost({ method: "create", sampleId: new ObjectId().toHexString(), quantity: "x", value: 1, responsible: responsible.toHexString() })).status).toBe(404);
     const sampleId = await makeSample();
-    expect((await traitPost({ method: "create", sampleId, quantity: "x", responsible: new ObjectId().toHexString() })).status).toBe(400);
+    expect((await traitPost({ method: "create", sampleId, quantity: "x", value: 1, responsible: new ObjectId().toHexString() })).status).toBe(400);
+    for (const value of ["red", null, undefined]) {
+      expect((await traitPost({ method: "create", sampleId, quantity: "x", value, responsible: responsible.toHexString() })).status).toBe(400);
+    }
   });
 
   test("update stamps both the trait and its sample (previously a ReferenceError)", async () => {
@@ -101,6 +104,7 @@ describe("traits — cross-collection workflow", () => {
 
     expect((await traitPost({ method: "setfield", id: String(id), field: "detail", value: "dragline" })).status).toBe(200);
     expect((await traitPost({ method: "setfield", id: String(id), field: "sampleId", value: "x" })).status).toBe(403);
+    expect((await traitPost({ method: "setfield", id: String(id), field: "value", value: "x" })).status).toBe(400);
 
     await traitPost({ method: "incrementfield", id: String(id), field: "count" });
     const trait = await mongo.db.collection("traits").findOne({ _id: new ObjectId(id) });
@@ -178,7 +182,7 @@ describe("traits — cross-collection workflow", () => {
 
   test("delete: ok, then 404, and 400 for a bad id", async () => {
     const sampleId = await makeSample();
-    const { id } = await (await traitPost({ method: "create", sampleId, quantity: "x", responsible: responsible.toHexString() })).json();
+    const { id } = await (await traitPost({ method: "create", sampleId, quantity: "x", value: 1, responsible: responsible.toHexString() })).json();
     expect((await traitDel(String(id))).status).toBe(200);
     expect((await traitDel(String(id))).status).toBe(404);
     expect((await traitDel("nope")).status).toBe(400);
@@ -199,7 +203,7 @@ describe("traits — cross-collection workflow", () => {
       );
 
     const sampleId = await makeSample();
-    const { id } = await (await traitPost({ method: "create", sampleId, quantity: "x", responsible: responsible.toHexString() })).json();
+    const { id } = await (await traitPost({ method: "create", sampleId, quantity: "x", value: 1, responsible: responsible.toHexString() })).json();
     expect((await delAs(String(id), "viewer")).status).toBe(403);
     expect((await delAs(String(id), "researcher")).status).toBe(200);
 

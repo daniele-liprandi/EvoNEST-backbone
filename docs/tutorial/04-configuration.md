@@ -204,13 +204,13 @@ Example: Add "Drop-down dragline" for spider research:
 
 ## Step 7: Configure trait quantities
 
-Trait quantities define what you measure.
+Quantities define what you measure.
 
 ### Add a trait quantity with unit
 
 Example: Add "Tensile strength" measurement:
 
-1. **Go to "Trait Quantities"** section
+1. **Go to "Quantities"** section
 
 2. **Click "Add Item"**
 
@@ -286,7 +286,7 @@ Before moving to the next module, verify:
 - [ ] Understood how to create new NESTs and switch between them
 - [ ] Sample types configured (at least 2-3 custom types)
 - [ ] Subsample types added (relevant to your work)
-- [ ] Trait quantities with proper units (at least 3-5)
+- [ ] Quantities with proper units (at least 3-5)
 - [ ] Equipment list created (2-3 items)
 - [ ] Sample ID generation rules set
 - [ ] Lab information filled in

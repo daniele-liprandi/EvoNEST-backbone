@@ -19,6 +19,28 @@ export class BaseDataFormatParser {
         this.label = this.name; // Default label is the parser name
         this.description = '';
         this.author = '';
+        // Read by the Parsers page, /api/schema and the upload form.
+        // `generatedTraits` values are snake_case and match the lab presets.
+        this.family = 'generic';
+        this.formatDescription = '';
+        this.exampleFile = null;
+        this.generatedTraits = [];
+        this.dynamicTraits = false;
+    }
+
+    describe() {
+        return {
+            name: this.name,
+            label: this.label,
+            description: this.description,
+            technique: this.primaryExperimentType ?? null,
+            family: this.family,
+            formatDescription: this.formatDescription,
+            extensions: this.supportedFormats,
+            exampleFile: this.exampleFile,
+            generatedTraits: this.generatedTraits,
+            dynamicTraits: this.dynamicTraits,
+        };
     }
 
     /**

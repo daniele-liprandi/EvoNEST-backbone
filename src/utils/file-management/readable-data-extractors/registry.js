@@ -114,11 +114,15 @@ class DataFormatParserRegistry {
                 return null;
             }
 
-            return parsedData;
+            return { ...parsedData, parserName: parser.name };
         } catch (error) {
             console.error(`Parser ${parser.name} failed to parse data:`, error.message);
             return null;
         }
+    }
+
+    listParsers() {
+        return this.getAll().map(parser => parser.describe());
     }
 
     /**

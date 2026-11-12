@@ -21,31 +21,39 @@ export class LoggerMateAccelerometerParser extends BaseDataFormatParser {
         this.supportedExperimentTypes = ['movement_tracking'];
         this.primaryExperimentType = 'movement_tracking';
         this.requiredFields = ['accel_x', 'accel_y', 'accel_z'];
+        this.family = 'logging';
+        this.formatDescription = 'LoggerMate accelerometer export with X, Y, Z acceleration and time markers';
+        this.exampleFile = "/parser-examples/loggermate/AccelerometerData.txt";
         this.generatedTraits = [
             {
-                name: 'total_acceleration',
+                value: 'total_acceleration',
+                label: "Total acceleration",
                 unit: 'g',
-                description: 'Average total acceleration magnitude'
+                description: "Average total acceleration magnitude"
             },
             {
-                name: 'movement_variance',
+                value: 'movement_variance',
+                label: "Movement variance",
                 unit: 'g²',
-                description: 'Variance in acceleration indicating movement intensity'
+                description: "Variance in acceleration, a measure of movement intensity"
             },
             {
-                name: 'activity_periods',
+                value: 'activity_periods',
+                label: "Activity periods",
                 unit: 'count',
-                description: 'Number of distinct activity periods detected'
+                description: "Number of distinct activity periods detected"
             },
             {
-                name: 'max_acceleration',
+                value: 'max_acceleration',
+                label: "Maximum acceleration",
                 unit: 'g',
-                description: 'Maximum acceleration magnitude recorded'
+                description: "Maximum acceleration magnitude recorded"
             },
             {
-                name: 'recording_duration',
+                value: 'recording_duration',
+                label: "Recording duration",
                 unit: 'seconds',
-                description: 'Total duration of accelerometer recording'
+                description: "Total duration of the accelerometer recording"
             }
         ];
     }

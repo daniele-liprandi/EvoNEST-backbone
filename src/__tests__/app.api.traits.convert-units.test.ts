@@ -46,7 +46,7 @@ describe("POST /api/traits/convert-units", () => {
     expect(updateOne).toHaveBeenCalledTimes(1);
   });
 
-  test("500 when the trait type config is missing", async () => {
+  test("500 when the quantity config is missing", async () => {
     const layer = Layer.merge(
       testMongo({ findOne: () => Effect.succeed(null) }),
       testAuth({ sub: "u1" }),

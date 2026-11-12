@@ -97,6 +97,9 @@ export interface ParsedDataResult {
   // Data that goes directly into the experiment document
   experimentData: ExperimentAPIData;
 
+  // Set by the registry
+  parserName?: string;
+
   // Parsing metadata
   parsingMetadata?: {
     confidence: number;
@@ -115,4 +118,24 @@ export function isParsedDataResult(data: any): data is ParsedDataResult {
     typeof data === "object" &&
     data.experimentData !== undefined
   );
+}
+
+export interface GeneratedTrait {
+  value: string;
+  label: string;
+  unit: string;
+  description: string;
+}
+
+export interface ParserDescription {
+  name: string;
+  label: string;
+  description: string;
+  technique: string | null;
+  family: "mechanics" | "logging" | "generic";
+  formatDescription: string;
+  extensions: string[];
+  exampleFile: string | null;
+  generatedTraits: GeneratedTrait[];
+  dynamicTraits: boolean;
 }

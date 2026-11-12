@@ -17,7 +17,7 @@ import { CircleNotch } from "@phosphor-icons/react"
 import { ComboFormBox } from "@/components/forms/combo-form-box"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
     Form,
     FormControl, FormField,
@@ -43,11 +43,27 @@ import { Button } from "@/components/ui/button"
 import { linkFileToEntry, uploadFile } from "@/utils/handlers/fileHandlers"
 import { ParserPreview } from "./ParserPreview"
 import { DataFormatPreview } from "./DataFormatPreview"
+import { NewQuantities } from "./NewQuantities"
+import { useConfigTypes } from "@/hooks/useConfigTypes"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import {
+    applyQuantityChoices,
+    findNewQuantities,
+    type QuantityChoice,
+} from "@/utils/file-management/quantity-mapping"
 
 export function ExperimentForm({ users, samples, user, experiments, defaultFileList, onSuccess }: { users: any, samples: any, user: any, experiments: any, defaultFileList?: FileList, onSuccess?: () => void }) {
     const [allFileData, setAllFileData] = useState<Array<Partial<ExperimentFormValues>>>([]);
     const [files, setFiles] = useState<FileList | null>(null);
     const [checkSaveFile, setCheckSaveFile] = useState(true);
+    const { traitquantities, refresh: refreshConfig } = useConfigTypes();
+    const { can, isUserLoading } = useCurrentUser();
+    const canEditConfig = can("config.edit");
+    const [quantityChoices, setQuantityChoices] = useState<Record<string, QuantityChoice>>({});
+    const newQuantities = useMemo(
+        () => findNewQuantities(allFileData as Parameters<typeof findNewQuantities>[0], traitquantities),
+        [allFileData, traitquantities],
+    );
 
 
     const defaultValues = {
@@ -143,6 +159,26 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
                     duration: 6000
                 });
                 return;
+            }
+        }
+
+        // Aliases must be saved before the experiments are posted
+        if (canEditConfig) {
+            const next = applyQuantityChoices(traitquantities, newQuantities, quantityChoices);
+            if (next) {
+                const res = await fetch(`${prepend_path}/api/config/types`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ method: "update", type: "traitquantities", data: next }),
+                });
+                if (!res.ok) {
+                    toast.error("Could not save the new quantities", {
+                        description: "Nothing was uploaded. Try again, or skip them.",
+                    });
+                    return;
+                }
+                refreshConfig();
+                setQuantityChoices({});
             }
         }
 
@@ -395,6 +431,15 @@ export function ExperimentForm({ users, samples, user, experiments, defaultFileL
 
               {/* Data Format Processing Status */}
               <DataFormatPreview allFileData={allFileData} />
+
+              <NewQuantities
+                newTypes={newQuantities}
+                traitquantities={traitquantities}
+                fileCount={allFileData.length}
+                canEdit={isUserLoading ? undefined : canEditConfig}
+                choices={quantityChoices}
+                onChange={(value, choice) => setQuantityChoices((prev) => ({ ...prev, [value]: choice }))}
+              />
 
               {/* Parser Preview */}
               <ParserPreview

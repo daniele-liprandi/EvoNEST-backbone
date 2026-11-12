@@ -14,11 +14,13 @@ import {
 } from "@/lib/effect";
 import { sampleChain } from "@/app/api/utils/sampleChain";
 import { deleteBlobIfUnreferenced } from "@/app/api/files/gridfs";
+import { requireNumericValue } from "@/app/api/traits/handlers";
 
 const EXPERIMENTS = "experiments";
 const SAMPLES = "samples";
 const TRAITS = "traits";
 const FILES = "files";
+const CONFIG = "config";
 const ATTACHMENTS = "attachments";
 
 const stamp = () => new Date().toISOString();
@@ -86,6 +88,19 @@ export const listExperiments = (request: Request) =>
 
 // --- POST ------------------------------------------------------------------
 
+// Parser quantity -> lab quantity, from `traitquantities[].aliases`
+const quantityAliases = (dbName: string) =>
+  Effect.gen(function* () {
+    const mongo = yield* Mongo;
+    const config = yield* mongo.findOne(dbName, CONFIG, { type: "traitquantities" });
+    const aliases = new Map<string, string>();
+    for (const entry of (config?.data ?? []) as { value?: string; aliases?: unknown }[]) {
+      if (!entry.value || !Array.isArray(entry.aliases)) continue;
+      for (const alias of entry.aliases) if (typeof alias === "string") aliases.set(alias, entry.value);
+    }
+    return aliases;
+  });
+
 const PostBody = Schema.Struct(
   {
     method: Schema.optional(Schema.String),
@@ -146,10 +161,14 @@ const createExperiment = (dbName: string, data: PostData) =>
         logbook: data.logbook || [[now, `Created experiment ${data.name}`]],
       };
       if (Array.isArray(data.traits)) {
+        for (const trait of data.traits as Record<string, unknown>[]) yield* requireNumericValue(trait.value);
+        const aliases = yield* quantityAliases(dbName);
         embeddedTraits = (data.traits as Record<string, unknown>[]).map((trait) => {
           const { method: _method, ...rest } = trait;
+          const quantity = rest.quantity as string | undefined;
           return {
             ...rest,
+            ...(quantity !== undefined ? { quantity: aliases.get(quantity) ?? quantity } : {}),
             experimentId: null,
             createdAt: now,
           };

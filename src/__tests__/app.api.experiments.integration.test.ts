@@ -161,6 +161,47 @@ describe("experiments — a real collection workflow", () => {
     expect(Array.isArray(related[0].traits)).toBe(true);
   });
 
+  test("create rejects an embedded trait whose value is not a number", async () => {
+    const sampleId = await makeSample();
+    const res = await post({
+      method: "create",
+      name: "Bad value",
+      technique: "tensile_test",
+      sampleId,
+      responsible: responsible.toHexString(),
+      data: { channelData: [] },
+      traits: [{ quantity: "youngs_modulus", value: "9e9" }],
+    });
+    expect(res.status).toBe(400);
+    expect(await mongo.db.collection("experiments").countDocuments({ name: "Bad value" })).toBe(0);
+  });
+
+  test("create resolves parser quantities through traitquantities aliases", async () => {
+    await mongo.db.collection("config").insertOne({
+      type: "traitquantities",
+      data: [{ value: "youngs_modulus", label: "Young's modulus", unit: "GPa", aliases: ["modulus"] }, { value: "mass" }],
+    });
+    const sampleId = await makeSample();
+    const { id } = await (
+      await post({
+        method: "create",
+        name: "Aliased",
+        technique: "tensile_test",
+        sampleId,
+        responsible: responsible.toHexString(),
+        data: { channelData: [] },
+        traits: [
+          { quantity: "modulus", value: 9e9, unit: "Pa" },
+          { quantity: "load_at_break", value: 0.001, unit: "N" },
+        ],
+      })
+    ).json();
+
+    const traits = await mongo.db.collection("traits").find({ experimentId: String(id) }).toArray();
+    expect(traits.map((t) => t.quantity).sort()).toEqual(["load_at_break", "youngs_modulus"]);
+    await mongo.db.collection("config").deleteMany({ type: "traitquantities" });
+  });
+
   test("GET filters on technique, kind and parentId", async () => {
     const sampleId = await makeSample();
     await post({ method: "create", name: "T", technique: "tensile_test", sampleId, responsible: responsible.toHexString(), dataFields: {} });

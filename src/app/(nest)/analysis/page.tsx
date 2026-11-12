@@ -12,12 +12,12 @@ export default function AnalysisLandingPage() {
           <NavCard
             href="/analysis/traits"
             title="Trait statistics"
-            description="Mean, standard deviation, range and median of one trait type, by group."
+            description="Mean, standard deviation, range and median of one quantity, by group."
           />
           <NavCard
             href="/analysis/tables"
             title="Summary tables"
-            description="Count samples, or summarise a trait type, across rows and columns of your choice."
+            description="Count samples, or summarise a quantity, across rows and columns of your choice."
           />
         </div>
       </div>

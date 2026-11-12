@@ -17,7 +17,8 @@ interface ParserInfo {
     supportedTypes: string[];
     requiredFields: string[];
     generatedTraits: Array<{
-        name: string;
+        value: string;
+        label: string;
         unit: string;
         description: string;
     }>;
@@ -63,7 +64,7 @@ export function ParserPreview({ experimentType, hasParserSupport, parserInfo }: 
                                 <div key={index} className="flex flex-col gap-1 p-3 bg-green-50 rounded border border-green-200">
                                     <div className="flex items-center gap-2">
                                         <Badge variant="outline" className="bg-green-100 text-green-800">
-                                            {trait.name}
+                                            {trait.label}
                                         </Badge>
                                         <span className="text-sm text-gray-600">
                                             ({trait.unit})
