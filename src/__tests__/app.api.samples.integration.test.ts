@@ -45,7 +45,7 @@ const del = (id: string, layer = mongo.layer) =>
 describe("samples — a real collection workflow", () => {
   test("animal, then a subsample that references the animal by name, resolves the parent to its ObjectId", async () => {
     const animalRes = await post({
-      method: "create",
+      method: "create", date: "2026-01-01",
       name: "Aranea1",
       type: "animal",
       genus: "Araneus",
@@ -58,7 +58,7 @@ describe("samples — a real collection workflow", () => {
     expect(animalId).toBeTruthy();
 
     const silkRes = await post({
-      method: "create",
+      method: "create", date: "2026-01-01",
       name: "Aranea1_silk1",
       type: "silk",
       subsampletype: "dragline",
@@ -75,9 +75,9 @@ describe("samples — a real collection workflow", () => {
 
   test("GET ?related=true attaches the parent chain to the subsample", async () => {
     const animal = await (
-      await post({ method: "create", name: "A", type: "animal", responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "A", type: "animal", responsible: responsible.toHexString() })
     ).json();
-    await post({ method: "create", name: "A_s1", type: "silk", parentId: "A", responsible: responsible.toHexString() });
+    await post({ method: "create", date: "2026-01-01", name: "A_s1", type: "silk", parentId: "A", responsible: responsible.toHexString() });
 
     const res = await get("?related=true");
     const samples = await res.json();
@@ -89,7 +89,7 @@ describe("samples — a real collection workflow", () => {
 
   test("a subsample referencing an unknown parent name is 404", async () => {
     const res = await post({
-      method: "create",
+      method: "create", date: "2026-01-01",
       name: "orphan",
       type: "silk",
       parentId: "does-not-exist",
@@ -99,13 +99,20 @@ describe("samples — a real collection workflow", () => {
   });
 
   test("create with an unknown responsible user is 400", async () => {
-    const res = await post({ method: "create", name: "x", type: "animal", responsible: new ObjectId().toHexString() });
+    const res = await post({ method: "create", date: "2026-01-01", name: "x", type: "animal", responsible: new ObjectId().toHexString() });
     expect(res.status).toBe(400);
+  });
+
+  test("create without a valid collection date is 400", async () => {
+    for (const date of [undefined, "", "not a date"]) {
+      const res = await post({ method: "create", date, name: "x", type: "animal", responsible: responsible.toHexString() });
+      expect(res.status).toBe(400);
+    }
   });
 
   test("setfield writes the field and a logbook line, and rejects protected fields", async () => {
     const { _id } = await (
-      await post({ method: "create", name: "S", type: "animal", responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "S", type: "animal", responsible: responsible.toHexString() })
     ).json();
 
     const okRes = await post({ method: "setfield", id: String(_id), field: "box", value: "pw01" });
@@ -122,7 +129,7 @@ describe("samples — a real collection workflow", () => {
 
   test("incrementfield bumps the counter", async () => {
     const { _id } = await (
-      await post({ method: "create", name: "S", type: "animal", timesFed: 0, responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "S", type: "animal", timesFed: 0, responsible: responsible.toHexString() })
     ).json();
     await post({ method: "incrementfield", id: String(_id), field: "timesFed" });
     await post({ method: "incrementfield", id: String(_id), field: "timesFed" });
@@ -132,7 +139,7 @@ describe("samples — a real collection workflow", () => {
 
   test("update replaces the editable fields and keeps the logbook", async () => {
     const { _id } = await (
-      await post({ method: "create", name: "S", type: "animal", genus: "Old", responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "S", type: "animal", genus: "Old", responsible: responsible.toHexString() })
     ).json();
     const res = await post({
       method: "update",
@@ -150,7 +157,7 @@ describe("samples — a real collection workflow", () => {
 
   test("delete removes the sample; a bad id is 400, a missing one is 404", async () => {
     const { _id } = await (
-      await post({ method: "create", name: "S", type: "animal", responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "S", type: "animal", responsible: responsible.toHexString() })
     ).json();
     expect((await del(String(_id))).status).toBe(200);
     expect((await del(String(_id))).status).toBe(404);
@@ -180,7 +187,7 @@ describe("samples — configured custom fields (#165)", () => {
 
   test("writes the type's admin-defined fields from the fields bag", async () => {
     const res = await post({
-      method: "create",
+      method: "create", date: "2026-01-01",
       name: "Crop 1",
       type: base.type,
       responsible: base.responsible(),
@@ -195,7 +202,7 @@ describe("samples — configured custom fields (#165)", () => {
 
   test("ignores keys the type has not declared", async () => {
     const res = await post({
-      method: "create",
+      method: "create", date: "2026-01-01",
       name: "Crop 2",
       type: base.type,
       responsible: base.responsible(),
@@ -209,7 +216,7 @@ describe("samples — configured custom fields (#165)", () => {
 
   test("a custom field cannot shadow a core column", async () => {
     const res = await post({
-      method: "create",
+      method: "create", date: "2026-01-01",
       name: "Crop 3",
       type: base.type,
       responsible: base.responsible(),
@@ -223,7 +230,7 @@ describe("samples — configured custom fields (#165)", () => {
 
   test("update writes the configured fields too", async () => {
     const { _id } = await (
-      await post({ method: "create", name: "Crop 4", type: base.type, responsible: base.responsible() })
+      await post({ method: "create", date: "2026-01-01", name: "Crop 4", type: base.type, responsible: base.responsible() })
     ).json();
     await post({ method: "update", id: String(_id), type: "crop", responsible: base.responsible(), fields: { plot: "B7" } });
     const doc = await mongo.db.collection("samples").findOne({ _id: new ObjectId(_id) });
@@ -238,7 +245,7 @@ describe("samples — the samples.delete gate (#162)", () => {
   test("a role without samples.delete is refused with 403 once an admin exists", async () => {
     await mongo.client.db("usersdb").collection("users").insertOne({ role: "admin", auth0id: "auth0|boss" });
     const { _id } = await (
-      await post({ method: "create", name: "S", type: "animal", responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "S", type: "animal", responsible: responsible.toHexString() })
     ).json();
 
     const res = await del(String(_id), asRole("viewer"));
@@ -249,7 +256,7 @@ describe("samples — the samples.delete gate (#162)", () => {
   test("a granted role deletes", async () => {
     await mongo.client.db("usersdb").collection("users").insertOne({ role: "admin", auth0id: "auth0|boss" });
     const { _id } = await (
-      await post({ method: "create", name: "S", type: "animal", responsible: responsible.toHexString() })
+      await post({ method: "create", date: "2026-01-01", name: "S", type: "animal", responsible: responsible.toHexString() })
     ).json();
     const res = await del(String(_id), asRole("researcher"));
     expect(res.status).toBe(200);

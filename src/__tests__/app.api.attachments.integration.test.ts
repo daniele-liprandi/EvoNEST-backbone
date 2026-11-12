@@ -34,7 +34,9 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await Promise.all(
-    ["attachments", "samples", "files"].map((c) => mongo.db.collection(c).deleteMany({})),
+    ["attachments", "samples", "files", "files.files", "files.chunks"].map((c) =>
+      mongo.db.collection(c).deleteMany({}),
+    ),
   );
   await mongo.client.db("usersdb").collection("users").deleteMany({ auth0id: "auth0|boss" });
   jest.spyOn(console, "error").mockImplementation(() => {});
@@ -56,14 +58,13 @@ const del = (id: string, layer = mongo.layer) =>
     ).pipe(Effect.provide(layer)),
   );
 
-const upload = async (name: string, type: string) => {
+const upload = async (name: string, type: string, layer: typeof mongo.layer = mongo.layer) => {
   const form = new FormData();
-  form.append("file", new File(["bytes"], name, { type }));
-  form.append("type", "attach");
+  form.append("file", new File([`bytes-${name}`], name, { type }));
   form.append("metadata", JSON.stringify({ deferredLink: true }));
   const res = await runRoute(
     uploadFile(new Request("http://x/api/files", { method: "POST", body: form })).pipe(
-      Effect.provide(mongo.layer),
+      Effect.provide(layer),
     ),
   );
   return (await res.json()).fileId as string;
@@ -246,18 +247,17 @@ describe("attachments — delete + the attachments.delete gate", () => {
     const fileId = await upload("shared.png", "image/png");
     const { id: idA } = await (await create({ fileId, targetId: a.toHexString() })).json();
     const { id: idB } = await (await create({ fileId, targetId: b.toHexString() })).json();
-    const filePath = (await mongo.db.collection("files").findOne({ _id: new ObjectId(fileId) }))!.path;
 
     const first = await del(idA);
     expect(first.status).toBe(200);
     expect(await first.json()).toMatchObject({ fileDeleted: false, fileDocDeleted: false });
     expect(await mongo.db.collection("files").countDocuments()).toBe(1);
-    expect(realFs.existsSync(filePath)).toBe(true);
+    expect(await mongo.db.collection("files.files").countDocuments()).toBe(1);
 
     const second = await del(idB);
     expect(await second.json()).toMatchObject({ fileDeleted: true, fileDocDeleted: true });
     expect(await mongo.db.collection("files").countDocuments()).toBe(0);
-    expect(realFs.existsSync(filePath)).toBe(false);
+    expect(await mongo.db.collection("files.chunks").countDocuments()).toBe(0);
   });
 
   test("a missing attachment is 404, a bad id is 400", async () => {
@@ -268,7 +268,8 @@ describe("attachments — delete + the attachments.delete gate", () => {
   test("a role without attachments.delete is refused with 403 once an admin exists", async () => {
     await mongo.client.db("usersdb").collection("users").insertOne({ role: "admin", auth0id: "auth0|boss" });
     const sampleId = await seedSample();
-    const fileId = await upload("p.png", "image/png");
+    // An admin now exists, so the upload needs a role that holds files.upload.
+    const fileId = await upload("p.png", "image/png", asRole("researcher"));
     const { id } = await (await create({ fileId, targetId: sampleId.toHexString() })).json();
 
     expect((await del(id, asRole("viewer"))).status).toBe(403);

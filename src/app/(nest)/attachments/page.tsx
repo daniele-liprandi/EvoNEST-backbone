@@ -110,7 +110,7 @@ function AttachmentsPageContent() {
     <Card>
       <CardHeader>
         <CardTitle>Attachments</CardTitle>
-        <CardDescription>Every file linked to a sample, trait or experiment in the NEST.</CardDescription>
+        <CardDescription>Files attached to samples, traits and experiments.</CardDescription>
       </CardHeader>
       <CardContent>
         <DataTable

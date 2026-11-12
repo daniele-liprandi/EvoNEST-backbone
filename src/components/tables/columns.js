@@ -332,6 +332,8 @@ export const dateColumn = () => (
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Collection Date" />
     ),    cell: info => {
+      // A missing date would otherwise render as "Invalid Date", or as 1970 for null.
+      if (!info.row.original.date) return "";
       const date = new Date(info.row.original.date);
       return date.toLocaleDateString("en-UK", { year: 'numeric', month: 'short', day: 'numeric' });
     },
@@ -950,8 +952,9 @@ function Filter({
   ) : (
     <>
       <datalist id={column.id + 'list'}>
+        {/* A null or undefined cell becomes key={undefined}, which React treats as no key. */}
         {sortedUniqueValues.slice(0, 5000).map((value) => (
-          <option value={value} key={value} />
+          <option value={value ?? ''} key={String(value)} />
         ))}
       </datalist>
       <DebouncedInput
@@ -990,7 +993,7 @@ export const traitAttachmentsColumn = () => ({
           <AttachmentPanel
             targetType="trait"
             targetId={trait._id}
-            description="Images and files linked to this measurement"
+            variant="full"
             className="border-0 shadow-none"
           />
         </DialogContent>

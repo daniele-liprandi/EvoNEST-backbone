@@ -25,7 +25,8 @@ interface FileMetadata {
 export const uploadFile = async (
   file: File,
   type: string,
-  metadata: FileMetadata
+  metadata: FileMetadata,
+  { quiet = false }: { quiet?: boolean } = {}
 ): Promise<string | null> => {
   const formData = new FormData();
   formData.append("file", file);
@@ -44,7 +45,7 @@ export const uploadFile = async (
     }
 
     const result = await response.json();
-    toast.success("File uploaded successfully");
+    if (!quiet) toast.success("File uploaded successfully");
     return result.fileId;
   } catch (error) {
     console.error("Upload error:", error);

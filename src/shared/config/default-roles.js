@@ -23,6 +23,8 @@ export const CAPABILITIES = [
   { value: "traits.delete", label: "Delete traits" },
   { value: "experiments.delete", label: "Delete experiments" },
   { value: "attachments.delete", label: "Delete attachments (and the file when it was the last one)" },
+  { value: "files.upload", label: "Upload files into the NEST" },
+  { value: "files.link-external", label: "Link external files (kept where they live)" },
 ];
 
 // Defaults chosen to preserve today's behaviour: user/database management is
@@ -37,4 +39,6 @@ export const DEFAULT_PERMISSIONS = [
   { value: "traits.delete", roles: ["researcher", "student"] },
   { value: "experiments.delete", roles: ["researcher", "student"] },
   { value: "attachments.delete", roles: ["researcher", "student"] },
+  { value: "files.upload", roles: ["researcher", "student"] },
+  { value: "files.link-external", roles: ["researcher", "student"] },
 ];

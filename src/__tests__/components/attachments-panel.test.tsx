@@ -25,6 +25,10 @@ jest.mock("@/utils/handlers/attachmentHandlers", () => ({
   updateAttachmentField: (...args: any[]) => mockUpdateField(...args),
   reorderAttachments: (...args: any[]) => mockReorder(...args),
   handleDeleteAttachment: (...args: any[]) => mockDelete(...args),
+  linkExternalAndAttach: jest.fn().mockResolvedValue("ext-id"),
+  checkFileLink: jest.fn().mockResolvedValue("ok"),
+  updateFilePath: jest.fn().mockResolvedValue(true),
+  importExternalFile: jest.fn().mockResolvedValue(true),
 }));
 jest.mock("sonner", () => ({
   toast: Object.assign(jest.fn(), { success: jest.fn(), error: jest.fn(), message: jest.fn() }),
@@ -51,7 +55,7 @@ beforeEach(() => {
 });
 
 test("shows an empty state when the target has no attachments", () => {
-  render(<AttachmentPanel targetType="sample" targetId="s1" />);
+  render(<AttachmentPanel targetType="sample" targetId="s1" variant="full" />);
   expect(screen.getByText(/No attachments yet/i)).toBeInTheDocument();
 });
 
@@ -60,7 +64,7 @@ test("renders an image attachment as an <img> and a document as a link", () => {
     row({ _id: "img", fileId: "fimg", kind: "image" }),
     row({ _id: "doc", fileId: "fdoc", kind: "document", contentType: "application/pdf", caption: "Protocol" }),
   ];
-  render(<AttachmentPanel targetType="sample" targetId="s1" />);
+  render(<AttachmentPanel targetType="sample" targetId="s1" variant="full" />);
 
   const img = screen.getByRole("img", { name: /attachment/i });
   expect(img).toHaveAttribute("src", expect.stringContaining("/api/files/fimg"));
@@ -71,7 +75,7 @@ test("renders an image attachment as an <img> and a document as a link", () => {
 
 test("editing a caption calls updateAttachmentField", async () => {
   attachments = [row({ _id: "a1", kind: "image", caption: null })];
-  render(<AttachmentPanel targetType="sample" targetId="s1" />);
+  render(<AttachmentPanel targetType="sample" targetId="s1" variant="full" />);
 
   fireEvent.click(screen.getByRole("button", { name: /edit caption/i }));
   const input = screen.getByPlaceholderText("Caption");
@@ -79,4 +83,39 @@ test("editing a caption calls updateAttachmentField", async () => {
   fireEvent.keyDown(input, { key: "Enter" });
 
   await waitFor(() => expect(mockUpdateField).toHaveBeenCalledWith("a1", "caption", "left spinneret"));
+});
+
+describe("compact variant", () => {
+  const images = (n: number) =>
+    Array.from({ length: n }, (_, i) => row({ _id: `i${i}`, fileId: `fi${i}`, kind: "image" }));
+
+  test("shows at most six thumbnails and a +N tile that opens the manage dialog", () => {
+    attachments = images(9);
+    render(<AttachmentPanel targetType="sample" targetId="s1" />);
+
+    expect(screen.getAllByRole("img")).toHaveLength(6);
+    fireEvent.click(screen.getByRole("button", { name: /show 4 more/i }));
+    expect(screen.getAllByRole("button", { name: /edit caption/i })).toHaveLength(9);
+  });
+
+  test("lists documents as links and keeps edit controls out of the card", () => {
+    attachments = [row({ _id: "d", fileId: "fd", kind: "document", caption: "Protocol" })];
+    render(<AttachmentPanel targetType="sample" targetId="s1" />);
+
+    expect(screen.getByRole("link", { name: /Protocol/i })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/api/files/fd"),
+    );
+    expect(screen.queryByRole("button", { name: /edit caption/i })).not.toBeInTheDocument();
+  });
+
+  test("opening a thumbnail steps through images with the arrows", () => {
+    attachments = images(3);
+    render(<AttachmentPanel targetType="sample" targetId="s1" />);
+
+    fireEvent.click(screen.getAllByRole("button", { name: /open image/i })[0]);
+    fireEvent.click(screen.getByRole("button", { name: /next image/i }));
+    const full = screen.getAllByRole("img").find((el) => el.getAttribute("src")?.includes("fi1") && el.className.includes("object-contain"));
+    expect(full).toBeDefined();
+  });
 });

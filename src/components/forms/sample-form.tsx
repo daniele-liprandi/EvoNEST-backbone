@@ -298,11 +298,6 @@ export function SampleForm({
         jsonbody = { ...jsonbody, _id: id } as SampleJsonBody;
       }
 
-      if (values.type && values.slot && values.type === "subsample") {
-        let slotval = parseInt(values.slot);
-        form.setValue("slot", String(slotval + 1));
-      }
-
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -318,17 +313,16 @@ export function SampleForm({
       mutate(`${prepend_path}/api/samples`);
 
       if (keepOpen) {
-        // Keep type, parent and responsible: entering a run of samples of the
-        // same kind is the point of this button.
+        // Keep everything but the per-sample bits: entering a run of samples of
+        // the same kind is the point of this button. The name is regenerated
+        // by the effects once the refreshed sample list arrives, so it cannot
+        // reuse the one just saved.
+        const slotNumber = parseInt(values.slot ?? "");
         form.reset({
-          nomenclature: "",
+          ...values,
           name: "",
-          type: values.type,
-          parentId: values.parentId,
-          responsible: values.responsible,
-          sex: "unknown",
-          date: values.date,
-          includeSubsampleShortened: true,
+          notes: "",
+          slot: Number.isNaN(slotNumber) ? values.slot : String(slotNumber + 1),
           custom: {},
         });
       } else {
@@ -340,6 +334,13 @@ export function SampleForm({
         description: "Error submitting the form. Please try again.",
       });
     }
+  }
+
+  // nomenclature has no visible field, so its error would otherwise leave the
+  // Submit button doing nothing at all.
+  function onInvalid(errors: Record<string, { message?: string } | undefined>) {
+    const first = Object.values(errors).find((e) => e?.message);
+    toast.error("Sample not saved", { description: first?.message });
   }
 
   async function fetchCoordinates(data: {
@@ -599,9 +600,11 @@ export function SampleForm({
     }
   }, [selectedType, hasTaxonomy, form]);
 
+  // regenerateName, not generateNameAnimal: this runs after the subsample
+  // effect above, and an animal-style name would replace the subsample one.
   useEffect(() => {
     if (hasTaxonomy && selectedType && selectedGenus && selectedSpecies) {
-      form.setValue("name", generateNameAnimal(form));
+      regenerateName(form);
     }
   }, [
     samples,
@@ -610,7 +613,7 @@ export function SampleForm({
     selectedGenus,
     selectedSpecies,
     form,
-    generateNameAnimal,
+    regenerateName,
   ]);
 
   const parentOptions = samples
@@ -777,6 +780,7 @@ export function SampleForm({
                     <Input
                       placeholder="City, State"
                       {...field}
+                      value={field.value ?? ""}
                       onBlur={async () => {
                         if (!form.getValues().location) return;
                         const coord = await fetchCoordinates(form.getValues());
@@ -800,7 +804,7 @@ export function SampleForm({
                   <FormItem>
                     <FormLabel>Latitude</FormLabel>
                     <FormControl>
-                      <Input placeholder="0.0" {...field} />
+                      <Input placeholder="0.0" {...field} value={field.value ?? ""} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -812,7 +816,7 @@ export function SampleForm({
                   <FormItem>
                     <FormLabel>Longitude</FormLabel>
                     <FormControl>
-                      <Input placeholder="0.0" {...field} />
+                      <Input placeholder="0.0" {...field} value={field.value ?? ""} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -850,7 +854,7 @@ export function SampleForm({
                 <FormItem className="flex flex-1 flex-col">
                   <FormLabel>Subsample type</FormLabel>
                   <FormControl>
-                    <Input type="text" {...field} />
+                    <Input type="text" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormDescription>Type of subsample</FormDescription>
                 </FormItem>
@@ -888,7 +892,7 @@ export function SampleForm({
               <FormItem>
                 <FormLabel>{field.label}</FormLabel>
                 <FormControl>
-                  <Input placeholder={field.label} {...f} />
+                  <Input placeholder={field.label} {...f} value={f.value ?? ""} />
                 </FormControl>
               </FormItem>
             )}
@@ -902,7 +906,7 @@ export function SampleForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => onSubmit(values))} className="space-y-4">
+      <form onSubmit={form.handleSubmit((values) => onSubmit(values), onInvalid)} className="space-y-4">
         <ComboFormBox
           control={form.control}
           setValue={form.setValue}
@@ -924,7 +928,7 @@ export function SampleForm({
             <FormItem>
               <FormLabel>Optional notes</FormLabel>
               <FormControl>
-                <Textarea {...field} rows={3} />
+                <Textarea {...field} value={field.value ?? ""} rows={3} />
               </FormControl>
             </FormItem>
           )}
@@ -944,6 +948,7 @@ export function SampleForm({
                 <FormDescription>
                   Unique identifier for the sample
                 </FormDescription>
+                <FormMessage />
               </FormItem>
             </div>
           )}
@@ -959,7 +964,7 @@ export function SampleForm({
             type="button"
             variant="outline"
             disabled={form.formState.isSubmitting}
-            onClick={form.handleSubmit((values) => onSubmit(values, true))}
+            onClick={form.handleSubmit((values) => onSubmit(values, true), onInvalid)}
           >
             Save and add another
           </Button>
